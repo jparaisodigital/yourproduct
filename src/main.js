@@ -1,44 +1,91 @@
 import './style.css'
 import Alpine from 'alpinejs'
 import { siteConfig } from './config/site-config.js'
+import { renderHeader } from './components/header.js'
+import { renderFooter } from './components/footer.js'
 
 window.Alpine = Alpine
 
 document.title = `${siteConfig.brand.name} | Premium Fragrances`
 
 document.querySelector('#app').innerHTML = `
-  <main class="grid min-h-screen place-items-center bg-brand-black px-6 py-16 text-center text-brand-cream">
+  ${renderHeader(siteConfig)}
+
+  <main>
     <section
-      class="w-full max-w-3xl rounded-3xl border border-brand-border bg-brand-charcoal p-8 shadow-gold-soft sm:p-14"
-      x-data="{ count: 0 }"
+      id="home"
+      class="grid min-h-[calc(100vh-5rem)] place-items-center bg-brand-black px-6 py-20"
     >
-      <p class="text-xs font-semibold uppercase tracking-[0.35em] text-brand-gold">
-        ${siteConfig.brand.name}
-      </p>
+      <div class="mx-auto w-full max-w-5xl text-center">
+        <p class="text-xs font-semibold uppercase tracking-[0.35em] text-brand-gold">
+          ${siteConfig.brand.name}
+        </p>
 
-      <h1 class="mt-6 font-display text-5xl font-semibold leading-none sm:text-7xl">
-        Luxury fragrance,
-        <span class="italic text-brand-gold">thoughtfully presented.</span>
-      </h1>
+        <h1 class="mx-auto mt-6 max-w-4xl font-display text-5xl font-semibold leading-[0.95] text-brand-cream sm:text-7xl lg:text-8xl">
+          Find a scent that feels
+          <span class="italic text-brand-gold">uniquely yours.</span>
+        </h1>
 
-      <p class="mx-auto mt-6 max-w-xl text-sm uppercase tracking-[0.2em] text-brand-gold-light">
-        ${siteConfig.brand.tagline}
-      </p>
+        <p class="mx-auto mt-7 max-w-xl text-base leading-7 text-brand-muted">
+          ${siteConfig.brand.shortDescription}
+        </p>
 
-      <p class="mx-auto mt-6 max-w-lg text-base leading-7 text-brand-muted">
-        ${siteConfig.brand.shortDescription}
-      </p>
+        <div class="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <a
+            href="#shop"
+            class="w-full rounded-full bg-brand-gold px-7 py-3.5 text-sm font-semibold text-brand-black transition duration-300 hover:-translate-y-1 hover:bg-brand-gold-light sm:w-auto"
+          >
+            Explore the Collection
+          </a>
 
-      <button
-        type="button"
-        class="mt-9 rounded-full bg-brand-gold px-7 py-3 font-semibold text-brand-black transition duration-300 hover:-translate-y-1 hover:bg-brand-gold-light"
-        @click="count++"
-      >
-        Alpine Test:
-        <span x-text="count">0</span>
-      </button>
+          <a
+            href="#membership"
+            class="w-full rounded-full border border-brand-border px-7 py-3.5 text-sm font-semibold text-brand-cream transition duration-300 hover:border-brand-gold hover:text-brand-gold sm:w-auto"
+          >
+            View Membership
+          </a>
+        </div>
+      </div>
     </section>
-  </main>
+
+    <section
+      id="shop"
+      class="grid min-h-[60vh] place-items-center border-t border-brand-border bg-brand-charcoal px-6 py-20"
+    >
+      <h2 class="font-display text-5xl text-brand-cream">
+        Shop Collection
+      </h2>
+    </section>
+
+    <section
+      id="membership"
+      class="grid min-h-[60vh] place-items-center border-t border-brand-border bg-brand-black px-6 py-20"
+    >
+      <h2 class="font-display text-5xl text-brand-cream">
+        Membership
+      </h2>
+    </section>
+
+    <section
+      id="rewards"
+      class="grid min-h-[60vh] place-items-center border-t border-brand-border bg-brand-charcoal px-6 py-20"
+    >
+      <h2 class="font-display text-5xl text-brand-cream">
+        Rewards
+      </h2>
+    </section>
+
+    <section
+      id="about"
+      class="grid min-h-[60vh] place-items-center border-t border-brand-border bg-brand-black px-6 py-20"
+    >
+      <h2 class="font-display text-5xl text-brand-cream">
+        About
+      </h2>
+    </section>
+    </main>
+
+  ${renderFooter(siteConfig)}
 `
 
 Alpine.start()
