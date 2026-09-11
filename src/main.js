@@ -1,7 +1,11 @@
 import './style.css'
 import Alpine from 'alpinejs'
+
 import { siteConfig } from './config/site-config.js'
+import { homeConfig } from './config/home-config.js'
+
 import { renderHeader } from './components/header.js'
+import { renderHero } from './components/hero.js'
 import { renderFooter } from './components/footer.js'
 
 window.Alpine = Alpine
@@ -12,78 +16,68 @@ document.querySelector('#app').innerHTML = `
   ${renderHeader(siteConfig)}
 
   <main>
-    <section
-      id="home"
-      class="grid min-h-[calc(100vh-5rem)] place-items-center bg-brand-black px-6 py-20"
-    >
-      <div class="mx-auto w-full max-w-5xl text-center">
-        <p class="text-xs font-semibold uppercase tracking-[0.35em] text-brand-gold">
-          ${siteConfig.brand.name}
-        </p>
-
-        <h1 class="mx-auto mt-6 max-w-4xl font-display text-5xl font-semibold leading-[0.95] text-brand-cream sm:text-7xl lg:text-8xl">
-          Find a scent that feels
-          <span class="italic text-brand-gold">uniquely yours.</span>
-        </h1>
-
-        <p class="mx-auto mt-7 max-w-xl text-base leading-7 text-brand-muted">
-          ${siteConfig.brand.shortDescription}
-        </p>
-
-        <div class="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <a
-            href="#shop"
-            class="w-full rounded-full bg-brand-gold px-7 py-3.5 text-sm font-semibold text-brand-black transition duration-300 hover:-translate-y-1 hover:bg-brand-gold-light sm:w-auto"
-          >
-            Explore the Collection
-          </a>
-
-          <a
-            href="#membership"
-            class="w-full rounded-full border border-brand-border px-7 py-3.5 text-sm font-semibold text-brand-cream transition duration-300 hover:border-brand-gold hover:text-brand-gold sm:w-auto"
-          >
-            View Membership
-          </a>
-        </div>
-      </div>
-    </section>
+    ${renderHero(homeConfig, siteConfig)}
 
     <section
       id="shop"
       class="grid min-h-[60vh] place-items-center border-t border-brand-border bg-brand-charcoal px-6 py-20"
     >
-      <h2 class="font-display text-5xl text-brand-cream">
-        Shop Collection
-      </h2>
+      <div class="text-center">
+        <p class="text-xs uppercase tracking-[0.3em] text-brand-gold">
+          Collection
+        </p>
+
+        <h2 class="mt-4 font-display text-5xl text-brand-cream">
+          Shop Collection
+        </h2>
+      </div>
     </section>
 
     <section
       id="membership"
       class="grid min-h-[60vh] place-items-center border-t border-brand-border bg-brand-black px-6 py-20"
     >
-      <h2 class="font-display text-5xl text-brand-cream">
-        Membership
-      </h2>
+      <div class="text-center">
+        <p class="text-xs uppercase tracking-[0.3em] text-brand-gold">
+          Membership
+        </p>
+
+        <h2 class="mt-4 font-display text-5xl text-brand-cream">
+          Choose Your Beginning
+        </h2>
+      </div>
     </section>
 
     <section
       id="rewards"
       class="grid min-h-[60vh] place-items-center border-t border-brand-border bg-brand-charcoal px-6 py-20"
     >
-      <h2 class="font-display text-5xl text-brand-cream">
-        Rewards
-      </h2>
+      <div class="text-center">
+        <p class="text-xs uppercase tracking-[0.3em] text-brand-gold">
+          Points and Rewards
+        </p>
+
+        <h2 class="mt-4 font-display text-5xl text-brand-cream">
+          Qualified Purchases Move You Forward
+        </h2>
+      </div>
     </section>
 
     <section
       id="about"
       class="grid min-h-[60vh] place-items-center border-t border-brand-border bg-brand-black px-6 py-20"
     >
-      <h2 class="font-display text-5xl text-brand-cream">
-        About
-      </h2>
+      <div class="text-center">
+        <p class="text-xs uppercase tracking-[0.3em] text-brand-gold">
+          Our Story
+        </p>
+
+        <h2 class="mt-4 font-display text-5xl text-brand-cream">
+          More Than a Fragrance
+        </h2>
+      </div>
     </section>
-    </main>
+  </main>
 
   ${renderFooter(siteConfig)}
 `
