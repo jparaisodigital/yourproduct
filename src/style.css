@@ -1,1 +1,68 @@
 @import "tailwindcss";
+
+@theme {
+  /* Brand colors */
+  --color-brand-black: #0b0a09;
+  --color-brand-charcoal: #171512;
+  --color-brand-panel: #211e19;
+  --color-brand-cream: #f5f0e7;
+  --color-brand-gold: #c7a35a;
+  --color-brand-gold-light: #dfbf7a;
+  --color-brand-bronze: #80673d;
+  --color-brand-muted: #a9a39a;
+  --color-brand-border: #332d24;
+
+  /* Typography */
+  --font-display: "Cormorant Garamond", Georgia, serif;
+  --font-body: "DM Sans", Arial, sans-serif;
+
+  /* Shadows */
+  --shadow-gold-soft: 0 20px 60px rgb(199 163 90 / 12%);
+  --shadow-panel: 0 24px 80px rgb(0 0 0 / 30%);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    background: var(--color-brand-black);
+  }
+
+  body {
+    margin: 0;
+    min-width: 320px;
+    background: var(--color-brand-black);
+    color: var(--color-brand-cream);
+    font-family: var(--font-body);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  button,
+  a {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  button {
+    cursor: pointer;
+  }
+
+  img {
+    display: block;
+    max-width: 100%;
+  }
+
+  ::selection {
+    background: var(--color-brand-gold);
+    color: var(--color-brand-black);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-brand-gold);
+    outline-offset: 4px;
+  }
+}
+
+[x-cloak] {
+  display: none !important;
+}
