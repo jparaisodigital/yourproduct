@@ -1,6 +1,19 @@
 import './style.css'
 import Alpine from 'alpinejs'
 
+import {
+  products,
+  productCategories,
+} from './config/products-config.js'
+
+import {
+  registerCartStore,
+} from './stores/cart-store.js'
+
+import {
+  renderProductsSection,
+} from './components/products-section.js'
+
 import { siteConfig } from './config/site-config.js'
 import { homeConfig } from './config/home-config.js'
 
@@ -10,7 +23,10 @@ import { renderFooter } from './components/footer.js'
 
 window.Alpine = Alpine
 
-document.title = `${siteConfig.brand.name} | Premium Fragrances`
+registerCartStore(Alpine, products)
+
+document.title =
+  `${siteConfig.brand.name} | Premium Fragrances`
 
 document.querySelector('#app').innerHTML = `
   ${renderHeader(siteConfig)}
@@ -18,20 +34,10 @@ document.querySelector('#app').innerHTML = `
   <main>
     ${renderHero(homeConfig, siteConfig)}
 
-    <section
-      id="shop"
-      class="grid min-h-[60vh] place-items-center border-t border-brand-border bg-brand-charcoal px-6 py-20"
-    >
-      <div class="text-center">
-        <p class="text-xs uppercase tracking-[0.3em] text-brand-gold">
-          Collection
-        </p>
-
-        <h2 class="mt-4 font-display text-5xl text-brand-cream">
-          Shop Collection
-        </h2>
-      </div>
-    </section>
+    ${renderProductsSection(
+      products,
+      productCategories,
+    )}
 
     <section
       id="membership"
