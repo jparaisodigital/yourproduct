@@ -21,8 +21,28 @@ import { renderHeader } from './components/header.js'
 import { renderHero } from './components/hero.js'
 
 import {
+  renderProductsSection,
+} from './components/products-section.js'
+
+import {
+  renderPackagesSection,
+} from './components/packages-section.js'
+
+import {
+  renderAccountCtaSection,
+} from './components/account-cta-section.js'
+
+import {
+  renderWaysToEarnSection,
+} from './components/ways-to-earn-section.js'
+
+import {
   renderDiscoverSection,
 } from './components/discover-section.js'
+
+import {
+  renderCommunitySection,
+} from './components/community-section.js'
 
 import {
   renderBossSection,
@@ -31,26 +51,6 @@ import {
 import {
   renderVisionMissionSection,
 } from './components/vision-mission-section.js'
-
-import {
-  renderPackagesSection,
-} from './components/packages-section.js'
-
-import {
-  renderProductsSection,
-} from './components/products-section.js'
-
-import {
-  renderCommunitySection,
-} from './components/community-section.js'
-
-import {
-  renderWaysToEarnSection,
-} from './components/ways-to-earn-section.js'
-
-import {
-  renderAccountCtaSection,
-} from './components/account-cta-section.js'
 
 import {
   renderCartDrawer,
@@ -63,7 +63,7 @@ window.Alpine = Alpine
 registerCartStore(Alpine, products)
 
 document.title =
-`${siteConfig.brand.name} | Premium Fragrances`
+  `${siteConfig.brand.name} | Premium Fragrances`
 
 document.querySelector('#app').innerHTML = `
   ${renderHeader(siteConfig)}
@@ -71,28 +71,28 @@ document.querySelector('#app').innerHTML = `
   <main>
     ${renderHero(homeConfig, siteConfig)}
 
-    ${renderDiscoverSection()}
-
-    ${renderBossSection()}
-
-    ${renderVisionMissionSection()}
-
-    ${renderPackagesSection(packages)}
-
     ${renderProductsSection(
       products,
       productCategories,
     )}
-    
-    ${renderCommunitySection()}
-    
-    ${renderWaysToEarnSection()}
-    
+
     ${renderAccountCtaSection()}
-    </main>
-    
-    ${renderFooter(siteConfig)}
-    ${renderCartDrawer()}
-    `
-    
-    Alpine.start()
+
+    ${renderPackagesSection(packages)}
+
+    ${renderWaysToEarnSection()}
+
+    ${renderDiscoverSection()}
+
+    ${renderCommunitySection()}
+
+    ${renderBossSection()}
+
+    ${renderVisionMissionSection()}
+  </main>
+
+  ${renderFooter(siteConfig)}
+  ${renderCartDrawer()}
+`
+
+Alpine.start()
