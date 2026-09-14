@@ -1,256 +1,265 @@
 /* ========================================
-   01. TAILWIND IMPORT
-   ======================================== */
+01. TAILWIND IMPORT
+======================================== */
 
-   @import "tailwindcss";
+@import "tailwindcss";
 
 
-   /* ========================================
-      02. BRAND THEME
-      ======================================== */
-   
-   @theme {
-     --color-brand-black: #faf8f3;
-     --color-brand-charcoal: #f2ede3;
-     --color-brand-panel: #ffffff;
-     --color-brand-cream: #1d1a16;
-     --color-brand-gold: #b78a32;
-     --color-brand-gold-light: #cda74f;
-     --color-brand-bronze: #80673d;
-     --color-brand-muted: #746d63;
-     --color-brand-border: #ded4c2;
-   
-     --font-display: "Cormorant Garamond", Georgia, serif;
-     --font-body: "DM Sans", Arial, sans-serif;
-   
-     --shadow-gold-soft:
-       0 20px 60px rgb(183 138 50 / 14%);
-   
-     --shadow-panel:
-       0 24px 70px rgb(62 48 24 / 12%);
-   }
-   
-   
-   /* ========================================
-      03. BASE STYLES
-      ======================================== */
-   
-   @layer base {
-     html {
-       scroll-behavior: smooth;
-       background: var(--color-brand-black);
-     }
-   
-     body {
-       margin: 0;
-       min-width: 320px;
-       background: var(--color-brand-black);
-       color: var(--color-brand-cream);
-       font-family: var(--font-body);
-       line-height: 1.6;
-       -webkit-font-smoothing: antialiased;
-       text-rendering: optimizeLegibility;
-     }
-   
-     button,
-     a {
-       -webkit-tap-highlight-color: transparent;
-     }
-   
-     button {
-       cursor: pointer;
-     }
-   
-     img {
-       display: block;
-       max-width: 100%;
-     }
-   
-     ::selection {
-       background: var(--color-brand-gold);
-       color: #17130d;
-     }
-   
-     :focus-visible {
-       outline: 2px solid var(--color-brand-gold);
-       outline-offset: 4px;
-     }
-   }
-   
-   
-   /* ========================================
-      04. COLOR OVERRIDES
-      ======================================== */
-   
-   .bg-brand-gold.text-brand-black {
-     color: #17130d;
-   }
-   
-   [data-product-card] .bg-brand-cream {
-     background-color: #f8f3e9;
-   }
-   
-   
-   /* ========================================
-      05. ALPINE CLOAK
-      ======================================== */
-   
-   [x-cloak] {
-     display: none !important;
-   }
-   
-   
-   /* ========================================
-      06. HERO PRODUCT ANIMATION
-      ======================================== */
-   
-   @keyframes hero-product-float {
-     0%,
-     100% {
-       transform: translateY(0);
-     }
-   
-     50% {
-       transform: translateY(-10px);
-     }
-   }
-   
-   @keyframes hero-shadow-breathe {
-     0%,
-     100% {
-       opacity: 0.2;
-       transform: translateX(-50%) scaleX(0.9);
-     }
-   
-     50% {
-       opacity: 0.1;
-       transform: translateX(-50%) scaleX(0.72);
-     }
-   }
-   
-   .hero-floating-product {
-     animation: hero-product-float 6s ease-in-out infinite;
-     will-change: transform;
-   }
-   
-   .hero-product-shadow {
-     animation: hero-shadow-breathe 6s ease-in-out infinite;
-     will-change: transform, opacity;
-   }
-   
-   @media (prefers-reduced-motion: reduce) {
-     .hero-floating-product,
-     .hero-product-shadow {
-       animation: none;
-     }
-   
-     .hero-product-shadow {
-       transform: translateX(-50%);
-     }
-   }
-   
-   
-   /* ========================================
-      07. SCROLL REVEAL
-      ======================================== */
-   
-   .scroll-reveal {
-     opacity: 0;
-     transform: translateY(18px);
-   
-     transition:
-       opacity 700ms cubic-bezier(0.22, 1, 0.36, 1),
-       transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
-   
-     transition-delay: var(--reveal-delay, 0ms);
-     will-change: opacity, transform;
-   }
-   
-   .scroll-reveal-item {
-     opacity: 0;
-     transform: translateY(14px);
-   
-     transition:
-       opacity 650ms cubic-bezier(0.22, 1, 0.36, 1),
-       transform 650ms cubic-bezier(0.22, 1, 0.36, 1);
-   
-     transition-delay: var(--reveal-delay, 80ms);
-     will-change: opacity, transform;
-   }
-   
-   .scroll-reveal.is-visible,
-   .scroll-reveal-item.is-visible {
-     opacity: 1;
-     transform: translateY(0);
-   }
-   
-   
-   /* ========================================
-      08. STOCK STATUS DOT
-      ======================================== */
-   
-   @keyframes stock-status-breathe {
-     0%,
-     100% {
-       opacity: 0.55;
-       transform: scale(0.95);
-       filter: brightness(0.95);
-       box-shadow: 0 0 2px rgb(5 150 105 / 18%);
-     }
-   
-     50% {
-       opacity: 1;
-       transform: scale(1.08);
-       filter: brightness(1.15);
-   
-       box-shadow:
-         0 0 4px rgb(5 150 105 / 45%),
-         0 0 7px rgb(5 150 105 / 22%);
-     }
-   }
-   
-   .stock-status-dot {
-     animation: stock-status-breathe 2.2s ease-in-out infinite;
-     transform-origin: center;
-     will-change: opacity, transform, filter, box-shadow;
-   }
-   
-   @media (prefers-reduced-motion: reduce) {
-     .stock-status-dot {
-       animation: none;
-       opacity: 1;
-       transform: none;
-       filter: none;
-       box-shadow: 0 0 4px rgb(5 150 105 / 30%);
-     }
-   }
-   
-   
-   /* ========================================
-      09. WEBSITE LOADER
-      ======================================== */
-   
-   @keyframes site-loader-breathe {
-     0%,
-     100% {
-       transform: scale(0.99);
-       opacity: 0.92;
-     }
-   
-     50% {
-       transform: scale(1.015);
-       opacity: 1;
-     }
-   }
-   
-   .site-loader-logo img {
-     transform-origin: center;
-     animation: site-loader-breathe 2.4s ease-in-out infinite;
-     will-change: transform, opacity;
-   }
-   
-   @media (prefers-reduced-motion: reduce) {
-     .site-loader-logo img {
-       animation: none;
-     }
-   }
+/* ========================================
+02. BRAND THEME
+======================================== */
+
+@theme {
+  --color-brand-black: #faf8f3;
+  --color-brand-charcoal: #f2ede3;
+  --color-brand-panel: #ffffff;
+  --color-brand-cream: #1d1a16;
+  --color-brand-gold: #b78a32;
+  --color-brand-gold-light: #cda74f;
+  --color-brand-bronze: #80673d;
+  --color-brand-muted: #746d63;
+  --color-brand-border: #ded4c2;
+  
+  --font-display: "Cormorant Garamond", Georgia, serif;
+  --font-body: "DM Sans", Arial, sans-serif;
+  
+  --shadow-gold-soft:
+  0 20px 60px rgb(183 138 50 / 14%);
+  
+  --shadow-panel:
+  0 24px 70px rgb(62 48 24 / 12%);
+}
+
+
+/* ========================================
+03. BASE STYLES
+======================================== */
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    background: var(--color-brand-black);
+  }
+  
+  body {
+    margin: 0;
+    min-width: 320px;
+    background: var(--color-brand-black);
+    color: var(--color-brand-cream);
+    font-family: var(--font-body);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  
+  button,
+  a {
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  button {
+    cursor: pointer;
+  }
+  
+  img {
+    display: block;
+    max-width: 100%;
+  }
+  
+  ::selection {
+    background: var(--color-brand-gold);
+    color: #17130d;
+  }
+  
+  :focus-visible {
+    outline: 2px solid var(--color-brand-gold);
+    outline-offset: 4px;
+  }
+}
+
+
+/* ========================================
+04. COLOR OVERRIDES
+======================================== */
+
+.bg-brand-gold.text-brand-black {
+  color: #17130d;
+}
+
+[data-product-card] .bg-brand-cream {
+  background-color: #f8f3e9;
+}
+
+
+/* ========================================
+05. ALPINE CLOAK
+======================================== */
+
+[x-cloak] {
+  display: none !important;
+}
+
+
+/* ========================================
+06. HERO PRODUCT ANIMATION
+======================================== */
+
+@keyframes hero-product-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes hero-shadow-breathe {
+  0%,
+  100% {
+    opacity: 0.2;
+    transform: translateX(-50%) scaleX(0.9);
+  }
+  
+  50% {
+    opacity: 0.1;
+    transform: translateX(-50%) scaleX(0.72);
+  }
+}
+
+.hero-floating-product {
+  animation: hero-product-float 6s ease-in-out infinite;
+  will-change: transform;
+}
+
+.hero-product-shadow {
+  animation: hero-shadow-breathe 6s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-floating-product,
+  .hero-product-shadow {
+    animation: none;
+  }
+  
+  .hero-product-shadow {
+    transform: translateX(-50%);
+  }
+}
+
+
+/* ========================================
+07. SCROLL REVEAL
+======================================== */
+
+.scroll-reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  
+  transition:
+  opacity 700ms cubic-bezier(0.22, 1, 0.36, 1),
+  transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+  
+  transition-delay: var(--reveal-delay, 0ms);
+  will-change: opacity, transform;
+}
+
+.scroll-reveal-item {
+  opacity: 0;
+  transform: translateY(14px);
+  
+  transition:
+  opacity 650ms cubic-bezier(0.22, 1, 0.36, 1),
+  transform 650ms cubic-bezier(0.22, 1, 0.36, 1);
+  
+  transition-delay: var(--reveal-delay, 80ms);
+  will-change: opacity, transform;
+}
+
+.scroll-reveal.is-visible,
+.scroll-reveal-item.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+
+/* ========================================
+08. STOCK STATUS DOT
+======================================== */
+
+@keyframes stock-status-breathe {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(0.95);
+    filter: brightness(0.95);
+    box-shadow: 0 0 2px rgb(5 150 105 / 18%);
+  }
+  
+  50% {
+    opacity: 1;
+    transform: scale(1.08);
+    filter: brightness(1.15);
+    
+    box-shadow:
+    0 0 4px rgb(5 150 105 / 45%),
+    0 0 7px rgb(5 150 105 / 22%);
+  }
+}
+
+.stock-status-dot {
+  animation: stock-status-breathe 2.2s ease-in-out infinite;
+  transform-origin: center;
+  will-change: opacity, transform, filter, box-shadow;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stock-status-dot {
+    animation: none;
+    opacity: 1;
+    transform: none;
+    filter: none;
+    box-shadow: 0 0 4px rgb(5 150 105 / 30%);
+  }
+}
+
+
+/* ========================================
+09. WEBSITE LOADER
+======================================== */
+
+@keyframes site-loader-breathe {
+  0%,
+  100% {
+    transform: scale(0.99);
+    opacity: 0.92;
+  }
+  
+  50% {
+    transform: scale(1.015);
+    opacity: 1;
+  }
+}
+
+.site-loader-logo img {
+  transform-origin: center;
+  animation: site-loader-breathe 2.4s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-loader-logo img {
+    animation: none;
+  }
+}
+
+/* ========================================
+MOBILE MENU SCROLL LOCK
+======================================== */
+
+body.mobile-menu-open {
+  overflow: hidden;
+  overscroll-behavior: none;
+}

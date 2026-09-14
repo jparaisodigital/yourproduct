@@ -3,7 +3,7 @@ import modalOrnament from '../assets/modal-ornament.png'
 
 const STORAGE_KEY = 'yp-membership-invite-last-shown'
 const REPEAT_DELAY = 24 * 60 * 60 * 1000
-const OPEN_DELAY = 10 * 1000
+const OPEN_DELAY = 15 * 1000
 
 export function registerMembershipModal(Alpine) {
   Alpine.data('membershipInvite', () => ({
