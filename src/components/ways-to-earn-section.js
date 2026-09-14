@@ -3,23 +3,23 @@ export function renderWaysToEarnSection() {
       {
         number: '01',
         label: 'Your People',
-        title: 'Build Meaningful Connections',
+        title: 'View Direct Referrals',
         description:
-          'Your dashboard will show the number of people directly connected to you.',
+          'See how many people you have directly referred to Your Product.',
       },
       {
         number: '02',
         label: 'Your Income',
-        title: 'Track Available Income',
+        title: 'Review Your Income',
         description:
-          'View the income recorded in your member account and see funds available for withdrawal.',
+          'View the income recorded in your account and funds available for withdrawal.',
       },
       {
         number: '03',
         label: 'Your Wallet',
-        title: 'Request Your Payout',
+        title: 'Request a Payout',
         description:
-          'Submit a payout request using an available bank or supported e-wallet.',
+          'Choose a bank or e-wallet and submit your request for manual review.',
       },
     ]
   
@@ -38,23 +38,23 @@ export function renderWaysToEarnSection() {
       .map(
         (step) => `
           <article
-            class="group relative overflow-hidden rounded-3xl border border-brand-border bg-brand-panel p-6 transition duration-300 hover:-translate-y-1 hover:border-brand-gold/50 sm:p-7"
+            class="group relative overflow-hidden rounded-[1.4rem] border border-brand-border bg-brand-panel p-5 shadow-panel transition duration-300 hover:-translate-y-1 hover:border-brand-gold/50 sm:p-6"
           >
             <div
-              class="pointer-events-none absolute -right-12 -top-12 size-32 rounded-full bg-brand-gold/10 blur-2xl"
+              class="pointer-events-none absolute -right-12 -top-12 size-28 rounded-full bg-brand-gold/10 blur-2xl"
               aria-hidden="true"
             ></div>
   
             <div class="relative">
               <div class="flex items-start justify-between gap-4">
                 <span
-                  class="text-xs font-semibold uppercase tracking-[0.2em] text-brand-gold"
+                  class="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
                 >
                   ${step.label}
                 </span>
   
                 <span
-                  class="font-display text-4xl text-brand-gold/25"
+                  class="font-display text-3xl leading-none text-brand-gold/20"
                   aria-hidden="true"
                 >
                   ${step.number}
@@ -62,12 +62,12 @@ export function renderWaysToEarnSection() {
               </div>
   
               <h3
-                class="mt-8 font-display text-2xl leading-tight text-brand-cream"
+                class="mt-4 font-display text-2xl leading-tight text-brand-cream"
               >
                 ${step.title}
               </h3>
   
-              <p class="mt-4 text-sm leading-7 text-brand-muted">
+              <p class="mt-2 text-sm leading-6 text-brand-muted">
                 ${step.description}
               </p>
             </div>
@@ -80,7 +80,7 @@ export function renderWaysToEarnSection() {
       .map(
         (method) => `
           <span
-            class="rounded-full border border-brand-border bg-brand-black px-4 py-2 text-xs font-semibold text-brand-muted"
+            class="rounded-lg border border-brand-border bg-brand-black/50 px-3 py-2 text-[0.68rem] font-semibold text-brand-muted"
           >
             ${method}
           </span>
@@ -91,123 +91,123 @@ export function renderWaysToEarnSection() {
     return `
       <section
         id="ways-to-earn"
-        class="relative isolate overflow-hidden border-t border-brand-border bg-brand-black py-20 sm:py-24 lg:py-28"
+        class="relative isolate overflow-hidden border-t border-brand-border bg-brand-black py-14 sm:py-16 lg:py-16"
       >
         <div
-          class="pointer-events-none absolute -left-40 bottom-0 size-96 rounded-full bg-brand-gold/10 blur-3xl"
+          class="pointer-events-none absolute -left-40 bottom-0 size-80 rounded-full bg-brand-gold/10 blur-3xl"
           aria-hidden="true"
         ></div>
   
-        <div class="relative mx-auto w-[min(1180px,90%)]">
-          <!-- Section heading -->
+        <div class="relative mx-auto w-[min(1120px,90%)]">
           <div
-            class="grid gap-8 lg:grid-cols-[1fr_0.75fr] lg:items-end"
+            class="grid gap-4 lg:grid-cols-[1fr_0.75fr] lg:items-end"
           >
             <div>
               <p
-                class="text-xs font-semibold uppercase tracking-[0.32em] text-brand-gold"
+                class="text-[0.68rem] font-semibold uppercase tracking-[0.3em] text-brand-gold"
               >
                 Ways to Earn
               </p>
   
               <h2
-                class="mt-5 max-w-3xl font-display text-4xl leading-tight text-brand-cream sm:text-5xl lg:text-6xl"
+                class="mt-3 max-w-3xl font-display text-4xl leading-[1.05] text-brand-cream sm:text-5xl lg:text-[3.35rem]"
               >
-                See your progress.
-                <span class="block italic text-brand-gold">
-                  Move with purpose.
+                Your people, income,
+                <span class="italic text-brand-gold">
+                  and payouts.
                 </span>
               </h2>
             </div>
   
             <p
-              class="max-w-xl text-sm leading-7 text-brand-muted sm:text-base lg:justify-self-end"
+              class="max-w-lg text-sm leading-6 text-brand-muted sm:text-base lg:justify-self-end"
             >
-              The member platform will provide a clear view of your
-              direct connections, recorded income, and payout-request
-              status.
+              The member dashboard will provide a simple view of your
+              direct referrals, recorded income, and payout requests.
             </p>
           </div>
   
-          <!-- Platform cards -->
-          <div class="mt-12 grid gap-5 md:grid-cols-3">
+          <div class="mt-8 grid gap-4 md:grid-cols-3">
             ${stepCards}
           </div>
   
-          <!-- Manual payout information -->
           <div
-            class="mt-8 grid overflow-hidden rounded-[2rem] border border-brand-gold/30 bg-brand-charcoal lg:grid-cols-[1fr_0.8fr]"
+            class="mt-6 grid overflow-hidden rounded-[1.5rem] border border-brand-gold/30 bg-brand-charcoal lg:grid-cols-[1fr_0.72fr]"
           >
-            <div class="p-7 sm:p-10 lg:p-12">
+            <div class="p-6 sm:p-7 lg:p-8">
               <p
-                class="text-xs font-semibold uppercase tracking-[0.25em] text-brand-gold"
+                class="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-brand-gold"
               >
-                Simple and Transparent
+                Manual Payout Processing
               </p>
   
               <h3
-                class="mt-5 max-w-xl font-display text-3xl leading-tight text-brand-cream sm:text-4xl"
+                class="mt-3 max-w-xl font-display text-3xl leading-tight text-brand-cream"
               >
-                Request online.
+                Payout requests are
                 <span class="italic text-brand-gold">
-                  Receive manually.
+                  reviewed manually.
                 </span>
               </h3>
   
-              <p class="mt-5 max-w-xl text-sm leading-7 text-brand-muted">
-                Members can submit their withdrawal information through
-                the website. The company will review the request and
-                process the actual transfer manually.
+              <p
+                class="mt-3 max-w-xl text-sm leading-6 text-brand-muted"
+              >
+                Members can submit their withdrawal details through the
+                website. The company will review the request and process
+                the actual transfer manually.
               </p>
   
-              <div class="mt-8 flex flex-wrap gap-2">
+              <div class="mt-5 flex flex-wrap gap-2">
                 ${payoutMethodItems}
               </div>
             </div>
   
-            <!-- Wallet preview -->
             <div
-              class="relative flex min-h-80 items-center justify-center overflow-hidden border-t border-brand-border bg-brand-black p-7 lg:border-l lg:border-t-0"
+              class="relative flex items-center justify-center overflow-hidden border-t border-brand-border bg-brand-black p-6 lg:border-l lg:border-t-0"
             >
               <div
-                class="absolute size-64 rounded-full border border-brand-gold/10"
+                class="pointer-events-none absolute size-52 rounded-full bg-brand-gold/10 blur-3xl"
                 aria-hidden="true"
               ></div>
   
               <div
-                class="absolute size-48 rounded-full border border-brand-gold/20"
-                aria-hidden="true"
-              ></div>
-  
-              <div
-                class="relative w-full max-w-xs rounded-3xl border border-brand-border bg-brand-panel p-6 shadow-2xl"
+                class="relative w-full max-w-sm rounded-[1.25rem] border border-brand-border bg-brand-panel p-5 shadow-panel"
               >
-                <div class="flex items-center justify-between">
+                <div class="flex items-center justify-between gap-4">
                   <span
-                    class="text-xs uppercase tracking-[0.18em] text-brand-muted"
+                    class="text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-brand-muted"
                   >
                     Available Income
                   </span>
   
                   <span
-                    class="size-2 rounded-full bg-brand-gold"
-                    aria-hidden="true"
-                  ></span>
+                    class="inline-flex items-center gap-1.5 text-[0.65rem] font-semibold text-brand-gold"
+                  >
+                    <span
+                      class="size-1.5 rounded-full bg-brand-gold"
+                      aria-hidden="true"
+                    ></span>
+  
+                    Member Wallet
+                  </span>
                 </div>
   
-                <p class="mt-5 font-display text-4xl text-brand-cream">
+                <p
+                  class="mt-4 font-display text-3xl leading-none text-brand-cream"
+                >
                   PHP ——
                 </p>
   
-                <div class="mt-6 border-t border-brand-border pt-5">
-                  <p class="text-xs leading-5 text-brand-muted">
-                    Your confirmed balance will appear inside your
-                    member dashboard.
-                  </p>
-                </div>
+                <p
+                  class="mt-4 border-t border-brand-border pt-4 text-xs leading-5 text-brand-muted"
+                >
+                  Your confirmed balance will appear inside your member
+                  dashboard.
+                </p>
   
                 <span
-                  class="mt-6 flex w-full items-center justify-center rounded-full bg-brand-gold px-5 py-3 text-sm font-semibold text-brand-black"
+                  class="mt-5 flex h-11 w-full items-center justify-center rounded-xl bg-brand-gold px-5 text-xs font-semibold uppercase tracking-[0.08em] text-[#17130d] opacity-70"
                 >
                   Request Payout
                 </span>
@@ -216,10 +216,10 @@ export function renderWaysToEarnSection() {
           </div>
   
           <p
-            class="mt-8 text-center text-xs leading-5 text-brand-muted"
+            class="mt-5 text-center text-xs leading-5 text-brand-muted"
           >
-            Exact earning qualifications, calculations, payout limits,
-            and schedules are pending official client confirmation.
+            Exact earning calculations, payout limits, and schedules
+            remain subject to official client confirmation.
           </p>
         </div>
       </section>

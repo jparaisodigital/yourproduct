@@ -1,215 +1,230 @@
 export function renderDiscoverSection() {
-    return `
-      <section
-        id="discover"
-        class="relative isolate overflow-hidden border-t border-brand-border bg-brand-charcoal py-20 sm:py-24 lg:py-28"
+  return `
+    <section
+      id="discover"
+      class="relative isolate overflow-hidden border-t border-brand-border bg-brand-charcoal py-14 sm:py-16 lg:py-16"
+    >
+      <div
+        class="pointer-events-none absolute -left-40 top-10 size-80 rounded-full bg-brand-gold/10 blur-3xl"
+        aria-hidden="true"
+      ></div>
+
+      <div
+        class="pointer-events-none absolute -right-40 bottom-0 size-80 rounded-full bg-brand-bronze/10 blur-3xl"
+        aria-hidden="true"
+      ></div>
+
+      <div
+        class="relative mx-auto grid w-[min(1120px,90%)] gap-10 lg:grid-cols-[0.82fr_1.18fr] lg:items-center"
       >
-        <!-- Background decorations -->
-        <div
-          class="pointer-events-none absolute -left-40 top-10 size-96 rounded-full bg-brand-gold/10 blur-3xl"
-          aria-hidden="true"
-        ></div>
-  
-        <div
-          class="pointer-events-none absolute -right-40 bottom-0 size-96 rounded-full bg-brand-bronze/10 blur-3xl"
-          aria-hidden="true"
-        ></div>
-  
-        <div
-          class="relative mx-auto grid w-[min(1180px,90%)] gap-14 lg:grid-cols-[0.9fr_1.1fr] lg:items-center"
-        >
-          <!-- Section content -->
-          <div>
-            <p
-              class="text-xs font-semibold uppercase tracking-[0.32em] text-brand-gold"
+        <div>
+          <p
+            class="text-[0.68rem] font-semibold uppercase tracking-[0.3em] text-brand-gold"
+          >
+            Discover Your Product
+          </p>
+
+          <h2
+            class="mt-3 max-w-xl font-display text-4xl leading-[1.05] text-brand-cream sm:text-5xl lg:text-[3.35rem]"
+          >
+            Twenty scents.
+            <span class="block italic text-brand-gold">
+              Two collections.
+            </span>
+          </h2>
+
+          <p
+            class="mt-4 max-w-lg text-sm leading-6 text-brand-muted sm:text-base"
+          >
+            Browse ten fragrances for men and ten fragrances for women,
+            each with its own scent profile and character.
+          </p>
+
+          <div class="mt-6 flex flex-col gap-2.5 sm:flex-row">
+            <a
+              href="#shop"
+              class="inline-flex h-11 items-center justify-center rounded-xl bg-brand-gold px-5 text-xs font-semibold uppercase tracking-[0.08em] text-[#17130d] transition duration-200 hover:-translate-y-0.5 hover:bg-brand-gold-light"
             >
-              Discover Your Product
-            </p>
-  
-            <h2
-              class="mt-5 max-w-xl font-display text-4xl leading-[1.05] text-brand-cream sm:text-5xl lg:text-6xl"
-            >
-              More than a scent.
-              <span class="block italic text-brand-gold">
-                A future you can shape.
+              View Perfumes
+
+              <span class="ml-2" aria-hidden="true">
+                →
               </span>
-            </h2>
-  
-            <p
-              class="mt-6 max-w-xl text-base leading-8 text-brand-muted"
+            </a>
+
+            <a
+              href="#packages"
+              class="inline-flex h-11 items-center justify-center rounded-xl border border-brand-border px-5 text-xs font-semibold uppercase tracking-[0.08em] text-brand-cream transition duration-200 hover:border-brand-gold hover:text-brand-gold"
             >
-              Explore a fragrance community built around personal choice,
-              meaningful connections, and new possibilities.
-            </p>
-  
-            <p
-              class="mt-4 max-w-xl text-sm leading-7 text-brand-muted"
-            >
-              Choose from signature scents for men and women, discover the
-              available packages, and find the path that fits your beginning.
-            </p>
-  
-            <div class="mt-8 flex flex-col gap-3 sm:flex-row">
-              <a
-                href="#shop"
-                class="inline-flex items-center justify-center rounded-full bg-brand-gold px-7 py-3.5 text-sm font-semibold text-brand-black transition duration-300 hover:-translate-y-1 hover:bg-brand-gold-light"
-              >
-                Discover the Collection
-  
-                <span class="ml-3" aria-hidden="true">
-                  →
-                </span>
-              </a>
-  
-              <a
-                href="#membership"
-                class="inline-flex items-center justify-center rounded-full border border-brand-border px-7 py-3.5 text-sm font-semibold text-brand-cream transition duration-300 hover:border-brand-gold hover:text-brand-gold"
-              >
-                Explore Packages
-              </a>
-            </div>
-          </div>
-  
-          <!-- Discover cards -->
-          <div class="grid gap-4 sm:grid-cols-2">
-            <!-- Main feature card -->
-            <article
-              class="relative min-h-72 overflow-hidden rounded-3xl border border-brand-gold/30 bg-brand-black p-7 sm:row-span-2 sm:min-h-full"
-            >
-              <div
-                class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(210,170,85,0.18),transparent_55%)]"
-                aria-hidden="true"
-              ></div>
-  
-              <div class="relative flex h-full flex-col justify-between">
-                <div
-                  class="grid size-14 place-items-center rounded-2xl border border-brand-gold/30 bg-brand-gold/10 text-brand-gold"
-                >
-                  <svg
-                    class="size-7"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.4"
-                    aria-hidden="true"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M9 3h6m-5 0v3m4-3v3m-6 2.5A2.5 2.5 0 0 1 10.5 6h3A2.5 2.5 0 0 1 16 8.5V10a3 3 0 0 1 2 2.83V19a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-6.17A3 3 0 0 1 8 10V8.5Z"
-                    />
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M9 14.5c1.8 1.1 4.2 1.1 6 0"
-                    />
-                  </svg>
-                </div>
-  
-                <div class="mt-12">
-                  <p
-                    class="font-display text-7xl leading-none text-brand-gold sm:text-8xl"
-                  >
-                    20
-                  </p>
-  
-                  <h3 class="mt-4 font-display text-3xl text-brand-cream">
-                    Signature Choices
-                  </h3>
-  
-                  <p class="mt-3 text-sm leading-7 text-brand-muted">
-                    A shared collection featuring ten fragrances for men
-                    and ten fragrances for women.
-                  </p>
-                </div>
-              </div>
-            </article>
-  
-            <!-- Men collection -->
-            <article
-              class="group rounded-3xl border border-brand-border bg-brand-panel p-6 transition duration-300 hover:-translate-y-1 hover:border-brand-gold/50"
-            >
-              <div class="flex items-start justify-between gap-4">
-                <span
-                  class="text-xs font-semibold uppercase tracking-[0.2em] text-brand-gold"
-                >
-                  Your Men
-                </span>
-  
-                <span
-                  class="font-display text-4xl text-brand-gold/40"
-                  aria-hidden="true"
-                >
-                  10
-                </span>
-              </div>
-  
-              <h3 class="mt-8 font-display text-2xl text-brand-cream">
-                Scents with character.
-              </h3>
-  
-              <p class="mt-3 text-sm leading-6 text-brand-muted">
-                Explore scent profiles created for different styles,
-                moods, and everyday moments.
-              </p>
-  
-              <a
-                href="#shop"
-                class="mt-6 inline-flex items-center text-sm font-semibold text-brand-gold"
-              >
-                View men's collection
-                <span
-                  class="ml-2 transition group-hover:translate-x-1"
-                  aria-hidden="true"
-                >
-                  →
-                </span>
-              </a>
-            </article>
-  
-            <!-- Women collection -->
-            <article
-              class="group rounded-3xl border border-brand-border bg-brand-panel p-6 transition duration-300 hover:-translate-y-1 hover:border-brand-gold/50"
-            >
-              <div class="flex items-start justify-between gap-4">
-                <span
-                  class="text-xs font-semibold uppercase tracking-[0.2em] text-brand-gold"
-                >
-                  Your Women
-                </span>
-  
-                <span
-                  class="font-display text-4xl text-brand-gold/40"
-                  aria-hidden="true"
-                >
-                  10
-                </span>
-              </div>
-  
-              <h3 class="mt-8 font-display text-2xl text-brand-cream">
-                Fragrance made personal.
-              </h3>
-  
-              <p class="mt-3 text-sm leading-6 text-brand-muted">
-                Discover expressive scents with distinct profiles,
-                character, and memorable impressions.
-              </p>
-  
-              <a
-                href="#shop"
-                class="mt-6 inline-flex items-center text-sm font-semibold text-brand-gold"
-              >
-                View women's collection
-                <span
-                  class="ml-2 transition group-hover:translate-x-1"
-                  aria-hidden="true"
-                >
-                  →
-                </span>
-              </a>
-            </article>
+              Compare Packages
+            </a>
           </div>
         </div>
-      </section>
-    `
-  }
+
+        <div class="grid gap-4 sm:grid-cols-2">
+          <article
+            class="relative min-h-64 overflow-hidden rounded-[1.5rem] border border-brand-gold/30 bg-brand-black p-6 shadow-gold-soft sm:row-span-2 sm:min-h-full"
+          >
+            <div
+              class="pointer-events-none absolute -right-16 -top-16 size-52 rounded-full bg-brand-gold/15 blur-3xl"
+              aria-hidden="true"
+            ></div>
+
+            <div class="relative flex h-full flex-col justify-between">
+              <div
+                class="grid size-11 place-items-center rounded-xl border border-brand-gold/30 bg-brand-gold/10 text-brand-gold"
+              >
+                <svg
+                  class="size-5"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.6"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M9 3h6"
+                    stroke-linecap="round"
+                  />
+
+                  <path
+                    d="M10 3v3"
+                    stroke-linecap="round"
+                  />
+
+                  <path
+                    d="M14 3v3"
+                    stroke-linecap="round"
+                  />
+
+                  <path
+                    d="M8 10V8.5A2.5 2.5 0 0 1 10.5 6h3A2.5 2.5 0 0 1 16 8.5V10"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+
+                  <path
+                    d="M8 10h8a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2Z"
+                    stroke-linejoin="round"
+                  />
+
+                  <path
+                    d="M9 15c1.8 1 4.2 1 6 0"
+                    stroke-linecap="round"
+                  />
+                </svg>
+              </div>
+
+              <div class="mt-8">
+                <p
+                  class="font-display text-6xl leading-none text-brand-gold"
+                >
+                  20
+                </p>
+
+                <h3
+                  class="mt-2 font-display text-2xl leading-tight text-brand-cream"
+                >
+                  Perfume Selections
+                </h3>
+
+                <p class="mt-2 text-sm leading-6 text-brand-muted">
+                  One shared collection with fragrances for both men
+                  and women.
+                </p>
+              </div>
+            </div>
+          </article>
+
+          <article
+            class="group rounded-[1.4rem] border border-brand-border bg-brand-panel p-5 shadow-panel transition duration-300 hover:-translate-y-1 hover:border-brand-gold/50"
+          >
+            <div class="flex items-start justify-between gap-4">
+              <span
+                class="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
+              >
+                Men's Collection
+              </span>
+
+              <span
+                class="font-display text-3xl leading-none text-brand-gold/30"
+                aria-hidden="true"
+              >
+                10
+              </span>
+            </div>
+
+            <h3
+              class="mt-4 font-display text-2xl leading-tight text-brand-cream"
+            >
+              Fragrances for men
+            </h3>
+
+            <p class="mt-2 text-sm leading-6 text-brand-muted">
+              Browse scent profiles created for different styles,
+              moods, and occasions.
+            </p>
+
+            <a
+              href="#shop"
+              class="mt-4 inline-flex items-center text-xs font-semibold uppercase tracking-[0.08em] text-brand-gold"
+            >
+              View collection
+
+              <span
+                class="ml-2 transition group-hover:translate-x-1"
+                aria-hidden="true"
+              >
+                →
+              </span>
+            </a>
+          </article>
+
+          <article
+            class="group rounded-[1.4rem] border border-brand-border bg-brand-panel p-5 shadow-panel transition duration-300 hover:-translate-y-1 hover:border-brand-gold/50"
+          >
+            <div class="flex items-start justify-between gap-4">
+              <span
+                class="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
+              >
+                Women's Collection
+              </span>
+
+              <span
+                class="font-display text-3xl leading-none text-brand-gold/30"
+                aria-hidden="true"
+              >
+                10
+              </span>
+            </div>
+
+            <h3
+              class="mt-4 font-display text-2xl leading-tight text-brand-cream"
+            >
+              Fragrances for women
+            </h3>
+
+            <p class="mt-2 text-sm leading-6 text-brand-muted">
+              Explore distinct fragrances with personal and memorable
+              scent profiles.
+            </p>
+
+            <a
+              href="#shop"
+              class="mt-4 inline-flex items-center text-xs font-semibold uppercase tracking-[0.08em] text-brand-gold"
+            >
+              View collection
+
+              <span
+                class="ml-2 transition group-hover:translate-x-1"
+                aria-hidden="true"
+              >
+                →
+              </span>
+            </a>
+          </article>
+        </div>
+      </div>
+    </section>
+  `
+}

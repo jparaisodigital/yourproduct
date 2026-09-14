@@ -2,21 +2,21 @@ export function renderCommunitySection() {
     const communityValues = [
       {
         number: '01',
-        title: 'Connect',
+        title: 'Meet the Community',
         description:
-          'Meet people who share an interest in fragrance, personal growth, and new possibilities.',
+          'Connect with people who share an interest in fragrances and Your Product.',
       },
       {
         number: '02',
-        title: 'Discover',
+        title: 'Know the Products',
         description:
-          'Learn more about every scent, package, and opportunity available within Your Product.',
+          'Learn about the available perfumes, membership packages, and product information.',
       },
       {
         number: '03',
-        title: 'Move Forward',
+        title: 'Stay Connected',
         description:
-          'Take your next step at your own pace with a community ready to grow together.',
+          'Receive official information and future updates from the Your Product community.',
       },
     ]
   
@@ -24,22 +24,24 @@ export function renderCommunitySection() {
       .map(
         (value) => `
           <article
-            class="group border-t border-brand-border py-7 transition duration-300 hover:border-brand-gold"
+            class="group border-t border-brand-border py-4 transition duration-300 hover:border-brand-gold"
           >
-            <div class="flex items-start gap-5">
+            <div class="flex items-start gap-4">
               <span
-                class="font-display text-3xl text-brand-gold/40 transition group-hover:text-brand-gold"
+                class="font-display text-2xl leading-none text-brand-gold/30 transition group-hover:text-brand-gold"
                 aria-hidden="true"
               >
                 ${value.number}
               </span>
   
               <div>
-                <h3 class="font-display text-2xl text-brand-cream">
+                <h3
+                  class="font-display text-xl leading-tight text-brand-cream"
+                >
                   ${value.title}
                 </h3>
   
-                <p class="mt-3 text-sm leading-7 text-brand-muted">
+                <p class="mt-1.5 text-sm leading-6 text-brand-muted">
                   ${value.description}
                 </p>
               </div>
@@ -52,120 +54,130 @@ export function renderCommunitySection() {
     return `
       <section
         id="community"
-        class="relative isolate overflow-hidden border-t border-brand-border bg-brand-charcoal py-20 sm:py-24 lg:py-28"
+        class="relative isolate overflow-hidden border-t border-brand-border bg-brand-charcoal py-14 sm:py-16 lg:py-16"
       >
         <div
-          class="pointer-events-none absolute left-1/2 top-1/2 size-[36rem] -translate-x-1/2 -translate-y-1/2 rounded-full border border-brand-gold/10"
+          class="pointer-events-none absolute -left-40 bottom-0 size-80 rounded-full bg-brand-gold/10 blur-3xl"
           aria-hidden="true"
         ></div>
   
         <div
-          class="pointer-events-none absolute left-1/2 top-1/2 size-[28rem] -translate-x-1/2 -translate-y-1/2 rounded-full border border-brand-gold/10"
-          aria-hidden="true"
-        ></div>
-  
-        <div class="relative mx-auto w-[min(1180px,90%)]">
+          class="relative mx-auto w-[min(1120px,90%)]"
+        >
           <div
-            class="grid gap-14 lg:grid-cols-[1.1fr_0.9fr] lg:items-center"
+            class="grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-center"
           >
-            <!-- Main community message -->
             <div
-              class="relative overflow-hidden rounded-[2rem] border border-brand-gold/30 bg-brand-black px-7 py-14 sm:px-12 sm:py-16 lg:px-14 lg:py-20"
+              class="relative overflow-hidden rounded-[1.5rem] border border-brand-gold/30 bg-brand-black p-6 shadow-gold-soft sm:p-8"
             >
               <div
-                class="pointer-events-none absolute -right-20 -top-20 size-72 rounded-full bg-brand-gold/15 blur-3xl"
+                class="pointer-events-none absolute -right-20 -top-20 size-56 rounded-full bg-brand-gold/15 blur-3xl"
                 aria-hidden="true"
               ></div>
   
               <div class="relative">
                 <p
-                  class="text-xs font-semibold uppercase tracking-[0.32em] text-brand-gold"
+                  class="text-[0.68rem] font-semibold uppercase tracking-[0.3em] text-brand-gold"
                 >
                   Our Community
                 </p>
   
                 <h2
-                  class="mt-6 max-w-3xl font-display text-4xl leading-[1.05] text-brand-cream sm:text-5xl lg:text-6xl"
+                  class="mt-3 max-w-2xl font-display text-4xl leading-[1.05] text-brand-cream sm:text-5xl lg:text-[3.35rem]"
                 >
-                  Different beginnings.
+                  Connect with our
                   <span class="block italic text-brand-gold">
-                    One shared community.
+                    fragrance community.
                   </span>
                 </h2>
   
                 <p
-                  class="mt-7 max-w-2xl text-base leading-8 text-brand-muted"
+                  class="mt-4 max-w-xl text-sm leading-6 text-brand-muted sm:text-base"
                 >
-                  Your Product is a place to connect, discover signature
-                  fragrances, and explore possibilities together.
+                  A space for members to discover perfumes, learn about
+                  packages, and stay connected with Your Product.
                 </p>
   
-                <!-- Member symbols -->
-                <div class="mt-10 flex items-center">
-                  <span
-                    class="grid size-12 place-items-center rounded-full border-2 border-brand-black bg-brand-gold font-semibold text-brand-black"
-                    aria-hidden="true"
+                <div class="mt-6 flex items-center gap-4">
+                  <div
+                    class="grid size-11 shrink-0 place-items-center rounded-xl border border-brand-gold/30 bg-brand-gold/10 text-brand-gold"
                   >
-                    Y
-                  </span>
+                    <svg
+                      class="size-5"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.6"
+                      aria-hidden="true"
+                    >
+                      <circle
+                        cx="12"
+                        cy="7"
+                        r="3"
+                      />
   
-                  <span
-                    class="-ml-3 grid size-12 place-items-center rounded-full border-2 border-brand-black bg-brand-bronze font-semibold text-brand-cream"
-                    aria-hidden="true"
-                  >
-                    O
-                  </span>
+                      <circle
+                        cx="5.5"
+                        cy="10"
+                        r="2"
+                      />
   
-                  <span
-                    class="-ml-3 grid size-12 place-items-center rounded-full border-2 border-brand-black bg-brand-cream font-semibold text-brand-black"
-                    aria-hidden="true"
-                  >
-                    U
-                  </span>
+                      <circle
+                        cx="18.5"
+                        cy="10"
+                        r="2"
+                      />
   
-                  <span
-                    class="-ml-3 grid size-12 place-items-center rounded-full border-2 border-brand-black bg-brand-panel font-semibold text-brand-gold"
-                    aria-hidden="true"
-                  >
-                    +
-                  </span>
+                      <path
+                        d="M6.5 20a5.5 5.5 0 0 1 11 0"
+                        stroke-linecap="round"
+                      />
   
-                  <p
-                    class="ml-5 text-xs font-semibold uppercase tracking-[0.18em] text-brand-muted"
-                  >
-                    Connect and grow together
-                  </p>
+                      <path
+                        d="M2.5 19a3.5 3.5 0 0 1 4-3.47"
+                        stroke-linecap="round"
+                      />
+  
+                      <path
+                        d="M21.5 19a3.5 3.5 0 0 0-4-3.47"
+                        stroke-linecap="round"
+                      />
+                    </svg>
+                  </div>
+  
+                  <div>
+                    <p
+                      class="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-brand-gold"
+                    >
+                      Member Community
+                    </p>
+  
+                    <p class="mt-1 text-xs text-brand-muted">
+                      Learn, connect, and explore together.
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
   
-            <!-- Community values -->
             <div>
               <p
-                class="text-xs font-semibold uppercase tracking-[0.28em] text-brand-gold"
+                class="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-brand-gold"
               >
-                Shared Possibilities
+                What Members Can Expect
               </p>
   
-              <p
-                class="mt-5 max-w-lg text-sm leading-7 text-brand-muted"
-              >
-                Every journey begins differently. Our goal is to create
-                a welcoming space where members can learn, connect, and
-                take their next step.
-              </p>
-  
-              <div class="mt-8">
+              <div class="mt-4">
                 ${valueCards}
               </div>
   
               <a
                 href="#signup"
-                class="mt-4 inline-flex items-center rounded-full border border-brand-gold px-7 py-3.5 text-sm font-semibold text-brand-gold transition duration-300 hover:bg-brand-gold hover:text-brand-black"
+                class="mt-4 inline-flex h-11 items-center justify-center rounded-xl border border-brand-gold px-5 text-xs font-semibold uppercase tracking-[0.08em] text-brand-gold transition duration-200 hover:bg-brand-gold hover:text-[#17130d]"
               >
                 Join the Community
   
-                <span class="ml-3" aria-hidden="true">
+                <span class="ml-2" aria-hidden="true">
                   →
                 </span>
               </a>
@@ -173,9 +185,9 @@ export function renderCommunitySection() {
           </div>
   
           <p
-            class="mt-8 text-center text-xs leading-5 text-brand-muted"
+            class="mt-5 text-center text-xs leading-5 text-brand-muted"
           >
-            Community information and official program wording remain
+            Community activities and official program information remain
             subject to final client confirmation.
           </p>
         </div>

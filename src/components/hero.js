@@ -1,4 +1,4 @@
-import heroImage from '../assets/hero-client.jpg'
+import heroImage from '../assets/hero-client.png'
 
 export function renderHero(homeConfig, siteConfig) {
   const { hero, trustPoints } = homeConfig
@@ -98,10 +98,15 @@ export function renderHero(homeConfig, siteConfig) {
           <div
             class="relative overflow-hidden border border-brand-border bg-brand-charcoal shadow-panel"
           >
+            <span
+              class="hero-product-shadow absolute bottom-[8%] left-1/2 h-8 w-[45%] rounded-full bg-brand-gold/20 blur-xl"
+              aria-hidden="true"
+            ></span>
+
             <img
               src="${heroImage}"
               alt="${siteConfig.brand.name} campaign"
-              class="block h-auto max-h-[610px] w-full object-contain"
+              class="hero-floating-product relative z-10 block h-auto max-h-[610px] w-full object-contain"
               fetchpriority="high"
             >
           </div>

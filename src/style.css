@@ -1,24 +1,30 @@
 @import "tailwindcss";
 
 @theme {
-  /* Brand colors */
-  --color-brand-black: #0b0a09;
-  --color-brand-charcoal: #171512;
-  --color-brand-panel: #211e19;
-  --color-brand-cream: #f5f0e7;
-  --color-brand-gold: #c7a35a;
-  --color-brand-gold-light: #dfbf7a;
+  /* White and gold brand colors */
+
+  --color-brand-black: #faf8f3;
+  --color-brand-charcoal: #f2ede3;
+  --color-brand-panel: #ffffff;
+  --color-brand-cream: #1d1a16;
+  --color-brand-gold: #b78a32;
+  --color-brand-gold-light: #cda74f;
   --color-brand-bronze: #80673d;
-  --color-brand-muted: #a9a39a;
-  --color-brand-border: #332d24;
+  --color-brand-muted: #746d63;
+  --color-brand-border: #ded4c2;
 
   /* Typography */
+
   --font-display: "Cormorant Garamond", Georgia, serif;
   --font-body: "DM Sans", Arial, sans-serif;
 
   /* Shadows */
-  --shadow-gold-soft: 0 20px 60px rgb(199 163 90 / 12%);
-  --shadow-panel: 0 24px 80px rgb(0 0 0 / 30%);
+
+  --shadow-gold-soft:
+    0 20px 60px rgb(183 138 50 / 14%);
+
+  --shadow-panel:
+    0 24px 70px rgb(62 48 24 / 12%);
 }
 
 @layer base {
@@ -54,7 +60,7 @@
 
   ::selection {
     background: var(--color-brand-gold);
-    color: var(--color-brand-black);
+    color: #17130d;
   }
 
   :focus-visible {
@@ -63,6 +69,69 @@
   }
 }
 
+/*
+  Keep dark text on gold buttons.
+  The brand-black variable now represents the light page background.
+*/
+
+.bg-brand-gold.text-brand-black {
+  color: #17130d;
+}
+
+/*
+  Keep the product image area light.
+  The brand-cream variable now represents the primary dark text.
+*/
+
+[data-product-card] .bg-brand-cream {
+  background-color: #f8f3e9;
+}
+
 [x-cloak] {
   display: none !important;
+}
+
+@keyframes hero-product-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes hero-shadow-breathe {
+  0%,
+  100% {
+    opacity: 0.2;
+    transform: translateX(-50%) scaleX(0.9);
+  }
+
+  50% {
+    opacity: 0.1;
+    transform: translateX(-50%) scaleX(0.72);
+  }
+}
+
+.hero-floating-product {
+  animation: hero-product-float 6s ease-in-out infinite;
+  will-change: transform;
+}
+
+.hero-product-shadow {
+  animation: hero-shadow-breathe 6s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-floating-product,
+  .hero-product-shadow {
+    animation: none;
+  }
+
+  .hero-product-shadow {
+    transform: translateX(-50%);
+  }
 }

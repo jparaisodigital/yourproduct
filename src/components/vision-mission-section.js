@@ -7,24 +7,25 @@ export function renderVisionMissionSection() {
   return `
     <section
       id="vision-mission"
-      class="relative overflow-hidden border-t border-brand-border bg-brand-charcoal py-20 sm:py-24 lg:py-28"
+      class="relative overflow-hidden border-t border-brand-border bg-brand-charcoal py-14 sm:py-16 lg:py-16"
     >
       <div
-        class="pointer-events-none absolute left-1/2 top-0 size-[30rem] -translate-x-1/2 rounded-full bg-brand-gold/5 blur-3xl"
+        class="pointer-events-none absolute left-1/2 top-0 size-80 -translate-x-1/2 rounded-full bg-brand-gold/10 blur-3xl"
         aria-hidden="true"
       ></div>
 
-      <div class="relative mx-auto w-[min(1180px,90%)]">
-        <!-- Section heading -->
+      <div
+        class="relative mx-auto w-[min(1120px,90%)]"
+      >
         <div class="mx-auto max-w-3xl text-center">
           <p
-            class="text-xs font-semibold uppercase tracking-[0.32em] text-brand-gold"
+            class="text-[0.68rem] font-semibold uppercase tracking-[0.3em] text-brand-gold"
           >
             Purpose and Direction
           </p>
 
           <h2
-            class="mt-5 font-display text-4xl leading-tight text-brand-cream sm:text-5xl lg:text-6xl"
+            class="mt-3 font-display text-4xl leading-[1.05] text-brand-cream sm:text-5xl lg:text-[3.35rem]"
           >
             Our Vision.
             <span class="italic text-brand-gold">
@@ -33,23 +34,22 @@ export function renderVisionMissionSection() {
           </h2>
 
           <p
-            class="mx-auto mt-6 max-w-2xl text-base leading-8 text-brand-muted"
+            class="mx-auto mt-4 max-w-2xl text-sm leading-6 text-brand-muted sm:text-base"
           >
-            A fragrance experience shaped by personal identity,
-            meaningful connections, and opportunities for growth.
+            Building a fragrance experience around personal choice,
+            community, and opportunities for growth.
           </p>
         </div>
 
         <div
-          class="mt-14 grid gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-stretch"
+          class="mt-8 grid gap-5 lg:grid-cols-[0.85fr_1.15fr] lg:items-stretch"
         >
-          <!-- Vision and mission cards -->
-          <div class="grid gap-5">
+          <div class="grid gap-4">
             <article
-              class="relative overflow-hidden rounded-3xl border border-brand-gold/30 bg-brand-black p-7 sm:p-9"
+              class="relative overflow-hidden rounded-[1.4rem] border border-brand-gold/30 bg-brand-black p-5 shadow-gold-soft sm:p-6"
             >
               <span
-                class="absolute right-5 top-2 font-display text-8xl text-brand-gold/10"
+                class="absolute right-5 top-3 font-display text-5xl leading-none text-brand-gold/10"
                 aria-hidden="true"
               >
                 V
@@ -57,30 +57,30 @@ export function renderVisionMissionSection() {
 
               <div class="relative">
                 <p
-                  class="text-xs font-semibold uppercase tracking-[0.25em] text-brand-gold"
+                  class="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-brand-gold"
                 >
                   Our Vision
                 </p>
 
                 <h3
-                  class="mt-5 max-w-md font-display text-3xl leading-tight text-brand-cream sm:text-4xl"
+                  class="mt-3 max-w-md font-display text-2xl leading-tight text-brand-cream"
                 >
-                  A future inspired by confidence and possibility.
+                  Confidence through personal choice.
                 </h3>
 
-                <p class="mt-5 text-sm leading-7 text-brand-muted">
+                <p class="mt-3 text-sm leading-6 text-brand-muted">
                   To create a community where people can discover
                   fragrances that reflect who they are while exploring
-                  meaningful paths toward their personal goals.
+                  paths toward their personal goals.
                 </p>
               </div>
             </article>
 
             <article
-              class="relative overflow-hidden rounded-3xl border border-brand-border bg-brand-panel p-7 sm:p-9"
+              class="relative overflow-hidden rounded-[1.4rem] border border-brand-border bg-brand-panel p-5 shadow-panel sm:p-6"
             >
               <span
-                class="absolute right-5 top-2 font-display text-8xl text-brand-gold/10"
+                class="absolute right-5 top-3 font-display text-5xl leading-none text-brand-gold/10"
                 aria-hidden="true"
               >
                 M
@@ -88,102 +88,103 @@ export function renderVisionMissionSection() {
 
               <div class="relative">
                 <p
-                  class="text-xs font-semibold uppercase tracking-[0.25em] text-brand-gold"
+                  class="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-brand-gold"
                 >
                   Our Mission
                 </p>
 
                 <h3
-                  class="mt-5 max-w-md font-display text-3xl leading-tight text-brand-cream sm:text-4xl"
+                  class="mt-3 max-w-md font-display text-2xl leading-tight text-brand-cream"
                 >
-                  Bringing fragrance and community together.
+                  Fragrance and community together.
                 </h3>
 
-                <p class="mt-5 text-sm leading-7 text-brand-muted">
-                  To present distinctive scent choices, welcoming
-                  packages, and a supportive community experience
-                  designed to help every member begin with purpose.
+                <p class="mt-3 text-sm leading-6 text-brand-muted">
+                  To provide distinctive perfume choices, accessible
+                  packages, and a supportive experience for every
+                  member.
                 </p>
               </div>
             </article>
           </div>
 
-          <!-- Four-picture gallery -->
-          <div class="grid min-h-[620px] grid-cols-2 gap-4">
+          <div
+            class="grid h-[460px] grid-cols-2 grid-rows-[1fr_1fr_0.72fr] gap-3 sm:h-[500px] lg:h-[520px]"
+          >
             <figure
-              class="group relative row-span-2 overflow-hidden rounded-3xl border border-brand-border"
+              class="group relative row-span-2 overflow-hidden rounded-[1.4rem] border border-brand-border"
             >
               <img
                 src="${mindsetImage}"
                 alt="Your Product community mindset"
-                class="absolute inset-0 size-full object-cover transition duration-700 group-hover:scale-105"
+                class="absolute inset-0 size-full object-cover transition duration-700 ease-out group-hover:scale-[1.03]"
                 loading="lazy"
               >
 
               <div
-                class="absolute inset-0 bg-gradient-to-t from-brand-black/80 via-transparent to-transparent"
+                class="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent"
                 aria-hidden="true"
               ></div>
             </figure>
 
             <figure
-              class="group relative overflow-hidden rounded-3xl border border-brand-border"
+              class="group relative overflow-hidden rounded-[1.4rem] border border-brand-border"
             >
               <img
                 src="${modernImage}"
                 alt="Modern Your Product experience"
-                class="absolute inset-0 size-full object-cover transition duration-700 group-hover:scale-105"
+                class="absolute inset-0 size-full object-cover transition duration-700 ease-out group-hover:scale-[1.03]"
                 loading="lazy"
               >
 
               <div
-                class="absolute inset-0 bg-gradient-to-t from-brand-black/60 to-transparent"
+                class="absolute inset-0 bg-gradient-to-t from-black/35 to-transparent"
                 aria-hidden="true"
               ></div>
             </figure>
 
             <figure
-              class="group relative overflow-hidden rounded-3xl border border-brand-border"
+              class="group relative overflow-hidden rounded-[1.4rem] border border-brand-border"
             >
               <img
                 src="${productBlackImage}"
                 alt="Your Product black fragrance presentation"
-                class="absolute inset-0 size-full object-cover transition duration-700 group-hover:scale-105"
+                class="absolute inset-0 size-full object-cover transition duration-700 ease-out group-hover:scale-[1.03]"
                 loading="lazy"
               >
 
               <div
-                class="absolute inset-0 bg-gradient-to-t from-brand-black/60 to-transparent"
+                class="absolute inset-0 bg-gradient-to-t from-black/35 to-transparent"
                 aria-hidden="true"
               ></div>
             </figure>
 
             <figure
-              class="group relative col-span-2 min-h-52 overflow-hidden rounded-3xl border border-brand-gold/30"
+              class="group relative col-span-2 overflow-hidden rounded-[1.4rem] border border-brand-gold/30"
             >
               <img
                 src="${productGoldImage}"
                 alt="Your Product gold fragrance presentation"
-                class="absolute inset-0 size-full object-cover transition duration-700 group-hover:scale-105"
+                class="absolute inset-0 size-full object-cover transition duration-700 ease-out group-hover:scale-[1.03]"
                 loading="lazy"
               >
 
               <div
-                class="absolute inset-0 bg-gradient-to-r from-brand-black/80 via-brand-black/20 to-transparent"
+                class="absolute inset-0 bg-gradient-to-r from-black/70 via-black/20 to-transparent"
                 aria-hidden="true"
               ></div>
 
               <figcaption
-                class="absolute bottom-6 left-6 max-w-xs"
+                class="absolute bottom-4 left-5 max-w-sm"
               >
                 <p
-                  class="text-xs font-semibold uppercase tracking-[0.24em] text-brand-gold"
+                  class="text-[0.62rem] font-semibold uppercase tracking-[0.2em] text-[#dfbf7a]"
                 >
                   Your Product
                 </p>
 
                 <p
-                  class="mt-2 font-display text-2xl text-brand-cream"
+                  class="mt-1 font-display text-xl leading-tight text-white"
                 >
                   Scents that create opportunities.
                 </p>
@@ -193,10 +194,10 @@ export function renderVisionMissionSection() {
         </div>
 
         <p
-          class="mt-8 text-center text-xs leading-5 text-brand-muted"
+          class="mt-5 text-center text-xs leading-5 text-brand-muted"
         >
-          Vision and mission wording is temporary pending the official
-          content from Your Product.
+          Vision and mission wording remains temporary pending the
+          official content from Your Product.
         </p>
       </div>
     </section>

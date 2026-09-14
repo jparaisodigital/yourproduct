@@ -4,129 +4,147 @@ export function renderBossSection() {
   return `
     <section
       id="be-your-own-boss"
-      class="relative overflow-hidden border-t border-brand-border bg-brand-black py-20 sm:py-24 lg:py-28"
+      class="relative overflow-hidden border-t border-brand-border bg-brand-black py-14 sm:py-16 lg:py-16"
     >
       <div
-        class="mx-auto grid w-[min(1180px,90%)] overflow-hidden rounded-[2rem] border border-brand-border bg-brand-panel lg:grid-cols-2"
+        class="mx-auto grid w-[min(1120px,90%)] overflow-hidden rounded-[1.5rem] border border-brand-border bg-brand-panel shadow-panel lg:grid-cols-[0.9fr_1.1fr]"
       >
-        <!-- Image -->
-        <div class="relative min-h-[420px] overflow-hidden lg:min-h-[620px]">
+        <div
+          class="relative min-h-[320px] overflow-hidden sm:min-h-[400px] lg:min-h-[500px]"
+        >
           <img
             src="${bossImage}"
-            alt="Be your own boss with Your Product"
-            class="absolute inset-0 size-full object-cover transition duration-700 hover:scale-105"
+            alt="Build your own journey with Your Product"
+            class="absolute inset-0 size-full object-cover transition duration-700 ease-out hover:scale-[1.03]"
             loading="lazy"
           >
 
           <div
-            class="absolute inset-0 bg-gradient-to-t from-brand-black via-brand-black/20 to-transparent"
+            class="absolute inset-0 bg-gradient-to-t from-black/65 via-black/5 to-transparent"
             aria-hidden="true"
           ></div>
 
-          <div
-            class="absolute inset-x-0 bottom-0 p-7 sm:p-9"
-          >
+          <div class="absolute inset-x-0 bottom-0 p-6 sm:p-7">
             <p
-              class="text-xs font-semibold uppercase tracking-[0.28em] text-brand-gold"
+              class="text-[0.65rem] font-semibold uppercase tracking-[0.24em] text-[#dfbf7a]"
             >
-              Your journey
+              Your Product
             </p>
 
             <p
-              class="mt-3 max-w-md font-display text-3xl leading-tight text-brand-cream sm:text-4xl"
+              class="mt-2 max-w-sm font-display text-2xl leading-tight text-white"
             >
-              Your pace. Your choices. Your future.
+              Take your next step with confidence.
             </p>
           </div>
         </div>
 
-        <!-- Content -->
         <div
-          class="relative flex items-center px-7 py-14 sm:px-10 lg:px-14 lg:py-20"
+          class="relative flex items-center p-6 sm:p-8 lg:p-10"
         >
           <div
-            class="pointer-events-none absolute -right-24 top-10 size-64 rounded-full bg-brand-gold/10 blur-3xl"
+            class="pointer-events-none absolute -right-24 top-10 size-56 rounded-full bg-brand-gold/10 blur-3xl"
             aria-hidden="true"
           ></div>
 
-          <div class="relative">
+          <div class="relative w-full">
             <p
-              class="text-xs font-semibold uppercase tracking-[0.32em] text-brand-gold"
+              class="text-[0.68rem] font-semibold uppercase tracking-[0.3em] text-brand-gold"
             >
               Be Your Own Boss
             </p>
 
             <h2
-              class="mt-5 max-w-xl font-display text-4xl leading-[1.05] text-brand-cream sm:text-5xl lg:text-6xl"
+              class="mt-3 max-w-xl font-display text-4xl leading-[1.05] text-brand-cream sm:text-5xl lg:text-[3.35rem]"
             >
-              Begin something
+              Build something
               <span class="block italic text-brand-gold">
                 you can call your own.
               </span>
             </h2>
 
             <p
-              class="mt-7 max-w-xl text-base leading-8 text-brand-muted"
+              class="mt-4 max-w-xl text-sm leading-6 text-brand-muted sm:text-base"
             >
-              Your Product brings fragrance and community together,
-              giving people a place to discover products, connect with
-              others, and explore new possibilities.
+              Start with a package, explore the perfume collection,
+              and manage your member activity through one platform.
             </p>
 
-            <div class="mt-9 space-y-5">
-              <div class="flex gap-4">
+            <div class="mt-6 border-y border-brand-border">
+              <div
+                class="grid grid-cols-[2rem_1fr] gap-3 py-3.5"
+              >
                 <span
-                  class="grid size-10 shrink-0 place-items-center rounded-full border border-brand-gold/30 bg-brand-gold/10 text-sm font-semibold text-brand-gold"
+                  class="font-display text-xl text-brand-gold/50"
+                  aria-hidden="true"
                 >
                   01
                 </span>
 
                 <div>
-                  <h3 class="font-semibold text-brand-cream">
-                    Choose your beginning
+                  <h3
+                    class="text-sm font-semibold text-brand-cream"
+                  >
+                    Choose a package
                   </h3>
 
-                  <p class="mt-1 text-sm leading-6 text-brand-muted">
-                    Explore the available packages and find the path
-                    that matches your goals.
+                  <p
+                    class="mt-1 text-xs leading-5 text-brand-muted"
+                  >
+                    Compare the available options and choose the
+                    package that matches your goals.
                   </p>
                 </div>
               </div>
 
-              <div class="flex gap-4">
+              <div
+                class="grid grid-cols-[2rem_1fr] gap-3 border-t border-brand-border py-3.5"
+              >
                 <span
-                  class="grid size-10 shrink-0 place-items-center rounded-full border border-brand-gold/30 bg-brand-gold/10 text-sm font-semibold text-brand-gold"
+                  class="font-display text-xl text-brand-gold/50"
+                  aria-hidden="true"
                 >
                   02
                 </span>
 
                 <div>
-                  <h3 class="font-semibold text-brand-cream">
-                    Discover your collection
+                  <h3
+                    class="text-sm font-semibold text-brand-cream"
+                  >
+                    Know the products
                   </h3>
 
-                  <p class="mt-1 text-sm leading-6 text-brand-muted">
-                    Get to know the signature fragrances created for
-                    different personalities and moments.
+                  <p
+                    class="mt-1 text-xs leading-5 text-brand-muted"
+                  >
+                    View perfume details, scent profiles, and product
+                    information in one place.
                   </p>
                 </div>
               </div>
 
-              <div class="flex gap-4">
+              <div
+                class="grid grid-cols-[2rem_1fr] gap-3 border-t border-brand-border py-3.5"
+              >
                 <span
-                  class="grid size-10 shrink-0 place-items-center rounded-full border border-brand-gold/30 bg-brand-gold/10 text-sm font-semibold text-brand-gold"
+                  class="font-display text-xl text-brand-gold/50"
+                  aria-hidden="true"
                 >
                   03
                 </span>
 
                 <div>
-                  <h3 class="font-semibold text-brand-cream">
-                    Grow with the community
+                  <h3
+                    class="text-sm font-semibold text-brand-cream"
+                  >
+                    Track your progress
                   </h3>
 
-                  <p class="mt-1 text-sm leading-6 text-brand-muted">
-                    Connect, learn, and move forward with a community
-                    built around shared possibilities.
+                  <p
+                    class="mt-1 text-xs leading-5 text-brand-muted"
+                  >
+                    Your dashboard will show your direct referrals,
+                    points, income, and account activity.
                   </p>
                 </div>
               </div>
@@ -134,18 +152,20 @@ export function renderBossSection() {
 
             <a
               href="#packages"
-              class="mt-10 inline-flex items-center justify-center rounded-full bg-brand-gold px-7 py-3.5 text-sm font-semibold text-brand-black transition duration-300 hover:-translate-y-1 hover:bg-brand-gold-light"
+              class="mt-6 inline-flex h-11 items-center justify-center rounded-xl bg-brand-gold px-5 text-xs font-semibold uppercase tracking-[0.08em] text-[#17130d] transition duration-200 hover:-translate-y-0.5 hover:bg-brand-gold-light"
             >
               Explore Packages
 
-              <span class="ml-3" aria-hidden="true">
+              <span class="ml-2" aria-hidden="true">
                 →
               </span>
             </a>
 
-            <p class="mt-5 max-w-lg text-xs leading-5 text-brand-muted">
-              Package details and program mechanics are subject to
-              final confirmation from Your Product.
+            <p
+              class="mt-4 max-w-lg text-xs leading-5 text-brand-muted"
+            >
+              Package details and program mechanics remain subject to
+              final client confirmation.
             </p>
           </div>
         </div>
