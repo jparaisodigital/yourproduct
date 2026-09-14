@@ -1,3 +1,4 @@
+import headerLogo from '../assets/logoyourproduct.png'
 export function renderHeader(siteConfig) {
   const desktopLinks = siteConfig.navigation
     .map(
@@ -39,12 +40,13 @@ export function renderHeader(siteConfig) {
           class="flex min-w-0 items-center gap-3"
           aria-label="${siteConfig.brand.name} home"
         >
-          <span
-            class="grid size-11 shrink-0 place-items-center rounded-full border border-brand-gold font-display text-2xl font-semibold text-brand-gold"
-            aria-hidden="true"
-          >
-            YP
-          </span>
+          <img
+          src="${headerLogo}"
+          alt=""
+          width="48"
+          height="48"
+          class="size-11 shrink-0 object-contain sm:size-12"
+            >
 
           <span class="min-w-0">
             <strong
