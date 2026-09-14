@@ -162,11 +162,37 @@
   transform: translateY(0);
 }
 
+@keyframes stock-status-breathe {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(0.95);
+    filter: brightness(0.95);
+    box-shadow: 0 0 2px rgb(5 150 105 / 18%);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.08);
+    filter: brightness(1.15);
+    box-shadow:
+      0 0 4px rgb(5 150 105 / 45%),
+      0 0 7px rgb(5 150 105 / 22%);
+  }
+}
+
+.stock-status-dot {
+  animation: stock-status-breathe 2.2s ease-in-out infinite;
+  transform-origin: center;
+  will-change: opacity, transform, filter, box-shadow;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .scroll-reveal,
-  .scroll-reveal-item {
+  .stock-status-dot {
+    animation: none;
     opacity: 1;
     transform: none;
-    transition: none;
+    filter: none;
+    box-shadow: 0 0 4px rgb(5 150 105 / 30%);
   }
 }

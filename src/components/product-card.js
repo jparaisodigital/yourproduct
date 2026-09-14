@@ -132,9 +132,11 @@ export function renderProductCard(product) {
           aria-label="${stockLabel}"
         >
           <span
-            class="${stockDotClass} size-1.5 rounded-full"
-            aria-hidden="true"
-          ></span>
+  class="${stockDotClass} ${
+    isAvailable ? 'stock-status-dot' : ''
+  } block size-1.5 shrink-0 rounded-full"
+  aria-hidden="true"
+></span>
 
           ${stockLabel}
         </div>
