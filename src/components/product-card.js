@@ -189,7 +189,7 @@ export function renderProductCard(product) {
             class="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-brand-gold px-4 text-xs font-bold uppercase tracking-[0.1em] text-[#17130d] shadow-[0_8px_22px_rgb(183_138_50_/_0.18)] transition duration-200 hover:-translate-y-0.5 hover:bg-brand-gold-light active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
             data-action="add-to-cart"
             data-product-id="${product.id}"
-            @click.prevent="$store.cart.add('${product.id}')"
+            @click.prevent="$addToCartWithAnimation('${product.id}', $event.currentTarget)"
             aria-live="polite"
             ${isAvailable ? '' : 'disabled'}
           >

@@ -2,6 +2,10 @@ import './style.css'
 import Alpine from 'alpinejs'
 
 import {
+  flyToCart,
+} from './lib/fly-to-cart.js'
+
+import {
   initScrollReveal,
 } from './lib/scroll-reveal.js'
 
@@ -86,6 +90,28 @@ window.Alpine = Alpine
 
 registerCartStore(Alpine, products)
 registerProductViewStore(Alpine, products)
+
+Alpine.magic('addToCartWithAnimation', () => {
+  return (productId, sourceButton) => {
+    const product = products.find(
+      (item) => item.id === productId,
+    )
+
+    if (!product) {
+      return
+    }
+
+    const cart = Alpine.store('cart')
+    const previousQuantity = cart.quantityFor(productId)
+
+    cart.add(productId)
+
+    // Animate only when an item was actually added.
+    if (cart.quantityFor(productId) > previousQuantity) {
+      flyToCart(sourceButton, product.image)
+    }
+  }
+})
 
 document.title =
   `${siteConfig.brand.name} | Premium Fragrances`

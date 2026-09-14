@@ -111,6 +111,7 @@ export function renderHeader(siteConfig) {
             type="button"
             class="relative grid size-11 place-items-center rounded-full border border-brand-border text-brand-cream transition duration-200 hover:border-brand-gold hover:bg-brand-gold/10 hover:text-brand-gold active:scale-95"
             :aria-label="'Open shopping cart with ' + $store.cart.itemCount + ' items'"
+            data-cart-target
             @click="$dispatch('open-cart')"
           >
             <svg
@@ -163,6 +164,7 @@ export function renderHeader(siteConfig) {
             type="button"
             class="relative grid size-11 place-items-center rounded-full border border-brand-border text-brand-cream transition hover:border-brand-gold hover:text-brand-gold active:scale-95"
             :aria-label="'Open shopping cart with ' + $store.cart.itemCount + ' items'"
+            data-cart-target
             @click="$dispatch('open-cart')"
           >
             <svg
