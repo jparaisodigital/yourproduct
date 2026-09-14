@@ -71,22 +71,27 @@ export function renderProductCard(product) {
       data-product-id="${product.id}"
       data-product-category="${product.category}"
     >
-      <div
-        class="relative aspect-square overflow-hidden bg-brand-cream"
+      <button
+        type="button"
+        class="group/image relative block aspect-square w-full cursor-zoom-in overflow-hidden bg-brand-cream text-left"
+        data-action="quick-view"
+        data-product-id="${product.id}"
+        aria-label="View details for ${product.name}"
+        @click="$store.productView.open('${product.id}')"
       >
         <img
           src="${product.image}"
           alt="${product.name}"
-          class="size-full object-contain p-8 transition duration-500 ease-out group-hover:scale-[1.04]"
+          class="size-full object-contain p-8 transition duration-500 ease-out group-hover/image:scale-[1.04]"
           loading="lazy"
         >
 
         <span
-          class="absolute left-4 top-4 rounded-full border border-brand-gold/30 bg-brand-black/90 px-3 py-1 text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-brand-gold backdrop-blur-sm"
+          class="pointer-events-none absolute left-4 top-4 rounded-full border border-brand-gold/30 bg-brand-black/90 px-3 py-1 text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-brand-gold backdrop-blur-sm"
         >
           ${product.collectionLabel}
         </span>
-      </div>
+      </button>
 
       <div class="p-5 sm:p-6">
         <div class="flex items-center justify-between gap-4">
@@ -132,11 +137,11 @@ export function renderProductCard(product) {
           aria-label="${stockLabel}"
         >
           <span
-  class="${stockDotClass} ${
-    isAvailable ? 'stock-status-dot' : ''
-  } block size-1.5 shrink-0 rounded-full"
-  aria-hidden="true"
-></span>
+            class="${stockDotClass} ${
+              isAvailable ? 'stock-status-dot' : ''
+            } block size-1.5 shrink-0 rounded-full"
+            aria-hidden="true"
+          ></span>
 
           ${stockLabel}
         </div>
@@ -149,6 +154,7 @@ export function renderProductCard(product) {
             data-product-id="${product.id}"
             aria-label="Quick view ${product.name}"
             title="Quick view"
+            @click.prevent="$store.productView.open('${product.id}')"
           >
             <svg
               viewBox="0 0 24 24"

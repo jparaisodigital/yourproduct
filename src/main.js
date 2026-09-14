@@ -18,8 +18,17 @@ import {
   registerCartStore,
 } from './stores/cart-store.js'
 
-import { siteConfig } from './config/site-config.js'
-import { homeConfig } from './config/home-config.js'
+import {
+  registerProductViewStore,
+} from './stores/product-view-store.js'
+
+import {
+  siteConfig,
+} from './config/site-config.js'
+
+import {
+  homeConfig,
+} from './config/home-config.js'
 
 import {
   renderHeader,
@@ -66,12 +75,17 @@ import {
 } from './components/cart-drawer.js'
 
 import {
+  renderProductDrawer,
+} from './components/product-drawer.js'
+
+import {
   renderFooter,
 } from './components/footer.js'
 
 window.Alpine = Alpine
 
 registerCartStore(Alpine, products)
+registerProductViewStore(Alpine, products)
 
 document.title =
   `${siteConfig.brand.name} | Premium Fragrances`
@@ -103,7 +117,9 @@ document.querySelector('#app').innerHTML = `
   </main>
 
   ${renderFooter(siteConfig)}
+
   ${renderCartDrawer()}
+  ${renderProductDrawer()}
 `
 
 Alpine.start()
