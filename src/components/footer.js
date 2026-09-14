@@ -97,6 +97,7 @@ export function renderFooter(siteConfig) {
             </p>
           </div>
         </div>
+        
       </footer>
     `
   }

@@ -1,911 +1,673 @@
-# YOUR PRODUCT
-## Temporary Project Roadmap
-### Perfume E-commerce + Membership, Points and Direct Referral System
+# YOUR PRODUCT 2026.PH
+## Focused Project Roadmap
+### Public Website + Member Dashboard + Perfume Ordering + Manual Payout Requests
 
-> Status: Temporary planning document  
-> This roadmap is based on the current client questionnaire.  
-> Unconfirmed business rules must remain configurable or marked as pending.  
-> Do not invent package inclusions, discounts, payouts, or reward mechanics.
-
----
-
-## 1. Project Objective
-
-Build a responsive perfume e-commerce website where members and non-members can purchase products.
-
-The system will include:
-
-- Customer registration and login
-- Membership packages
-- Manual payment verification
-- Admin payment approval
-- Member-specific pricing
-- Points and reward redemption
-- Direct referral tracking
-- Member and admin dashboards
-- Basic inventory and order management
-
-This is not a multi-level marketing system.
-
-Only direct referrals are supported. There are no downlines, referral trees, binary systems, pairing bonuses, or multi-level commissions.
+> Updated: September 14, 2026  
+> Source: latest website mechanics sent by the client through Messenger  
+> Status: working roadmap pending confirmation of the remaining business rules
 
 ---
 
-## 2. Technology Stack
+## 1. Roadmap Rule
 
-### Frontend
+This roadmap follows only the features specifically described in the client's latest Messenger message.
 
-- Vite
-- Vanilla JavaScript using ES modules
-- Tailwind CSS installed through Vite
-- Supabase JavaScript client
-
-### Backend
-
-- Supabase Auth
-- PostgreSQL database
-- Supabase Storage
-- Row Level Security
-- PostgreSQL database functions/RPC
-- Supabase Edge Functions only when necessary
-
-### Hosting
-
-- Cloudflare Pages for the Vite frontend
-- Supabase for authentication, database, storage, and backend logic
+Anything not clearly stated is marked as pending or excluded until the client gives written confirmation. Older PDFs, posters, screenshots, reference websites, and previous discussions do not automatically add features to this scope.
 
 ---
 
-## 3. Currently Confirmed Business Rules
+## 2. Project Objective
 
-### Products
+Build `YourProduct2026.ph` with two main areas:
 
-- Approximately 20 perfume products
-- 10 male scents
-- 10 female scents
-- Members and non-members may purchase
-- Members have separate pricing
-- Exact member prices are still pending
+1. A public first page presenting Your Product, its community, earning opportunity, vision, mission, and packages.
+2. A secure member platform containing a dashboard, perfume information, ordering, order history, wallet information, and payout requests.
 
-### Membership packages
+The website will use one shared catalog of 20 perfumes:
 
-- Starter: PHP 1,000
-- Builder: PHP 3,000
-- Leader: PHP 10,000
-- Prestige: PHP 50,000
-- Each package includes perfume bottles
-- Exact bottles, quantities, and scents are still pending
-- Membership becomes active after payment approval
+- 10 men's perfumes
+- 10 women's perfumes
 
-### Manual payment
-
-- No automated payment gateway
-- Customer selects a payment method
-- Customer uploads proof of payment
-- New payment starts with `pending` status
-- Admin manually approves or rejects payment
-- Customer must see the current payment status
-- Rejected-payment re-upload flow is required
-
-### Points
-
-- Buyer receives 5 points for every qualified bottle
-- Bottles included in an approved membership package may receive points
-- Points are credited only after payment approval
-- Points are deducted when a reward is claimed
-- Points are reversed for canceled or refunded orders
-- Points do not expire
-- Website purchases are recorded automatically
-- Offline-sale points are not included until mechanics are confirmed
-
-### Direct referral
-
-- Every member may have a personal referral link/code
-- Only direct referrals are qualified
-- No multi-level or downline commission
-- Referral reward is 10% of the membership package
-- Repeat product orders do not earn the 10% referral reward
-- Referral reward is recorded after the referred membership payment is approved
-- Company handles the actual payout manually
-- Website records only the referral reward and payout status
-- Payout method and schedule are still pending
-
-### Rewards
-
-- Member can view available rewards
-- Member can submit a reward claim
-- Required points are deducted through secure backend logic
-- Admin reviews and processes reward claims
-- Exact reward inventory and fulfillment mechanics are pending
-
-### Raffle
-
-- Company conducts the raffle draw outside the website
-- Website does not automatically select winners
-- Website may display member qualification or raffle status
-- Exact qualifications and milestones are pending
-
-### Fulfillment
-
-- Company packs and delivers customer orders
-- Shipping fees, couriers, and delivery areas are still pending
-
-### Your Brand program
-
-- Final workflow is not yet confirmed
-- It may require an information/inquiry form
-- A request-tracking dashboard was also mentioned
-- Do not build the complete Your Brand workflow until clarified
+The confirmed ordering flow includes a minimum quantity of 10 pieces and dropship shipping details.
 
 ---
 
-## 4. User Roles
+## 3. Confirmed Public First Page
 
-### Guest
+The public first page will contain:
+
+- Discover
+- Packages
+- Our Community
+- Ways to Earn
+- Be Your Own Boss section with one picture
+- Vision and Mission section with four pictures
+- Explore Package section
+- Your Starter
+- Your Builder
+- Your Leader
+- Your Prestige
+- Log In
+- Sign Up
+
+The exact copy, pictures, package prices, and package inclusions must come from the client.
+
+---
+
+## 4. Confirmed Member Platform
+
+The member platform will have sidebar navigation for:
+
+- Dashboard
+- Your Perfumes Information
+- Your Order
+  - Create Order
+  - Order History
+- Your Wallet
+  - Payout Request
+- Log Out
+
+### Dashboard
+
+The dashboard will show:
+
+- Member name or the client label `Your Future`
+- `Your People`: number of direct referrals
+- `Your Points`: current points
+- Reward-progress pictures:
+  - Cellphone
+  - Laptop
+  - Motorcycle
+  - Car
+- Income amount in Philippine pesos
+
+The exact meaning of `Your Future`, point requirements, reward eligibility, and income computation are pending.
+
+### Your Perfumes Information
+
+Members can choose:
+
+- Your Men â€” 10 perfumes
+- Your Women â€” 10 perfumes
+
+Each perfume will contain:
+
+- Product picture
+- Product name
+- Short description
+- Scent profile
+- Scent character
+- Best for
+
+The same product catalog will be reused for perfume information and Create Order.
+
+### Create Order
+
+The member can:
+
+1. Open Create Order.
+2. Choose Your Men or Your Women.
+3. View the perfumes in that category.
+4. Add products to the cart.
+5. Review selected items and subtotal.
+6. Continue when the confirmed minimum-order rule is satisfied.
+7. Proceed to dropship checkout.
+8. Enter shipping details.
+9. Submit the order.
+10. View it in Order History.
+
+### Shopping Cart
+
+The cart will show:
+
+- Selected products
+- Quantity per product
+- Selected-items count
+- Subtotal
+- Minimum-order notice
+- Proceed to Checkout button
+
+The client stated `Minimum 10Pcs`.
+
+Pending confirmation: whether this means 10 total pieces across the cart or 10 pieces per perfume.
+
+### Dropship Shipping Details
+
+The checkout form will collect:
+
+- Recipient name
+- Phone number
+- Province
+- City/Municipality
+- Barangay
+- House number and street
+- Landmark
+
+Only dropship was mentioned. Pickup or other fulfillment options are not included unless separately confirmed.
+
+### Order History
+
+The member will have an Order History page. At minimum, it will identify the member's submitted orders.
+
+Exact order statuses, cancellation rules, payment steps, and fulfillment updates are pending.
+
+### Wallet and Payout Request
+
+The wallet will show:
+
+- Available Income
+- Funds ready for withdrawal
+- Payout Request
+
+Confirmed payout choices:
+
+- All Banks
+- BDO
+- BPI
+- MariBank
+- CIMB
+- GoTyme
+- Maya / PayMaya
+- GCash
+
+The website will collect and record the payout request only.
+
+The company will manually:
+
+- Review the request
+- Send the money through the selected bank or e-wallet
+- Update the request status
+
+There is no confirmed automatic bank transfer, e-wallet transfer, or payment-gateway integration.
+
+---
+
+## 5. User Roles
+
+### Visitor
 
 Can:
 
-- View products
-- View membership packages
-- Add products to cart
-- Checkout as a non-member
-- Register or log in
+- View the public first page
+- Read the public sections
+- View package information
+- Open Log In
+- Open Sign Up
 
-Cannot:
-
-- Access member prices unless allowed by the final pricing rule
-- Access member dashboard
-- Earn referral rewards
+Public storefront purchasing was not explicitly described in the latest mechanics and remains pending.
 
 ### Member
 
 Can:
 
-- View member pricing
-- Purchase products
-- View orders and payment status
-- Upload or re-upload proof of payment
-- View membership status
-- View points history
-- View current points balance
-- View rewards
-- Submit reward claims
-- View referral code/link
-- View direct referral records
-- View referral reward and payout status
+- Log in to the member platform
+- View personal dashboard information
+- View direct-referral count, points, reward progress, and income
+- Browse men's and women's perfume information
+- Add perfumes to the order cart
+- Submit a dropship order after satisfying the minimum quantity
+- View personal order history
+- View available income
+- Submit a payout request
 
-### Admin
+### Company Operator / Administrator
 
-Can:
+Manual order and payout processing is necessary, but the client did not explicitly request a custom admin dashboard.
 
-- View all orders
-- View uploaded payment proofs
-- Approve or reject payments
-- Add a rejection reason
-- Update fulfillment/order status
-- View members and membership status
-- View points transactions
-- Review reward claims
-- Record referral payout status
-- Update products and inventory
-- Update raffle qualification/status
-- View administrative audit history
+Pending decision:
 
-Admin access must be enforced by the database, not only by hiding frontend pages.
+- Build a simple custom admin interface; or
+- Let the company initially manage records through the secured Supabase dashboard.
+
+Do not include a large admin system until confirmed in writing.
 
 ---
 
-## 5. Main Website Pages
+## 6. Main Screens
 
-### Public pages
+### Public Area
 
-- Home
-- Products
-- Product details
-- Membership packages
-- Cart
-- Checkout
-- Login
-- Registration
-- About/FAQ
-- Payment instructions
+- Home / First Page
+- Log In
+- Sign Up
 
-### Member pages
+### Member Area
 
-- Dashboard overview
-- My membership
-- My orders
-- Payment status
-- Points history
-- Rewards
-- Reward claims
-- My referral link
-- Direct referrals
-- Referral rewards
-- Account settings
+- Dashboard
+- Your Perfumes Information
+- Your Men
+- Your Women
+- Create Order
+- Shopping Cart
+- Dropship Checkout
+- Order History
+- Your Wallet
+- Payout Request
 
-### Admin pages
+### Possible Operator Area â€” Pending
 
-- Dashboard summary
-- Pending payments
-- Orders
-- Payment details and proof viewer
-- Members
-- Products and inventory
-- Points transactions
-- Reward claims
-- Referral rewards and payouts
-- Raffle qualification/status
-- Audit logs
+- Orders list and details
+- Order-status update
+- Payout-request list
+- Payout-status update
+- Member record view
+- Manual points or income entry, if required by the final mechanics
 
 ---
 
-## 6. Proposed Database Tables
+## 7. Confirmed User Flows
 
-The table names may change during implementation.
+### Public-to-Member Flow
+
+1. Visitor opens `YourProduct2026.ph`.
+2. Visitor views the public first-page sections and packages.
+3. Visitor selects Log In or Sign Up.
+4. Successful login opens the member platform.
+
+### Member Order Flow
+
+1. Member opens Your Order.
+2. Member selects Create Order.
+3. Member chooses Your Men or Your Women.
+4. Member adds perfumes to the cart.
+5. Cart calculates item count and subtotal.
+6. Checkout remains unavailable until the minimum-order rule is satisfied.
+7. Member proceeds to Dropship Checkout.
+8. Member enters the recipient's shipping details.
+9. Member submits the order.
+10. The order appears in the member's Order History.
+
+### Manual Payout Flow
+
+1. Member opens Your Wallet.
+2. Member sees Available Income.
+3. Member opens Payout Request.
+4. Member selects a supported bank or e-wallet.
+5. Member enters payout-account information and amount.
+6. The website records a pending request.
+7. The company processes the transfer manually outside the website.
+8. The company updates the request status.
+9. The member sees the updated status.
+
+Exact payout statuses, minimum amount, processing fee, and rejection rules are pending.
+
+---
+
+## 8. Technology Stack
+
+### Frontend
+
+- Vite
+- Vanilla JavaScript with ES modules
+- Alpine.js for interface state
+- Tailwind CSS through Vite
+
+### Backend
+
+- Supabase Auth for registration and login
+- Supabase PostgreSQL for member, product, order, points, income, and payout records
+- Row Level Security for member-data protection
+- Supabase Storage only if later required
+
+### Hosting
+
+- Cloudflare Pages for the frontend
+- Supabase for authentication and database services
+- Final domain: `YourProduct2026.ph`, subject to domain and DNS access
+
+---
+
+## 9. Provisional Data Structure
+
+Final tables must follow the confirmed business rules.
 
 ### Profiles
 
-- id
-- full_name
-- contact_number
-- role: `member` or `admin`
-- referral_code
-- referred_by
-- created_at
-- updated_at
+- User ID
+- Full name
+- Contact information
+- Role
+- Direct referrer, if applicable
+- Created date
 
 ### Products
 
-- id
-- name
-- description
-- category
-- regular_price
-- member_price
-- stock_quantity
-- image_url
-- is_active
-- created_at
-- updated_at
+- Product ID
+- SKU
+- Name
+- Category: men or women
+- Product picture
+- Short description
+- Scent profile
+- Scent character
+- Best for
+- Price
+- Stock or availability, if required
+- Active status
 
-### MembershipPackages
+### Packages
 
-- id
-- name
-- price
-- description
-- is_active
+- Package ID
+- Package name
+- Price
+- Description
+- Inclusions
+- Active status
 
-Package inclusions must use a separate table after the client confirms the exact bottles.
-
-### MembershipPackageItems
-
-- id
-- package_id
-- product_id
-- quantity
-
-### Memberships
-
-- id
-- user_id
-- package_id
-- status: `pending`, `active`, `expired`, or `canceled`
-- activated_at
-- created_at
+Package prices and inclusions are pending.
 
 ### Orders
 
-- id
-- user_id
-- customer_type: `guest` or `member`
-- order_type: `product` or `membership`
-- subtotal
-- shipping_fee
-- total_amount
-- payment_status
-- order_status
-- referral_code_used
-- created_at
-- updated_at
+- Order ID
+- Member ID
+- Item count
+- Subtotal
+- Order status
+- Shipping details
+- Created date
+- Updated date
 
-### OrderItems
+### Order Items
 
-- id
-- order_id
-- product_id
-- product_name_snapshot
-- unit_price
-- quantity
-- points_per_item
-- line_total
+- Order ID
+- Product ID
+- Product-name snapshot
+- Unit-price snapshot
+- Quantity
+- Line total
 
-Prices must be saved as order-time snapshots.
+### Points Transactions
 
-### Payments
+- Member ID
+- Points added or deducted
+- Description
+- Source/reference
+- Created date
 
-- id
-- order_id
-- payment_method
-- reference_number
-- proof_path
-- status: `pending`, `approved`, or `rejected`
-- rejection_reason
-- submitted_at
-- reviewed_by
-- reviewed_at
+Points balance should come from transaction records, not a browser-editable number. Earning and deduction rules are pending.
 
-### PointsTransactions
+### Income Transactions
 
-- id
-- user_id
-- order_id
-- reward_claim_id
-- transaction_type: `credit`, `debit`, or `reversal`
-- points
-- description
-- created_at
+- Member ID
+- Amount credited or deducted
+- Description
+- Source/reference
+- Status
+- Created date
 
-Points balance should be calculated from the transaction ledger.
+Available Income should come from transaction records. Its source and computation are pending.
 
-Do not allow the frontend to directly edit a member’s points balance.
+### Payout Requests
 
-### Rewards
+- Request ID
+- Member ID
+- Requested amount
+- Payout method
+- Account name
+- Account number
+- Status
+- Company note
+- Requested date
+- Processed date
 
-- id
-- name
-- description
-- required_points
-- image_url
-- stock_quantity
-- is_active
-
-### RewardClaims
-
-- id
-- user_id
-- reward_id
-- points_used
-- status: `pending`, `approved`, `completed`, `rejected`, or `canceled`
-- reviewed_by
-- reviewed_at
-- created_at
-
-### Referrals
-
-- id
-- referrer_user_id
-- referred_user_id
-- membership_order_id
-- package_amount
-- reward_percentage
-- reward_amount
-- status: `pending`, `earned`, `paid`, `reversed`, or `rejected`
-- paid_at
-- created_at
-
-Only one referrer may be assigned to a member.
-
-### RaffleStatuses
-
-- id
-- user_id
-- raffle_name
-- qualification_status
-- notes
-- updated_by
-- updated_at
-
-### AdminAuditLogs
-
-- id
-- admin_user_id
-- action
-- entity_type
-- entity_id
-- previous_data
-- new_data
-- created_at
+A payout request must never trigger an automatic transfer unless a separate integration is approved.
 
 ---
 
-## 7. Critical Backend Rules
+## 10. Security and Data Rules
 
-### Payment approval
+- Members may access only their own dashboard, orders, points, income, and payout requests.
+- Members cannot directly edit their points or income from the browser.
+- Order totals must be recalculated using official product prices before saving.
+- Orders must save product-name and price snapshots.
+- A payout request cannot exceed the confirmed available balance.
+- Repeated clicks must not create duplicate orders or payout requests.
+- Admin access must be protected by role and database rules if included.
+- Supabase secret or service-role keys must never be placed in frontend code.
+- Row Level Security must be enabled on member-related tables.
 
-Payment approval must be processed through one secure database function or backend operation.
-
-The approval must:
-
-1. Confirm that the payment is still pending.
-2. Prevent duplicate approval.
-3. Mark the payment as approved.
-4. Mark the order as confirmed/paid.
-5. Activate membership if it is a membership order.
-6. Credit qualified product points.
-7. Create the direct-referral reward if applicable.
-8. Update inventory.
-9. Save an admin audit log.
-
-The browser must not directly perform these database updates separately.
-
-### Idempotency
-
-- Repeated clicks must not create duplicate points.
-- Repeated approval requests must not create duplicate referral rewards.
-- Each order may be processed only once.
-- Database uniqueness constraints must be used where appropriate.
-
-### Referral protection
-
-- User cannot refer their own account.
-- Referral owner cannot be changed after a qualified membership is approved.
-- Only the first qualified membership package earns the 10% reward.
-- No reward for repeat product orders.
-- No downline or multi-level calculations.
-
-### Price protection
-
-- Never trust totals sent by the browser.
-- Backend must retrieve official product/package prices.
-- Backend must calculate subtotal and final total.
-- Member pricing must be checked using the authenticated membership status.
-
-### Points protection
-
-- Points may only be changed through backend/database functions.
-- Each points transaction must have a reason and source record.
-- Reward deduction must fail if points are insufficient.
-- Refund reversal must not be processed twice.
-- Negative-balance handling is pending client confirmation.
-
-### Storage protection
-
-- Payment proofs must be stored in a private bucket.
-- Customers may access only their own uploads.
-- Admins may access payment proofs for review.
-- File type and size must be validated.
-- Public URLs must not expose payment receipts.
+These implementation-safety rules do not add new business mechanics.
 
 ---
 
-## 8. Row Level Security Requirements
+## 11. Current Development Status
 
-RLS must be enabled on every exposed table.
+### Completed
 
-### General rules
+- Vite project and modular structure
+- Tailwind CSS through Vite
+- Alpine.js installation and initialization
+- Git repository and checkpoints
+- Brand design foundation
+- Header, footer, and homepage hero
+- Supabase package and environment setup
+- Successful Supabase connection test
+- Shared sample product configuration
+- Men's and women's sample products
+- Product cards and category filters
+- Persistent local cart store
+- Add-to-cart quantity feedback
 
-- Guests may read active public products and packages only.
-- Members may read their own profile, orders, payments, points, claims, and referral records.
-- Members cannot modify points, referral rewards, payment approval, or membership status.
-- Admin operations require a verified admin role.
-- Frontend route protection is not a substitute for database security.
-- Supabase service-role key must never be placed in frontend code.
-- Only the Supabase publishable/anon key may be used in the Vite frontend.
+### Paused / Not Yet Integrated
 
----
+- Cart drawer integration
+- Final public-page sections
+- Official 20 perfume products
+- Authentication
+- Member platform
+- Database-backed products and orders
+- Order History
+- Points and income records
+- Wallet and payout requests
 
-## 9. Recommended Project Structure
-
-```text
-src/
-├── components/
-│   ├── header.js
-│   ├── footer.js
-│   ├── product-card.js
-│   ├── modal.js
-│   └── loading-state.js
-├── pages/
-│   ├── home.js
-│   ├── products.js
-│   ├── product-details.js
-│   ├── cart.js
-│   ├── checkout.js
-│   ├── login.js
-│   ├── register.js
-│   ├── member-dashboard.js
-│   └── admin-dashboard.js
-├── services/
-│   ├── supabase.js
-│   ├── auth-service.js
-│   ├── product-service.js
-│   ├── order-service.js
-│   ├── payment-service.js
-│   ├── points-service.js
-│   ├── rewards-service.js
-│   └── referral-service.js
-├── stores/
-│   ├── auth-store.js
-│   └── cart-store.js
-├── utils/
-│   ├── validation.js
-│   ├── currency.js
-│   ├── errors.js
-│   └── constants.js
-├── styles/
-│   └── main.css
-├── app.js
-└── main.js
-
-supabase/
-├── migrations/
-├── functions/
-└── seed.sql
-
-public/
-└── assets/
-```
-
-Alpine.js will handle simple interface state such as menus, modals, tabs, cart display, filters, and loading states.
-
-Vanilla JavaScript service modules will handle Supabase operations and reusable business logic.
-
-Do not place Supabase queries directly throughout the HTML.
+Resume Supabase feature development only after the mechanics needed by that module are confirmed.
 
 ---
 
-## 10. Development Phases
+## 12. Updated Development Stages
 
-### Phase 0: Foundation
+### Stage 1: Confirm and Freeze Scope
 
-- Create the Vite Vanilla project
-- Install Tailwind CSS through Vite
-- Install and initialize Alpine.js
-- Create the modular folder structure
-- Add brand colors, typography, spacing, buttons, forms, and status styles
-- Create Git repository and first checkpoint
-- Confirm that the local development server works
-- Do not add Supabase logic yet
+- Send the focused summary to the client
+- Confirm the pending questions in Section 14
+- Confirm inclusions under the PHP 20,000 agreement
+- Confirm whether a custom operator/admin interface is included
+- Freeze Phase 1 before creating database migrations
 
-### Phase 1: Website shell
+### Stage 2: Complete the Public First Page
 
-- Responsive header
-- Mobile navigation
-- Footer
-- Public page structure
-- Member dashboard shell
-- Admin dashboard shell
-- Loading, empty, success, and error states
-- Reusable components
-- No fake backend logic
+- Discover
+- Packages
+- Our Community
+- Ways to Earn
+- Be Your Own Boss with one image
+- Vision and Mission with four images
+- Explore Package cards
+- Log In and Sign Up calls to action
+- Responsive mobile and desktop layout
 
-### Phase 2: Supabase foundation
+### Stage 3: Complete the Shared Perfume Catalog
 
-- Create the Supabase project
-- Configure environment variables
-- Connect the Vite frontend
-- Create database migrations
-- Create tables and relationships
-- Enable Row Level Security
-- Create member and admin test accounts
-- Create private payment-proof storage bucket
-- Test access using separate accounts
+- Add 10 men's perfumes
+- Add 10 women's perfumes
+- Add official pictures and product information
+- Reuse one catalog across information and Create Order
+- Complete filters and cart drawer
+- Add minimum-order notice and validation
 
-### Phase 3: Authentication and roles
+### Stage 4: Authentication and Member Shell
 
-- Member registration
+- Registration
 - Login and logout
 - Session restoration
-- Password recovery
-- Member role
-- Admin role
-- Protected member pages
-- Protected admin pages
-- Referral-code capture during registration
-- Prevent self-referral
-- Membership purchase must require a registered account
+- Protected member routes
+- Member sidebar navigation
+- Dashboard layout
 
-Referral eligibility per membership tier is still pending client confirmation.
+Registration fields and activation rules must be confirmed.
 
-### Phase 4: Products and storefront
+### Stage 5: Member Dashboard Data
 
-- Product listing
-- Male and female categories
-- Product details
-- Regular pricing
-- Member pricing
-- Product filters
-- Cart
-- Basic stock validation
-- Backend price validation
-- Responsive storefront
+- Member name / Your Future
+- Direct referrals / Your People
+- Points / Your Points
+- Four reward-progress pictures
+- Income in PHP
+- Loading, empty, and error states
 
-Do not finalize member prices until the client provides the official pricing rules.
+Do not implement points, rewards, or income calculations until the rules are confirmed.
 
-### Phase 5: Checkout and manual payment
+### Stage 6: Dropship Ordering
 
-- Member checkout
-- Non-member checkout
-- Customer information
-- Delivery information
-- Order creation
-- Order-item snapshots
-- Payment-method selection
-- Private proof-of-payment upload
-- Pending payment status
-- Rejected-payment reason
-- Proof re-upload
-- Customer order tracking
+- Database-backed products
+- Create Order categories
+- Cart quantities and subtotal
+- Minimum-order validation
+- Dropship shipping form
+- Secure order creation
+- Member Order History
+- Agreed company processing method
 
-### Phase 6: Admin payment approval
+Payment collection is not included until the client confirms how orders are paid.
 
-- Pending-payment list
-- Payment and order details
-- Private proof viewer
-- Approve payment
-- Reject payment
-- Rejection reason
-- Secure database approval function
-- Duplicate-approval protection
-- Membership activation
-- Points credit
-- Referral reward creation
-- Inventory update
-- Administrative audit log
+### Stage 7: Wallet and Manual Payouts
 
-Payment approval must be one secure and atomic backend operation.
+- Available Income
+- Funds ready for withdrawal
+- Bank/e-wallet selection
+- Payout-account form
+- Payout amount validation
+- Pending request creation
+- Manual company review
+- Status display and history
 
-### Phase 7: Member dashboard
+No automatic transfer will be implemented.
 
-- Dashboard overview
-- Membership status
-- Orders and payment status
-- Points balance
-- Points transaction history
-- Reward claims
-- Referral link/code
-- Direct referral records
-- Referral reward status
-- Referral payout status
+### Stage 8: Testing and Launch
 
-### Phase 8: Rewards
-
-- Reward catalog
-- Required points
-- Reward details
-- Reward claim form
-- Secure points deduction
-- Insufficient-points validation
-- Admin claim review
-- Claim status
-- Cancellation/refund reversal protection
-
-Negative-points handling after refunds is pending client confirmation.
-
-### Phase 9: Referral system
-
-- Personal referral code/link
-- Direct-referral tracking
-- 10% reward from the first qualified membership package
-- No reward for repeat product orders
-- No multi-level or downline calculation
-- Pending, earned, paid, reversed, and rejected statuses
-- Manual payout recording by admin
-- Duplicate-referral reward protection
-
-Do not build referral trees, binary systems, pairing bonuses, or automated payouts.
-
-### Phase 10: Raffle and Your Brand placeholder
-
-- Display raffle qualification/status
-- Allow admin to update qualification/status
-- Company handles the actual raffle draw
-- Do not build automated raffle winner selection
-- Add temporary Your Brand information/inquiry section
-- Do not build a Your Brand dashboard until confirmed
-
-### Phase 11: Testing and launch
-
-- Test guest checkout
-- Test member checkout
-- Test member and regular pricing
-- Test registration and login
-- Test referral-code registration
-- Test self-referral prevention
-- Test payment upload
-- Test approval, rejection, and re-upload
-- Test repeated approval clicks
-- Test membership activation
-- Test points credit and deduction
-- Test reward claims
-- Test cancel/refund reversal
-- Test referral reward creation
-- Test customer and admin permissions
-- Test private payment-proof access
+- Test sign-up and login
+- Test member-only access
+- Test separation of member records
+- Test men's and women's catalog
+- Test cart minimum validation
+- Test shipping-form validation
+- Test duplicate-order protection
+- Test Order History ownership
+- Test points and income restrictions
+- Test payout amount and duplicate protection
 - Test mobile and desktop layouts
-- Test loading and error states
 - Deploy to Cloudflare Pages
 - Configure production environment variables
 - Connect the final domain
-- Prepare an admin usage guide
+- Prepare a short company usage guide
 
 ---
 
-## 11. Temporarily Out of Scope
+## 13. Phase 1 Scope Boundaries
 
-Do not build the following without written client confirmation and a separate quotation:
+Unless separately confirmed and quoted, the following are not included:
 
-- Automated payment gateway
-- Automated referral or commission payouts
+- Binary tree
+- Pairing or binary bonuses
 - Multi-level or downline commissions
-- Binary, pairing, matrix, or unilevel systems
-- Referral-tree visualization
-- Independent online store for every member
-- Complex reseller inventory
-- Automated raffle drawing
+- Matrix or unilevel compensation
+- Automated commission computation
+- Automatic bank or e-wallet transfers
+- Payment gateway
 - Courier API integration
-- Accounting or payroll system
+- Automated reward redemption or delivery
+- Automated raffle draw
+- Independent storefront for every member
+- Complex accounting or payroll
 - Native Android or iOS application
-- Offline-sale point submission
-- Complete Your Brand request-tracking system
-- Features not listed in the signed final scope
+- AIConnect features outside the referenced Order flow
+- Features shown only in old PDFs, posters, screenshots, or conversations
+
+Reference websites may inspire the design or flow, but their unrequested modules are not automatically included.
 
 ---
 
-## 12. Pending Client Questions
+## 14. Pending Client Questions
 
-Confirm the following before final implementation:
+1. What does `Your Future` mean?
+2. Is `Your People` strictly the number of direct referrals?
+3. How are points earned, deducted, reversed, and approved?
+4. What points are required for the cellphone, laptop, motorcycle, and car?
+5. Are those four items rewards, goals, or display-only milestones?
+6. Where does member income come from?
+7. Is income manually entered or automatically calculated from a confirmed rule?
+8. What makes income available for withdrawal?
+9. Is there a minimum payout, fee, or schedule?
+10. What payout statuses and rejection rules are required?
+11. Does minimum 10 pieces mean total cart quantity or per perfume?
+12. How does a member pay for a perfume order?
+13. What statuses should appear in Order History?
+14. Can members cancel submitted orders?
+15. How are shipping fees handled?
+16. Are only dropship orders supported?
+17. What information is required during Sign Up?
+18. Is membership automatically active after Sign Up or company approval?
+19. What are the prices and inclusions of the four packages?
+20. Can public visitors buy products, or can only members order?
+21. Is a custom admin dashboard required, or will Supabase be used initially?
 
-1. Exact bottles, quantities, and scents in every entry package
-2. Exact member price or discount for every product
-3. Whether Your Brand packages are separate from entry packages
-4. Whether Your Brand needs an inquiry form or complete dashboard
-5. Accepted payment methods
-6. Payment rejection and proof re-upload rules
-7. Exact referral eligibility for each membership tier
-8. Referral payout method, minimum amount, and schedule
-9. Exact reward inventory and required points
-10. Handling when refunded points have already been spent
-11. Shipping fees, couriers, and delivery areas
-12. Exact raffle qualifications and statuses
-13. Whether sellers also earn points
-14. Whether offline sales may earn points
-15. Number of administrator accounts
-16. Stock deduction, cancellation, and restocking rules
-
-Unconfirmed answers must not be invented by the developer or AI assistant.
-
----
-
-## 13. Temporary Timeline
-
-Assuming the client provides complete content and final mechanics:
-
-- Frontend foundation and storefront: 1–4 working days
-- Working backend prototype: 7–12 working days
-- Security testing and bug fixing: 5–10 working days
-- Practical total allowance: approximately 3–5 weeks
-
-The timeline changes when the client adds features, changes business rules, delays content, or requests major revisions.
+No answer should be invented by the developer or AI assistant.
 
 ---
 
-## 14. Definition of Done
+## 15. Definition of Done
 
-The project is ready for production only when:
+The approved Phase 1 is complete when:
 
-- Member and admin authentication works
-- Database migrations are documented
-- RLS policies have been tested
-- Customers cannot access another customer’s information
-- Admin access is enforced by the database
-- Payment proofs are private
-- Payment approval cannot be processed twice
-- Official prices are retrieved from the database
-- Membership activation works correctly
-- Points cannot be manipulated from the browser
-- Reward deductions and reversals are recorded
-- Referral rewards cannot be duplicated
-- Self-referrals are prevented
-- Administrative actions have audit records
+- The first page contains the confirmed sections
+- Log In and Sign Up follow the approved rules
+- Members can access only their own data
+- The dashboard displays the approved member information
+- The shared 20-perfume catalog is complete
+- Every perfume contains the required details
+- Create Order enforces the confirmed minimum quantity
+- Dropship shipping details are validated and saved
+- Orders appear in the correct member's Order History
+- Points and income cannot be edited from the browser
+- Members can submit payout requests using approved methods
+- Payout requests do not automatically send money
+- Manual company processing is documented
 - Mobile and desktop workflows are tested
-- Production deployment works with real environment settings
-- Client has received the agreed admin instructions
+- Production works on the approved domain
+- All included features match the signed written scope
 
 ---
 
-## 15. Cursor AI Guardrails
+## 16. Coding Guardrails
 
-When generating code for this project:
-
-1. Follow this roadmap and the latest database migrations.
-2. Do not invent unconfirmed business rules.
-3. Ask before changing the database schema.
-4. Do not use mock data inside production logic.
-5. Do not expose secret or service-role keys.
-6. Do not bypass RLS to make a feature work.
-7. Do not calculate trusted prices, points, or referral rewards only in the browser.
-8. Use secure database functions for sensitive multi-step operations.
-9. Keep the code modular and beginner-readable.
-10. Use Alpine.js for interface state only.
-11. Keep Supabase calls inside service modules.
-12. Do not mix Alpine state and manual DOM manipulation for the same component.
-13. Explain every migration and security policy before applying it.
-14. Test one phase before starting the next.
-15. Create a Git checkpoint before every major phase.
-16. Treat this roadmap as temporary until the remaining rules are confirmed.
+1. Follow this roadmap and the client's latest written mechanics.
+2. Do not reintroduce features removed from the reduced scope.
+3. Do not invent package, points, reward, income, payout, payment, or shipping rules.
+4. Ask before changing the database structure.
+5. Keep one shared source of truth for the perfume catalog.
+6. Use Alpine.js for interface state only.
+7. Keep backend operations in reusable service modules.
+8. Never expose Supabase secret or service-role keys.
+9. Do not bypass Row Level Security.
+10. Do not trust prices, points, income, or balances sent by the browser.
+11. Test one stage before starting the next.
+12. Create a Git checkpoint before every major stage.
+13. Keep code modular and beginner-readable.
+14. Treat pending mechanics as blocked, not permission to guess.
 
 ---
 
-## 16. Critical Scope Warning
+## 17. Scope Protection Rule
 
-The current project covers only the confirmed central e-commerce, membership, points, rewards, direct-referral, and manual-payment system described in this roadmap.
+Only features listed in the final written and approved scope are included in the project fee.
 
-### Stop Development and Request a Separate Quotation
+New pages, dashboards, roles, earning mechanics, calculations, integrations, reports, or major redesigns require:
 
-If the client requests any of the following, do not automatically add it to the current project:
+1. Complete written requirements
+2. Technical and security assessment
+3. Updated timeline
+4. Separate quotation when applicable
+5. Written client approval
+6. Roadmap and agreement update before implementation
 
-- Downline or multi-level commission system
-- Binary, pairing, unilevel, matrix, or similar compensation system
-- Automated cash or commission payouts
-- Independent online store for every member
-- Complex reseller or seller inventory
-- Automated raffle entry generation or winner selection
-- Accounting, payroll, bookkeeping, or tax system
-- Native Android or iOS mobile application
-- Complex courier or third-party API integrations
-- New features outside the written and approved scope
-- Unlimited revisions or unlimited post-launch changes
-
-These features require additional planning, database architecture, security testing, development time, and project cost.
-
-### Required Process for Additional Features
-
-Before implementing any item above:
-
-1. Stop the affected development work.
-2. Ask the client for complete written requirements.
-3. Assess the technical, legal, security, and maintenance impact.
-4. Prepare a separate timeline and quotation.
-5. Receive written client approval.
-6. Collect the required additional payment or down payment.
-7. Update the roadmap and signed project scope.
-8. Begin development only after all requirements are confirmed.
-
-### Scope Protection Rule
-
-Marketing posters, presentations, conversations, and future ideas do not automatically become included website features.
-
-Only features specifically listed in the final written scope and approved by both parties are included in the current project fee.
-
-Any feature not listed in the approved scope is considered an additional feature and requires a separate quotation.
-
-### Revision Rule
-
-The project includes only the number of revision rounds stated in the final agreement.
-
-The following are not considered minor revisions:
-
-- New pages
-- New dashboards
-- New user roles
-- New earning mechanics
-- Changes to points or referral calculations
-- New integrations
-- Major database changes
-- New approval workflows
-- New reports
-- Redesign of completed sections
-- Changes caused by newly introduced business rules
-
-These requests may affect the timeline and require additional payment.
-
-### Developer Responsibility Boundary
-
-The developer is responsible for implementing the approved technical requirements.
-
-The client/company remains responsible for:
-
-- Accuracy of business mechanics
-- Product and package information
-- Prices and discounts
-- Referral and reward policies
-- Payout processing
-- Fulfillment and delivery
-- Customer disputes
-- Tax and accounting compliance
-- Privacy-policy content
-- Legality and regulatory compliance of the business model
-
-The developer does not provide legal, financial, tax, or regulatory advice.
+The client/company remains responsible for the accuracy and legality of its business, earning, points, reward, payout, product, fulfillment, and financial mechanics.
