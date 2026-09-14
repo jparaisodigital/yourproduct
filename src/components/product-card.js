@@ -6,44 +6,48 @@ const pesoFormatter = new Intl.NumberFormat('en-PH', {
 
 export function renderProductCard(product) {
   const isAvailable = product.stockQuantity > 0
-
+  
   const stockLabel = isAvailable
-    ? 'In stock'
-    : 'Out of stock'
-
+  ? 'In stock'
+  : 'Out of stock'
+  
   const stockTextClass = isAvailable
-    ? 'text-emerald-700'
-    : 'text-red-700'
-
+  ? 'text-emerald-700'
+  : 'text-red-700'
+  
   const stockDotClass = isAvailable
-    ? 'bg-emerald-600'
-    : 'bg-red-600'
-
+  ? 'bg-emerald-600'
+  : 'bg-red-600'
+  
   const memberPriceMarkup = product.memberPrice
-    ? `
-        <div class="mt-1.5 flex items-center justify-between gap-3">
+  ? `
+        <div
+          class="mt-2 grid gap-0.5 sm:mt-1.5 sm:flex sm:items-center sm:justify-between sm:gap-3"
+        >
           <span
-            class="text-[0.68rem] font-medium uppercase tracking-[0.16em] text-brand-muted"
+            class="text-[0.55rem] font-medium uppercase tracking-[0.06em] text-brand-muted sm:text-[0.68rem] sm:tracking-[0.16em]"
           >
             Member price
           </span>
-
-          <span class="font-semibold text-brand-gold">
+  
+          <span
+            class="text-sm font-semibold text-brand-gold sm:text-base"
+          >
             ${pesoFormatter.format(product.memberPrice)}
           </span>
         </div>
       `
-    : ''
-
+  : ''
+  
   const pointsMarkup = product.isPointsQualified
-    ? `
+  ? `
         <span
-          class="inline-flex items-center gap-1.5 text-xs text-brand-muted"
+          class="inline-flex items-center gap-1 text-[0.58rem] text-brand-muted sm:gap-1.5 sm:text-xs"
         >
           <svg
             viewBox="0 0 20 20"
             fill="none"
-            class="size-3.5 text-brand-gold"
+            class="size-3 text-brand-gold sm:size-3.5"
             aria-hidden="true"
           >
             <path
@@ -53,12 +57,12 @@ export function renderProductCard(product) {
               stroke-linejoin="round"
             />
           </svg>
-
+  
           ${product.pointsPerUnit} points
         </span>
       `
-    : ''
-
+  : ''
+  
   return `
     <article
       x-show="
@@ -66,7 +70,7 @@ export function renderProductCard(product) {
         activeCategory === '${product.category}'
       "
       x-transition.opacity.duration.200ms
-      class="group overflow-hidden rounded-[1.5rem] border border-brand-border bg-brand-panel shadow-[0_18px_50px_rgb(74_57_27_/_0.08)] transition duration-300 hover:-translate-y-1 hover:border-brand-gold/50 hover:shadow-[0_24px_65px_rgb(183_138_50_/_0.14)]"
+      class="group overflow-hidden rounded-[1.1rem] border border-brand-border bg-brand-panel shadow-[0_18px_50px_rgb(74_57_27_/_0.08)] transition duration-300 hover:-translate-y-1 hover:border-brand-gold/50 hover:shadow-[0_24px_65px_rgb(183_138_50_/_0.14)] sm:rounded-[1.5rem]"
       data-product-card
       data-product-id="${product.id}"
       data-product-category="${product.category}"
@@ -82,74 +86,84 @@ export function renderProductCard(product) {
         <img
           src="${product.image}"
           alt="${product.name}"
-          class="size-full object-contain p-8 transition duration-500 ease-out group-hover/image:scale-[1.04]"
+          class="size-full object-contain p-4 transition duration-500 ease-out group-hover/image:scale-[1.04] sm:p-8"
           loading="lazy"
         >
-
+  
         <span
-          class="pointer-events-none absolute left-4 top-4 rounded-full border border-brand-gold/30 bg-brand-black/90 px-3 py-1 text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-brand-gold backdrop-blur-sm"
+          class="pointer-events-none absolute left-2 top-2 max-w-[calc(100%-1rem)] truncate rounded-full border border-brand-gold/30 bg-brand-black/90 px-2 py-1 text-[0.48rem] font-semibold uppercase tracking-[0.06em] text-brand-gold backdrop-blur-sm sm:left-4 sm:top-4 sm:px-3 sm:text-[0.62rem] sm:tracking-[0.16em]"
         >
           ${product.collectionLabel}
         </span>
       </button>
-
-      <div class="p-5 sm:p-6">
-        <div class="flex items-center justify-between gap-4">
+  
+      <div class="p-3 sm:p-6">
+        <div
+          class="flex flex-col items-start gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
+        >
           <span
-            class="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
+            class="text-[0.55rem] font-semibold uppercase tracking-[0.08em] text-brand-gold sm:text-[0.68rem] sm:tracking-[0.2em]"
           >
             ${product.sku}
           </span>
-
+  
           ${pointsMarkup}
         </div>
-
+  
         <h3
-          class="mt-3 font-display text-2xl leading-tight text-brand-cream"
+          class="mt-2 line-clamp-2 min-h-[2.5rem] font-display text-lg leading-[1.1] text-brand-cream sm:mt-3 sm:min-h-0 sm:text-2xl sm:leading-tight"
         >
           ${product.name}
         </h3>
-
+  
         <p
-          class="mt-2 min-h-12 text-sm leading-6 text-brand-muted"
+          class="mt-2 hidden min-h-12 text-sm leading-6 text-brand-muted sm:block"
         >
           ${product.shortDescription}
         </p>
-
-        <div class="mt-5 border-t border-brand-border pt-4">
-          <div class="flex items-center justify-between gap-3">
+  
+        <div
+          class="mt-3 border-t border-brand-border pt-3 sm:mt-5 sm:pt-4"
+        >
+          <div
+            class="grid gap-0.5 sm:flex sm:items-center sm:justify-between sm:gap-3"
+          >
             <span
-              class="text-[0.68rem] font-medium uppercase tracking-[0.16em] text-brand-muted"
+              class="text-[0.55rem] font-medium uppercase tracking-[0.06em] text-brand-muted sm:text-[0.68rem] sm:tracking-[0.16em]"
             >
               Regular price
             </span>
-
-            <span class="font-semibold text-brand-cream">
+  
+            <span
+              class="text-sm font-semibold text-brand-cream sm:text-base"
+            >
               ${pesoFormatter.format(product.regularPrice)}
             </span>
           </div>
-
+  
           ${memberPriceMarkup}
         </div>
-
+  
         <div
-          class="${stockTextClass} mt-4 inline-flex items-center gap-2 text-xs font-semibold"
+          class="${stockTextClass} mt-3 inline-flex items-center gap-1.5 text-[0.65rem] font-semibold sm:mt-4 sm:gap-2 sm:text-xs"
           aria-label="${stockLabel}"
         >
           <span
             class="${stockDotClass} ${
-              isAvailable ? 'stock-status-dot' : ''
-            } block size-1.5 shrink-0 rounded-full"
+  isAvailable ? 'stock-status-dot' : ''
+} block size-1.5 shrink-0 rounded-full"
             aria-hidden="true"
           ></span>
 
           ${stockLabel}
         </div>
 
-        <div class="mt-4 flex items-center gap-2.5">
+        <div
+          class="mt-3 flex items-center gap-1.5 sm:mt-4 sm:gap-2.5"
+        >
           <button
             type="button"
-            class="group/view grid size-11 shrink-0 place-items-center rounded-full border border-brand-border bg-transparent text-brand-muted transition duration-200 hover:border-brand-gold hover:bg-brand-gold/10 hover:text-brand-gold active:scale-95"
+            class="group/view hidden size-11 shrink-0 place-items-center rounded-full border border-brand-border bg-transparent text-brand-muted transition duration-200 hover:border-brand-gold hover:bg-brand-gold/10 hover:text-brand-gold active:scale-95 sm:grid"
             data-action="quick-view"
             data-product-id="${product.id}"
             aria-label="Quick view ${product.name}"
@@ -159,7 +173,7 @@ export function renderProductCard(product) {
             <svg
               viewBox="0 0 24 24"
               fill="none"
-              class="size-[1.15rem] transition duration-200 group-hover/view:scale-110"
+              class="size-4 transition duration-200 group-hover/view:scale-110 sm:size-[1.15rem]"
               aria-hidden="true"
             >
               <path
@@ -186,7 +200,7 @@ export function renderProductCard(product) {
 
           <button
             type="button"
-            class="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-brand-gold px-4 text-xs font-bold uppercase tracking-[0.1em] text-[#17130d] shadow-[0_8px_22px_rgb(183_138_50_/_0.18)] transition duration-200 hover:-translate-y-0.5 hover:bg-brand-gold-light active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+            class="inline-flex h-9 min-w-0 flex-1 items-center justify-center gap-1 rounded-lg bg-brand-gold px-2 text-[0.62rem] font-bold uppercase tracking-[0.04em] text-[#17130d] shadow-[0_8px_22px_rgb(183_138_50_/_0.18)] transition duration-200 hover:-translate-y-0.5 hover:bg-brand-gold-light active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 sm:h-11 sm:gap-2 sm:rounded-xl sm:px-4 sm:text-xs sm:tracking-[0.1em]"
             data-action="add-to-cart"
             data-product-id="${product.id}"
             @click.prevent="$addToCartWithAnimation('${product.id}', $event.currentTarget)"
@@ -196,7 +210,7 @@ export function renderProductCard(product) {
             <svg
               viewBox="0 0 24 24"
               fill="none"
-              class="size-4 shrink-0"
+              class="size-3.5 shrink-0 sm:size-4"
               aria-hidden="true"
             >
               <path
@@ -223,14 +237,17 @@ export function renderProductCard(product) {
             </svg>
 
             <span
-              x-text="
-                $store.cart.quantityFor('${product.id}') > 0
-                  ? 'Added (' + $store.cart.quantityFor('${product.id}') + ')'
-                  : 'Add to cart'
-              "
-            >
-              Add to cart
-            </span>
+  x-text="
+    $store.cart.quantityFor('${product.id}') > 0
+      ? 'Added (' +
+        $store.cart.quantityFor('${product.id}') +
+        ')'
+      : 'Add to cart'
+  "
+>
+  Add to cart
+</span>
+
           </button>
         </div>
       </div>
