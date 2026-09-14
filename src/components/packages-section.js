@@ -143,10 +143,6 @@ const pesoFormatter = new Intl.NumberFormat('en-PH', {
               class="${buttonClass} inline-flex h-11 w-full items-center justify-center rounded-xl px-4 text-xs font-semibold uppercase tracking-[0.08em] transition duration-200 active:scale-[0.98]"
             >
               Explore ${packageItem.shortLabel}
-  
-              <span class="ml-2" aria-hidden="true">
-                →
-              </span>
             </a>
           </div>
         </div>

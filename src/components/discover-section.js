@@ -46,10 +46,6 @@ export function renderDiscoverSection() {
               class="inline-flex h-11 items-center justify-center rounded-xl bg-brand-gold px-5 text-xs font-semibold uppercase tracking-[0.08em] text-[#17130d] transition duration-200 hover:-translate-y-0.5 hover:bg-brand-gold-light"
             >
               View Perfumes
-
-              <span class="ml-2" aria-hidden="true">
-                →
-              </span>
             </a>
 
             <a
@@ -170,13 +166,6 @@ export function renderDiscoverSection() {
               class="mt-4 inline-flex items-center text-xs font-semibold uppercase tracking-[0.08em] text-brand-gold"
             >
               View collection
-
-              <span
-                class="ml-2 transition group-hover:translate-x-1"
-                aria-hidden="true"
-              >
-                →
-              </span>
             </a>
           </article>
 
@@ -214,13 +203,6 @@ export function renderDiscoverSection() {
               class="mt-4 inline-flex items-center text-xs font-semibold uppercase tracking-[0.08em] text-brand-gold"
             >
               View collection
-
-              <span
-                class="ml-2 transition group-hover:translate-x-1"
-                aria-hidden="true"
-              >
-                →
-              </span>
             </a>
           </article>
         </div>

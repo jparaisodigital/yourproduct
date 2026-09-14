@@ -65,11 +65,7 @@ export function renderHero(homeConfig, siteConfig) {
               href="${hero.primaryAction.href}"
               class="inline-flex items-center justify-center rounded-full bg-brand-gold px-6 py-3 text-sm font-semibold text-brand-black transition duration-300 hover:-translate-y-1 hover:bg-brand-gold-light"
             >
-              ${hero.primaryAction.label}
-
-              <span class="ml-3" aria-hidden="true">
-                →
-              </span>
+            ${hero.primaryAction.label}
             </a>
 
             <a
