@@ -263,3 +263,172 @@ body.mobile-menu-open {
   overflow: hidden;
   overscroll-behavior: none;
 }
+
+/* ========================================
+   MOBILE PACKAGES SCROLL JOURNEY
+   ======================================== */
+
+   @media (max-width: 639px) {
+    .packages-scroll-stage {
+      position: relative;
+      height: var(--package-stage-height, 265svh);
+    }
+  
+    .packages-scroll-sticky {
+      position: sticky;
+      top: 5rem;
+      display: flex;
+      height: calc(100svh - 6rem);
+      flex-direction: column;
+      justify-content: center;
+    }
+  
+    .packages-scroll-viewport {
+      width: 100%;
+      overflow: hidden;
+    }
+  
+    .packages-scroll-track {
+      display: flex;
+      align-items: stretch;
+      gap: 0.875rem;
+      transition: transform 80ms linear;
+      will-change: transform;
+    }
+  
+    .package-scroll-card {
+      flex: 0 0 88%;
+      opacity: 0.58;
+      transform: scale(0.965);
+      transform-origin: center;
+      transition:
+        opacity 320ms ease,
+        transform 320ms ease,
+        border-color 320ms ease,
+        box-shadow 320ms ease;
+    }
+  
+    .package-scroll-card.is-active {
+      opacity: 1;
+      transform: scale(1);
+    }
+  
+    .packages-scroll-controls {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+  
+    .packages-scroll-instruction {
+      font-size: 0.6rem;
+      font-weight: 600;
+      color: var(--color-brand-muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+  
+    .packages-scroll-progress {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.35rem;
+    }
+  
+    .package-scroll-dot {
+      width: 0.35rem;
+      height: 0.35rem;
+      border-radius: 999px;
+      background: var(--color-brand-border);
+      transition:
+        width 250ms ease,
+        background-color 250ms ease;
+    }
+  
+    .package-scroll-dot.is-active {
+      width: 1.1rem;
+      background: var(--color-brand-gold);
+    }
+  
+    .packages-scroll-counter {
+      justify-self: end;
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: var(--color-brand-gold);
+      letter-spacing: 0.1em;
+    }
+  }
+  
+  /* Original tablet and desktop package grid */
+  @media (min-width: 640px) {
+    .packages-scroll-stage {
+      height: auto !important;
+    }
+  
+    .packages-scroll-sticky {
+      position: static;
+      height: auto;
+    }
+  
+    .packages-scroll-viewport {
+      overflow: visible;
+    }
+  
+    .packages-scroll-track {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      align-items: stretch;
+      gap: 1rem;
+      transform: none !important;
+    }
+  
+    .package-scroll-card {
+      opacity: 1;
+      transform: none;
+    }
+  
+    .packages-scroll-controls {
+      display: none;
+    }
+  }
+  
+  @media (min-width: 1280px) {
+    .packages-scroll-track {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+  
+  /* Accessible fallback */
+  @media (max-width: 639px) and (prefers-reduced-motion: reduce) {
+    .packages-scroll-stage {
+      height: auto;
+    }
+  
+    .packages-scroll-sticky {
+      position: static;
+      height: auto;
+    }
+  
+    .packages-scroll-viewport {
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+    }
+  
+    .packages-scroll-viewport::-webkit-scrollbar {
+      display: none;
+    }
+  
+    .packages-scroll-track {
+      transform: none !important;
+      transition: none;
+    }
+  
+    .package-scroll-card {
+      scroll-snap-align: start;
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+  }
