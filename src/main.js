@@ -2,6 +2,10 @@ import './style.css'
 import Alpine from 'alpinejs'
 
 import {
+  initScrollReveal,
+} from './lib/scroll-reveal.js'
+
+import {
   products,
   productCategories,
 } from './config/products-config.js'
@@ -17,8 +21,13 @@ import {
 import { siteConfig } from './config/site-config.js'
 import { homeConfig } from './config/home-config.js'
 
-import { renderHeader } from './components/header.js'
-import { renderHero } from './components/hero.js'
+import {
+  renderHeader,
+} from './components/header.js'
+
+import {
+  renderHero,
+} from './components/hero.js'
 
 import {
   renderProductsSection,
@@ -56,7 +65,9 @@ import {
   renderCartDrawer,
 } from './components/cart-drawer.js'
 
-import { renderFooter } from './components/footer.js'
+import {
+  renderFooter,
+} from './components/footer.js'
 
 window.Alpine = Alpine
 
@@ -96,3 +107,4 @@ document.querySelector('#app').innerHTML = `
 `
 
 Alpine.start()
+initScrollReveal()
