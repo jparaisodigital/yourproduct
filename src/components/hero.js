@@ -8,10 +8,11 @@ export function renderHero(homeConfig, siteConfig) {
     .map(
       (item) => `
         <li
-          class="flex items-center gap-3 text-xs uppercase tracking-[0.14em] text-brand-muted"
+          class="flex shrink-0 items-center gap-3 whitespace-nowrap text-xs uppercase tracking-[0.14em] text-brand-muted"
         >
           <span
             class="size-1.5 shrink-0 rounded-full bg-brand-gold"
+            aria-hidden="true"
           ></span>
 
           ${item}
@@ -25,12 +26,13 @@ export function renderHero(homeConfig, siteConfig) {
       id="home"
       class="relative isolate overflow-hidden bg-brand-black"
     >
-          <img
+      <img
         src="${mobileHeroImage}"
         alt=""
         aria-hidden="true"
         class="pointer-events-none absolute -right-12 top-12 z-0 h-[440px] w-[340px] max-w-none select-none object-contain opacity-[0.07] sm:hidden"
       >
+
       <div
         class="pointer-events-none absolute -left-40 top-10 size-96 rounded-full bg-brand-gold/10 blur-3xl"
         aria-hidden="true"
@@ -44,7 +46,7 @@ export function renderHero(homeConfig, siteConfig) {
       <div
         class="relative mx-auto grid w-[min(1120px,90%)] items-center gap-12 py-12 lg:grid-cols-[1fr_0.72fr] lg:gap-16 lg:py-12 xl:py-14"
       >
-        <div class="relative z-10">
+        <div class="relative z-10 min-w-0">
           <p
             class="text-xs font-semibold uppercase tracking-[0.32em] text-brand-gold"
           >
@@ -72,7 +74,7 @@ export function renderHero(homeConfig, siteConfig) {
               href="${hero.primaryAction.href}"
               class="inline-flex items-center justify-center rounded-full bg-brand-gold px-6 py-3 text-sm font-semibold text-brand-black transition duration-300 hover:-translate-y-1 hover:bg-brand-gold-light"
             >
-            ${hero.primaryAction.label}
+              ${hero.primaryAction.label}
             </a>
 
             <a
@@ -83,11 +85,23 @@ export function renderHero(homeConfig, siteConfig) {
             </a>
           </div>
 
-          <ul
-            class="mt-9 grid gap-4 border-t border-brand-border pt-6 sm:grid-cols-3"
+          <div
+            class="hero-trust-marquee mt-9 overflow-hidden border-t border-brand-border pt-6"
+            aria-label="${trustPoints.join(', ')}"
           >
-            ${trustPointItems}
-          </ul>
+            <div class="hero-trust-marquee-track">
+              <ul class="hero-trust-marquee-group">
+                ${trustPointItems}
+              </ul>
+
+              <ul
+                class="hero-trust-marquee-group"
+                aria-hidden="true"
+              >
+                ${trustPointItems}
+              </ul>
+            </div>
+          </div>
         </div>
 
         <figure

@@ -431,3 +431,67 @@ body.mobile-menu-open {
       transition: none;
     }
   }
+
+  /* ========================================
+   HERO TRUST POINTS MARQUEE
+   ======================================== */
+
+.hero-trust-marquee {
+  width: 100%;
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 4%,
+    #000 96%,
+    transparent
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 4%,
+    #000 96%,
+    transparent
+  );
+}
+
+.hero-trust-marquee-track {
+  display: flex;
+  width: max-content;
+  align-items: center;
+  animation: hero-trust-marquee-loop 13s linear infinite;
+  will-change: transform;
+}
+
+.hero-trust-marquee-group {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 2rem;
+  margin: 0;
+  padding: 0 2rem 0 0;
+  list-style: none;
+}
+
+@keyframes hero-trust-marquee-loop {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (max-width: 639px) {
+  .hero-trust-marquee-group {
+    gap: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-trust-marquee-track {
+    animation: none;
+    transform: none;
+  }
+}
