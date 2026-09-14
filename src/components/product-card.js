@@ -6,21 +6,21 @@ const pesoFormatter = new Intl.NumberFormat('en-PH', {
 
 export function renderProductCard(product) {
   const isAvailable = product.stockQuantity > 0
-  
+
   const stockLabel = isAvailable
-  ? 'In stock'
-  : 'Out of stock'
-  
+    ? 'In stock'
+    : 'Out of stock'
+
   const stockTextClass = isAvailable
-  ? 'text-emerald-700'
-  : 'text-red-700'
-  
+    ? 'text-emerald-700'
+    : 'text-red-700'
+
   const stockDotClass = isAvailable
   ? 'bg-emerald-600'
   : 'bg-red-600'
-  
+
   const memberPriceMarkup = product.memberPrice
-  ? `
+    ? `
         <div
           class="mt-2 grid gap-0.5 sm:mt-1.5 sm:flex sm:items-center sm:justify-between sm:gap-3"
         >
@@ -29,7 +29,7 @@ export function renderProductCard(product) {
           >
             Member price
           </span>
-  
+
           <span
             class="text-sm font-semibold text-brand-gold sm:text-base"
           >
@@ -37,10 +37,10 @@ export function renderProductCard(product) {
           </span>
         </div>
       `
-  : ''
-  
+    : ''
+
   const pointsMarkup = product.isPointsQualified
-  ? `
+    ? `
         <span
           class="inline-flex items-center gap-1 text-[0.58rem] text-brand-muted sm:gap-1.5 sm:text-xs"
         >
@@ -57,12 +57,12 @@ export function renderProductCard(product) {
               stroke-linejoin="round"
             />
           </svg>
-  
+
           ${product.pointsPerUnit} points
         </span>
       `
-  : ''
-  
+    : ''
+
   return `
     <article
       x-show="
@@ -89,73 +89,71 @@ export function renderProductCard(product) {
           class="size-full object-contain p-4 transition duration-500 ease-out group-hover/image:scale-[1.04] sm:p-8"
           loading="lazy"
         >
-  
-        <span
-          class="pointer-events-none absolute left-2 top-2 max-w-[calc(100%-1rem)] truncate rounded-full border border-brand-gold/30 bg-brand-black/90 px-2 py-1 text-[0.48rem] font-semibold uppercase tracking-[0.06em] text-brand-gold backdrop-blur-sm sm:left-4 sm:top-4 sm:px-3 sm:text-[0.62rem] sm:tracking-[0.16em]"
-        >
-          ${product.collectionLabel}
-        </span>
       </button>
-  
+
       <div class="p-3 sm:p-6">
         <div
           class="flex flex-col items-start gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
         >
           <span
-            class="text-[0.55rem] font-semibold uppercase tracking-[0.08em] text-brand-gold sm:text-[0.68rem] sm:tracking-[0.2em]"
+            class="text-[0.5rem] font-semibold uppercase tracking-[0.05em] text-brand-gold sm:text-[0.68rem] sm:tracking-[0.12em]"
           >
-            ${product.sku}
+            ${product.collectionLabel}
           </span>
-  
+
           ${pointsMarkup}
         </div>
-  
+
         <h3
           class="mt-2 line-clamp-2 min-h-[2.5rem] font-display text-lg leading-[1.1] text-brand-cream sm:mt-3 sm:min-h-0 sm:text-2xl sm:leading-tight"
         >
           ${product.name}
         </h3>
-  
+
         <p
           class="mt-2 hidden min-h-12 text-sm leading-6 text-brand-muted sm:block"
         >
           ${product.shortDescription}
         </p>
-  
+
         <div
           class="mt-3 border-t border-brand-border pt-3 sm:mt-5 sm:pt-4"
         >
           <div
             class="grid gap-0.5 sm:flex sm:items-center sm:justify-between sm:gap-3"
           >
-            <span
-              class="text-[0.55rem] font-medium uppercase tracking-[0.06em] text-brand-muted sm:text-[0.68rem] sm:tracking-[0.16em]"
+            <div
+              class="flex w-full items-center justify-between gap-2 sm:w-auto sm:justify-start sm:gap-3"
             >
-              Regular price
-            </span>
-  
+              <span
+                class="text-[0.55rem] font-medium uppercase tracking-[0.06em] text-brand-muted sm:text-[0.68rem] sm:tracking-[0.16em]"
+              >
+                Regular price
+              </span>
+
+              <span
+  class="${stockTextClass} inline-flex items-center gap-1.5 whitespace-nowrap text-[0.58rem] font-semibold normal-case sm:text-xs"
+  aria-label="${stockLabel}"
+>
+  <span
+    class="${stockDotClass} ${
+      isAvailable ? 'stock-status-dot' : ''
+    } block size-1.5 shrink-0 rounded-full"
+    aria-hidden="true"
+  ></span>
+
+  ${stockLabel}
+</span>
+            </div>
+
             <span
               class="text-sm font-semibold text-brand-cream sm:text-base"
             >
               ${pesoFormatter.format(product.regularPrice)}
             </span>
           </div>
-  
-          ${memberPriceMarkup}
-        </div>
-  
-        <div
-          class="${stockTextClass} mt-3 inline-flex items-center gap-1.5 text-[0.65rem] font-semibold sm:mt-4 sm:gap-2 sm:text-xs"
-          aria-label="${stockLabel}"
-        >
-          <span
-            class="${stockDotClass} ${
-  isAvailable ? 'stock-status-dot' : ''
-} block size-1.5 shrink-0 rounded-full"
-            aria-hidden="true"
-          ></span>
 
-          ${stockLabel}
+          ${memberPriceMarkup}
         </div>
 
         <div
@@ -173,7 +171,7 @@ export function renderProductCard(product) {
             <svg
               viewBox="0 0 24 24"
               fill="none"
-              class="size-4 transition duration-200 group-hover/view:scale-110 sm:size-[1.15rem]"
+              class="size-[1.15rem] transition duration-200 group-hover/view:scale-110"
               aria-hidden="true"
             >
               <path
@@ -237,17 +235,16 @@ export function renderProductCard(product) {
             </svg>
 
             <span
-  x-text="
-    $store.cart.quantityFor('${product.id}') > 0
-      ? 'Added (' +
-        $store.cart.quantityFor('${product.id}') +
-        ')'
-      : 'Add to cart'
-  "
->
-  Add to cart
-</span>
-
+              x-text="
+                $store.cart.quantityFor('${product.id}') > 0
+                  ? 'Added (' +
+                    $store.cart.quantityFor('${product.id}') +
+                    ')'
+                  : 'Add to cart'
+              "
+            >
+              Add to cart
+            </span>
           </button>
         </div>
       </div>
