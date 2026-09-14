@@ -91,10 +91,16 @@ import {
   renderFooter,
 } from './components/footer.js'
 
+import {
+  registerMembershipModal,
+  renderMembershipModal,
+} from './components/membership-modal.js'
+
 window.Alpine = Alpine
 
 registerCartStore(Alpine, products)
 registerProductViewStore(Alpine, products)
+registerMembershipModal(Alpine)
 
 Alpine.magic('addToCartWithAnimation', () => {
   return (productId, sourceButton) => {
@@ -152,6 +158,7 @@ document.title =
 
   ${renderCartDrawer()}
   ${renderProductDrawer()}
+  ${renderMembershipModal()}
 `
 
 Alpine.start()
