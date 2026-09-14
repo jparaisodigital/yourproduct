@@ -1,3 +1,4 @@
+import mobileHeroImage from '../assets/herosection.png'
 import heroImage from '../assets/hero-client.png'
 
 export function renderHero(homeConfig, siteConfig) {
@@ -24,6 +25,12 @@ export function renderHero(homeConfig, siteConfig) {
       id="home"
       class="relative isolate overflow-hidden bg-brand-black"
     >
+          <img
+        src="${mobileHeroImage}"
+        alt=""
+        aria-hidden="true"
+        class="pointer-events-none absolute -right-12 top-12 z-0 h-[440px] w-[340px] max-w-none select-none object-contain opacity-[0.07] sm:hidden"
+      >
       <div
         class="pointer-events-none absolute -left-40 top-10 size-96 rounded-full bg-brand-gold/10 blur-3xl"
         aria-hidden="true"
