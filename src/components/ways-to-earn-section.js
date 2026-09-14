@@ -38,10 +38,10 @@ export function renderWaysToEarnSection() {
       .map(
         (step) => `
           <article
-            class="group relative overflow-hidden rounded-[1.4rem] border border-brand-border bg-brand-panel p-5 shadow-panel transition duration-300 hover:-translate-y-1 hover:border-brand-gold/50 sm:p-6"
+            class="group relative overflow-hidden rounded-[1.4rem] border border-brand-border bg-brand-panel p-5 shadow-panel transition duration-300 hover:border-brand-gold/50 md:hover:-translate-y-1 sm:p-6"
           >
             <div
-              class="pointer-events-none absolute -right-12 -top-12 size-28 rounded-full bg-brand-gold/10 blur-2xl"
+              class="pointer-events-none absolute -right-12 -top-12 hidden size-28 rounded-full bg-brand-gold/10 blur-2xl sm:block"
               aria-hidden="true"
             ></div>
   
@@ -94,7 +94,7 @@ export function renderWaysToEarnSection() {
         class="relative isolate overflow-hidden border-t border-brand-border bg-brand-black py-14 sm:py-16 lg:py-16"
       >
         <div
-          class="pointer-events-none absolute -left-40 bottom-0 size-80 rounded-full bg-brand-gold/10 blur-3xl"
+          class="pointer-events-none absolute -left-40 bottom-0 hidden size-80 rounded-full bg-brand-gold/10 blur-3xl sm:block"
           aria-hidden="true"
         ></div>
   
@@ -113,6 +113,7 @@ export function renderWaysToEarnSection() {
                 class="mt-3 max-w-3xl font-display text-4xl leading-[1.05] text-brand-cream sm:text-5xl lg:text-[3.35rem]"
               >
                 Your people, income,
+  
                 <span class="italic text-brand-gold">
                   and payouts.
                 </span>
@@ -145,6 +146,7 @@ export function renderWaysToEarnSection() {
                 class="mt-3 max-w-xl font-display text-3xl leading-tight text-brand-cream"
               >
                 Payout requests are
+  
                 <span class="italic text-brand-gold">
                   reviewed manually.
                 </span>
@@ -167,7 +169,7 @@ export function renderWaysToEarnSection() {
               class="relative flex items-center justify-center overflow-hidden border-t border-brand-border bg-brand-black p-6 lg:border-l lg:border-t-0"
             >
               <div
-                class="pointer-events-none absolute size-52 rounded-full bg-brand-gold/10 blur-3xl"
+                class="pointer-events-none absolute hidden size-52 rounded-full bg-brand-gold/10 blur-3xl sm:block"
                 aria-hidden="true"
               ></div>
   

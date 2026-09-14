@@ -70,7 +70,7 @@ export function renderProductCard(product) {
         activeCategory === '${product.category}'
       "
       x-transition.opacity.duration.200ms
-      class="group overflow-hidden rounded-[1.1rem] border border-brand-border bg-brand-panel shadow-[0_18px_50px_rgb(74_57_27_/_0.08)] transition duration-300 hover:-translate-y-1 hover:border-brand-gold/50 hover:shadow-[0_24px_65px_rgb(183_138_50_/_0.14)] sm:rounded-[1.5rem]"
+      class="group overflow-hidden rounded-[1.1rem] border border-brand-border bg-brand-panel shadow-[0_18px_50px_rgb(74_57_27_/_0.08)] transition duration-300 hover:border-brand-gold/50 hover:shadow-[0_24px_65px_rgb(183_138_50_/_0.14)] sm:rounded-[1.5rem]"
       data-product-card
       data-product-id="${product.id}"
       data-product-category="${product.category}"
@@ -86,7 +86,7 @@ export function renderProductCard(product) {
         <img
           src="${product.image}"
           alt="${product.name}"
-          class="size-full object-contain p-4 transition duration-500 ease-out group-hover/image:scale-[1.04] sm:p-8"
+          class="size-full object-contain p-4 transition duration-500 ease-out group-hover/image:-translate-y-2 group-hover/image:scale-[1.04] sm:p-8"
           loading="lazy"
         >
       </button>
