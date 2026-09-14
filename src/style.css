@@ -286,13 +286,6 @@ body.mobile-menu-open {
     .packages-scroll-viewport {
       width: 100%;
       overflow: hidden;
-      cursor: grab;
-      touch-action: pan-y;
-      user-select: none;
-    }
-    
-    .packages-scroll-viewport.is-dragging {
-      cursor: grabbing;
     }
   
     .packages-scroll-track {
