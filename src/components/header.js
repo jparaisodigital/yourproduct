@@ -56,7 +56,7 @@ export function renderHeader(siteConfig) {
             </strong>
 
             <small
-              class="hidden truncate text-[9px] uppercase tracking-[0.14em] text-brand-muted sm:block"
+              class="block text-[8px] uppercase tracking-[0.08em] text-brand-muted sm:text-[9px] sm:tracking-[0.14em]"
             >
               ${siteConfig.brand.tagline}
             </small>
