@@ -1,56 +1,69 @@
 export const siteConfig = {
-    brand: {
-      name: 'YOUR PRODUCT',
-      tagline: 'Scents That Create Opportunities',
-      shortDescription:
-        'Premium fragrances with membership, rewards, and direct referral opportunities.',
+  brand: {
+    name: 'YOUR PRODUCT',
+    tagline: 'Scents That Create Opportunities',
+    shortDescription:
+      'Discover premium fragrances, meaningful connections, and new possibilities with Your Product.',
+  },
+
+  locale: 'en-PH',
+  currency: 'PHP',
+
+  navigation: [
+    {
+      label: 'Discover',
+      href: '#discover',
     },
-  
-    locale: 'en-PH',
-    currency: 'PHP',
-  
-    navigation: [
-      {
-        label: 'Home',
-        href: '#home',
-      },
-      {
-        label: 'Shop',
-        href: '#shop',
-      },
-      {
-        label: 'Membership',
-        href: '#membership',
-      },
-      {
-        label: 'Rewards',
-        href: '#rewards',
-      },
-      {
-        label: 'About',
-        href: '#about',
-      },
-    ],
-  
-    contact: {
-      facebook: '',
-      messenger: '',
-      email: '',
-      phone: '',
+    {
+      label: 'Packages',
+      href: '#packages',
     },
-  
-    features: {
-      shop: true,
-      membership: true,
-      points: true,
-      rewards: true,
-      directReferral: true,
-      raffleStatus: true,
-      yourBrandInformation: true,
-  
-      yourBrandDashboard: false,
-      automatedRaffle: false,
-      automatedPayouts: false,
-      multiLevelCommission: false,
+    {
+      label: 'Our Community',
+      href: '#community',
     },
-  }
+    {
+      label: 'Ways to Earn',
+      href: '#ways-to-earn',
+    },
+  ],
+
+  contact: {
+    facebook: '',
+    messenger: '',
+    email: '',
+    phone: '',
+  },
+
+  features: {
+    publicLandingPage: true,
+    packages: true,
+    community: true,
+    waysToEarn: true,
+
+    memberRegistration: true,
+    memberLogin: true,
+    memberDashboard: true,
+
+    perfumeInformation: true,
+    menPerfumes: true,
+    womenPerfumes: true,
+
+    createOrder: true,
+    shoppingCart: true,
+    dropshipCheckout: true,
+    orderHistory: true,
+
+    directReferralCount: true,
+    pointsDisplay: true,
+    rewardProgress: true,
+
+    wallet: true,
+    manualPayoutRequests: true,
+
+    automatedPayouts: false,
+    automatedPayments: false,
+    binarySystem: false,
+    multiLevelCommission: false,
+  },
+}

@@ -7,19 +7,43 @@ import {
 } from './config/products-config.js'
 
 import {
-  registerCartStore,
-} from './stores/cart-store.js'
+  packages,
+} from './config/packages-config.js'
 
 import {
-  renderProductsSection,
-} from './components/products-section.js'
+  registerCartStore,
+} from './stores/cart-store.js'
 
 import { siteConfig } from './config/site-config.js'
 import { homeConfig } from './config/home-config.js'
 
 import { renderHeader } from './components/header.js'
 import { renderHero } from './components/hero.js'
-import { renderCartDrawer } from './components/cart-drawer.js'
+
+import {
+  renderDiscoverSection,
+} from './components/discover-section.js'
+
+import {
+  renderBossSection,
+} from './components/boss-section.js'
+
+import {
+  renderVisionMissionSection,
+} from './components/vision-mission-section.js'
+
+import {
+  renderPackagesSection,
+} from './components/packages-section.js'
+
+import {
+  renderProductsSection,
+} from './components/products-section.js'
+
+import {
+  renderCartDrawer,
+} from './components/cart-drawer.js'
+
 import { renderFooter } from './components/footer.js'
 
 window.Alpine = Alpine
@@ -35,64 +59,53 @@ document.querySelector('#app').innerHTML = `
   <main>
     ${renderHero(homeConfig, siteConfig)}
 
+    ${renderDiscoverSection()}
+
+    ${renderBossSection()}
+
+    ${renderVisionMissionSection()}
+
+    ${renderPackagesSection(packages)}
+
     ${renderProductsSection(
       products,
       productCategories,
     )}
 
     <section
-      id="membership"
-      class="grid min-h-[60vh] place-items-center border-t border-brand-border bg-brand-black px-6 py-20"
-    >
-      <div class="text-center">
-        <p
-          class="text-xs uppercase tracking-[0.3em] text-brand-gold"
-        >
-          Membership
-        </p>
-
-        <h2
-          class="mt-4 font-display text-5xl text-brand-cream"
-        >
-          Choose Your Beginning
-        </h2>
-      </div>
-    </section>
-
-    <section
-      id="rewards"
+      id="community"
       class="grid min-h-[60vh] place-items-center border-t border-brand-border bg-brand-charcoal px-6 py-20"
     >
       <div class="text-center">
         <p
           class="text-xs uppercase tracking-[0.3em] text-brand-gold"
         >
-          Points and Rewards
+          Our Community
         </p>
 
         <h2
           class="mt-4 font-display text-5xl text-brand-cream"
         >
-          Qualified Purchases Move You Forward
+          Grow Together
         </h2>
       </div>
     </section>
 
     <section
-      id="about"
+      id="ways-to-earn"
       class="grid min-h-[60vh] place-items-center border-t border-brand-border bg-brand-black px-6 py-20"
     >
       <div class="text-center">
         <p
           class="text-xs uppercase tracking-[0.3em] text-brand-gold"
         >
-          Our Story
+          Ways to Earn
         </p>
 
         <h2
           class="mt-4 font-display text-5xl text-brand-cream"
         >
-          More Than a Fragrance
+          Explore New Possibilities
         </h2>
       </div>
     </section>

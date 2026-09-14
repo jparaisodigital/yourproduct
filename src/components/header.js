@@ -80,10 +80,10 @@ export function renderHeader(siteConfig) {
           </a>
 
           <a
-            href="#membership"
+            href="#packages"
             class="rounded-full bg-brand-gold px-5 py-2.5 text-sm font-semibold text-brand-black transition hover:bg-brand-gold-light"
           >
-            Explore Membership
+            Explore Packages
           </a>
 
           <!-- Desktop cart button -->
