@@ -4,7 +4,12 @@ export function renderCartDrawer() {
         x-data="{ open: false }"
         @open-cart.window="open = true"
         @keydown.escape.window="open = false"
-        x-effect="document.body.style.overflow = open ? 'hidden' : ''"
+        x-effect="
+  document.body.style.overflow =
+    (open || $store.productView.isOpen)
+      ? 'hidden'
+      : ''
+"
         x-cloak
       >
         <!-- Dark background overlay -->

@@ -1,31 +1,36 @@
-export function registerProductViewStore(
-    Alpine,
-    products,
-  ) {
+export function registerProductViewStore(Alpine, products) {
+    let feedbackTimer = null
+  
     Alpine.store('productView', {
       isOpen: false,
       selectedProductId: null,
       quantity: 1,
+      addedQuantity: 0,
   
       get selectedProduct() {
         return (
           products.find(
-            (product) =>
-              product.id === this.selectedProductId,
+            (product) => product.id === this.selectedProductId,
           ) || null
         )
       },
   
+      resetFeedback() {
+        clearTimeout(feedbackTimer)
+        feedbackTimer = null
+        this.addedQuantity = 0
+      },
+  
       open(productId) {
         const product = products.find(
-          (productItem) =>
-            productItem.id === productId,
+          (item) => item.id === productId,
         )
   
         if (!product || !product.isActive) {
           return
         }
   
+        this.resetFeedback()
         this.selectedProductId = productId
         this.quantity = 1
         this.isOpen = true
@@ -34,12 +39,13 @@ export function registerProductViewStore(
       close() {
         this.isOpen = false
         this.quantity = 1
+        this.resetFeedback()
       },
   
       increase() {
         const product = this.selectedProduct
   
-        if (!product) {
+        if (!product || product.stockQuantity <= 0) {
           return
         }
   
@@ -50,33 +56,39 @@ export function registerProductViewStore(
       },
   
       decrease() {
-        this.quantity = Math.max(
-          this.quantity - 1,
-          1,
-        )
+        this.quantity = Math.max(this.quantity - 1, 1)
       },
   
       addToCart() {
         const product = this.selectedProduct
   
-        if (
-          !product ||
-          product.stockQuantity <= 0
-        ) {
+        if (!product || product.stockQuantity <= 0) {
           return
         }
   
-        const cartStore = Alpine.store('cart')
+        this.resetFeedback()
   
-        for (
-          let count = 0;
-          count < this.quantity;
-          count += 1
-        ) {
-          cartStore.add(product.id)
+        const cart = Alpine.store('cart')
+        const previousQuantity = cart.quantityFor(product.id)
+  
+        for (let count = 0; count < this.quantity; count += 1) {
+          cart.add(product.id)
         }
   
+        const actualAdded =
+          cart.quantityFor(product.id) - previousQuantity
+  
+        if (actualAdded <= 0) {
+          return
+        }
+  
+        this.addedQuantity = actualAdded
         this.quantity = 1
+  
+        feedbackTimer = setTimeout(() => {
+          this.addedQuantity = 0
+          feedbackTimer = null
+        }, 1800)
       },
     })
   }

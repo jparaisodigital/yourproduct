@@ -4,12 +4,6 @@ export function renderProductDrawer() {
         x-data
         x-cloak
         x-show="$store.productView.isOpen"
-        x-effect="
-          document.body.style.overflow =
-            $store.productView.isOpen
-              ? 'hidden'
-              : ''
-        "
         @keydown.escape.window="$store.productView.close()"
         @open-cart.window="$store.productView.close()"
         class="fixed inset-0 z-[70]"
@@ -17,6 +11,7 @@ export function renderProductDrawer() {
         aria-modal="true"
         aria-label="Product quick view"
       >
+        <!-- Backdrop -->
         <button
           type="button"
           class="absolute inset-0 cursor-default bg-black/35 backdrop-blur-[2px]"
@@ -24,6 +19,7 @@ export function renderProductDrawer() {
           @click="$store.productView.close()"
         ></button>
   
+        <!-- Product drawer -->
         <aside
           x-show="$store.productView.isOpen"
           x-transition:enter="transition duration-300 ease-out"
@@ -34,6 +30,7 @@ export function renderProductDrawer() {
           x-transition:leave-end="translate-x-full"
           class="absolute inset-y-0 right-0 flex w-full max-w-lg flex-col border-l border-brand-border bg-brand-black shadow-2xl"
         >
+          <!-- Header -->
           <header
             class="flex min-h-20 shrink-0 items-center justify-between border-b border-brand-border px-5 sm:px-6"
           >
@@ -71,11 +68,11 @@ export function renderProductDrawer() {
             </button>
           </header>
   
-          <template
-            x-if="$store.productView.selectedProduct"
-          >
+          <template x-if="$store.productView.selectedProduct">
             <div class="flex min-h-0 flex-1 flex-col">
+              <!-- Scrollable content -->
               <div class="min-h-0 flex-1 overflow-y-auto">
+                <!-- Product image -->
                 <div
                   class="relative aspect-[4/3] overflow-hidden border-b border-brand-border bg-brand-charcoal"
                 >
@@ -92,9 +89,8 @@ export function renderProductDrawer() {
                 </div>
   
                 <div class="p-5 sm:p-6">
-                  <div
-                    class="flex items-center justify-between gap-4"
-                  >
+                  <!-- SKU and availability -->
+                  <div class="flex items-center justify-between gap-4">
                     <span
                       class="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
                       x-text="$store.productView.selectedProduct.sku"
@@ -128,6 +124,7 @@ export function renderProductDrawer() {
                     </span>
                   </div>
   
+                  <!-- Name and description -->
                   <h2
                     class="mt-3 font-display text-4xl leading-tight text-brand-cream"
                     x-text="$store.productView.selectedProduct.name"
@@ -138,6 +135,7 @@ export function renderProductDrawer() {
                     x-text="$store.productView.selectedProduct.shortDescription"
                   ></p>
   
+                  <!-- Pricing -->
                   <div
                     class="mt-5 grid grid-cols-2 gap-3 border-y border-brand-border py-4"
                   >
@@ -180,10 +178,9 @@ export function renderProductDrawer() {
                     </div>
                   </div>
   
+                  <!-- Scent information -->
                   <div class="mt-5 space-y-4">
-                    <div
-                      class="grid grid-cols-[7rem_1fr] gap-4"
-                    >
+                    <div class="grid grid-cols-[7rem_1fr] gap-4">
                       <p
                         class="text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-brand-gold"
                       >
@@ -227,6 +224,7 @@ export function renderProductDrawer() {
                     </div>
                   </div>
   
+                  <!-- Points and quantity -->
                   <div
                     class="mt-5 flex items-center justify-between gap-4 border-t border-brand-border pt-5"
                   >
@@ -305,6 +303,7 @@ export function renderProductDrawer() {
                 </div>
               </div>
   
+              <!-- Footer actions -->
               <div
                 class="shrink-0 border-t border-brand-border bg-brand-black p-4 sm:p-5"
               >
@@ -348,14 +347,26 @@ export function renderProductDrawer() {
                   </svg>
   
                   <span
+                    role="status"
+                    aria-live="polite"
+                    aria-atomic="true"
                     x-text="
-                      'Add ' +
-                      $store.productView.quantity +
-                      ' to cart'
+                      $store.productView.addedQuantity > 0
+                        ? 'Added ✓'
+                        : 'Add ' + $store.productView.quantity + ' to cart'
                     "
                   >
                     Add to cart
                   </span>
+                </button>
+  
+                <button
+                  type="button"
+                  x-show="$store.cart.itemCount > 0"
+                  class="mt-3 inline-flex h-11 w-full items-center justify-center rounded-xl border border-brand-border text-sm font-semibold text-brand-gold transition hover:border-brand-gold hover:bg-brand-gold/10 active:scale-[0.99]"
+                  @click="$dispatch('open-cart')"
+                >
+                  View Cart
                 </button>
               </div>
             </div>
