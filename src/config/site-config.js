@@ -11,8 +11,16 @@ export const siteConfig = {
 
   navigation: [
     {
+      label: 'Home',
+      href: '#home',
+    },
+    {
       label: 'Discover',
       href: '#discover',
+    },
+    {
+      label: 'Perfumes',
+      href: '#shop',
     },
     {
       label: 'Packages',

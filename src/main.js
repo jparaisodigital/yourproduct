@@ -41,6 +41,18 @@ import {
 } from './components/products-section.js'
 
 import {
+  renderCommunitySection,
+} from './components/community-section.js'
+
+import {
+  renderWaysToEarnSection,
+} from './components/ways-to-earn-section.js'
+
+import {
+  renderAccountCtaSection,
+} from './components/account-cta-section.js'
+
+import {
   renderCartDrawer,
 } from './components/cart-drawer.js'
 
@@ -51,7 +63,7 @@ window.Alpine = Alpine
 registerCartStore(Alpine, products)
 
 document.title =
-  `${siteConfig.brand.name} | Premium Fragrances`
+`${siteConfig.brand.name} | Premium Fragrances`
 
 document.querySelector('#app').innerHTML = `
   ${renderHeader(siteConfig)}
@@ -71,48 +83,16 @@ document.querySelector('#app').innerHTML = `
       products,
       productCategories,
     )}
-
-    <section
-      id="community"
-      class="grid min-h-[60vh] place-items-center border-t border-brand-border bg-brand-charcoal px-6 py-20"
-    >
-      <div class="text-center">
-        <p
-          class="text-xs uppercase tracking-[0.3em] text-brand-gold"
-        >
-          Our Community
-        </p>
-
-        <h2
-          class="mt-4 font-display text-5xl text-brand-cream"
-        >
-          Grow Together
-        </h2>
-      </div>
-    </section>
-
-    <section
-      id="ways-to-earn"
-      class="grid min-h-[60vh] place-items-center border-t border-brand-border bg-brand-black px-6 py-20"
-    >
-      <div class="text-center">
-        <p
-          class="text-xs uppercase tracking-[0.3em] text-brand-gold"
-        >
-          Ways to Earn
-        </p>
-
-        <h2
-          class="mt-4 font-display text-5xl text-brand-cream"
-        >
-          Explore New Possibilities
-        </h2>
-      </div>
-    </section>
-  </main>
-
-  ${renderFooter(siteConfig)}
-  ${renderCartDrawer()}
-`
-
-Alpine.start()
+    
+    ${renderCommunitySection()}
+    
+    ${renderWaysToEarnSection()}
+    
+    ${renderAccountCtaSection()}
+    </main>
+    
+    ${renderFooter(siteConfig)}
+    ${renderCartDrawer()}
+    `
+    
+    Alpine.start()
