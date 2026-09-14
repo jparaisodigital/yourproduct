@@ -3,7 +3,7 @@ const pesoFormatter = new Intl.NumberFormat('en-PH', {
     currency: 'PHP',
     minimumFractionDigits: 0,
   })
-
+  
   function renderPackageCard(packageItem, index) {
     const priceMarkup =
       packageItem.price !== null
@@ -209,6 +209,7 @@ const pesoFormatter = new Intl.NumberFormat('en-PH', {
                 class="mt-3 max-w-2xl font-display text-4xl leading-[1.05] text-brand-cream sm:text-5xl lg:text-[3.35rem]"
               >
                 Choose your
+  
                 <span class="italic text-brand-gold">
                   package.
                 </span>
@@ -228,10 +229,14 @@ const pesoFormatter = new Intl.NumberFormat('en-PH', {
             data-packages-scroll
             style="--package-stage-height: ${stageHeight}svh;"
           >
-            <div class="packages-scroll-sticky">
+            <div
+              class="packages-scroll-sticky"
+              data-packages-sticky
+            >
               <div
                 class="packages-scroll-viewport"
                 data-packages-viewport
+                aria-label="Membership package carousel"
               >
                 <div
                   class="packages-scroll-track"
@@ -243,7 +248,7 @@ const pesoFormatter = new Intl.NumberFormat('en-PH', {
   
               <div class="packages-scroll-controls">
                 <p class="packages-scroll-instruction">
-                  Scroll to explore packages
+                  Scroll or swipe to explore
                 </p>
   
                 <div
@@ -284,6 +289,10 @@ const pesoFormatter = new Intl.NumberFormat('en-PH', {
       return
     }
   
+    const sticky = stage.querySelector(
+      '[data-packages-sticky]',
+    )
+  
     const viewport = stage.querySelector(
       '[data-packages-viewport]',
     )
@@ -304,7 +313,12 @@ const pesoFormatter = new Intl.NumberFormat('en-PH', {
       '[data-package-counter]',
     )
   
-    if (!viewport || !track || cards.length === 0) {
+    if (
+      !sticky ||
+      !viewport ||
+      !track ||
+      cards.length === 0
+    ) {
       return
     }
   
@@ -318,15 +332,36 @@ const pesoFormatter = new Intl.NumberFormat('en-PH', {
       '(prefers-reduced-motion: reduce)',
     )
   
-    let frameRequested = false
+    const clamp = (value, minimum, maximum) =>
+      Math.min(Math.max(value, minimum), maximum)
+  
+    let measurementFrame = null
+    let transformFrame = null
     let currentIndex = -1
+    let targetTranslation = 0
+    let renderedTranslation = 0
+  
+    let pointerIsDown = false
+    let horizontalSwipeStarted = false
+    let pointerId = null
+    let pointerStartX = 0
+    let pointerStartY = 0
+    let swipeStartIndex = 0
+    let swipeStartTranslation = 0
+    let blockNextClick = false
   
     function setActivePackage(index) {
-      if (index === currentIndex) {
+      const safeIndex = clamp(
+        index,
+        0,
+        cards.length - 1,
+      )
+  
+      if (safeIndex === currentIndex) {
         return
       }
   
-      currentIndex = index
+      currentIndex = safeIndex
   
       cards.forEach((card, cardIndex) => {
         card.classList.toggle(
@@ -349,27 +384,16 @@ const pesoFormatter = new Intl.NumberFormat('en-PH', {
       }
     }
   
-    function updatePackageScroll() {
-      frameRequested = false
-  
-      if (
-        !mobileQuery.matches ||
-        reducedMotionQuery.matches
-      ) {
-        track.style.removeProperty('transform')
-        setActivePackage(0)
-        return
-      }
-  
+    function getScrollMetrics() {
       const stageRect = stage.getBoundingClientRect()
   
-      const scrollDistance = Math.max(
-        stage.offsetHeight - window.innerHeight,
-        1,
-      )
+      const stickyTop =
+        Number.parseFloat(
+          window.getComputedStyle(sticky).top,
+        ) || 0
   
-      const progress = Math.min(
-        Math.max(-stageRect.top / scrollDistance, 0),
+      const scrollDistance = Math.max(
+        stage.offsetHeight - sticky.offsetHeight,
         1,
       )
   
@@ -378,28 +402,319 @@ const pesoFormatter = new Intl.NumberFormat('en-PH', {
         0,
       )
   
-      track.style.transform = `translate3d(${
-        -progress * maximumTranslation
-      }px, 0, 0)`
+      const progress = clamp(
+        (stickyTop - stageRect.top) / scrollDistance,
+        0,
+        1,
+      )
   
-      const activeIndex = Math.min(
-        cards.length - 1,
-        Math.round(progress * (cards.length - 1)),
+      return {
+        stageRect,
+        stickyTop,
+        scrollDistance,
+        maximumTranslation,
+        progress,
+      }
+    }
+  
+    function animateTrack() {
+      const difference =
+        targetTranslation - renderedTranslation
+  
+      if (Math.abs(difference) <= 0.15) {
+        renderedTranslation = targetTranslation
+  
+        track.style.transform = `translate3d(${renderedTranslation}px, 0, 0)`
+  
+        transformFrame = null
+        return
+      }
+  
+      renderedTranslation += difference * 0.2
+  
+      track.style.transform = `translate3d(${renderedTranslation}px, 0, 0)`
+  
+      transformFrame =
+        window.requestAnimationFrame(animateTrack)
+    }
+  
+    function setTargetTranslation(
+      translation,
+      immediate = false,
+    ) {
+      targetTranslation = translation
+  
+      if (immediate) {
+        if (transformFrame !== null) {
+          window.cancelAnimationFrame(transformFrame)
+          transformFrame = null
+        }
+  
+        renderedTranslation = targetTranslation
+  
+        track.style.transform = `translate3d(${renderedTranslation}px, 0, 0)`
+  
+        return
+      }
+  
+      if (transformFrame === null) {
+        transformFrame =
+          window.requestAnimationFrame(animateTrack)
+      }
+    }
+  
+    function resetDesktopTrack() {
+      if (transformFrame !== null) {
+        window.cancelAnimationFrame(transformFrame)
+        transformFrame = null
+      }
+  
+      targetTranslation = 0
+      renderedTranslation = 0
+  
+      track.style.removeProperty('transform')
+      setActivePackage(0)
+    }
+  
+    function updatePackageScroll() {
+      measurementFrame = null
+  
+      if (
+        !mobileQuery.matches ||
+        reducedMotionQuery.matches
+      ) {
+        resetDesktopTrack()
+        return
+      }
+  
+      if (horizontalSwipeStarted) {
+        return
+      }
+  
+      const metrics = getScrollMetrics()
+  
+      const nextTranslation =
+        -metrics.progress * metrics.maximumTranslation
+  
+      setTargetTranslation(nextTranslation)
+  
+      const activeIndex = Math.round(
+        metrics.progress * (cards.length - 1),
       )
   
       setActivePackage(activeIndex)
     }
   
     function requestPackageUpdate() {
-      if (frameRequested) {
+      if (measurementFrame !== null) {
         return
       }
   
-      frameRequested = true
+      measurementFrame =
+        window.requestAnimationFrame(
+          updatePackageScroll,
+        )
+    }
   
-      window.requestAnimationFrame(
-        updatePackageScroll,
+    function scrollToPackage(index) {
+      if (!mobileQuery.matches || cards.length <= 1) {
+        return
+      }
+  
+      const safeIndex = clamp(
+        index,
+        0,
+        cards.length - 1,
       )
+  
+      const metrics = getScrollMetrics()
+  
+      const destinationProgress =
+        safeIndex / (cards.length - 1)
+  
+      const stageDocumentTop =
+        window.scrollY + metrics.stageRect.top
+  
+      const destinationScroll =
+        stageDocumentTop -
+        metrics.stickyTop +
+        destinationProgress * metrics.scrollDistance
+  
+      const destinationTranslation =
+        -destinationProgress *
+        metrics.maximumTranslation
+  
+      setActivePackage(safeIndex)
+      setTargetTranslation(destinationTranslation)
+  
+      window.scrollTo({
+        top: destinationScroll,
+        behavior: reducedMotionQuery.matches
+          ? 'auto'
+          : 'smooth',
+      })
+    }
+  
+    function releasePointerCapture() {
+      if (
+        pointerId !== null &&
+        viewport.hasPointerCapture?.(pointerId)
+      ) {
+        viewport.releasePointerCapture(pointerId)
+      }
+    }
+  
+    function resetSwipeState() {
+      pointerIsDown = false
+      horizontalSwipeStarted = false
+      pointerId = null
+  
+      viewport.classList.remove('is-dragging')
+    }
+  
+    function handlePointerDown(event) {
+      if (
+        !mobileQuery.matches ||
+        reducedMotionQuery.matches ||
+        event.pointerType === 'mouse' &&
+          event.button !== 0
+      ) {
+        return
+      }
+  
+      pointerIsDown = true
+      horizontalSwipeStarted = false
+      pointerId = event.pointerId
+      pointerStartX = event.clientX
+      pointerStartY = event.clientY
+      swipeStartIndex = currentIndex
+      swipeStartTranslation = renderedTranslation
+      blockNextClick = false
+  
+      viewport.setPointerCapture?.(pointerId)
+    }
+  
+    function handlePointerMove(event) {
+      if (
+        !pointerIsDown ||
+        event.pointerId !== pointerId
+      ) {
+        return
+      }
+  
+      const horizontalDistance =
+        event.clientX - pointerStartX
+  
+      const verticalDistance =
+        event.clientY - pointerStartY
+  
+      if (!horizontalSwipeStarted) {
+        const horizontalMovement =
+          Math.abs(horizontalDistance)
+  
+        const verticalMovement =
+          Math.abs(verticalDistance)
+  
+        if (
+          verticalMovement > horizontalMovement &&
+          verticalMovement > 8
+        ) {
+          releasePointerCapture()
+          resetSwipeState()
+          return
+        }
+  
+        if (
+          horizontalMovement > verticalMovement &&
+          horizontalMovement > 8
+        ) {
+          horizontalSwipeStarted = true
+          viewport.classList.add('is-dragging')
+        }
+      }
+  
+      if (!horizontalSwipeStarted) {
+        return
+      }
+  
+      event.preventDefault()
+  
+      const metrics = getScrollMetrics()
+  
+      const draggedTranslation = clamp(
+        swipeStartTranslation + horizontalDistance,
+        -metrics.maximumTranslation,
+        0,
+      )
+  
+      setTargetTranslation(draggedTranslation)
+    }
+  
+    function handlePointerUp(event) {
+      if (
+        !pointerIsDown ||
+        event.pointerId !== pointerId
+      ) {
+        return
+      }
+  
+      const horizontalDistance =
+        event.clientX - pointerStartX
+  
+      const completedHorizontalSwipe =
+        horizontalSwipeStarted
+  
+      releasePointerCapture()
+      resetSwipeState()
+  
+      if (!completedHorizontalSwipe) {
+        return
+      }
+  
+      blockNextClick = true
+  
+      let destinationIndex = swipeStartIndex
+  
+      if (Math.abs(horizontalDistance) >= 35) {
+        destinationIndex =
+          horizontalDistance < 0
+            ? swipeStartIndex + 1
+            : swipeStartIndex - 1
+      } else {
+        const metrics = getScrollMetrics()
+  
+        const draggedProgress =
+          metrics.maximumTranslation > 0
+            ? Math.abs(targetTranslation) /
+              metrics.maximumTranslation
+            : 0
+  
+        destinationIndex = Math.round(
+          draggedProgress * (cards.length - 1),
+        )
+      }
+  
+      scrollToPackage(destinationIndex)
+    }
+  
+    function handlePointerCancel() {
+      if (!pointerIsDown) {
+        return
+      }
+  
+      releasePointerCapture()
+      resetSwipeState()
+      scrollToPackage(currentIndex)
+    }
+  
+    function handleClickAfterSwipe(event) {
+      if (!blockNextClick) {
+        return
+      }
+  
+      event.preventDefault()
+      event.stopPropagation()
+      blockNextClick = false
     }
   
     window.addEventListener(
@@ -422,6 +737,33 @@ const pesoFormatter = new Intl.NumberFormat('en-PH', {
     reducedMotionQuery.addEventListener(
       'change',
       requestPackageUpdate,
+    )
+  
+    viewport.addEventListener(
+      'pointerdown',
+      handlePointerDown,
+    )
+  
+    viewport.addEventListener(
+      'pointermove',
+      handlePointerMove,
+      { passive: false },
+    )
+  
+    viewport.addEventListener(
+      'pointerup',
+      handlePointerUp,
+    )
+  
+    viewport.addEventListener(
+      'pointercancel',
+      handlePointerCancel,
+    )
+  
+    viewport.addEventListener(
+      'click',
+      handleClickAfterSwipe,
+      true,
     )
   
     setActivePackage(0)

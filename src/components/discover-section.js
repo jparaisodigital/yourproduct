@@ -1,3 +1,6 @@
+import perfumeMenBackground from '../assets/products/perfume1.png'
+import perfumeWomenBackground from '../assets/products/perfume-women.png'
+
 export function renderDiscoverSection() {
   return `
     <section
@@ -28,6 +31,7 @@ export function renderDiscoverSection() {
             class="mt-3 max-w-xl font-display text-4xl leading-[1.05] text-brand-cream sm:text-5xl lg:text-[3.35rem]"
           >
             Twenty scents.
+
             <span class="block italic text-brand-gold">
               Two collections.
             </span>
@@ -133,77 +137,95 @@ export function renderDiscoverSection() {
           </article>
 
           <article
-            class="group rounded-[1.4rem] border border-brand-border bg-brand-panel p-5 shadow-panel transition duration-300 hover:-translate-y-1 hover:border-brand-gold/50"
+            class="group relative overflow-hidden rounded-[1.4rem] border border-brand-border bg-brand-panel p-5 shadow-panel transition duration-300 hover:-translate-y-1 hover:border-brand-gold/50"
           >
-            <div class="flex items-start justify-between gap-4">
-              <span
-                class="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
-              >
-                Men's Collection
-              </span>
+            <img
+              src="${perfumeMenBackground}"
+              alt=""
+              class="pointer-events-none absolute -bottom-8 -right-8 h-[105%] w-[65%] object-contain object-right-bottom opacity-[0.12] sm:-bottom-6 sm:-right-6 sm:w-[68%]"
+              aria-hidden="true"
+            >
 
-              <span
-                class="font-display text-3xl leading-none text-brand-gold/30"
-                aria-hidden="true"
+            <div class="relative z-10">
+              <div class="flex items-start justify-between gap-4">
+                <span
+                  class="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
+                >
+                  Men's Collection
+                </span>
+
+                <span
+                  class="font-display text-3xl leading-none text-brand-gold/30"
+                  aria-hidden="true"
+                >
+                  10
+                </span>
+              </div>
+
+              <h3
+                class="mt-4 font-display text-2xl leading-tight text-brand-cream"
               >
-                10
-              </span>
+                Fragrances for men
+              </h3>
+
+              <p class="mt-2 text-sm leading-6 text-brand-muted">
+                Browse scent profiles created for different styles,
+                moods, and occasions.
+              </p>
+
+              <a
+                href="#shop"
+                class="mt-4 inline-flex items-center text-xs font-semibold uppercase tracking-[0.08em] text-brand-gold"
+              >
+                View collection
+              </a>
             </div>
-
-            <h3
-              class="mt-4 font-display text-2xl leading-tight text-brand-cream"
-            >
-              Fragrances for men
-            </h3>
-
-            <p class="mt-2 text-sm leading-6 text-brand-muted">
-              Browse scent profiles created for different styles,
-              moods, and occasions.
-            </p>
-
-            <a
-              href="#shop"
-              class="mt-4 inline-flex items-center text-xs font-semibold uppercase tracking-[0.08em] text-brand-gold"
-            >
-              View collection
-            </a>
           </article>
 
           <article
-            class="group rounded-[1.4rem] border border-brand-border bg-brand-panel p-5 shadow-panel transition duration-300 hover:-translate-y-1 hover:border-brand-gold/50"
+            class="group relative overflow-hidden rounded-[1.4rem] border border-brand-border bg-brand-panel p-5 shadow-panel transition duration-300 hover:-translate-y-1 hover:border-brand-gold/50"
           >
-            <div class="flex items-start justify-between gap-4">
-              <span
-                class="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
-              >
-                Women's Collection
-              </span>
+            <img
+              src="${perfumeWomenBackground}"
+              alt=""
+              class="pointer-events-none absolute -bottom-8 -right-8 h-[105%] w-[65%] object-contain object-right-bottom opacity-[0.12] sm:-bottom-6 sm:-right-6 sm:w-[68%]"
+              aria-hidden="true"
+            >
 
-              <span
-                class="font-display text-3xl leading-none text-brand-gold/30"
-                aria-hidden="true"
+            <div class="relative z-10">
+              <div class="flex items-start justify-between gap-4">
+                <span
+                  class="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
+                >
+                  Women's Collection
+                </span>
+
+                <span
+                  class="font-display text-3xl leading-none text-brand-gold/30"
+                  aria-hidden="true"
+                >
+                  10
+                </span>
+              </div>
+
+              <h3
+                class="mt-4 font-display text-2xl leading-tight text-brand-cream"
               >
-                10
-              </span>
+                Fragrances for women
+              </h3>
+
+              <p class="mt-2 text-sm leading-6 text-brand-muted">
+                Explore distinct fragrances with personal and memorable
+                scent profiles.
+              </p>
+
+              <a
+                href="#shop"
+                class="mt-4 inline-flex items-center text-xs font-semibold uppercase tracking-[0.08em] text-brand-gold"
+              >
+                View collection
+              </a>
             </div>
-
-            <h3
-              class="mt-4 font-display text-2xl leading-tight text-brand-cream"
-            >
-              Fragrances for women
-            </h3>
-
-            <p class="mt-2 text-sm leading-6 text-brand-muted">
-              Explore distinct fragrances with personal and memorable
-              scent profiles.
-            </p>
-
-            <a
-              href="#shop"
-              class="mt-4 inline-flex items-center text-xs font-semibold uppercase tracking-[0.08em] text-brand-gold"
-            >
-              View collection
-            </a>
           </article>
         </div>
       </div>

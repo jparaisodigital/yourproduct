@@ -286,13 +286,19 @@ body.mobile-menu-open {
     .packages-scroll-viewport {
       width: 100%;
       overflow: hidden;
+      cursor: grab;
+      touch-action: pan-y;
+      user-select: none;
+    }
+    
+    .packages-scroll-viewport.is-dragging {
+      cursor: grabbing;
     }
   
     .packages-scroll-track {
       display: flex;
       align-items: stretch;
       gap: 0.875rem;
-      transition: transform 80ms linear;
       will-change: transform;
     }
   
