@@ -2,6 +2,11 @@ import './style.css'
 import Alpine from 'alpinejs'
 
 import {
+  renderSiteLoader,
+  dismissSiteLoader,
+} from './components/site-loader.js'
+
+import {
   flyToCart,
 } from './lib/fly-to-cart.js'
 
@@ -116,7 +121,8 @@ Alpine.magic('addToCartWithAnimation', () => {
 document.title =
   `${siteConfig.brand.name} | Premium Fragrances`
 
-document.querySelector('#app').innerHTML = `
+  document.querySelector('#app').innerHTML = `
+  ${renderSiteLoader()}
   ${renderHeader(siteConfig)}
 
   <main>
@@ -150,3 +156,7 @@ document.querySelector('#app').innerHTML = `
 
 Alpine.start()
 initScrollReveal()
+
+requestAnimationFrame(() => {
+  dismissSiteLoader()
+})
