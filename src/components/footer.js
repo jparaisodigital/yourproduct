@@ -64,7 +64,7 @@ export function renderFooter(siteConfig) {
   
               <div class="mt-5 flex flex-col items-start gap-3">
                 <a
-                  href="#login"
+                  href="/login/"
                   class="text-sm text-brand-muted transition hover:text-brand-gold"
                 >
                   Member Login

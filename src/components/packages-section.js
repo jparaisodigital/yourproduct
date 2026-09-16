@@ -140,7 +140,7 @@ const pesoFormatter = new Intl.NumberFormat('en-PH', {
   
           <div class="mt-auto pt-4 sm:pt-5">
             <a
-              href="#signup"
+              href="/register/"
               class="${buttonClass} inline-flex h-10 w-full items-center justify-center rounded-xl px-4 text-[0.68rem] font-semibold uppercase tracking-[0.07em] transition duration-200 active:scale-[0.98] sm:h-11 sm:text-xs sm:tracking-[0.08em]"
             >
               Explore ${packageItem.shortLabel}

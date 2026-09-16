@@ -196,7 +196,7 @@ export function renderMembershipModal() {
             </a>
 
             <a
-              href="#login"
+              href="/login/"
               class="inline-flex min-h-12 items-center justify-center rounded-full border border-brand-border bg-brand-panel/60 px-6 text-sm font-semibold text-brand-cream transition hover:border-brand-gold hover:text-brand-gold"
               @click="close()"
             >

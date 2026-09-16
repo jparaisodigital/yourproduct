@@ -172,7 +172,7 @@ export function renderCommunitySection() {
               </div>
   
               <a
-                href="#signup"
+                href="/register/"
                 class="mt-4 inline-flex h-11 items-center justify-center rounded-xl border border-brand-gold px-5 text-xs font-semibold uppercase tracking-[0.08em] text-brand-gold transition duration-200 hover:bg-brand-gold hover:text-[#17130d]"
               >
                 Join the Community
