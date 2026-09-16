@@ -229,12 +229,12 @@ export function renderCartDrawer() {
                 Minimum order and checkout rules are pending final client confirmation.
               </p>
   
-              <button
-                type="button"
-                class="mt-5 w-full rounded-full bg-brand-gold px-6 py-3.5 text-sm font-semibold text-brand-black transition hover:bg-brand-gold-light"
-              >
-                Proceed to checkout
-              </button>
+              <a
+               href="/checkout/"
+                class="mt-5 flex w-full items-center justify-center rounded-full bg-brand-gold px-6 py-3.5 text-sm font-semibold text-brand-black transition hover:bg-brand-gold-light"
+                >
+               Proceed to checkout
+              </a>
   
               <button
                 type="button"
