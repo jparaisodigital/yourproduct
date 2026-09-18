@@ -28,19 +28,23 @@ registerCartStore(Alpine, products)
 
 Alpine.data('checkoutPage', () => ({
   customer: {
-    buyerType: 'non-member',
-    fullName: '',
+    firstName: '',
+    lastName: '',
     mobileNumber: '',
     emailAddress: '',
-    memberCode: '',
   },
 
   delivery: {
+    fulfillmentType: 'dropship',
+    sameAsCustomer: true,
+    recipientFirstName: '',
+    recipientLastName: '',
+    recipientMobile: '',
     province: '',
     city: '',
     barangay: '',
-    completeAddress: '',
-    postalCode: '',
+    houseStreet: '',
+    landmark: '',
     notes: '',
   },
 
@@ -49,41 +53,33 @@ Alpine.data('checkoutPage', () => ({
     proofFile: null,
     proofFileName: '',
   },
-  
+
   paymentError: '',
-  paymentDetailsComplete: false,
   checkoutPreviewComplete: false,
-  customerDetailsComplete: false,
-  deliveryDetailsComplete: false,
 
   formatMoney(value) {
     return pesoFormatter.format(value)
   },
 
-  saveCustomerDetails() {
-    this.customerDetailsComplete = true
+  recipientName() {
+    if (
+      this.delivery.fulfillmentType === 'dropship' &&
+      this.delivery.sameAsCustomer
+    ) {
+      return [
+        this.customer.firstName,
+        this.customer.lastName,
+      ]
+        .filter(Boolean)
+        .join(' ')
+    }
 
-    requestAnimationFrame(() => {
-      document
-        .querySelector('#delivery-details')
-        ?.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start',
-        })
-    })
-  },
-
-  saveDeliveryDetails() {
-    this.deliveryDetailsComplete = true
-  
-    requestAnimationFrame(() => {
-      document
-        .querySelector('#payment-details')
-        ?.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start',
-        })
-    })
+    return [
+      this.delivery.recipientFirstName,
+      this.delivery.recipientLastName,
+    ]
+      .filter(Boolean)
+      .join(' ')
   },
 
   handleProofFile(event) {
@@ -92,7 +88,7 @@ Alpine.data('checkoutPage', () => ({
     this.paymentError = ''
     this.payment.proofFile = null
     this.payment.proofFileName = ''
-    this.paymentDetailsComplete = false
+    this.checkoutPreviewComplete = false
   
     if (!file) {
       return
@@ -127,40 +123,36 @@ Alpine.data('checkoutPage', () => ({
     this.payment.proofFileName = file.name
   },
   
-  savePaymentDetails() {
+  completeCheckoutPreview() {
     if (!this.payment.proofFile) {
       this.paymentError =
         'Please select your proof of payment.'
+
+      document.querySelector('#payment-proof')?.focus()
   
       return
     }
-  
+
+    if (this.delivery.sameAsCustomer) {
+      this.delivery.recipientFirstName =
+        this.customer.firstName
+      this.delivery.recipientLastName =
+        this.customer.lastName
+      this.delivery.recipientMobile =
+        this.customer.mobileNumber
+    }
+
     this.paymentError = ''
-    this.checkoutPreviewComplete = false
-    this.paymentDetailsComplete = true
-  
+    this.checkoutPreviewComplete = true
+
     requestAnimationFrame(() => {
       document
-        .querySelector('#final-order-review')
+        .querySelector('#checkout-preview-status')
         ?.scrollIntoView({
           behavior: 'smooth',
-          block: 'start',
+          block: 'center',
         })
     })
-  },
-  
-  paymentMethodLabel() {
-    const labels = {
-      'e-wallet': 'E-wallet transfer',
-      'bank-transfer': 'Bank transfer',
-      other: 'Other manual payment',
-    }
-  
-    return labels[this.payment.method] ?? 'Not selected'
-  },
-  
-  completeCheckoutPreview() {
-    this.checkoutPreviewComplete = true
   },
 
 }))
@@ -557,396 +549,500 @@ document.querySelector('#checkout-app').innerHTML = `
                     </aside>
         </div>
 
-        <section
+        <form
           x-show="$store.cart.itemCount > 0"
-          class="mt-6 overflow-hidden rounded-[1.5rem] border border-brand-border bg-brand-panel shadow-panel"
+          class="mt-6 space-y-6"
+          @submit.prevent="completeCheckoutPreview"
+          @input="checkoutPreviewComplete = false"
+          @change="checkoutPreviewComplete = false"
         >
-          <header
-            class="border-b border-brand-border px-5 py-5 sm:px-6"
+          <section
+            class="overflow-hidden rounded-[1.5rem] border border-brand-border bg-brand-panel shadow-panel"
           >
-            <p
-              class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
+            <header
+              class="border-b border-brand-border px-5 py-5 sm:px-6"
             >
-              Checkout information
-            </p>
-
-            <h2
-              class="mt-1 font-display text-3xl text-brand-cream"
-            >
-              Customer details
-            </h2>
-
-            <p class="mt-2 text-sm leading-6 text-brand-muted">
-              Enter the contact information that will be used for your
-              order.
-            </p>
-          </header>
-
-          <form
-            class="p-5 sm:p-6"
-            @submit.prevent="saveCustomerDetails"
-            @input="customerDetailsComplete = false"
-          >
-            <div>
-              <label
-                for="buyer-type"
-                class="text-sm font-semibold text-brand-cream"
+              <p
+                class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
               >
-                Buyer type
-              </label>
-
-              <select
-                id="buyer-type"
-                x-model="customer.buyerType"
-                class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition focus:border-brand-gold"
-                required
-              >
-                <option value="non-member">
-                  Non-member
-                </option>
-
-                <option value="member">
-                  Existing member
-                </option>
-              </select>
-
-              <p class="mt-2 text-xs leading-5 text-brand-muted">
-                Member pricing will only be applied after membership
-                verification.
-              </p>
-            </div>
-
-            <div
-              x-show="customer.buyerType === 'member'"
-              x-transition
-              class="mt-5"
-            >
-              <label
-                for="member-code"
-                class="text-sm font-semibold text-brand-cream"
-              >
-                Member ID or referral code
-              </label>
-
-              <input
-                id="member-code"
-                type="text"
-                x-model.trim="customer.memberCode"
-                :required="customer.buyerType === 'member'"
-                autocomplete="off"
-                placeholder="Enter your member ID"
-                class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
-              >
-            </div>
-
-            <div
-              class="mt-5 grid gap-5 sm:grid-cols-2"
-            >
-              <div>
-                <label
-                  for="full-name"
-                  class="text-sm font-semibold text-brand-cream"
-                >
-                  Full name
-                </label>
-
-                <input
-                  id="full-name"
-                  type="text"
-                  x-model.trim="customer.fullName"
-                  autocomplete="name"
-                  placeholder="Juan Dela Cruz"
-                  class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
-                  required
-                >
-              </div>
-
-              <div>
-                <label
-                  for="mobile-number"
-                  class="text-sm font-semibold text-brand-cream"
-                >
-                  Mobile number
-                </label>
-
-                <input
-                  id="mobile-number"
-                  type="tel"
-                  x-model.trim="customer.mobileNumber"
-                  inputmode="tel"
-                  autocomplete="tel"
-                  minlength="10"
-                  maxlength="13"
-                  placeholder="09XXXXXXXXX"
-                  class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
-                  required
-                >
-              </div>
-            </div>
-
-            <div class="mt-5">
-              <label
-                for="email-address"
-                class="text-sm font-semibold text-brand-cream"
-              >
-                Email address
-              </label>
-
-              <input
-                id="email-address"
-                type="email"
-                x-model.trim="customer.emailAddress"
-                autocomplete="email"
-                placeholder="name@example.com"
-                class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
-                required
-              >
-
-              <p class="mt-2 text-xs leading-5 text-brand-muted">
-                Order updates and confirmation may be sent to this email.
-              </p>
-            </div>
-
-            <div
-              x-show="customerDetailsComplete"
-              x-transition
-              class="mt-4 rounded-xl border border-[#2f6b59] bg-[#234f42] px-4 py-3 text-sm font-medium leading-6 text-[#fff8e9] shadow-sm"
-              role="status"
-            >
-              Customer information is complete. Your details have not
-              been submitted yet.
-            </div>
-
-            <div
-              class="mt-6 flex flex-col-reverse gap-3 border-t border-brand-border pt-6 sm:flex-row sm:items-center sm:justify-between"
-            >
-              <p class="text-xs leading-5 text-brand-muted">
-                Delivery details will be completed in the next step.
+                Customer
               </p>
 
-              <button
-                type="submit"
-                class="inline-flex h-12 items-center justify-center rounded-full bg-brand-gold px-7 text-sm font-semibold text-brand-black transition hover:bg-brand-gold-light"
+              <h2
+                class="mt-1 font-display text-3xl text-brand-cream"
               >
-                Continue to delivery
-              </button>
-            </div>
-          </form>
-                </section>
+                Account information
+              </h2>
 
-        <section
-          id="delivery-details"
-          x-show="customerDetailsComplete"
-          x-transition
-          class="mt-6 scroll-mt-6 overflow-hidden rounded-[1.5rem] border border-brand-border bg-brand-panel shadow-panel"
-        >
-          <header
-            class="border-b border-brand-border px-5 py-5 sm:px-6"
+              <p class="mt-2 text-sm leading-6 text-brand-muted">
+                These details will come from the signed-in customer
+                account once authentication is connected.
+              </p>
+            </header>
+
+            <div class="p-5 sm:p-6">
+              <div class="grid gap-5 sm:grid-cols-2">
+                <div>
+                  <label
+                    for="first-name"
+                    class="text-sm font-semibold text-brand-cream"
+                  >
+                    First name
+                  </label>
+
+                  <input
+                    id="first-name"
+                    type="text"
+                    x-model.trim="customer.firstName"
+                    autocomplete="given-name"
+                    placeholder="Juan"
+                    class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
+                    required
+                  >
+                </div>
+
+                <div>
+                  <label
+                    for="last-name"
+                    class="text-sm font-semibold text-brand-cream"
+                  >
+                    Last name
+                  </label>
+
+                  <input
+                    id="last-name"
+                    type="text"
+                    x-model.trim="customer.lastName"
+                    autocomplete="family-name"
+                    placeholder="Dela Cruz"
+                    class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
+                    required
+                  >
+                </div>
+              </div>
+
+              <div class="mt-5 grid gap-5 sm:grid-cols-2">
+                <div>
+                  <label
+                    for="mobile-number"
+                    class="text-sm font-semibold text-brand-cream"
+                  >
+                    Mobile number
+                  </label>
+
+                  <input
+                    id="mobile-number"
+                    type="tel"
+                    x-model.trim="customer.mobileNumber"
+                    inputmode="tel"
+                    autocomplete="tel"
+                    minlength="10"
+                    maxlength="13"
+                    placeholder="09XXXXXXXXX"
+                    class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
+                    required
+                  >
+                </div>
+
+                <div>
+                  <label
+                    for="email-address"
+                    class="text-sm font-semibold text-brand-cream"
+                  >
+                    Email address
+                  </label>
+
+                  <input
+                    id="email-address"
+                    type="email"
+                    x-model.trim="customer.emailAddress"
+                    autocomplete="email"
+                    placeholder="name@example.com"
+                    class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
+                    required
+                  >
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section
+            class="overflow-hidden rounded-[1.5rem] border border-brand-border bg-brand-panel shadow-panel"
           >
-            <p
-              class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
+            <header
+              class="border-b border-brand-border px-5 py-5 sm:px-6"
             >
-              Shipping information
-            </p>
-
-            <h2
-              class="mt-1 font-display text-3xl text-brand-cream"
-            >
-              Delivery details
-            </h2>
-
-            <p class="mt-2 text-sm leading-6 text-brand-muted">
-              Provide the complete address where the order should be
-              delivered.
-            </p>
-          </header>
-
-          <form
-            class="p-5 sm:p-6"
-            @submit.prevent="saveDeliveryDetails"
-            @input="deliveryDetailsComplete = false"
-          >
-            <div class="grid gap-5 sm:grid-cols-2">
-              <div>
-                <label
-                  for="province"
-                  class="text-sm font-semibold text-brand-cream"
-                >
-                  Province
-                </label>
-
-                <input
-                  id="province"
-                  type="text"
-                  x-model.trim="delivery.province"
-                  autocomplete="address-level1"
-                  placeholder="Example: Cavite"
-                  class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
-                  required
-                >
-              </div>
-
-              <div>
-                <label
-                  for="city"
-                  class="text-sm font-semibold text-brand-cream"
-                >
-                  City or municipality
-                </label>
-
-                <input
-                  id="city"
-                  type="text"
-                  x-model.trim="delivery.city"
-                  autocomplete="address-level2"
-                  placeholder="Example: Bacoor"
-                  class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
-                  required
-                >
-              </div>
-            </div>
-
-            <div class="mt-5 grid gap-5 sm:grid-cols-2">
-              <div>
-                <label
-                  for="barangay"
-                  class="text-sm font-semibold text-brand-cream"
-                >
-                  Barangay
-                </label>
-
-                <input
-                  id="barangay"
-                  type="text"
-                  x-model.trim="delivery.barangay"
-                  autocomplete="address-level3"
-                  placeholder="Enter barangay"
-                  class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
-                  required
-                >
-              </div>
-
-              <div>
-                <label
-                  for="postal-code"
-                  class="text-sm font-semibold text-brand-cream"
-                >
-                  Postal code
-                </label>
-
-                <input
-                  id="postal-code"
-                  type="text"
-                  x-model.trim="delivery.postalCode"
-                  inputmode="numeric"
-                  autocomplete="postal-code"
-                  maxlength="4"
-                  placeholder="Enter postal code"
-                  class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
-                  required
-                >
-              </div>
-            </div>
-
-            <div class="mt-5">
-              <label
-                for="complete-address"
-                class="text-sm font-semibold text-brand-cream"
+              <p
+                class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
               >
-                House number, street and subdivision
-              </label>
+                Order fulfillment
+              </p>
 
-              <textarea
-                id="complete-address"
-                x-model.trim="delivery.completeAddress"
-                autocomplete="street-address"
-                rows="3"
-                placeholder="Enter the complete delivery address"
-                class="mt-2 w-full resize-none rounded-xl border border-brand-border bg-brand-black px-4 py-3 text-sm leading-6 text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
-                required
-              ></textarea>
-            </div>
-
-            <div class="mt-5">
-              <label
-                for="order-notes"
-                class="text-sm font-semibold text-brand-cream"
+              <h2
+                class="mt-1 font-display text-3xl text-brand-cream"
               >
-                Delivery notes
-                <span class="font-normal text-brand-muted">
-                  (Optional)
+                Delivery or pickup
+              </h2>
+
+              <p class="mt-2 text-sm leading-6 text-brand-muted">
+                Choose how the order will be fulfilled. Shipping details
+                are required for dropship orders only.
+              </p>
+            </header>
+
+            <div class="p-5 sm:p-6">
+              <fieldset>
+                <legend class="text-sm font-semibold text-brand-cream">
+                  Fulfillment method
+                </legend>
+
+                <div class="mt-3 grid gap-3 sm:grid-cols-2">
+                  <label
+                    class="flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition"
+                    :class="
+                      delivery.fulfillmentType === 'dropship'
+                        ? 'border-brand-gold bg-brand-gold/10'
+                        : 'border-brand-border bg-brand-black'
+                    "
+                  >
+                    <input
+                      type="radio"
+                      name="fulfillment-method"
+                      value="dropship"
+                      x-model="delivery.fulfillmentType"
+                      class="mt-0.5 size-4 accent-[#b78a32]"
+                    >
+
+                    <span>
+                      <span class="block text-sm font-semibold text-brand-cream">
+                        Dropship
+                      </span>
+
+                      <span class="mt-1 block text-xs leading-5 text-brand-muted">
+                        Send the order to the recipient's address.
+                      </span>
+                    </span>
+                  </label>
+
+                  <label
+                    class="flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition"
+                    :class="
+                      delivery.fulfillmentType === 'pickup'
+                        ? 'border-brand-gold bg-brand-gold/10'
+                        : 'border-brand-border bg-brand-black'
+                    "
+                  >
+                    <input
+                      type="radio"
+                      name="fulfillment-method"
+                      value="pickup"
+                      x-model="delivery.fulfillmentType"
+                      class="mt-0.5 size-4 accent-[#b78a32]"
+                    >
+
+                    <span>
+                      <span class="block text-sm font-semibold text-brand-cream">
+                        Pickup
+                      </span>
+
+                      <span class="mt-1 block text-xs leading-5 text-brand-muted">
+                        Pickup schedule and location will be confirmed.
+                      </span>
+                    </span>
+                  </label>
+                </div>
+              </fieldset>
+
+              <div
+                x-show="delivery.fulfillmentType === 'pickup'"
+                x-transition
+                class="mt-5 rounded-xl border border-brand-gold/25 bg-brand-black px-4 py-3"
+              >
+                <p class="text-sm font-semibold text-brand-cream">
+                  Pickup selected
+                </p>
+
+                <p class="mt-1 text-xs leading-5 text-brand-muted">
+                  The admin will confirm the available pickup location
+                  and schedule after reviewing the order.
+                </p>
+              </div>
+
+              <div
+                x-show="delivery.fulfillmentType === 'dropship'"
+                x-transition
+              >
+              <label
+                class="mt-5 flex cursor-pointer items-start gap-3 rounded-xl border border-brand-border bg-brand-black p-4"
+              >
+                <input
+                  type="checkbox"
+                  x-model="delivery.sameAsCustomer"
+                  class="mt-0.5 size-4 accent-[#b78a32]"
+                >
+
+                <span>
+                  <span
+                    class="block text-sm font-semibold text-brand-cream"
+                  >
+                    Use my customer details
+                  </span>
+
+                  <span
+                    class="mt-1 block text-xs leading-5 text-brand-muted"
+                  >
+                    Recipient name and mobile number will match the
+                    account information above.
+                  </span>
                 </span>
               </label>
 
-              <textarea
-                id="order-notes"
-                x-model.trim="delivery.notes"
-                rows="3"
-                maxlength="300"
-                placeholder="Landmark or special delivery instructions"
-                class="mt-2 w-full resize-none rounded-xl border border-brand-border bg-brand-black px-4 py-3 text-sm leading-6 text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
-              ></textarea>
-            </div>
+              <div
+                x-show="delivery.sameAsCustomer"
+                x-transition
+                class="mt-4 rounded-xl border border-brand-gold/25 bg-brand-black px-4 py-3"
+              >
+                <p class="text-xs uppercase tracking-[0.12em] text-brand-muted">
+                  Recipient
+                </p>
 
-            <div
-              x-show="deliveryDetailsComplete"
-              x-transition
-              class="mt-4 rounded-xl border border-[#2f6b59] bg-[#234f42] px-4 py-3 text-sm font-medium leading-6 text-[#fff8e9] shadow-sm"
-              role="status"
-            >
-              Delivery information is complete. Nothing has been
-              submitted yet.
-            </div>
+                <p
+                  class="mt-1 text-sm font-semibold text-brand-cream"
+                  x-text="recipientName() || 'Complete your name above'"
+                ></p>
 
-            <div
-              class="mt-6 flex flex-col-reverse gap-3 border-t border-brand-border pt-6 sm:flex-row sm:items-center sm:justify-between"
+                <p
+                  class="mt-1 text-xs text-brand-muted"
+                  x-text="customer.mobileNumber || 'Complete your mobile number above'"
+                ></p>
+              </div>
+
+              <div
+                x-show="!delivery.sameAsCustomer"
+                x-transition
+                class="mt-5 grid gap-5 sm:grid-cols-2"
+              >
+                <div>
+                  <label
+                    for="recipient-first-name"
+                    class="text-sm font-semibold text-brand-cream"
+                  >
+                    Recipient first name
+                  </label>
+
+                  <input
+                    id="recipient-first-name"
+                    type="text"
+                    x-model.trim="delivery.recipientFirstName"
+                    autocomplete="shipping given-name"
+                    placeholder="Recipient first name"
+                    :required="
+                      delivery.fulfillmentType === 'dropship' &&
+                      !delivery.sameAsCustomer
+                    "
+                    class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
+                  >
+                </div>
+
+                <div>
+                  <label
+                    for="recipient-last-name"
+                    class="text-sm font-semibold text-brand-cream"
+                  >
+                    Recipient last name
+                  </label>
+
+                  <input
+                    id="recipient-last-name"
+                    type="text"
+                    x-model.trim="delivery.recipientLastName"
+                    autocomplete="shipping family-name"
+                    placeholder="Recipient last name"
+                    :required="
+                      delivery.fulfillmentType === 'dropship' &&
+                      !delivery.sameAsCustomer
+                    "
+                    class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
+                  >
+                </div>
+
+                <div class="sm:col-span-2">
+                  <label
+                    for="recipient-mobile"
+                    class="text-sm font-semibold text-brand-cream"
+                  >
+                    Recipient mobile number
+                  </label>
+
+                  <input
+                    id="recipient-mobile"
+                    type="tel"
+                    x-model.trim="delivery.recipientMobile"
+                    inputmode="tel"
+                    autocomplete="shipping tel"
+                    minlength="10"
+                    maxlength="13"
+                    placeholder="09XXXXXXXXX"
+                    :required="
+                      delivery.fulfillmentType === 'dropship' &&
+                      !delivery.sameAsCustomer
+                    "
+                    class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
+                  >
+                </div>
+              </div>
+
+              <div class="mt-5 grid gap-5 sm:grid-cols-2">
+                <div>
+                  <label
+                    for="province"
+                    class="text-sm font-semibold text-brand-cream"
+                  >
+                    Province
+                  </label>
+
+                  <input
+                    id="province"
+                    type="text"
+                    x-model.trim="delivery.province"
+                    autocomplete="shipping address-level1"
+                    placeholder="Example: Cavite"
+                    class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
+                    :required="delivery.fulfillmentType === 'dropship'"
+                  >
+                </div>
+
+                <div>
+                  <label
+                    for="city"
+                    class="text-sm font-semibold text-brand-cream"
+                  >
+                    City or municipality
+                  </label>
+
+                  <input
+                    id="city"
+                    type="text"
+                    x-model.trim="delivery.city"
+                    autocomplete="shipping address-level2"
+                    placeholder="Example: Bacoor"
+                    class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
+                    :required="delivery.fulfillmentType === 'dropship'"
+                  >
+                </div>
+              </div>
+
+              <div class="mt-5 grid gap-5 sm:grid-cols-2">
+                <div>
+                  <label
+                    for="barangay"
+                    class="text-sm font-semibold text-brand-cream"
+                  >
+                    Barangay
+                  </label>
+
+                  <input
+                    id="barangay"
+                    type="text"
+                    x-model.trim="delivery.barangay"
+                    autocomplete="shipping address-level3"
+                    placeholder="Enter barangay"
+                    class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
+                    :required="delivery.fulfillmentType === 'dropship'"
+                  >
+                </div>
+
+                <div>
+                  <label
+                    for="house-street"
+                    class="text-sm font-semibold text-brand-cream"
+                  >
+                    House number and street
+                  </label>
+
+                  <input
+                    id="house-street"
+                    type="text"
+                    x-model.trim="delivery.houseStreet"
+                    autocomplete="shipping street-address"
+                    placeholder="House no., street, subdivision"
+                    class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
+                    :required="delivery.fulfillmentType === 'dropship'"
+                  >
+                </div>
+              </div>
+
+              <div class="mt-5 grid gap-5 sm:grid-cols-2">
+                <div>
+                  <label
+                    for="landmark"
+                    class="text-sm font-semibold text-brand-cream"
+                  >
+                    Landmark
+                    <span class="font-normal text-brand-muted">
+                      (Optional)
+                    </span>
+                  </label>
+
+                  <input
+                    id="landmark"
+                    type="text"
+                    x-model.trim="delivery.landmark"
+                    placeholder="Nearby landmark"
+                    class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
+                  >
+                </div>
+
+                <div>
+                  <label
+                    for="order-notes"
+                    class="text-sm font-semibold text-brand-cream"
+                  >
+                    Special instructions
+                    <span class="font-normal text-brand-muted">
+                      (Optional)
+                    </span>
+                  </label>
+
+                  <input
+                    id="order-notes"
+                    type="text"
+                    x-model.trim="delivery.notes"
+                    maxlength="300"
+                    placeholder="Optional delivery instructions"
+                    class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
+                  >
+                </div>
+              </div>
+              </div>
+            </div>
+          </section>
+
+          <section
+            class="overflow-hidden rounded-[1.5rem] border border-brand-border bg-brand-panel shadow-panel"
+          >
+            <header
+              class="border-b border-brand-border px-5 py-5 sm:px-6"
             >
-              <p class="text-xs leading-5 text-brand-muted">
-                Payment selection will be added in the next step.
+              <p
+                class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
+              >
+                Manual payment
               </p>
 
-              <button
-                type="submit"
-                class="inline-flex h-12 items-center justify-center rounded-full bg-brand-gold px-7 text-sm font-semibold text-brand-black transition hover:bg-brand-gold-light"
+              <h2
+                class="mt-1 font-display text-3xl text-brand-cream"
               >
-                Continue to payment
-              </button>
-            </div>
-          </form>
-                </section>
+                Payment details
+              </h2>
 
-        <section
-          id="payment-details"
-          x-show="deliveryDetailsComplete"
-          x-transition
-          class="mt-6 scroll-mt-6 overflow-hidden rounded-[1.5rem] border border-brand-border bg-brand-panel shadow-panel"
-        >
-          <header
-            class="border-b border-brand-border px-5 py-5 sm:px-6"
-          >
-            <p
-              class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
-            >
-              Manual payment
-            </p>
+              <p class="mt-2 text-sm leading-6 text-brand-muted">
+                Select a payment method and attach a clear receipt or
+                payment screenshot.
+              </p>
+            </header>
 
-            <h2
-              class="mt-1 font-display text-3xl text-brand-cream"
-            >
-              Payment details
-            </h2>
-
-            <p class="mt-2 text-sm leading-6 text-brand-muted">
-              Select how you intend to pay and attach a clear copy of
-              your payment receipt.
-            </p>
-          </header>
-
-          <form
-            class="p-5 sm:p-6"
-            @submit.prevent="savePaymentDetails"
-          >
-            <div>
+            <div class="p-5 sm:p-6">
               <label
                 for="payment-method"
                 class="text-sm font-semibold text-brand-cream"
@@ -957,7 +1053,6 @@ document.querySelector('#checkout-app').innerHTML = `
               <select
                 id="payment-method"
                 x-model="payment.method"
-                @change="paymentDetailsComplete = false"
                 class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition focus:border-brand-gold"
                 required
               >
@@ -977,300 +1072,78 @@ document.querySelector('#checkout-app').innerHTML = `
                   Other manual payment
                 </option>
               </select>
-            </div>
-
-            <div
-              class="mt-5 rounded-xl border border-brand-gold/30 bg-brand-black p-4"
-            >
-              <p
-                class="text-xs font-semibold uppercase tracking-[0.16em] text-brand-gold"
-              >
-                Payment instructions
-              </p>
-
-              <p class="mt-2 text-sm leading-6 text-brand-muted">
-                The official payment account name, number, and final
-                instructions will appear here after confirmation from
-                the client.
-              </p>
-
-              <p
-                class="mt-3 text-xs font-semibold text-brand-cream"
-              >
-                Do not send payment using unverified account details.
-              </p>
-            </div>
-
-            <div class="mt-5">
-              <label
-                for="payment-proof"
-                class="text-sm font-semibold text-brand-cream"
-              >
-                Proof of payment
-              </label>
-
-              <label
-                for="payment-proof"
-                class="mt-2 flex cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-brand-border bg-brand-black px-5 py-8 text-center transition hover:border-brand-gold"
-              >
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  class="size-8 text-brand-gold"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4"
-                    stroke="currentColor"
-                    stroke-width="1.7"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                </svg>
-
-                <span
-                  class="mt-3 text-sm font-semibold text-brand-cream"
-                >
-                  Select receipt or payment screenshot
-                </span>
-
-                <span
-                  class="mt-1 text-xs leading-5 text-brand-muted"
-                >
-                  JPG, PNG, WEBP, or PDF — maximum 5 MB
-                </span>
-
-                <input
-                  id="payment-proof"
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp,application/pdf"
-                  class="sr-only"
-                  @change="handleProofFile"
-                  required
-                >
-              </label>
 
               <div
-                x-show="payment.proofFileName"
-                x-transition
-                class="mt-3 rounded-xl border border-brand-border bg-brand-black px-4 py-3"
+                class="mt-5 rounded-xl border border-brand-gold/30 bg-brand-black p-4"
               >
                 <p
-                  class="text-xs uppercase tracking-[0.12em] text-brand-muted"
+                  class="text-xs font-semibold uppercase tracking-[0.16em] text-brand-gold"
                 >
-                  Selected file
+                  Payment instructions
                 </p>
 
-                <p
-                  class="mt-1 break-all text-sm font-semibold text-brand-cream"
-                  x-text="payment.proofFileName"
-                ></p>
+                <p class="mt-2 text-sm leading-6 text-brand-muted">
+                  Official account details and final instructions will
+                  appear here after confirmation from the client.
+                </p>
+
+                <p class="mt-3 text-xs font-semibold text-brand-cream">
+                  Do not send payment using unverified account details.
+                </p>
               </div>
 
-              <p
-                x-show="paymentError"
-                x-text="paymentError"
-                class="mt-3 text-sm text-red-400"
-                role="alert"
-              ></p>
-            </div>
-
-            <div
-              x-show="paymentDetailsComplete"
-              x-transition
-              class="mt-4 rounded-xl border border-[#2f6b59] bg-[#234f42] px-4 py-3 text-sm font-medium leading-6 text-[#fff8e9] shadow-sm"
-              role="status"
-            >
-              Payment information is complete. The file has not been
-              uploaded or submitted yet.
-            </div>
-
-            <div
-              class="mt-6 flex flex-col-reverse gap-3 border-t border-brand-border pt-6 sm:flex-row sm:items-center sm:justify-between"
-            >
-              <p class="text-xs leading-5 text-brand-muted">
-                Final order review will be added next.
-              </p>
-
-              <button
-                type="submit"
-                class="inline-flex h-12 items-center justify-center rounded-full bg-brand-gold px-7 text-sm font-semibold text-brand-black transition hover:bg-brand-gold-light"
-              >
-                Review order
-              </button>
-            </div>
-          </form>
-                </section>
-
-        <section
-          id="final-order-review"
-          x-show="paymentDetailsComplete"
-          x-transition
-          class="mt-6 scroll-mt-6 overflow-hidden rounded-[1.5rem] border border-brand-gold/30 bg-brand-panel shadow-gold-soft"
-        >
-          <header
-            class="border-b border-brand-border px-5 py-5 sm:px-6"
-          >
-            <p
-              class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
-            >
-              Final review
-            </p>
-
-            <h2
-              class="mt-1 font-display text-3xl text-brand-cream"
-            >
-              Review your order
-            </h2>
-
-            <p class="mt-2 text-sm leading-6 text-brand-muted">
-              Check the information below before the order is connected
-              to the final submission system.
-            </p>
-          </header>
-
-          <div class="p-5 sm:p-6">
-            <div class="grid gap-5 md:grid-cols-2">
-              <article
-                class="rounded-xl border border-brand-border bg-brand-black p-5"
-              >
-                <p
-                  class="text-xs font-semibold uppercase tracking-[0.16em] text-brand-gold"
+              <div class="mt-5">
+                <label
+                  for="payment-proof"
+                  class="text-sm font-semibold text-brand-cream"
                 >
-                  Customer
-                </p>
+                  Proof of payment
+                </label>
 
-                <dl class="mt-4 space-y-3">
-                  <div>
-                    <dt class="text-xs text-brand-muted">
-                      Full name
-                    </dt>
-
-                    <dd
-                      class="mt-1 break-words text-sm font-semibold text-brand-cream"
-                      x-text="customer.fullName"
-                    ></dd>
-                  </div>
-
-                  <div>
-                    <dt class="text-xs text-brand-muted">
-                      Mobile number
-                    </dt>
-
-                    <dd
-                      class="mt-1 break-words text-sm font-semibold text-brand-cream"
-                      x-text="customer.mobileNumber"
-                    ></dd>
-                  </div>
-
-                  <div>
-                    <dt class="text-xs text-brand-muted">
-                      Email address
-                    </dt>
-
-                    <dd
-                      class="mt-1 break-words text-sm font-semibold text-brand-cream"
-                      x-text="customer.emailAddress"
-                    ></dd>
-                  </div>
-
-                  <div>
-                    <dt class="text-xs text-brand-muted">
-                      Buyer type
-                    </dt>
-
-                    <dd
-                      class="mt-1 text-sm font-semibold text-brand-cream"
-                      x-text="
-                        customer.buyerType === 'member'
-                          ? 'Existing member'
-                          : 'Non-member'
-                      "
-                    ></dd>
-                  </div>
-
-                  <div
-                    x-show="customer.buyerType === 'member'"
-                  >
-                    <dt class="text-xs text-brand-muted">
-                      Member ID or referral code
-                    </dt>
-
-                    <dd
-                      class="mt-1 break-words text-sm font-semibold text-brand-cream"
-                      x-text="customer.memberCode"
-                    ></dd>
-                  </div>
-                </dl>
-              </article>
-
-              <article
-                class="rounded-xl border border-brand-border bg-brand-black p-5"
-              >
-                <p
-                  class="text-xs font-semibold uppercase tracking-[0.16em] text-brand-gold"
+                <label
+                  for="payment-proof"
+                  class="mt-2 flex cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-brand-border bg-brand-black px-5 py-7 text-center transition hover:border-brand-gold"
                 >
-                  Delivery
-                </p>
-
-                <dl class="mt-4 space-y-3">
-                  <div>
-                    <dt class="text-xs text-brand-muted">
-                      Complete address
-                    </dt>
-
-                    <dd
-                      class="mt-1 break-words text-sm font-semibold leading-6 text-brand-cream"
-                      x-text="
-                        delivery.completeAddress +
-                        ', ' +
-                        delivery.barangay +
-                        ', ' +
-                        delivery.city +
-                        ', ' +
-                        delivery.province +
-                        ' ' +
-                        delivery.postalCode
-                      "
-                    ></dd>
-                  </div>
-
-                  <div x-show="delivery.notes">
-                    <dt class="text-xs text-brand-muted">
-                      Delivery notes
-                    </dt>
-
-                    <dd
-                      class="mt-1 break-words text-sm font-semibold leading-6 text-brand-cream"
-                      x-text="delivery.notes"
-                    ></dd>
-                  </div>
-                </dl>
-              </article>
-            </div>
-
-            <article
-              class="mt-5 rounded-xl border border-brand-border bg-brand-black p-5"
-            >
-              <div
-                class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
-              >
-                <div>
-                  <p
-                    class="text-xs font-semibold uppercase tracking-[0.16em] text-brand-gold"
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    class="size-8 text-brand-gold"
+                    aria-hidden="true"
                   >
-                    Payment
-                  </p>
+                    <path
+                      d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4"
+                      stroke="currentColor"
+                      stroke-width="1.7"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
 
-                  <p
-                    class="mt-2 text-sm font-semibold text-brand-cream"
-                    x-text="paymentMethodLabel()"
-                  ></p>
-                </div>
+                  <span class="mt-3 text-sm font-semibold text-brand-cream">
+                    Select receipt or payment screenshot
+                  </span>
 
-                <div class="sm:text-right">
-                  <p class="text-xs text-brand-muted">
-                    Selected proof
+                  <span class="mt-1 text-xs leading-5 text-brand-muted">
+                    JPG, PNG, WEBP, or PDF — maximum 5 MB
+                  </span>
+
+                  <input
+                    id="payment-proof"
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,application/pdf"
+                    class="sr-only"
+                    @change="handleProofFile"
+                    required
+                  >
+                </label>
+
+                <div
+                  x-show="payment.proofFileName"
+                  x-transition
+                  class="mt-3 rounded-xl border border-brand-border bg-brand-black px-4 py-3"
+                >
+                  <p class="text-xs uppercase tracking-[0.12em] text-brand-muted">
+                    Selected file
                   </p>
 
                   <p
@@ -1278,32 +1151,79 @@ document.querySelector('#checkout-app').innerHTML = `
                     x-text="payment.proofFileName"
                   ></p>
                 </div>
-              </div>
-            </article>
 
-            <article
-              class="mt-5 overflow-hidden rounded-xl border border-brand-border bg-brand-black"
-            >
-              <div
-                class="border-b border-brand-border px-5 py-4"
-              >
                 <p
-                  class="text-xs font-semibold uppercase tracking-[0.16em] text-brand-gold"
+                  x-show="paymentError"
+                  x-text="paymentError"
+                  class="mt-3 text-sm text-red-400"
+                  role="alert"
+                ></p>
+              </div>
+            </div>
+          </section>
+
+          <section
+            class="overflow-hidden rounded-[1.5rem] border border-brand-gold/30 bg-brand-panel p-5 shadow-gold-soft sm:p-6"
+          >
+            <div
+              class="flex flex-col gap-4 border-b border-brand-border pb-5 sm:flex-row sm:items-end sm:justify-between"
+            >
+              <div>
+                <p
+                  class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
                 >
-                  Order items
+                  Final confirmation
+                </p>
+
+                <h2 class="mt-1 font-display text-3xl text-brand-cream">
+                  Submit for verification
+                </h2>
+
+                <p class="mt-2 text-sm leading-6 text-brand-muted">
+                  Review the order items below before submitting. Any
+                  delivery fee or pickup schedule remains subject to
+                  client confirmation.
                 </p>
               </div>
 
-              <div class="divide-y divide-brand-border">
+              <div class="shrink-0 sm:text-right">
+                <p class="text-xs uppercase tracking-[0.12em] text-brand-muted">
+                  Estimated total
+                </p>
+
+                <strong
+                  class="mt-1 block font-display text-3xl text-brand-gold"
+                  x-text="formatMoney($store.cart.subtotal)"
+                ></strong>
+              </div>
+            </div>
+
+            <div class="border-b border-brand-border py-5">
+              <div class="mb-3 flex items-center justify-between gap-3">
+                <p class="text-xs font-semibold uppercase tracking-[0.12em] text-brand-muted">
+                  Items to verify
+                </p>
+
+                <span
+                  class="text-xs font-semibold text-brand-gold"
+                  x-text="
+                    $store.cart.itemCount === 1
+                      ? '1 item'
+                      : $store.cart.itemCount + ' items'
+                  "
+                ></span>
+              </div>
+
+              <div class="flex gap-3 overflow-x-auto pb-2">
                 <template
                   x-for="item in $store.cart.detailedItems"
-                  :key="'review-' + item.productId"
+                  :key="'confirmation-' + item.productId"
                 >
-                  <div
-                    class="flex items-center gap-4 px-5 py-4"
+                  <article
+                    class="flex min-w-[15rem] items-center gap-3 rounded-xl border border-brand-border bg-brand-black p-3"
                   >
                     <div
-                      class="size-16 shrink-0 overflow-hidden rounded-lg bg-brand-cream"
+                      class="size-14 shrink-0 overflow-hidden rounded-lg bg-brand-cream"
                     >
                       <img
                         :src="item.product.image"
@@ -1314,88 +1234,96 @@ document.querySelector('#checkout-app').innerHTML = `
 
                     <div class="min-w-0 flex-1">
                       <p
-                        class="truncate font-semibold text-brand-cream"
+                        class="truncate text-sm font-semibold text-brand-cream"
                         x-text="item.product.name"
                       ></p>
 
-                      <p
-                        class="mt-1 text-xs text-brand-muted"
-                        x-text="
-                          'Quantity: ' +
-                          item.quantity +
-                          ' × ' +
-                          formatMoney(item.product.regularPrice)
-                        "
-                      ></p>
-                    </div>
+                      <div class="mt-1 flex items-center justify-between gap-3">
+                        <span
+                          class="text-xs text-brand-muted"
+                          x-text="'Qty ' + item.quantity"
+                        ></span>
 
-                    <strong
-                      class="shrink-0 text-sm text-brand-cream"
-                      x-text="formatMoney(item.lineTotal)"
-                    ></strong>
-                  </div>
+                        <strong
+                          class="text-xs text-brand-gold"
+                          x-text="formatMoney(item.lineTotal)"
+                        ></strong>
+                      </div>
+                    </div>
+                  </article>
                 </template>
               </div>
 
-              <div
-                class="flex items-end justify-between gap-4 border-t border-brand-border bg-brand-panel px-5 py-5"
+              <p class="mt-2 text-xs leading-5 text-brand-muted">
+                Fulfillment:
+                <span
+                  class="font-semibold text-brand-cream"
+                  x-text="
+                    delivery.fulfillmentType === 'pickup'
+                      ? 'Pickup'
+                      : 'Dropship'
+                  "
+                ></span>
+              </p>
+            </div>
+
+            <label
+              class="mt-5 flex cursor-pointer items-start gap-3 rounded-xl border border-brand-border bg-brand-black p-4"
+            >
+              <input
+                type="checkbox"
+                class="mt-0.5 size-4 accent-[#b78a32]"
+                required
               >
-                <div>
-                  <p
-                    class="text-xs uppercase tracking-[0.14em] text-brand-muted"
-                  >
-                    Estimated total
-                  </p>
 
-                  <p class="mt-1 text-xs text-brand-muted">
-                    Delivery fee not yet included
-                  </p>
-                </div>
-
-                <strong
-                  class="font-display text-3xl text-brand-gold"
-                  x-text="formatMoney($store.cart.subtotal)"
-                ></strong>
-              </div>
-            </article>
+              <span class="text-sm leading-6 text-brand-muted">
+                I confirm that the order, fulfillment, recipient (when
+                applicable), and payment information provided above is
+                correct.
+              </span>
+            </label>
 
             <div
-              class="mt-6 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3"
-              >
+              class="mt-5 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3"
+            >
               <p class="text-sm font-semibold text-amber-950">
                 Frontend preview only
               </p>
 
               <p class="mt-1 text-xs font-medium leading-5 text-amber-900">
-                Clicking the button below will not send an order, upload
-                the payment proof, or save any information.
+                This button currently validates the form only. It does
+                not save the order or upload the payment proof yet.
               </p>
             </div>
 
             <div
+              id="checkout-preview-status"
               x-show="checkoutPreviewComplete"
               x-transition
-              class="mt-4 rounded-xl border border-green-700/40 bg-green-900/20 px-4 py-3 text-sm leading-6 text-green-300"
+              class="mt-4 rounded-xl border border-[#2f6b59] bg-[#234f42] px-4 py-3 text-sm font-medium leading-6 text-[#fff8e9] shadow-sm"
               role="status"
             >
-              Frontend checkout test completed successfully. The next
-              development phase will connect this flow to the secure
-              database and admin approval system.
+              Checkout information is complete. The secure database and
+              admin approval connection will be added in the backend phase.
             </div>
 
             <button
-              type="button"
+              type="submit"
               class="mt-5 inline-flex h-12 w-full items-center justify-center rounded-full bg-brand-gold px-7 text-sm font-semibold text-brand-black transition hover:bg-brand-gold-light disabled:cursor-not-allowed disabled:opacity-60"
               :disabled="checkoutPreviewComplete"
-              @click="completeCheckoutPreview"
               x-text="
                 checkoutPreviewComplete
-                  ? 'Frontend test complete'
-                  : 'Complete frontend test'
+                  ? 'Checkout preview complete'
+                  : 'Submit order for verification'
               "
             ></button>
-          </div>
-        </section>
+
+            <p class="mt-3 text-center text-xs leading-5 text-brand-muted">
+              Your order will remain pending until the company verifies
+              the payment and order details.
+            </p>
+          </section>
+        </form>
       </div>
     </main>
   </div>
