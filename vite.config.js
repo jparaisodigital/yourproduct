@@ -29,7 +29,11 @@ export default defineConfig({
           import.meta.dirname,
           'register/index.html',
         ),
-        
+
+        dashboard: resolve(
+          import.meta.dirname,
+          'dashboard/index.html',
+        ),
       },
     },
   },
