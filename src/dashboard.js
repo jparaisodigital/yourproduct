@@ -8,6 +8,35 @@ import {
     siteConfig,
 } from './config/site-config.js'
 
+import {
+    products,
+    productCategories,
+} from './config/products-config.js'
+
+import {
+    renderProductCard,
+} from './components/product-card.js'
+
+import {
+    renderCartDrawer,
+} from './components/cart-drawer.js'
+
+import {
+    renderProductDrawer,
+} from './components/product-drawer.js'
+
+import {
+    registerCartStore,
+} from './stores/cart-store.js'
+
+import {
+    registerProductViewStore,
+} from './stores/product-view-store.js'
+
+import {
+    flyToCart,
+} from './lib/fly-to-cart.js'
+
 const previewAccount = {
     firstName: 'Sample',
     lastName: 'Customer',
@@ -131,6 +160,68 @@ const previewRewards = [
         `,
     },
 ]
+
+const activeProducts = products.filter(
+    (product) => product.isActive,
+)
+
+const dashboardCategoryButtons = productCategories
+    .map(
+        (category) => `
+          <button
+            type="button"
+            class="rounded-full border px-4 py-2 text-xs font-semibold transition sm:px-5 sm:py-2.5 sm:text-sm"
+            :class="
+              activeCategory === '${category.id}'
+                ? 'border-brand-gold bg-brand-gold text-[#17130d]'
+                : 'border-brand-border text-brand-muted hover:border-brand-gold hover:text-brand-gold'
+            "
+            @click="activeCategory = '${category.id}'"
+            :aria-pressed="
+              activeCategory === '${category.id}'
+            "
+          >
+            ${category.label}
+          </button>
+        `,
+    )
+    .join('')
+
+const dashboardProductCards = activeProducts
+    .map((product) => {
+        const searchText = [
+            product.name,
+            product.sku,
+            product.slug,
+            product.collectionLabel,
+            product.category,
+        ]
+            .join(' ')
+            .toLowerCase()
+            .replaceAll('\\', '\\\\')
+            .replaceAll("'", "\\'")
+
+        return `
+          <div
+            x-show="
+              (
+                activeCategory === 'all' ||
+                activeCategory === '${product.category}'
+              ) &&
+              (
+                productSearch.trim() === '' ||
+                '${searchText}'.includes(
+                  productSearch.trim().toLowerCase()
+                )
+              )
+            "
+            x-transition.opacity.duration.200ms
+          >
+            ${renderProductCard(product)}
+          </div>
+        `
+    })
+    .join('')
 
 function renderSidebar() {
     return `
@@ -260,6 +351,7 @@ function renderSidebar() {
             type="button"
             class="flex w-full items-center justify-between gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold transition"
             :class="
+              activePage === 'createOrder' ||
               activePage === 'orderHistory'
                 ? 'bg-brand-charcoal text-brand-gold'
                 : 'text-brand-cream hover:bg-brand-charcoal'
@@ -320,13 +412,23 @@ function renderSidebar() {
             x-transition
             class="ml-5 border-l border-brand-border pl-4"
           >
-            <a
-              href="/#shop"
-              class="block w-full rounded-lg px-3 py-2.5 text-left text-sm text-brand-muted transition hover:bg-brand-charcoal hover:text-brand-gold"
-              @click="closeMobileMenu()"
+            <button
+              type="button"
+              class="block w-full rounded-lg px-3 py-2.5 text-left text-sm transition"
+              :class="
+                activePage === 'createOrder'
+                  ? 'bg-brand-charcoal text-brand-gold'
+                  : 'text-brand-muted hover:bg-brand-charcoal hover:text-brand-gold'
+              "
+              @click="openPage('createOrder')"
+              :aria-current="
+                activePage === 'createOrder'
+                  ? 'page'
+                  : false
+              "
             >
               Create Order
-            </a>
+            </button>
     
             <button
               type="button"
@@ -497,9 +599,35 @@ function renderSidebar() {
 
 window.Alpine = Alpine
 
+registerCartStore(Alpine, products)
+registerProductViewStore(Alpine, products)
+
+Alpine.magic('addToCartWithAnimation', () => {
+    return (productId, sourceButton) => {
+        const product = products.find(
+            (item) => item.id === productId,
+        )
+
+        if (!product) {
+            return
+        }
+
+        const cart = Alpine.store('cart')
+        const previousQuantity = cart.quantityFor(productId)
+
+        cart.add(productId)
+
+        if (cart.quantityFor(productId) > previousQuantity) {
+            flyToCart(sourceButton, product.image)
+        }
+    }
+})
+
 Alpine.data('customerPortal', () => ({
     activePage: 'general',
     isMember: previewAccount.isMember,
+    activeCategory: 'all',
+    productSearch: '',
     
     mobileMenuOpen: false,
     ordersOpen: true,
@@ -524,6 +652,35 @@ Alpine.data('customerPortal', () => ({
     profileFormTested: false,
     previewNotice: '',
     previewTimer: null,
+
+    get filteredProductCount() {
+        const normalizedSearch =
+        this.productSearch.trim().toLowerCase()
+
+        return activeProducts.filter((product) => {
+            const matchesCategory =
+            this.activeCategory === 'all' ||
+            product.category === this.activeCategory
+
+            const searchableText = [
+                product.name,
+                product.sku,
+                product.slug,
+                product.collectionLabel,
+                product.category,
+            ]
+                .join(' ')
+                .toLowerCase()
+
+            return (
+                matchesCategory &&
+                (
+                    normalizedSearch === '' ||
+                    searchableText.includes(normalizedSearch)
+                )
+            )
+        }).length
+    },
     
     init() {
         this.$watch('mobileMenuOpen', (isOpen) => {
@@ -658,6 +815,8 @@ document.querySelector('#dashboard-app').innerHTML = `
                 x-text="
                   activePage === 'account'
                     ? 'Account Settings'
+                    : activePage === 'createOrder'
+                      ? 'Create Order'
                     : activePage === 'orderHistory'
                       ? 'Order History'
                       : 'General Dashboard'
@@ -674,7 +833,48 @@ document.querySelector('#dashboard-app').innerHTML = `
               UI Preview
             </span>
 
+            <button
+              x-show="activePage === 'createOrder'"
+              x-transition.opacity
+              type="button"
+              class="relative grid size-10 shrink-0 place-items-center rounded-full border border-brand-border text-brand-cream transition hover:border-brand-gold hover:bg-brand-gold/10 hover:text-brand-gold active:scale-95"
+              :aria-label="'Open shopping cart with ' + $store.cart.itemCount + ' items'"
+              data-cart-target
+              @click="$dispatch('open-cart')"
+            >
+              <svg
+                class="size-4"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.7"
+                aria-hidden="true"
+              >
+                <path
+                  d="M4 5h2l2 10h9l2-7H7"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+
+                <circle cx="10" cy="19" r="1" />
+                <circle cx="17" cy="19" r="1" />
+              </svg>
+
+              <span
+                x-show="$store.cart.itemCount > 0"
+                x-text="
+                  $store.cart.itemCount > 99
+                    ? '99+'
+                    : $store.cart.itemCount
+                "
+                class="absolute -right-1.5 -top-1.5 grid min-h-5 min-w-5 place-items-center rounded-full bg-brand-gold px-1 text-[10px] font-bold leading-none text-[#17130d]"
+                aria-hidden="true"
+              ></span>
+            </button>
+
             <a
+              x-show="activePage !== 'createOrder'"
+              x-transition.opacity
               href="/"
               class="text-xs font-semibold text-brand-muted transition hover:text-brand-gold sm:text-sm"
             >
@@ -837,12 +1037,13 @@ document.querySelector('#dashboard-app').innerHTML = `
               Ready to order?
             </h2>
 
-            <a
-              href="/#shop"
+            <button
+              type="button"
               class="premium-cta mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-brand-gold px-5 text-sm font-semibold text-[#17130d]"
+              @click="openPage('createOrder')"
             >
               Create Order
-            </a>
+            </button>
           </article>
         </section>
 
@@ -935,12 +1136,13 @@ document.querySelector('#dashboard-app').innerHTML = `
               Ready to order?
             </h2>
 
-            <a
-              href="/#shop"
+            <button
+              type="button"
               class="premium-cta mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-brand-gold px-5 text-sm font-semibold text-[#17130d]"
+              @click="openPage('createOrder')"
             >
               Create Order
-            </a>
+            </button>
           </article>
         </section>
 
@@ -1563,6 +1765,195 @@ document.querySelector('#dashboard-app').innerHTML = `
         </section>
 
         <section
+          x-show="activePage === 'createOrder'"
+          x-transition.opacity
+          aria-labelledby="create-order-page-title"
+        >
+          <div
+            class="rounded-[1.75rem] border border-brand-gold/30 bg-brand-panel p-6 shadow-gold-soft sm:p-8"
+          >
+            <div
+              class="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between"
+            >
+              <div>
+                <p
+                  class="text-[0.65rem] font-semibold uppercase tracking-[0.22em] text-brand-gold"
+                >
+                  Perfume Catalog
+                </p>
+
+                <h1
+                  id="create-order-page-title"
+                  class="mt-2 font-display text-4xl text-brand-cream sm:text-5xl"
+                >
+                  Create your order
+                </h1>
+
+                <p
+                  class="mt-3 max-w-2xl text-sm leading-7 text-brand-muted"
+                >
+                  Browse the shared collection, review product
+                  details and add your selected perfumes to the cart.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                class="premium-outline relative inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full border border-brand-border px-6 text-sm font-semibold text-brand-cream hover:border-brand-gold hover:text-brand-gold sm:w-auto"
+                @click="$dispatch('open-cart')"
+                aria-label="Open shopping cart"
+                data-cart-target
+              >
+                <svg
+                  class="size-4"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.7"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M4 5h2l2 10h9l2-7H7"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                  <circle cx="10" cy="19" r="1" />
+                  <circle cx="17" cy="19" r="1" />
+                </svg>
+
+                Cart
+
+                <span
+                  class="grid min-w-6 place-items-center rounded-full bg-brand-gold px-1.5 py-0.5 text-[0.65rem] font-bold text-[#17130d]"
+                  x-text="$store.cart.itemCount"
+                >
+                  0
+                </span>
+              </button>
+            </div>
+          </div>
+
+          <section
+            class="mt-6 rounded-[1.5rem] border border-brand-border bg-brand-panel p-5 shadow-panel sm:p-6"
+            aria-label="Catalog controls"
+          >
+            <div
+              class="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-center"
+            >
+              <label class="relative block">
+                <span class="sr-only">
+                  Search perfumes
+                </span>
+
+                <svg
+                  class="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-brand-muted"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.7"
+                  aria-hidden="true"
+                >
+                  <circle cx="11" cy="11" r="7" />
+                  <path
+                    d="m20 20-4-4"
+                    stroke-linecap="round"
+                  />
+                </svg>
+
+                <input
+                  type="search"
+                  x-model.debounce.150ms="productSearch"
+                  placeholder="Search by perfume name or SKU"
+                  maxlength="100"
+                  class="min-h-12 w-full rounded-xl border border-brand-border bg-brand-black py-3 pl-11 pr-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted/70 focus:border-brand-gold focus:ring-2 focus:ring-brand-gold/15"
+                >
+              </label>
+
+              <button
+                type="button"
+                class="text-left text-xs font-semibold text-brand-muted transition hover:text-brand-gold lg:text-right"
+                x-show="productSearch"
+                @click="productSearch = ''"
+              >
+                Clear Search
+              </button>
+            </div>
+
+            <div
+              class="mt-5 flex flex-wrap gap-2 sm:gap-3"
+              aria-label="Filter products by collection"
+            >
+              ${dashboardCategoryButtons}
+            </div>
+
+            <div
+              class="mt-5 flex items-center justify-between gap-4 border-t border-brand-border pt-4"
+            >
+              <p class="text-sm text-brand-muted">
+                <span
+                  class="font-semibold text-brand-cream"
+                  x-text="filteredProductCount"
+                ></span>
+                available
+                <span
+                  x-text="filteredProductCount === 1 ? 'product' : 'products'"
+                ></span>
+              </p>
+
+              <p
+                class="hidden text-xs text-brand-muted sm:block"
+              >
+                Member pricing requires approved membership
+              </p>
+            </div>
+          </section>
+
+          <div
+            class="mt-6 grid grid-cols-2 gap-3 sm:gap-5 xl:grid-cols-3"
+            aria-live="polite"
+          >
+            ${dashboardProductCards}
+          </div>
+
+          <div
+            x-show="filteredProductCount === 0"
+            x-transition
+            class="mt-6 rounded-2xl border border-dashed border-brand-border bg-brand-panel px-5 py-12 text-center"
+          >
+            <h2
+              class="font-display text-2xl text-brand-cream"
+            >
+              No perfumes found
+            </h2>
+
+            <p
+              class="mx-auto mt-2 max-w-md text-sm leading-6 text-brand-muted"
+            >
+              Try another search term or select a different
+              perfume collection.
+            </p>
+
+            <button
+              type="button"
+              class="mt-5 text-sm font-semibold text-brand-gold hover:text-brand-gold-light"
+              @click="
+                productSearch = ''
+                activeCategory = 'all'
+              "
+            >
+              Reset Catalog
+            </button>
+          </div>
+
+          <p
+            class="mt-6 text-center text-xs leading-5 text-brand-muted"
+          >
+            Product names, prices and stock are temporary preview
+            data until the final catalog is approved and connected.
+          </p>
+        </section>
+
+        <section
           x-show="activePage === 'orderHistory'"
           x-transition.opacity
           aria-labelledby="order-history-page-title"
@@ -1595,12 +1986,13 @@ document.querySelector('#dashboard-app').innerHTML = `
                 </p>
               </div>
 
-              <a
-                href="/#shop"
+              <button
+                type="button"
                 class="premium-cta inline-flex min-h-12 w-full items-center justify-center rounded-full bg-brand-gold px-6 text-sm font-semibold text-[#17130d] sm:w-auto"
+                @click="openPage('createOrder')"
               >
                 Create New Order
-              </a>
+              </button>
             </div>
           </div>
 
@@ -1729,12 +2121,13 @@ document.querySelector('#dashboard-app').innerHTML = `
                 its reference number and status will appear here.
               </p>
 
-              <a
-                href="/#shop"
+              <button
+                type="button"
                 class="premium-outline mt-6 inline-flex min-h-11 items-center justify-center rounded-full border border-brand-border px-6 text-sm font-semibold text-brand-cream hover:border-brand-gold hover:text-brand-gold"
+                @click="openPage('createOrder')"
               >
                 Browse Perfumes
-              </a>
+              </button>
             </div>
           </section>
 
@@ -1755,6 +2148,9 @@ document.querySelector('#dashboard-app').innerHTML = `
       role="status"
       x-text="previewNotice"
     ></div>
+
+    ${renderCartDrawer()}
+    ${renderProductDrawer()}
   </div>
 `
 
