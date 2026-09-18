@@ -8,10 +8,10 @@ import {
     siteConfig,
 } from './config/site-config.js'
 
-const previewMember = {
+const previewAccount = {
     firstName: 'Sample',
-    lastName: 'Member',
-    emailAddress: 'member@example.com',
+    lastName: 'Customer',
+    emailAddress: 'customer@example.com',
     mobileNumber: '09171234567',
     
     address: {
@@ -22,7 +22,9 @@ const previewMember = {
         landmark: '',
     },
     
-    membershipStatus: 'Membership pending',
+    isMember: false,
+    accountType: 'Free Customer',
+    membershipStatus: 'Not active',
     directReferrals: 0,
     pointsBalance: 0,
     availableIncome: 0,
@@ -157,7 +159,7 @@ function renderSidebar() {
             <span
               class="mt-0.5 block text-[0.58rem] uppercase tracking-[0.13em] text-brand-muted"
             >
-              Member Platform
+              Customer Portal
             </span>
           </span>
         </a>
@@ -186,7 +188,7 @@ function renderSidebar() {
     
       <nav
         class="flex-1 overflow-y-auto px-4 py-6"
-        aria-label="Member dashboard navigation"
+        aria-label="Customer portal navigation"
       >
         <p
           class="px-3 text-[0.62rem] font-semibold uppercase tracking-[0.22em] text-brand-muted"
@@ -256,7 +258,12 @@ function renderSidebar() {
         <div class="mt-3">
           <button
             type="button"
-            class="flex w-full items-center justify-between gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold text-brand-cream transition hover:bg-brand-charcoal"
+            class="flex w-full items-center justify-between gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold transition"
+            :class="
+              activePage === 'orderHistory'
+                ? 'bg-brand-charcoal text-brand-gold'
+                : 'text-brand-cream hover:bg-brand-charcoal'
+            "
             @click="ordersOpen = !ordersOpen"
             :aria-expanded="ordersOpen"
           >
@@ -313,23 +320,27 @@ function renderSidebar() {
             x-transition
             class="ml-5 border-l border-brand-border pl-4"
           >
-            <button
-              type="button"
+            <a
+              href="/#shop"
               class="block w-full rounded-lg px-3 py-2.5 text-left text-sm text-brand-muted transition hover:bg-brand-charcoal hover:text-brand-gold"
-              @click="
-                showPreviewNotice('Create Order')
-                closeMobileMenu()
-              "
+              @click="closeMobileMenu()"
             >
               Create Order
-            </button>
+            </a>
     
             <button
               type="button"
-              class="block w-full rounded-lg px-3 py-2.5 text-left text-sm text-brand-muted transition hover:bg-brand-charcoal hover:text-brand-gold"
-              @click="
-                showPreviewNotice('Order History')
-                closeMobileMenu()
+              class="block w-full rounded-lg px-3 py-2.5 text-left text-sm transition"
+              :class="
+                activePage === 'orderHistory'
+                  ? 'bg-brand-charcoal text-brand-gold'
+                  : 'text-brand-muted hover:bg-brand-charcoal hover:text-brand-gold'
+              "
+              @click="openPage('orderHistory')"
+              :aria-current="
+                activePage === 'orderHistory'
+                  ? 'page'
+                  : false
               "
             >
               Order History
@@ -337,7 +348,11 @@ function renderSidebar() {
           </div>
         </div>
     
-        <div class="mt-1">
+        <div
+          x-show="isMember"
+          x-transition
+          class="mt-1"
+        >
           <button
             type="button"
             class="flex w-full items-center justify-between gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold text-brand-cream transition hover:bg-brand-charcoal"
@@ -459,19 +474,19 @@ function renderSidebar() {
           <div
             class="grid size-10 shrink-0 place-items-center rounded-full bg-brand-gold text-sm font-bold text-[#17130d]"
           >
-            SM
+            SC
           </div>
     
           <div class="min-w-0 flex-1">
             <p
               class="truncate text-sm font-semibold text-brand-cream"
             >
-              ${previewMember.firstName}
-              ${previewMember.lastName}
+              ${previewAccount.firstName}
+              ${previewAccount.lastName}
             </p>
     
             <p class="truncate text-xs text-brand-muted">
-              Preview Account
+              Free Customer
             </p>
           </div>
         </div>
@@ -482,26 +497,27 @@ function renderSidebar() {
 
 window.Alpine = Alpine
 
-Alpine.data('memberDashboard', () => ({
+Alpine.data('customerPortal', () => ({
     activePage: 'general',
+    isMember: previewAccount.isMember,
     
     mobileMenuOpen: false,
     ordersOpen: true,
     walletOpen: true,
     
     profileForm: {
-        firstName: previewMember.firstName,
-        lastName: previewMember.lastName,
-        emailAddress: previewMember.emailAddress,
-        mobileNumber: previewMember.mobileNumber,
+        firstName: previewAccount.firstName,
+        lastName: previewAccount.lastName,
+        emailAddress: previewAccount.emailAddress,
+        mobileNumber: previewAccount.mobileNumber,
         
         address: {
-            province: previewMember.address.province,
+            province: previewAccount.address.province,
             cityMunicipality:
-            previewMember.address.cityMunicipality,
-            barangay: previewMember.address.barangay,
-            houseStreet: previewMember.address.houseStreet,
-            landmark: previewMember.address.landmark,
+            previewAccount.address.cityMunicipality,
+            barangay: previewAccount.address.barangay,
+            houseStreet: previewAccount.address.houseStreet,
+            landmark: previewAccount.address.landmark,
         },
     },
     
@@ -562,11 +578,11 @@ Alpine.data('memberDashboard', () => ({
 }))
 
 document.title =
-`Member Dashboard | ${siteConfig.brand.name}`
+`Customer Portal | ${siteConfig.brand.name}`
 
 document.querySelector('#dashboard-app').innerHTML = `
   <div
-    x-data="memberDashboard"
+    x-data="customerPortal"
     x-cloak
     class="min-h-screen bg-brand-black text-brand-cream"
     @keydown.escape.window="closeMobileMenu()"
@@ -634,13 +650,19 @@ document.querySelector('#dashboard-app').innerHTML = `
               <p
                 class="text-[0.6rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
               >
-                Member Platform
+                Customer Portal
               </p>
 
               <p
                 class="truncate text-sm font-semibold text-brand-cream"
+                x-text="
+                  activePage === 'account'
+                    ? 'Account Settings'
+                    : activePage === 'orderHistory'
+                      ? 'Order History'
+                      : 'General Dashboard'
+                "
               >
-                General Dashboard
               </p>
             </div>
           </div>
@@ -665,6 +687,10 @@ document.querySelector('#dashboard-app').innerHTML = `
       <main
         class="mx-auto w-[min(1240px,92%)] py-8 sm:py-10"
       >
+        <div
+          x-show="activePage === 'general'"
+          x-transition.opacity
+        >
         <section
           class="relative isolate overflow-hidden rounded-[1.75rem] border border-brand-gold/30 bg-brand-panel p-6 shadow-gold-soft sm:p-8 lg:p-10"
         >
@@ -680,7 +706,7 @@ document.querySelector('#dashboard-app').innerHTML = `
               <p
                 class="text-[0.65rem] font-semibold uppercase tracking-[0.24em] text-brand-gold"
               >
-                Your Future
+                Customer Portal
               </p>
 
               <h1
@@ -688,16 +714,15 @@ document.querySelector('#dashboard-app').innerHTML = `
               >
                 Welcome,
                 <span class="italic text-brand-gold">
-                  ${previewMember.firstName}.
+                  ${previewAccount.firstName}.
                 </span>
               </h1>
 
               <p
                 class="mt-4 max-w-2xl text-sm leading-7 text-brand-muted sm:text-base"
               >
-                This is the simplified member overview.
-                Figures shown below are temporary preview
-                values until the secure database is connected.
+                Manage your orders, delivery information and
+                account details from one simple dashboard.
               </p>
             </div>
 
@@ -712,13 +737,13 @@ document.querySelector('#dashboard-app').innerHTML = `
 
               <div class="mt-2 flex items-center gap-2">
                 <span
-                  class="size-2 rounded-full bg-amber-500"
+                  class="size-2 rounded-full bg-emerald-500"
                 ></span>
 
                 <strong
                   class="text-sm text-brand-cream"
                 >
-                  ${previewMember.membershipStatus}
+                  ${previewAccount.accountType}
                 </strong>
               </div>
             </div>
@@ -726,8 +751,106 @@ document.querySelector('#dashboard-app').innerHTML = `
         </section>
 
         <section
+          x-show="!isMember"
+          x-transition.opacity
           class="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4"
-          aria-label="Member overview"
+          aria-label="Customer overview"
+        >
+          <article
+            class="rounded-[1.35rem] border border-brand-border bg-brand-panel p-5 shadow-[0_12px_35px_rgb(62_48_24_/_0.06)]"
+          >
+            <p
+              class="text-xs uppercase tracking-[0.13em] text-brand-muted"
+            >
+              Account Type
+            </p>
+
+            <strong
+              class="mt-3 block font-display text-2xl text-brand-cream"
+            >
+              Free Customer
+            </strong>
+
+            <p
+              class="mt-3 text-xs leading-5 text-brand-muted"
+            >
+              Ready for regular orders
+            </p>
+          </article>
+
+          <article
+            class="rounded-[1.35rem] border border-brand-border bg-brand-panel p-5 shadow-[0_12px_35px_rgb(62_48_24_/_0.06)]"
+          >
+            <p
+              class="text-xs uppercase tracking-[0.13em] text-brand-muted"
+            >
+              Total Orders
+            </p>
+
+            <strong
+              class="mt-3 block font-display text-4xl text-brand-cream"
+            >
+              0
+            </strong>
+
+            <p
+              class="mt-3 text-xs leading-5 text-brand-muted"
+            >
+              No submitted orders yet
+            </p>
+          </article>
+
+          <article
+            class="rounded-[1.35rem] border border-brand-border bg-brand-panel p-5 shadow-[0_12px_35px_rgb(62_48_24_/_0.06)]"
+          >
+            <p
+              class="text-xs uppercase tracking-[0.13em] text-brand-muted"
+            >
+              Membership
+            </p>
+
+            <strong
+              class="mt-3 block font-display text-2xl text-brand-cream"
+            >
+              Not Active
+            </strong>
+
+            <p
+              class="mt-3 text-xs leading-5 text-brand-muted"
+            >
+              Upgrade remains optional
+            </p>
+          </article>
+
+          <article
+            class="rounded-[1.35rem] border border-brand-gold/35 bg-brand-charcoal p-5"
+          >
+            <p
+              class="text-xs uppercase tracking-[0.13em] text-brand-muted"
+            >
+              Quick Action
+            </p>
+
+            <h2
+              class="mt-3 font-display text-2xl text-brand-cream"
+            >
+              Ready to order?
+            </h2>
+
+            <a
+              href="/#shop"
+              class="premium-cta mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-brand-gold px-5 text-sm font-semibold text-[#17130d]"
+            >
+              Create Order
+            </a>
+          </article>
+        </section>
+
+        <section
+          class="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4"
+          x-show="isMember"
+          x-transition.opacity
+          aria-label="Approved member overview"
         >
           <article
             class="rounded-[1.35rem] border border-brand-border bg-brand-panel p-5 shadow-[0_12px_35px_rgb(62_48_24_/_0.06)]"
@@ -741,7 +864,7 @@ document.querySelector('#dashboard-app').innerHTML = `
             <strong
               class="mt-3 block font-display text-4xl text-brand-cream"
             >
-              ${previewMember.directReferrals}
+              ${previewAccount.directReferrals}
             </strong>
 
             <p
@@ -763,7 +886,7 @@ document.querySelector('#dashboard-app').innerHTML = `
             <strong
               class="mt-3 block font-display text-4xl text-brand-cream"
             >
-              ${previewMember.pointsBalance}
+              ${previewAccount.pointsBalance}
             </strong>
 
             <p
@@ -785,7 +908,7 @@ document.querySelector('#dashboard-app').innerHTML = `
             <strong
               class="mt-3 block font-display text-4xl text-brand-cream"
             >
-              ₱${previewMember.availableIncome.toLocaleString(
+              ₱${previewAccount.availableIncome.toLocaleString(
 'en-PH',
 )}
             </strong>
@@ -812,13 +935,12 @@ document.querySelector('#dashboard-app').innerHTML = `
               Ready to order?
             </h2>
 
-            <button
-              type="button"
+            <a
+              href="/#shop"
               class="premium-cta mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-brand-gold px-5 text-sm font-semibold text-[#17130d]"
-              @click="showPreviewNotice('Create Order')"
             >
               Create Order
-            </button>
+            </a>
           </article>
         </section>
 
@@ -826,6 +948,82 @@ document.querySelector('#dashboard-app').innerHTML = `
           class="mt-6 grid gap-6 xl:grid-cols-[1.25fr_0.75fr]"
         >
           <section
+            x-show="!isMember"
+            x-transition.opacity
+            class="relative isolate overflow-hidden rounded-[1.5rem] border border-brand-gold/35 bg-brand-charcoal p-5 shadow-panel sm:p-6"
+          >
+            <div
+              class="pointer-events-none absolute -right-20 -top-20 size-56 rounded-full bg-brand-gold/10 blur-3xl"
+              aria-hidden="true"
+            ></div>
+
+            <div class="relative">
+              <p
+                class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
+              >
+                Optional Membership
+              </p>
+
+              <h2
+                class="mt-1 max-w-xl font-display text-3xl text-brand-cream"
+              >
+                Turn every qualified purchase into progress.
+              </h2>
+
+              <p
+                class="mt-3 max-w-2xl text-sm leading-6 text-brand-muted"
+              >
+                Explore the membership packages when you are ready
+                to unlock approved points, rewards and earning features.
+                Your regular customer account remains free.
+              </p>
+
+              <ul
+                class="mt-6 grid gap-3 text-sm text-brand-cream sm:grid-cols-3"
+              >
+                <li
+                  class="flex items-center gap-3 rounded-xl border border-brand-border bg-brand-black/60 px-4 py-3"
+                >
+                  <span
+                    class="size-2 shrink-0 rounded-full bg-brand-gold"
+                    aria-hidden="true"
+                  ></span>
+                  Points
+                </li>
+
+                <li
+                  class="flex items-center gap-3 rounded-xl border border-brand-border bg-brand-black/60 px-4 py-3"
+                >
+                  <span
+                    class="size-2 shrink-0 rounded-full bg-brand-gold"
+                    aria-hidden="true"
+                  ></span>
+                  Rewards
+                </li>
+
+                <li
+                  class="flex items-center gap-3 rounded-xl border border-brand-border bg-brand-black/60 px-4 py-3"
+                >
+                  <span
+                    class="size-2 shrink-0 rounded-full bg-brand-gold"
+                    aria-hidden="true"
+                  ></span>
+                  Earning Features
+                </li>
+              </ul>
+
+              <a
+                href="/#packages"
+                class="premium-cta mt-6 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-brand-gold px-6 text-sm font-semibold text-[#17130d] sm:w-auto"
+              >
+                Explore Membership Packages
+              </a>
+            </div>
+          </section>
+
+          <section
+            x-show="isMember"
+            x-transition.opacity
             class="rounded-[1.5rem] border border-brand-border bg-brand-panel p-5 shadow-panel sm:p-6"
           >
             <p
@@ -900,14 +1098,14 @@ document.querySelector('#dashboard-app').innerHTML = `
                 class="flex items-center justify-between gap-4 py-3 first:pt-0"
               >
                 <dt class="text-sm text-brand-muted">
-                  Member Name
+                  Customer Name
                 </dt>
 
                 <dd
                   class="text-right text-sm font-semibold text-brand-cream"
                 >
-                  ${previewMember.firstName}
-                  ${previewMember.lastName}
+                  ${previewAccount.firstName}
+                  ${previewAccount.lastName}
                 </dd>
               </div>
 
@@ -921,7 +1119,7 @@ document.querySelector('#dashboard-app').innerHTML = `
                 <dd
                   class="max-w-44 truncate text-right text-sm font-semibold text-brand-cream"
                 >
-                  ${previewMember.emailAddress}
+                  ${previewAccount.emailAddress}
                 </dd>
               </div>
 
@@ -929,13 +1127,13 @@ document.querySelector('#dashboard-app').innerHTML = `
                 class="flex items-center justify-between gap-4 py-3"
               >
                 <dt class="text-sm text-brand-muted">
-                  Package
+                  Membership
                 </dt>
 
                 <dd
                   class="text-right text-sm font-semibold text-brand-cream"
                 >
-                  Not Assigned
+                  ${previewAccount.membershipStatus}
                 </dd>
               </div>
 
@@ -943,13 +1141,13 @@ document.querySelector('#dashboard-app').innerHTML = `
                 class="flex items-center justify-between gap-4 py-3 last:pb-0"
               >
                 <dt class="text-sm text-brand-muted">
-                  Verification
+                  Account Type
                 </dt>
 
                 <dd
-                  class="text-right text-sm font-semibold text-amber-700"
+                  class="text-right text-sm font-semibold text-brand-cream"
                 >
-                  Preview Status
+                  ${previewAccount.accountType}
                 </dd>
               </div>
             </dl>
@@ -957,7 +1155,7 @@ document.querySelector('#dashboard-app').innerHTML = `
             <button
               type="button"
               class="premium-outline mt-6 inline-flex min-h-11 w-full items-center justify-center rounded-full border border-brand-border px-5 text-sm font-semibold text-brand-cream hover:border-brand-gold hover:text-brand-gold"
-              @click="showPreviewNotice('Account')"
+              @click="openPage('account')"
             >
               View Account
             </button>
@@ -987,7 +1185,7 @@ document.querySelector('#dashboard-app').innerHTML = `
             <button
               type="button"
               class="text-left text-sm font-semibold text-brand-gold transition hover:text-brand-gold-light"
-              @click="showPreviewNotice('Order History')"
+              @click="openPage('orderHistory')"
             >
               View Order History
             </button>
@@ -1048,6 +1246,505 @@ document.querySelector('#dashboard-app').innerHTML = `
           Dashboard interface preview — no account,
           points, income, or order data is being saved yet.
         </p>
+        </div>
+
+        <section
+          x-show="activePage === 'account'"
+          x-transition.opacity
+          aria-labelledby="account-page-title"
+        >
+          <div
+            class="rounded-[1.75rem] border border-brand-gold/30 bg-brand-panel p-6 shadow-gold-soft sm:p-8"
+          >
+            <div
+              class="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between"
+            >
+              <div>
+                <p
+                  class="text-[0.65rem] font-semibold uppercase tracking-[0.22em] text-brand-gold"
+                >
+                  Customer Account
+                </p>
+
+                <h1
+                  id="account-page-title"
+                  class="mt-2 font-display text-4xl text-brand-cream sm:text-5xl"
+                >
+                  Profile and address
+                </h1>
+
+                <p
+                  class="mt-3 max-w-2xl text-sm leading-7 text-brand-muted"
+                >
+                  Review the information that will be connected
+                  to your secure customer account and future orders.
+                </p>
+              </div>
+
+              <div
+                class="rounded-2xl border border-brand-border bg-brand-black px-5 py-4"
+              >
+                <p
+                  class="text-xs uppercase tracking-[0.12em] text-brand-muted"
+                >
+                  Membership Status
+                </p>
+
+                <p
+                  class="mt-2 text-sm font-semibold text-brand-cream"
+                >
+                  ${previewAccount.membershipStatus}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <form
+            class="mt-6 grid gap-6 xl:grid-cols-[1fr_0.85fr]"
+            @submit.prevent="testProfileForm()"
+          >
+            <section
+              class="rounded-[1.5rem] border border-brand-border bg-brand-panel p-5 shadow-panel sm:p-6"
+              aria-labelledby="personal-information-title"
+            >
+              <p
+                class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
+              >
+                Account Details
+              </p>
+
+              <h2
+                id="personal-information-title"
+                class="mt-1 font-display text-3xl text-brand-cream"
+              >
+                Personal information
+              </h2>
+
+              <div class="mt-6 grid gap-5 sm:grid-cols-2">
+                <label class="block">
+                  <span
+                    class="text-xs font-semibold uppercase tracking-[0.1em] text-brand-muted"
+                  >
+                    First Name
+                  </span>
+
+                  <input
+                    type="text"
+                    name="firstName"
+                    autocomplete="given-name"
+                    required
+                    maxlength="80"
+                    x-model.trim="profileForm.firstName"
+                    class="mt-2 min-h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted/70 focus:border-brand-gold focus:ring-2 focus:ring-brand-gold/15"
+                  >
+                </label>
+
+                <label class="block">
+                  <span
+                    class="text-xs font-semibold uppercase tracking-[0.1em] text-brand-muted"
+                  >
+                    Last Name
+                  </span>
+
+                  <input
+                    type="text"
+                    name="lastName"
+                    autocomplete="family-name"
+                    required
+                    maxlength="80"
+                    x-model.trim="profileForm.lastName"
+                    class="mt-2 min-h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted/70 focus:border-brand-gold focus:ring-2 focus:ring-brand-gold/15"
+                  >
+                </label>
+
+                <label class="block sm:col-span-2">
+                  <span
+                    class="text-xs font-semibold uppercase tracking-[0.1em] text-brand-muted"
+                  >
+                    Email Address
+                  </span>
+
+                  <input
+                    type="email"
+                    name="emailAddress"
+                    autocomplete="email"
+                    readonly
+                    x-model="profileForm.emailAddress"
+                    class="mt-2 min-h-12 w-full cursor-not-allowed rounded-xl border border-brand-border bg-brand-charcoal px-4 text-sm text-brand-muted outline-none"
+                  >
+
+                  <span
+                    class="mt-2 block text-xs leading-5 text-brand-muted"
+                  >
+                    Email changes will require a secure verification
+                    process after authentication is connected.
+                  </span>
+                </label>
+
+                <label class="block sm:col-span-2">
+                  <span
+                    class="text-xs font-semibold uppercase tracking-[0.1em] text-brand-muted"
+                  >
+                    Mobile Number
+                  </span>
+
+                  <input
+                    type="tel"
+                    name="mobileNumber"
+                    autocomplete="tel"
+                    inputmode="tel"
+                    required
+                    maxlength="20"
+                    x-model.trim="profileForm.mobileNumber"
+                    class="mt-2 min-h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted/70 focus:border-brand-gold focus:ring-2 focus:ring-brand-gold/15"
+                  >
+                </label>
+              </div>
+            </section>
+
+            <section
+              class="rounded-[1.5rem] border border-brand-border bg-brand-panel p-5 shadow-panel sm:p-6"
+              aria-labelledby="default-address-title"
+            >
+              <p
+                class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
+              >
+                Delivery Details
+              </p>
+
+              <h2
+                id="default-address-title"
+                class="mt-1 font-display text-3xl text-brand-cream"
+              >
+                Default address
+              </h2>
+
+              <div class="mt-6 grid gap-5 sm:grid-cols-2">
+                <label class="block">
+                  <span
+                    class="text-xs font-semibold uppercase tracking-[0.1em] text-brand-muted"
+                  >
+                    Province
+                  </span>
+
+                  <input
+                    type="text"
+                    name="province"
+                    autocomplete="address-level1"
+                    required
+                    maxlength="100"
+                    x-model.trim="profileForm.address.province"
+                    class="mt-2 min-h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition focus:border-brand-gold focus:ring-2 focus:ring-brand-gold/15"
+                  >
+                </label>
+
+                <label class="block">
+                  <span
+                    class="text-xs font-semibold uppercase tracking-[0.1em] text-brand-muted"
+                  >
+                    City / Municipality
+                  </span>
+
+                  <input
+                    type="text"
+                    name="cityMunicipality"
+                    autocomplete="address-level2"
+                    required
+                    maxlength="100"
+                    x-model.trim="profileForm.address.cityMunicipality"
+                    class="mt-2 min-h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition focus:border-brand-gold focus:ring-2 focus:ring-brand-gold/15"
+                  >
+                </label>
+
+                <label class="block sm:col-span-2">
+                  <span
+                    class="text-xs font-semibold uppercase tracking-[0.1em] text-brand-muted"
+                  >
+                    Barangay
+                  </span>
+
+                  <input
+                    type="text"
+                    name="barangay"
+                    autocomplete="address-level3"
+                    required
+                    maxlength="100"
+                    x-model.trim="profileForm.address.barangay"
+                    class="mt-2 min-h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition focus:border-brand-gold focus:ring-2 focus:ring-brand-gold/15"
+                  >
+                </label>
+
+                <label class="block sm:col-span-2">
+                  <span
+                    class="text-xs font-semibold uppercase tracking-[0.1em] text-brand-muted"
+                  >
+                    House No. and Street
+                  </span>
+
+                  <input
+                    type="text"
+                    name="houseStreet"
+                    autocomplete="street-address"
+                    required
+                    maxlength="180"
+                    x-model.trim="profileForm.address.houseStreet"
+                    class="mt-2 min-h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition focus:border-brand-gold focus:ring-2 focus:ring-brand-gold/15"
+                  >
+                </label>
+
+                <label class="block sm:col-span-2">
+                  <span
+                    class="text-xs font-semibold uppercase tracking-[0.1em] text-brand-muted"
+                  >
+                    Landmark
+                    <span class="normal-case tracking-normal">
+                      (Optional)
+                    </span>
+                  </span>
+
+                  <input
+                    type="text"
+                    name="landmark"
+                    maxlength="180"
+                    x-model.trim="profileForm.address.landmark"
+                    class="mt-2 min-h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition focus:border-brand-gold focus:ring-2 focus:ring-brand-gold/15"
+                  >
+                </label>
+              </div>
+            </section>
+
+            <section
+              class="rounded-[1.5rem] border border-brand-border bg-brand-panel p-5 shadow-panel sm:p-6 xl:col-span-2"
+            >
+              <div
+                class="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between"
+              >
+                <div>
+                  <h2
+                    class="font-display text-2xl text-brand-cream"
+                  >
+                    Review your information
+                  </h2>
+
+                  <p
+                    class="mt-2 max-w-2xl text-sm leading-6 text-brand-muted"
+                  >
+                    This preview validates the required fields only.
+                    It does not update or store account information yet.
+                  </p>
+                </div>
+
+                <button
+                  type="submit"
+                  class="premium-cta inline-flex min-h-12 w-full items-center justify-center rounded-full bg-brand-gold px-6 text-sm font-semibold text-[#17130d] sm:w-auto"
+                >
+                  Test Profile Form
+                </button>
+              </div>
+
+              <div
+                x-show="profileFormTested"
+                x-transition
+                class="mt-5 rounded-xl border border-brand-gold/35 bg-brand-gold/10 px-4 py-3 text-sm leading-6 text-brand-cream"
+                role="status"
+              >
+                Profile form validation passed. No information
+                was saved because the database is not connected yet.
+              </div>
+            </section>
+          </form>
+
+          <p
+            class="mt-6 text-center text-xs leading-5 text-brand-muted"
+          >
+            Account interface preview — secure profile updates
+            will be enabled during the Supabase integration stage.
+          </p>
+        </section>
+
+        <section
+          x-show="activePage === 'orderHistory'"
+          x-transition.opacity
+          aria-labelledby="order-history-page-title"
+        >
+          <div
+            class="rounded-[1.75rem] border border-brand-gold/30 bg-brand-panel p-6 shadow-gold-soft sm:p-8"
+          >
+            <div
+              class="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between"
+            >
+              <div>
+                <p
+                  class="text-[0.65rem] font-semibold uppercase tracking-[0.22em] text-brand-gold"
+                >
+                  Your Orders
+                </p>
+
+                <h1
+                  id="order-history-page-title"
+                  class="mt-2 font-display text-4xl text-brand-cream sm:text-5xl"
+                >
+                  Order history
+                </h1>
+
+                <p
+                  class="mt-3 max-w-2xl text-sm leading-7 text-brand-muted"
+                >
+                  Review submitted orders and their latest
+                  admin-confirmed status in one place.
+                </p>
+              </div>
+
+              <a
+                href="/#shop"
+                class="premium-cta inline-flex min-h-12 w-full items-center justify-center rounded-full bg-brand-gold px-6 text-sm font-semibold text-[#17130d] sm:w-auto"
+              >
+                Create New Order
+              </a>
+            </div>
+          </div>
+
+          <section
+            class="mt-6 grid gap-4 sm:grid-cols-3"
+            aria-label="Order overview"
+          >
+            <article
+              class="rounded-[1.35rem] border border-brand-border bg-brand-panel p-5 shadow-panel"
+            >
+              <p
+                class="text-xs uppercase tracking-[0.13em] text-brand-muted"
+              >
+                Total Orders
+              </p>
+
+              <strong
+                class="mt-3 block font-display text-4xl text-brand-cream"
+              >
+                0
+              </strong>
+            </article>
+
+            <article
+              class="rounded-[1.35rem] border border-brand-border bg-brand-panel p-5 shadow-panel"
+            >
+              <p
+                class="text-xs uppercase tracking-[0.13em] text-brand-muted"
+              >
+                Pending Verification
+              </p>
+
+              <strong
+                class="mt-3 block font-display text-4xl text-brand-cream"
+              >
+                0
+              </strong>
+            </article>
+
+            <article
+              class="rounded-[1.35rem] border border-brand-border bg-brand-panel p-5 shadow-panel"
+            >
+              <p
+                class="text-xs uppercase tracking-[0.13em] text-brand-muted"
+              >
+                Completed
+              </p>
+
+              <strong
+                class="mt-3 block font-display text-4xl text-brand-cream"
+              >
+                0
+              </strong>
+            </article>
+          </section>
+
+          <section
+            class="mt-6 rounded-[1.5rem] border border-brand-border bg-brand-panel p-5 shadow-panel sm:p-6"
+            aria-labelledby="order-records-title"
+          >
+            <div
+              class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"
+            >
+              <div>
+                <p
+                  class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
+                >
+                  Order Records
+                </p>
+
+                <h2
+                  id="order-records-title"
+                  class="mt-1 font-display text-3xl text-brand-cream"
+                >
+                  Recent submissions
+                </h2>
+              </div>
+
+              <span
+                class="text-xs leading-5 text-brand-muted"
+              >
+                Latest orders will appear first
+              </span>
+            </div>
+
+            <div
+              class="mt-6 rounded-2xl border border-dashed border-brand-border bg-brand-black px-5 py-12 text-center"
+            >
+              <span
+                class="mx-auto grid size-12 place-items-center rounded-full bg-brand-charcoal text-brand-gold"
+                aria-hidden="true"
+              >
+                <svg
+                  class="size-5"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.7"
+                >
+                  <path
+                    d="M4 5h2l2 10h9l2-7H7"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+
+                  <circle cx="10" cy="19" r="1" />
+                  <circle cx="17" cy="19" r="1" />
+
+                  <path
+                    d="M14.5 5.5h5M17 3v5"
+                    stroke-linecap="round"
+                  />
+                </svg>
+              </span>
+
+              <h3
+                class="mt-4 font-display text-2xl text-brand-cream"
+              >
+                No orders submitted yet
+              </h3>
+
+              <p
+                class="mx-auto mt-2 max-w-md text-sm leading-6 text-brand-muted"
+              >
+                Once an order is submitted and stored securely,
+                its reference number and status will appear here.
+              </p>
+
+              <a
+                href="/#shop"
+                class="premium-outline mt-6 inline-flex min-h-11 items-center justify-center rounded-full border border-brand-border px-6 text-sm font-semibold text-brand-cream hover:border-brand-gold hover:text-brand-gold"
+              >
+                Browse Perfumes
+              </a>
+            </div>
+          </section>
+
+          <p
+            class="mt-6 text-center text-xs leading-5 text-brand-muted"
+          >
+            Order history preview — real records will be loaded
+            after authenticated Supabase access is connected.
+          </p>
+        </section>
       </main>
     </div>
 
