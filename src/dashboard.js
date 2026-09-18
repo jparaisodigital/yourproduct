@@ -5,40 +5,133 @@ import Alpine from 'alpinejs'
 import logoImage from './assets/logoyourproduct.png'
 
 import {
-  siteConfig,
+    siteConfig,
 } from './config/site-config.js'
 
 const previewMember = {
-  firstName: 'Sample',
-  lastName: 'Member',
-  emailAddress: 'member@example.com',
-  membershipStatus: 'Membership pending',
-  directReferrals: 0,
-  pointsBalance: 0,
-  availableIncome: 0,
+    firstName: 'Sample',
+    lastName: 'Member',
+    emailAddress: 'member@example.com',
+    mobileNumber: '09171234567',
+    
+    address: {
+        province: 'Cavite',
+        cityMunicipality: 'Bacoor',
+        barangay: 'Sample Barangay',
+        houseStreet: '123 Sample Street',
+        landmark: '',
+    },
+    
+    membershipStatus: 'Membership pending',
+    directReferrals: 0,
+    pointsBalance: 0,
+    availableIncome: 0,
 }
 
 const previewRewards = [
-  {
-    label: 'Cellphone',
-    icon: '📱',
-  },
-  {
-    label: 'Laptop',
-    icon: '💻',
-  },
-  {
-    label: 'Motorcycle',
-    icon: '🏍️',
-  },
-  {
-    label: 'Car',
-    icon: '🚗',
-  },
+    {
+        label: 'Cellphone',
+        icon: `
+            <svg
+              class="size-6"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              aria-hidden="true"
+            >
+              <rect
+                x="7"
+                y="2.5"
+                width="10"
+                height="19"
+                rx="2"
+              />
+
+              <path
+                d="M10 5h4M11 18.5h2"
+                stroke-linecap="round"
+              />
+            </svg>
+        `,
+    },
+    {
+        label: 'Laptop',
+        icon: `
+            <svg
+              class="size-6"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              aria-hidden="true"
+            >
+              <rect
+                x="4"
+                y="4"
+                width="16"
+                height="11"
+                rx="1.5"
+              />
+
+              <path
+                d="M2.5 19h19M8.5 19l.8-2h5.4l.8 2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+        `,
+    },
+    {
+        label: 'Motorcycle',
+        icon: `
+            <svg
+              class="size-6"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              aria-hidden="true"
+            >
+              <circle cx="6" cy="17" r="3" />
+              <circle cx="18" cy="17" r="3" />
+
+              <path
+                d="M6 17h5l3-6h3.5M9 10h4l3 7M14 8h3"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+        `,
+    },
+    {
+        label: 'Car',
+        icon: `
+            <svg
+              class="size-6"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              aria-hidden="true"
+            >
+              <path
+                d="m5 11 2-5h10l2 5M4 11h16a1 1 0 0 1 1 1v5H3v-5a1 1 0 0 1 1-1Z"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+
+              <path
+                d="M5 17v2M19 17v2M6.5 14h1M16.5 14h1"
+                stroke-linecap="round"
+              />
+            </svg>
+        `,
+    },
 ]
 
 function renderSidebar() {
-  return `
+    return `
     <div class="flex h-full flex-col">
       <div
         class="flex min-h-20 items-center justify-between gap-3 border-b border-brand-border px-5"
@@ -53,14 +146,14 @@ function renderSidebar() {
             alt="${siteConfig.brand.name} logo"
             class="size-11 shrink-0 object-contain"
           >
-
+    
           <span class="min-w-0">
             <span
               class="block truncate text-sm font-semibold uppercase tracking-[0.14em] text-brand-cream"
             >
               ${siteConfig.brand.name}
             </span>
-
+    
             <span
               class="mt-0.5 block text-[0.58rem] uppercase tracking-[0.13em] text-brand-muted"
             >
@@ -68,7 +161,7 @@ function renderSidebar() {
             </span>
           </span>
         </a>
-
+    
         <button
           type="button"
           class="grid size-10 place-items-center rounded-full border border-brand-border text-brand-muted transition hover:border-brand-gold hover:text-brand-gold lg:hidden"
@@ -90,7 +183,7 @@ function renderSidebar() {
           </svg>
         </button>
       </div>
-
+    
       <nav
         class="flex-1 overflow-y-auto px-4 py-6"
         aria-label="Member dashboard navigation"
@@ -100,56 +193,66 @@ function renderSidebar() {
         >
           Platform
         </p>
-
-        <a
-          href="/dashboard/"
-          class="mt-3 flex items-center gap-3 rounded-xl bg-brand-gold px-3 py-3 text-sm font-semibold text-[#17130d]"
-          aria-current="page"
-        >
-          <svg
-            class="size-5"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.7"
-            aria-hidden="true"
-          >
-            <rect
-              x="3"
-              y="3"
-              width="7"
-              height="7"
-              rx="1"
-            />
-
-            <rect
-              x="14"
-              y="3"
-              width="7"
-              height="7"
-              rx="1"
-            />
-
-            <rect
-              x="3"
-              y="14"
-              width="7"
-              height="7"
-              rx="1"
-            />
-
-            <rect
-              x="14"
-              y="14"
-              width="7"
-              height="7"
-              rx="1"
-            />
-          </svg>
-
-          <span>General</span>
-        </a>
-
+    
+        <button
+  type="button"
+  class="mt-3 flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold transition"
+  :class="
+    activePage === 'general'
+      ? 'bg-brand-gold text-[#17130d]'
+      : 'text-brand-cream hover:bg-brand-charcoal'
+  "
+  @click="openPage('general')"
+  :aria-current="
+    activePage === 'general'
+      ? 'page'
+      : false
+  "
+>
+  <svg
+    class="size-5"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.7"
+    aria-hidden="true"
+  >
+    <rect
+      x="3"
+      y="3"
+      width="7"
+      height="7"
+      rx="1"
+    />
+    
+    <rect
+      x="14"
+      y="3"
+      width="7"
+      height="7"
+      rx="1"
+    />
+    
+    <rect
+      x="3"
+      y="14"
+      width="7"
+      height="7"
+      rx="1"
+    />
+    
+    <rect
+      x="14"
+      y="14"
+      width="7"
+      height="7"
+      rx="1"
+    />
+  </svg>
+    
+  <span>General</span>
+</button>
+    
         <div class="mt-3">
           <button
             type="button"
@@ -171,23 +274,23 @@ function renderSidebar() {
                   stroke-linecap="round"
                   stroke-linejoin="round"
                 />
-
+    
                 <circle
                   cx="10"
                   cy="19"
                   r="1"
                 />
-
+    
                 <circle
                   cx="17"
                   cy="19"
                   r="1"
                 />
               </svg>
-
+    
               <span>Orders</span>
             </span>
-
+    
             <svg
               class="size-4 text-brand-muted transition"
               :class="ordersOpen ? 'rotate-180' : ''"
@@ -204,7 +307,7 @@ function renderSidebar() {
               />
             </svg>
           </button>
-
+    
           <div
             x-show="ordersOpen"
             x-transition
@@ -220,7 +323,7 @@ function renderSidebar() {
             >
               Create Order
             </button>
-
+    
             <button
               type="button"
               class="block w-full rounded-lg px-3 py-2.5 text-left text-sm text-brand-muted transition hover:bg-brand-charcoal hover:text-brand-gold"
@@ -233,7 +336,7 @@ function renderSidebar() {
             </button>
           </div>
         </div>
-
+    
         <div class="mt-1">
           <button
             type="button"
@@ -254,16 +357,16 @@ function renderSidebar() {
                   d="M4 7.5A2.5 2.5 0 0 1 6.5 5H19a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H6.5A2.5 2.5 0 0 1 4 16.5v-9Z"
                   stroke-linejoin="round"
                 />
-
+    
                 <path
                   d="M4 8h16M15 12h5"
                   stroke-linecap="round"
                 />
               </svg>
-
+    
               <span>Wallet</span>
             </span>
-
+    
             <svg
               class="size-4 text-brand-muted transition"
               :class="walletOpen ? 'rotate-180' : ''"
@@ -280,7 +383,7 @@ function renderSidebar() {
               />
             </svg>
           </button>
-
+    
           <div
             x-show="walletOpen"
             x-transition
@@ -296,7 +399,7 @@ function renderSidebar() {
             >
               Earnings
             </button>
-
+    
             <button
               type="button"
               class="block w-full rounded-lg px-3 py-2.5 text-left text-sm text-brand-muted transition hover:bg-brand-charcoal hover:text-brand-gold"
@@ -309,39 +412,46 @@ function renderSidebar() {
             </button>
           </div>
         </div>
-
+    
         <button
-          type="button"
-          class="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold text-brand-cream transition hover:bg-brand-charcoal"
-          @click="
-            showPreviewNotice('Account')
-            closeMobileMenu()
-          "
-        >
-          <svg
-            class="size-5"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.7"
-            aria-hidden="true"
-          >
-            <circle
-              cx="12"
-              cy="8"
-              r="4"
-            />
+  type="button"
+  class="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold transition"
+  :class="
+    activePage === 'account'
+      ? 'bg-brand-gold text-[#17130d]'
+      : 'text-brand-cream hover:bg-brand-charcoal'
+  "
+  @click="openPage('account')"
+  :aria-current="
+    activePage === 'account'
+      ? 'page'
+      : false
+  "
+>
+  <svg
+    class="size-5"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.7"
+    aria-hidden="true"
+  >
+    <circle
+      cx="12"
+      cy="8"
+      r="4"
+    />
 
-            <path
-              d="M4.5 21a7.5 7.5 0 0 1 15 0"
-              stroke-linecap="round"
-            />
-          </svg>
+    <path
+      d="M4.5 21a7.5 7.5 0 0 1 15 0"
+      stroke-linecap="round"
+    />
+  </svg>
 
-          <span>Account</span>
-        </button>
+  <span>Account</span>
+</button>
       </nav>
-
+    
       <div class="border-t border-brand-border p-4">
         <div
           class="flex items-center gap-3 rounded-xl bg-brand-charcoal p-3"
@@ -351,7 +461,7 @@ function renderSidebar() {
           >
             SM
           </div>
-
+    
           <div class="min-w-0 flex-1">
             <p
               class="truncate text-sm font-semibold text-brand-cream"
@@ -359,7 +469,7 @@ function renderSidebar() {
               ${previewMember.firstName}
               ${previewMember.lastName}
             </p>
-
+    
             <p class="truncate text-xs text-brand-muted">
               Preview Account
             </p>
@@ -373,51 +483,86 @@ function renderSidebar() {
 window.Alpine = Alpine
 
 Alpine.data('memberDashboard', () => ({
-  mobileMenuOpen: false,
-  ordersOpen: true,
-  walletOpen: true,
-  previewNotice: '',
-  previewTimer: null,
-
-  init() {
-    this.$watch('mobileMenuOpen', (isOpen) => {
-      document.body.classList.toggle(
-        'mobile-menu-open',
-        isOpen,
-      )
-    })
-  },
-
-  openMobileMenu() {
-    this.mobileMenuOpen = true
-  },
-
-  closeMobileMenu() {
-    this.mobileMenuOpen = false
-  },
-
-  showPreviewNotice(pageName) {
-    clearTimeout(this.previewTimer)
-
-    this.previewNotice =
-      `${pageName} will be added in the next dashboard checkpoint.`
-
-    this.previewTimer = setTimeout(() => {
-      this.previewNotice = ''
-    }, 3200)
-  },
-
-  destroy() {
-    clearTimeout(this.previewTimer)
-
-    document.body.classList.remove(
-      'mobile-menu-open',
-    )
-  },
+    activePage: 'general',
+    
+    mobileMenuOpen: false,
+    ordersOpen: true,
+    walletOpen: true,
+    
+    profileForm: {
+        firstName: previewMember.firstName,
+        lastName: previewMember.lastName,
+        emailAddress: previewMember.emailAddress,
+        mobileNumber: previewMember.mobileNumber,
+        
+        address: {
+            province: previewMember.address.province,
+            cityMunicipality:
+            previewMember.address.cityMunicipality,
+            barangay: previewMember.address.barangay,
+            houseStreet: previewMember.address.houseStreet,
+            landmark: previewMember.address.landmark,
+        },
+    },
+    
+    profileFormTested: false,
+    previewNotice: '',
+    previewTimer: null,
+    
+    init() {
+        this.$watch('mobileMenuOpen', (isOpen) => {
+            document.body.classList.toggle(
+                'mobile-menu-open',
+                isOpen,
+            )
+        })
+    },
+    
+    openMobileMenu() {
+        this.mobileMenuOpen = true
+    },
+    
+    closeMobileMenu() {
+        this.mobileMenuOpen = false
+    },
+    
+    openPage(pageName) {
+        this.activePage = pageName
+        this.profileFormTested = false
+        this.closeMobileMenu()
+        
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth',
+        })
+    },
+    
+    testProfileForm() {
+        this.profileFormTested = true
+    },
+    
+    showPreviewNotice(pageName) {
+        clearTimeout(this.previewTimer)
+        
+        this.previewNotice =
+        `${pageName} will be added in the next dashboard checkpoint.`
+        
+        this.previewTimer = setTimeout(() => {
+            this.previewNotice = ''
+        }, 3200)
+    },
+    
+    destroy() {
+        clearTimeout(this.previewTimer)
+        
+        document.body.classList.remove(
+            'mobile-menu-open',
+        )
+    },
 }))
 
 document.title =
-  `Member Dashboard | ${siteConfig.brand.name}`
+`Member Dashboard | ${siteConfig.brand.name}`
 
 document.querySelector('#dashboard-app').innerHTML = `
   <div
@@ -641,8 +786,8 @@ document.querySelector('#dashboard-app').innerHTML = `
               class="mt-3 block font-display text-4xl text-brand-cream"
             >
               ₱${previewMember.availableIncome.toLocaleString(
-                'en-PH',
-              )}
+'en-PH',
+)}
             </strong>
 
             <p
