@@ -13,18 +13,12 @@ export function renderAccountCtaSection() {
         class="relative mx-auto w-[min(1080px,90%)]"
       >
         <div class="mx-auto max-w-4xl text-center">
-          <p
-            class="text-[0.68rem] font-semibold uppercase tracking-[0.3em] text-brand-gold"
-          >
-            Your Member Journey
-          </p>
-
           <h2
-            class="mt-3 font-display text-4xl leading-[1.05] text-brand-cream sm:text-5xl lg:text-[3.35rem]"
+            class="font-display text-4xl leading-[1.05] text-brand-cream sm:text-5xl lg:text-[3.35rem]"
           >
-            Your future begins
+            Your Member
             <span class="italic text-brand-gold">
-              with one step.
+              Journey
             </span>
           </h2>
 
@@ -156,8 +150,8 @@ export function renderAccountCtaSection() {
               <p
                 class="mt-3 max-w-lg text-sm leading-6 text-brand-muted"
               >
-                Create your member account and begin exploring the
-                packages, fragrances, and community of Your Product.
+                Create your account and begin exploring the packages,
+                fragrances, and benefits of Your Product.
               </p>
 
               <a

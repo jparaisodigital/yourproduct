@@ -27,10 +27,6 @@ export const siteConfig = {
       href: '#packages',
     },
     {
-      label: 'Our Community',
-      href: '#community',
-    },
-    {
       label: 'Ways to Earn',
       href: '#ways-to-earn',
     },

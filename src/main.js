@@ -68,10 +68,6 @@ import {
 } from './components/discover-section.js'
 
 import {
-  renderCommunitySection,
-} from './components/community-section.js'
-
-import {
   renderBossSection,
 } from './components/boss-section.js'
 
@@ -132,33 +128,31 @@ document.title =
   ${renderHeader(siteConfig)}
 
   <main>
-    ${renderHero(homeConfig, siteConfig)}
+  ${renderHero(homeConfig, siteConfig)}
 
-    ${renderProductsSection(
-      products,
-      productCategories,
-    )}
+  ${renderProductsSection(
+    products,
+    productCategories,
+  )}
 
-    ${renderAccountCtaSection()}
+  ${renderPackagesSection(packages)}
 
-    ${renderPackagesSection(packages)}
+  ${renderAccountCtaSection()}
 
-    ${renderWaysToEarnSection()}
+  ${renderWaysToEarnSection()}
 
-    ${renderDiscoverSection()}
+  ${renderDiscoverSection()}
 
-    ${renderCommunitySection()}
+  ${renderVisionMissionSection()}
 
-    ${renderBossSection()}
+  ${renderBossSection()}
+</main>
 
-    ${renderVisionMissionSection()}
-  </main>
+${renderFooter(siteConfig)}
 
-  ${renderFooter(siteConfig)}
-
-  ${renderCartDrawer()}
-  ${renderProductDrawer()}
-  ${renderMembershipModal()}
+${renderCartDrawer()}
+${renderProductDrawer()}
+${renderMembershipModal()}
 `
 
 Alpine.start()
