@@ -39,14 +39,14 @@ export const products = [
     bestFor:
       'Daytime, casual wear, and everyday use.',
 
-    regularPrice: 599,
-    memberPrice: 499,
+    regularPrice: 299,
+    memberPrice: 149,
     image: perfumeMenImage,
 
     isFeatured: true,
     isActive: true,
-    isPointsQualified: true,
-    pointsPerUnit: 5,
+    isPointsQualified: false,
+    pointsPerUnit: 0,
     stockQuantity: 20,
     isSample: true,
   },
@@ -70,14 +70,14 @@ export const products = [
     bestFor:
       'Evenings, special occasions, and date nights.',
 
-    regularPrice: 599,
-    memberPrice: 499,
+    regularPrice: 299,
+    memberPrice: 149,
     image: perfumeWomenImage,
 
     isFeatured: true,
     isActive: true,
-    isPointsQualified: true,
-    pointsPerUnit: 5,
+    isPointsQualified: false,
+    pointsPerUnit: 0,
     stockQuantity: 20,
     isSample: true,
   },
@@ -101,14 +101,14 @@ export const products = [
     bestFor:
       'Evening wear, formal events, and cool weather.',
 
-    regularPrice: 599,
-    memberPrice: 499,
+    regularPrice: 299,
+    memberPrice: 149,
     image: perfume1Image,
 
     isFeatured: false,
     isActive: true,
-    isPointsQualified: true,
-    pointsPerUnit: 5,
+    isPointsQualified: false,
+    pointsPerUnit: 0,
     stockQuantity: 20,
     isSample: true,
   },
@@ -132,14 +132,14 @@ export const products = [
     bestFor:
       'Daily wear, warm weather, and relaxed moments.',
 
-    regularPrice: 599,
-    memberPrice: 499,
+    regularPrice: 299,
+    memberPrice: 149,
     image: perfume2Image,
 
     isFeatured: false,
     isActive: true,
-    isPointsQualified: true,
-    pointsPerUnit: 5,
+    isPointsQualified: false,
+    pointsPerUnit: 0,
     stockQuantity: 20,
     isSample: true,
   },

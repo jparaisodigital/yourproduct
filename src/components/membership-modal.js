@@ -1,52 +1,38 @@
 import modalLogo from '../assets/logoyourproduct.png'
+
 import modalOrnament from '../assets/modal-ornament.png'
 
-const STORAGE_KEY = 'yp-membership-invite-last-shown'
-const REPEAT_DELAY = 24 * 60 * 60 * 1000
-const OPEN_DELAY = 15 * 1000
+const OPEN_DELAY = 1200
 
-export function registerMembershipModal(Alpine) {
+export function registerMembershipModal(
+  Alpine,
+) {
   Alpine.data('membershipInvite', () => ({
     open: false,
     timer: null,
 
     init() {
-      let lastShown = 0
-
-      try {
-        lastShown = Number(
-          localStorage.getItem(STORAGE_KEY),
-        )
-      } catch {
-        lastShown = 0
-      }
-
-      const shownWithin24Hours =
-        Date.now() - lastShown < REPEAT_DELAY
-
-      if (shownWithin24Hours) {
-        return
-      }
-
       this.scheduleOpen(OPEN_DELAY)
     },
 
     scheduleOpen(delay) {
-      clearTimeout(this.timer)
+      window.clearTimeout(this.timer)
 
-      this.timer = setTimeout(() => {
+      this.timer = window.setTimeout(() => {
         this.tryOpen()
       }, delay)
     },
 
     tryOpen() {
       const anotherDialogIsOpen = Array.from(
-        document.querySelectorAll('[role="dialog"]'),
+        document.querySelectorAll(
+          '[role="dialog"]',
+        ),
       ).some((element) => {
         return (
           element !== this.$root &&
-          window.getComputedStyle(element).display !==
-            'none'
+          window.getComputedStyle(element)
+            .display !== 'none'
         )
       })
 
@@ -56,18 +42,6 @@ export function registerMembershipModal(Alpine) {
       }
 
       this.open = true
-      this.saveShownTime()
-    },
-
-    saveShownTime() {
-      try {
-        localStorage.setItem(
-          STORAGE_KEY,
-          String(Date.now()),
-        )
-      } catch {
-        // Modal still works if storage is unavailable.
-      }
     },
 
     close() {
@@ -75,7 +49,8 @@ export function registerMembershipModal(Alpine) {
     },
 
     destroy() {
-      clearTimeout(this.timer)
+      window.clearTimeout(this.timer)
+      document.body.style.overflow = ''
     },
   }))
 }
@@ -98,8 +73,8 @@ export function renderMembershipModal() {
     >
       <button
         type="button"
-        class="absolute inset-0 cursor-default bg-black/55 backdrop-blur-[3px]"
-        aria-label="Close membership invitation"
+        class="absolute inset-0 cursor-default bg-black/60 backdrop-blur-[3px]"
+        aria-label="Close membership offer"
         @click="close()"
       ></button>
 
@@ -121,7 +96,7 @@ export function renderMembershipModal() {
         >
 
         <div
-          class="pointer-events-none absolute inset-0 bg-gradient-to-b from-brand-panel/20 via-brand-panel/35 to-brand-panel/65"
+          class="pointer-events-none absolute inset-0 bg-gradient-to-b from-brand-panel/20 via-brand-panel/35 to-brand-panel/70"
           aria-hidden="true"
         ></div>
 
@@ -142,7 +117,7 @@ export function renderMembershipModal() {
         <button
           type="button"
           class="absolute right-4 top-4 z-20 grid size-10 place-items-center rounded-full border border-brand-border bg-brand-panel/80 text-brand-muted transition hover:border-brand-gold hover:text-brand-gold"
-          aria-label="Close membership invitation"
+          aria-label="Close membership offer"
           @click="close()"
         >
           <svg
@@ -164,24 +139,26 @@ export function renderMembershipModal() {
           <p
             class="text-[0.65rem] font-semibold uppercase tracking-[0.3em] text-brand-gold"
           >
-            Membership Invitation
+            Exclusive Member Pricing
           </p>
 
           <h2
             id="membership-modal-title"
             class="mx-auto mt-4 max-w-md font-display text-4xl font-semibold leading-none text-brand-cream sm:text-5xl"
           >
-            More Than a
-            <span class="italic text-brand-gold">
-              Signature Scent
+            Become a Member.
+
+            <span class="mt-2 block italic text-brand-gold">
+              Enjoy Up to 50% Off.
             </span>
           </h2>
 
           <p
             class="mx-auto mt-5 max-w-md text-sm leading-6 text-brand-muted sm:text-base sm:leading-7"
           >
-            Create an account to explore member benefits,
-            points, rewards, and referral opportunities.
+            Unlock exclusive member pricing on selected
+            products, earn rewards, and access more ways
+            to grow with YOUR PRODUCT.
           </p>
 
           <div
@@ -189,15 +166,15 @@ export function renderMembershipModal() {
           >
             <a
               href="#packages"
-              class="inline-flex min-h-12 items-center justify-center rounded-full bg-brand-gold px-6 text-sm font-semibold text-brand-black transition hover:-translate-y-0.5 hover:bg-brand-gold-light"
+              class="inline-flex min-h-12 flex-1 items-center justify-center rounded-full bg-brand-gold px-6 text-sm font-semibold text-brand-black transition hover:-translate-y-0.5 hover:bg-brand-gold-light"
               @click="close()"
             >
-              Explore Membership
+              Become a Member
             </a>
 
             <a
               href="/login/"
-              class="inline-flex min-h-12 items-center justify-center rounded-full border border-brand-border bg-brand-panel/60 px-6 text-sm font-semibold text-brand-cream transition hover:border-brand-gold hover:text-brand-gold"
+              class="inline-flex min-h-12 flex-1 items-center justify-center rounded-full border border-brand-border bg-brand-panel/60 px-6 text-sm font-semibold text-brand-cream transition hover:border-brand-gold hover:text-brand-gold"
               @click="close()"
             >
               Member Login
@@ -211,6 +188,13 @@ export function renderMembershipModal() {
           >
             Continue Shopping
           </button>
+
+          <p
+            class="mx-auto mt-4 max-w-sm text-[0.65rem] leading-5 text-brand-muted"
+          >
+            Member discounts apply to selected products
+            and are subject to current membership benefits.
+          </p>
         </div>
       </section>
     </div>
