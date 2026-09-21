@@ -61,6 +61,7 @@ packages.find(
 const allowedMembershipStatuses = [
   'awaiting-payment',
   'pending-verification',
+  'cancellation-requested',
 ]
 
 const hasPendingMembership =
@@ -77,16 +78,34 @@ const dashboardPesoFormatter = new Intl.NumberFormat(
   },
 )
 
+const membershipInclusionItems =
+selectedDashboardPackage?.inclusions
+.map(
+  (inclusion) => `
+        <li
+          class="flex items-start gap-3 text-sm leading-6 text-brand-muted"
+        >
+          <span
+            class="mt-2 size-1.5 shrink-0 rounded-full bg-brand-gold"
+            aria-hidden="true"
+          ></span>
+  
+          <span>${inclusion}</span>
+        </li>
+      `,
+)
+.join('') || ''
+
 const pendingMembershipMarkup = hasPendingMembership
-? `
+  ? `
       <section
         class="mt-6 overflow-hidden rounded-[1.5rem] border border-amber-500/40 bg-brand-panel shadow-gold-soft"
-        aria-label="Pending membership application"
+        aria-label="Membership application"
       >
         <div
           class="flex flex-col gap-5 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6"
         >
-          <div>
+          <div class="min-w-0 flex-1">
             <div class="flex flex-wrap items-center gap-3">
               <p
                 class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
@@ -98,26 +117,30 @@ const pendingMembershipMarkup = hasPendingMembership
                 class="inline-flex items-center gap-2 rounded-full border border-amber-500/40 bg-amber-500/10 px-3 py-1 text-[0.62rem] font-semibold uppercase tracking-[0.1em] text-amber-300"
               >
                 <span
-  class="relative flex size-2"
-  aria-hidden="true"
->
-  <span
-  class="absolute inline-flex size-full rounded-full bg-amber-400 opacity-60 motion-safe:animate-ping motion-reduce:animate-none"
-  style="animation-duration: 1.8s;"
-></span>
+                  class="relative flex size-2"
+                  aria-hidden="true"
+                >
+                  <span
+                    class="absolute inline-flex size-full rounded-full bg-amber-400 opacity-60 motion-safe:animate-ping motion-reduce:animate-none"
+                    style="animation-duration: 1.8s;"
+                  ></span>
 
-  <span
-    class="relative inline-flex size-2 rounded-full bg-amber-400 [box-shadow:0_0_10px_rgba(251,191,36,0.85)]"
-  ></span>
-</span>
+                  <span
+                    class="relative inline-flex size-2 rounded-full bg-amber-400 [box-shadow:0_0_10px_rgba(251,191,36,0.85)]"
+                  ></span>
+                </span>
 
                 <span
-  x-text="
-    membershipApplicationStatus === 'pending-verification'
-      ? 'Pending Verification'
-      : 'Awaiting Payment'
-  "
-></span>
+                  x-text="
+                    membershipApplicationStatus ===
+                    'cancellation-requested'
+                      ? 'Cancellation Requested'
+                      : membershipApplicationStatus ===
+                          'pending-verification'
+                        ? 'Pending Verification'
+                        : 'Awaiting Payment'
+                  "
+                ></span>
               </span>
             </div>
 
@@ -128,45 +151,314 @@ const pendingMembershipMarkup = hasPendingMembership
             </h2>
 
             <p
-  class="mt-2 max-w-2xl text-sm leading-6 text-brand-muted"
-  x-text="
-    membershipApplicationStatus === 'pending-verification'
-      ? 'Your payment proof has been submitted and is now waiting for admin review. Your membership remains inactive until approved.'
-      : 'Your free customer account remains active. Continue to payment to submit your transaction details and payment proof for admin verification.'
-  "
-></p>
-            <button
-  x-show="membershipApplicationStatus === 'awaiting-payment'"
-  x-transition
-  type="button"
-  class="premium-cta mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-brand-gold px-6 text-sm font-semibold text-[#17130d] sm:w-auto"
-  @click="openPage('membershipPayment')"
->
-  Continue to Payment
-</button>
+              class="mt-2 max-w-2xl text-sm leading-6 text-brand-muted"
+              x-text="
+                membershipApplicationStatus ===
+                'cancellation-requested'
+                  ? 'Your cancellation request is waiting for admin review. Any applicable refund will be handled manually.'
+                  : membershipApplicationStatus ===
+                      'pending-verification'
+                    ? 'Your payment proof has been submitted and is now waiting for admin review. Your membership remains inactive until approved.'
+                    : 'Your free customer account remains active. Continue to payment to submit your transaction details and payment proof for admin verification.'
+              "
+            ></p>
+
+            <div
+              class="mt-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap"
+            >
+              <button
+                type="button"
+                class="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-brand-border px-6 text-sm font-semibold text-brand-cream transition hover:border-brand-gold hover:text-brand-gold sm:w-auto"
+                @click="openPage('membershipApplication')"
+              >
+                View Application Details
+              </button>
+
+              <button
+                x-show="
+                  membershipApplicationStatus ===
+                  'awaiting-payment'
+                "
+                x-transition
+                type="button"
+                class="premium-cta inline-flex min-h-11 w-full items-center justify-center rounded-full bg-brand-gold px-6 text-sm font-semibold text-[#17130d] sm:w-auto"
+                @click="openPage('membershipPayment')"
+              >
+                Continue to Payment
+              </button>
+            </div>
           </div>
 
           <div
-            class="shrink-0 rounded-2xl border border-brand-border bg-brand-black px-5 py-4 sm:text-right"
+            class="w-full shrink-0 rounded-2xl border border-brand-border bg-brand-black px-5 py-4 sm:w-auto sm:min-w-48 sm:text-right"
           >
             <p
-              class="text-[0.62rem] font-medium uppercase tracking-[0.15em] text-brand-muted"
+              class="text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-brand-muted"
             >
               Selected Package
             </p>
 
             <p
-              class="mt-1 font-display text-2xl text-brand-gold"
+              class="mt-2 font-display text-3xl text-brand-gold"
             >
               ${dashboardPesoFormatter.format(
-selectedDashboardPackage.price,
-)}
+                selectedDashboardPackage.price,
+              )}
             </p>
           </div>
         </div>
       </section>
     `
-: ''
+  : ''
+
+const membershipApplicationPageMarkup = hasPendingMembership
+  ? `
+      <section
+        x-show="activePage === 'membershipApplication'"
+        x-transition.opacity
+        aria-labelledby="membership-application-title"
+      >
+        <div
+          class="rounded-[1.75rem] border border-brand-gold/30 bg-brand-panel p-6 shadow-gold-soft sm:p-8"
+        >
+          <div
+            class="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between"
+          >
+            <div>
+              <p
+                class="text-[0.65rem] font-semibold uppercase tracking-[0.22em] text-brand-gold"
+              >
+                Membership Application
+              </p>
+
+              <h1
+                id="membership-application-title"
+                class="mt-2 font-display text-4xl text-brand-cream sm:text-5xl"
+              >
+                Application details
+              </h1>
+
+              <p
+                class="mt-3 max-w-2xl text-sm leading-7 text-brand-muted"
+              >
+                Review your selected package and current application
+                status.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              class="inline-flex min-h-11 items-center justify-center rounded-full border border-brand-border px-5 text-sm font-semibold text-brand-cream transition hover:border-brand-gold hover:text-brand-gold"
+              @click="openPage('general')"
+            >
+              Back to Dashboard
+            </button>
+          </div>
+        </div>
+
+        <div
+          class="mt-6 grid gap-6 lg:grid-cols-[1.15fr_0.85fr]"
+        >
+          <section
+            class="rounded-[1.5rem] border border-brand-border bg-brand-panel p-5 shadow-panel sm:p-6"
+          >
+            <p
+              class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
+            >
+              Selected Package
+            </p>
+
+            <div
+              class="mt-4 flex flex-col gap-4 border-b border-brand-border pb-5 sm:flex-row sm:items-end sm:justify-between"
+            >
+              <div>
+                <h2
+                  class="font-display text-3xl text-brand-cream"
+                >
+                  ${selectedDashboardPackage.name}
+                </h2>
+
+                <p
+                  class="mt-2 text-sm leading-6 text-brand-muted"
+                >
+                  ${selectedDashboardPackage.description}
+                </p>
+              </div>
+
+              <p
+                class="shrink-0 font-display text-3xl text-brand-gold"
+              >
+                ${dashboardPesoFormatter.format(
+                  selectedDashboardPackage.price,
+                )}
+              </p>
+            </div>
+
+            <div class="mt-5">
+              <p
+                class="text-xs font-semibold uppercase tracking-[0.14em] text-brand-muted"
+              >
+                Package Inclusions
+              </p>
+
+              <ul class="mt-4 grid gap-3 sm:grid-cols-2">
+                ${membershipInclusionItems}
+              </ul>
+            </div>
+          </section>
+
+          <aside
+            class="rounded-[1.5rem] border border-brand-border bg-brand-panel p-5 shadow-panel sm:p-6"
+          >
+            <p
+              class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
+            >
+              Application Status
+            </p>
+
+            <div
+              class="mt-4 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-5"
+            >
+              <div class="flex items-center gap-3">
+                <span
+                  class="size-2.5 rounded-full bg-amber-400 shadow-[0_0_16px_rgba(251,191,36,0.9)] animate-pulse"
+                  aria-hidden="true"
+                ></span>
+
+                <strong
+                  class="text-sm uppercase tracking-[0.08em] text-amber-200"
+                  x-text="
+                    membershipApplicationStatus ===
+                    'cancellation-requested'
+                      ? 'Cancellation Requested'
+                      : membershipApplicationStatus ===
+                          'pending-verification'
+                        ? 'Pending Verification'
+                        : 'Awaiting Payment'
+                  "
+                ></strong>
+              </div>
+
+              <p
+                class="mt-3 text-sm leading-6 text-amber-100/80"
+                x-text="
+                  membershipApplicationStatus ===
+                  'cancellation-requested'
+                    ? 'Your cancellation request is waiting for admin review. Any applicable refund will be handled manually.'
+                    : membershipApplicationStatus ===
+                        'pending-verification'
+                      ? 'Your payment proof is waiting for admin review.'
+                      : 'Complete your payment and submit the required proof.'
+                "
+              ></p>
+            </div>
+
+            <div class="mt-5 border-t border-brand-border pt-5">
+              <p
+                class="text-xs font-semibold uppercase tracking-[0.14em] text-brand-muted"
+              >
+                Membership Activation
+              </p>
+
+              <p class="mt-2 text-sm leading-6 text-brand-muted">
+                Your account remains a free customer account until the
+                application and payment are approved by the admin.
+              </p>
+            </div>
+
+            <div
+              x-show="
+                membershipApplicationStatus ===
+                  'awaiting-payment' ||
+                membershipApplicationStatus ===
+                  'pending-verification'
+              "
+              class="mt-6 border-t border-brand-border pt-5"
+            >
+              <button
+                x-show="!cancellationPanelOpen"
+                x-transition
+                type="button"
+                class="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-red-400/40 px-5 text-sm font-semibold text-red-300 transition hover:border-red-300 hover:bg-red-400/10 hover:text-red-200"
+                @click="openCancellationPanel()"
+              >
+                Request Cancellation
+              </button>
+
+              <div
+                x-show="cancellationPanelOpen"
+                x-transition
+                class="rounded-2xl border border-red-400/30 bg-red-400/5 p-4"
+              >
+                <p class="text-sm font-semibold text-brand-cream">
+                  Request application cancellation
+                </p>
+
+                <p class="mt-2 text-xs leading-5 text-brand-muted">
+                  The admin will review your request. If payment was
+                  already submitted, any applicable refund will be
+                  processed manually.
+                </p>
+
+                <label
+                  for="cancellation-reason"
+                  class="mt-4 block text-xs font-semibold uppercase tracking-[0.12em] text-brand-muted"
+                >
+                  Reason for cancellation
+                </label>
+
+                <textarea
+                  id="cancellation-reason"
+                  x-model.trim="cancellationReason"
+                  rows="3"
+                  maxlength="300"
+                  placeholder="Tell us why you want to cancel this application"
+                  class="mt-2 w-full resize-none rounded-xl border border-brand-border bg-brand-black px-4 py-3 text-sm leading-6 text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-red-400"
+                ></textarea>
+
+                <p
+                  x-show="cancellationError"
+                  x-text="cancellationError"
+                  class="mt-2 text-xs leading-5 text-red-300"
+                  role="alert"
+                ></p>
+
+                <div class="mt-4 grid gap-3 sm:grid-cols-2">
+                  <button
+                    type="button"
+                    class="inline-flex min-h-11 items-center justify-center rounded-full border border-brand-border px-4 text-sm font-semibold text-brand-cream transition hover:border-brand-gold hover:text-brand-gold"
+                    @click="closeCancellationPanel()"
+                  >
+                    Keep Application
+                  </button>
+
+                  <button
+                    type="button"
+                    class="inline-flex min-h-11 items-center justify-center rounded-full bg-red-700 px-4 text-sm font-semibold text-white transition hover:bg-red-600"
+                    @click="submitCancellationRequest()"
+                  >
+                    Confirm Request
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <button
+              x-show="
+                membershipApplicationStatus ===
+                'awaiting-payment'
+              "
+              type="button"
+              class="premium-cta mt-6 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-brand-gold px-6 text-sm font-semibold text-[#17130d]"
+              @click="openPage('membershipPayment')"
+            >
+              Continue to Payment
+            </button>
+          </aside>
+        </div>
+      </section>
+    `
+  : ''
 
 const membershipPaymentPageMarkup = hasPendingMembership
 ? `
@@ -549,13 +841,19 @@ selectedDashboardPackage.price,
 </div>
 
   <button
-    x-show="!membershipPaymentTested"
-    x-transition
-    type="submit"
-    class="premium-cta mt-6 inline-flex min-h-12 w-full items-center justify-center rounded-full bg-brand-gold px-7 text-sm font-semibold text-[#17130d]"
-  >
-    Submit Payment for Verification
-  </button>
+  x-show="
+    membershipApplicationStatus === 'awaiting-payment' &&
+    !membershipPaymentTested
+  "
+  x-transition
+  type="submit"
+  :disabled="
+    membershipApplicationStatus !== 'awaiting-payment'
+  "
+  class="premium-cta mt-6 inline-flex min-h-12 w-full items-center justify-center rounded-full bg-brand-gold px-7 text-sm font-semibold text-[#17130d] disabled:cursor-not-allowed disabled:opacity-60"
+>
+  Submit Payment for Verification
+</button>
 </form>
           </section>
         </div>
@@ -1175,6 +1473,10 @@ Alpine.data('customerPortal', () => ({
   ? requestedMembershipStatus
   : 'not-active',
   
+  cancellationPanelOpen: false,
+  cancellationReason: '',
+  cancellationError: '',
+  
   mobileMenuOpen: false,
   ordersOpen: true,
   walletOpen: true,
@@ -1369,6 +1671,83 @@ Alpine.data('customerPortal', () => ({
     })
   },
   
+  openCancellationPanel() {
+    const cancellableStatuses = [
+      'awaiting-payment',
+      'pending-verification',
+    ]
+    
+    if (
+      !cancellableStatuses.includes(
+        this.membershipApplicationStatus,
+      )
+    ) {
+      return
+    }
+    
+    this.cancellationError = ''
+    this.cancellationPanelOpen = true
+    
+    requestAnimationFrame(() => {
+      document
+      .querySelector('#cancellation-reason')
+      ?.focus()
+    })
+  },
+  
+  closeCancellationPanel() {
+    this.cancellationPanelOpen = false
+    this.cancellationError = ''
+  },
+  
+  submitCancellationRequest() {
+    const cancellationReason =
+    this.cancellationReason.trim()
+    
+    if (!cancellationReason) {
+      this.cancellationError =
+      'Please enter your reason for cancelling this application.'
+      return
+    }
+    
+    const cancellableStatuses = [
+      'awaiting-payment',
+      'pending-verification',
+    ]
+    
+    if (
+      !cancellableStatuses.includes(
+        this.membershipApplicationStatus,
+      )
+    ) {
+      return
+    }
+    
+    this.cancellationReason = cancellationReason
+    this.cancellationError = ''
+    this.cancellationPanelOpen = false
+    this.membershipApplicationStatus =
+    'cancellation-requested'
+    
+    const dashboardUrl = new URL(window.location.href)
+    
+    dashboardUrl.searchParams.set(
+      'membership',
+      'cancellation-requested',
+    )
+    
+    window.history.replaceState(
+      {},
+      '',
+      dashboardUrl,
+    )
+    
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    })
+  },
+  
   showPreviewNotice(pageName) {
     clearTimeout(this.previewTimer)
     
@@ -1381,16 +1760,19 @@ Alpine.data('customerPortal', () => ({
   },
   
   destroy() {
-    document.body.classList.remove('overflow-hidden')
+    document.body.classList.remove('mobile-menu-open')
     
-    if (this.previewNoticeTimer) {
-      window.clearTimeout(this.previewNoticeTimer)
+    if (this.previewTimer) {
+      window.clearTimeout(this.previewTimer)
+      this.previewTimer = null
     }
     
     if (this.membershipPaymentForm.proofPreviewUrl) {
       URL.revokeObjectURL(
         this.membershipPaymentForm.proofPreviewUrl,
       )
+      
+      this.membershipPaymentForm.proofPreviewUrl = ''
     }
   },
 }))
@@ -1472,20 +1854,21 @@ document.querySelector('#dashboard-app').innerHTML = `
               </p>
 
               <p
-                class="truncate text-sm font-semibold text-brand-cream"
-                x-text="
-                  activePage === 'membershipPayment'
-  ? 'Membership Payment'
-  : activePage === 'account'
-    ? 'Account Settings'
-    : activePage === 'createOrder'
-      ? 'Create Order'
-      : activePage === 'orderHistory'
-        ? 'Order History'
-        : 'General Dashboard'
-                "
-              >
-              </p>
+  class="truncate text-sm font-semibold text-brand-cream"
+  x-text="
+    activePage === 'membershipApplication'
+      ? 'Application Details'
+      : activePage === 'membershipPayment'
+        ? 'Membership Payment'
+        : activePage === 'account'
+          ? 'Account Settings'
+          : activePage === 'createOrder'
+            ? 'Create Order'
+            : activePage === 'orderHistory'
+              ? 'Order History'
+              : 'General Dashboard'
+  "
+></p>
             </div>
           </div>
 
@@ -1677,22 +2060,32 @@ document.querySelector('#dashboard-app').innerHTML = `
             <strong
   class="mt-3 block font-display text-2xl text-brand-cream"
   x-text="
-    membershipApplicationStatus === 'pending-verification'
-      ? 'Pending Verification'
-      : membershipApplicationStatus === 'awaiting-payment'
-        ? 'Awaiting Payment'
-        : 'Not Active'
+    membershipApplicationStatus ===
+    'cancellation-requested'
+      ? 'Cancellation Requested'
+      : membershipApplicationStatus ===
+          'pending-verification'
+        ? 'Pending Verification'
+        : membershipApplicationStatus ===
+            'awaiting-payment'
+          ? 'Awaiting Payment'
+          : 'Not Active'
   "
 ></strong>
 
 <p
   class="mt-3 text-xs leading-5 text-brand-muted"
   x-text="
-    membershipApplicationStatus === 'pending-verification'
-      ? 'Payment proof is waiting for admin review'
-      : membershipApplicationStatus === 'awaiting-payment'
-        ? 'Payment proof has not been submitted'
-        : 'Upgrade remains optional'
+    membershipApplicationStatus ===
+    'cancellation-requested'
+      ? 'Waiting for admin review'
+      : membershipApplicationStatus ===
+          'pending-verification'
+        ? 'Payment proof is waiting for admin review'
+        : membershipApplicationStatus ===
+            'awaiting-payment'
+          ? 'Payment proof has not been submitted'
+          : 'Upgrade remains optional'
   "
 ></p>
           </article>
@@ -2124,6 +2517,8 @@ document.querySelector('#dashboard-app').innerHTML = `
           points, income, or order data is being saved yet.
         </p>
         </div>
+
+        ${membershipApplicationPageMarkup}
 
         ${membershipPaymentPageMarkup}
 

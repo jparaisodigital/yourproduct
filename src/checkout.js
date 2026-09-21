@@ -33,9 +33,10 @@ Alpine.data('checkoutPage', () => ({
     mobileNumber: '',
     emailAddress: '',
   },
-
+  
   delivery: {
     fulfillmentType: 'dropship',
+    region: '',
     sameAsCustomer: true,
     recipientFirstName: '',
     recipientLastName: '',
@@ -47,20 +48,21 @@ Alpine.data('checkoutPage', () => ({
     landmark: '',
     notes: '',
   },
-
+  
   payment: {
     method: '',
     proofFile: null,
     proofFileName: '',
+    proofPreviewUrl: '',
   },
-
+  
   paymentError: '',
   checkoutPreviewComplete: false,
-
+  
   formatMoney(value) {
     return pesoFormatter.format(value)
   },
-
+  
   recipientName() {
     if (
       this.delivery.fulfillmentType === 'dropship' &&
@@ -70,91 +72,111 @@ Alpine.data('checkoutPage', () => ({
         this.customer.firstName,
         this.customer.lastName,
       ]
-        .filter(Boolean)
-        .join(' ')
+      .filter(Boolean)
+      .join(' ')
     }
-
+    
     return [
       this.delivery.recipientFirstName,
       this.delivery.recipientLastName,
     ]
-      .filter(Boolean)
-      .join(' ')
+    .filter(Boolean)
+    .join(' ')
   },
-
+  
   handleProofFile(event) {
     const file = event.target.files?.[0]
-  
+    
     this.paymentError = ''
+    this.checkoutPreviewComplete = false
+    
+    if (this.payment.proofPreviewUrl) {
+      URL.revokeObjectURL(
+        this.payment.proofPreviewUrl,
+      )
+      
+      this.payment.proofPreviewUrl = ''
+    }
+    
     this.payment.proofFile = null
     this.payment.proofFileName = ''
-    this.checkoutPreviewComplete = false
-  
+    
     if (!file) {
       return
     }
-  
+    
     const allowedTypes = [
       'image/jpeg',
       'image/png',
       'image/webp',
-      'application/pdf',
     ]
-  
+    
     const maximumFileSize = 5 * 1024 * 1024
-  
+    
     if (!allowedTypes.includes(file.type)) {
       this.paymentError =
-        'Please select a JPG, PNG, WEBP, or PDF file.'
-  
+      'Please select a JPG, PNG, or WEBP image.'
+      
       event.target.value = ''
       return
     }
-  
+    
     if (file.size > maximumFileSize) {
       this.paymentError =
-        'The selected file must not exceed 5 MB.'
-  
+      'The selected image must not exceed 5 MB.'
+      
       event.target.value = ''
       return
     }
-  
+    
     this.payment.proofFile = file
     this.payment.proofFileName = file.name
+    this.payment.proofPreviewUrl =
+    URL.createObjectURL(file)
   },
   
   completeCheckoutPreview() {
     if (!this.payment.proofFile) {
       this.paymentError =
-        'Please select your proof of payment.'
-
+      'Please select your proof of payment.'
+      
       document.querySelector('#payment-proof')?.focus()
-  
+      
       return
     }
-
+    
     if (this.delivery.sameAsCustomer) {
       this.delivery.recipientFirstName =
-        this.customer.firstName
+      this.customer.firstName
       this.delivery.recipientLastName =
-        this.customer.lastName
+      this.customer.lastName
       this.delivery.recipientMobile =
-        this.customer.mobileNumber
+      this.customer.mobileNumber
     }
-
+    
     this.paymentError = ''
     this.checkoutPreviewComplete = true
-
+    
     requestAnimationFrame(() => {
       document
-        .querySelector('#checkout-preview-status')
-        ?.scrollIntoView({
-          behavior: 'smooth',
-          block: 'center',
-        })
+      .querySelector('#checkout-preview-status')
+      ?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      })
     })
   },
-
+  
+  destroy() {
+    if (this.payment.proofPreviewUrl) {
+      URL.revokeObjectURL(
+        this.payment.proofPreviewUrl,
+      )
+      
+      this.payment.proofPreviewUrl = ''
+    }
+  },
+  
 }))
 
 document.title = `Checkout | ${siteConfig.brand.name}`
@@ -230,7 +252,7 @@ document.querySelector('#checkout-app').innerHTML = `
     </header>
 
     <main class="px-5 py-10 sm:py-14">
-      <div class="mx-auto w-full max-w-5xl">
+      <div class="mx-auto w-full max-w-6xl">
         <a
           href="/"
           class="inline-flex items-center gap-2 text-sm font-semibold text-brand-gold transition hover:text-brand-gold-light"
@@ -319,10 +341,14 @@ document.querySelector('#checkout-app').innerHTML = `
         </section>
 
         <div
-          x-show="$store.cart.itemCount > 0"
-          class="mt-8 grid gap-6 lg:grid-cols-[1fr_0.42fr] lg:items-start"
-        >
-          <section
+  x-show="$store.cart.itemCount > 0"
+  class="mt-8 grid gap-6 lg:grid-cols-[0.78fr_1.22fr] lg:items-start"
+>
+  <aside
+    class="space-y-6 lg:sticky lg:top-6"
+    aria-label="Order items and summary"
+  >
+    <section
             class="overflow-hidden rounded-[1.5rem] border border-brand-border bg-brand-panel shadow-panel"
           >
             <header
@@ -410,7 +436,10 @@ document.querySelector('#checkout-app').innerHTML = `
                           type="button"
                           class="grid size-9 place-items-center text-brand-cream transition hover:text-brand-gold"
                           aria-label="Decrease quantity"
-                          @click="$store.cart.decrease(item.productId)"
+                          @click="
+  $store.cart.decrease(item.productId)
+  checkoutPreviewComplete = false
+"
                         >
                           −
                         </button>
@@ -428,7 +457,10 @@ document.querySelector('#checkout-app').innerHTML = `
                             item.quantity >=
                             item.product.stockQuantity
                           "
-                          @click="$store.cart.increase(item.productId)"
+                          @click="
+  $store.cart.increase(item.productId)
+  checkoutPreviewComplete = false
+"
                         >
                           +
                         </button>
@@ -437,7 +469,10 @@ document.querySelector('#checkout-app').innerHTML = `
                       <button
                         type="button"
                         class="text-[0.65rem] font-semibold uppercase tracking-[0.1em] text-brand-muted transition hover:text-red-700"
-                        @click="$store.cart.remove(item.productId)"
+                        @click="
+  $store.cart.remove(item.productId)
+  checkoutPreviewComplete = false
+"
                       >
                         Remove
                       </button>
@@ -448,9 +483,9 @@ document.querySelector('#checkout-app').innerHTML = `
             </div>
           </section>
 
-          <aside
-            class="rounded-[1.5rem] border border-brand-gold/30 bg-brand-panel p-5 shadow-gold-soft sm:p-6 lg:sticky lg:top-6"
-          >
+          <section
+  class="rounded-[1.5rem] border border-brand-gold/30 bg-brand-panel p-5 shadow-gold-soft sm:p-6"
+>
             <p
               class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
             >
@@ -493,7 +528,7 @@ document.querySelector('#checkout-app').innerHTML = `
               <span
                 class="text-xs font-semibold text-brand-muted"
               >
-                Calculated next
+                To be confirmed
               </span>
             </div>
 
@@ -545,13 +580,12 @@ document.querySelector('#checkout-app').innerHTML = `
               </svg>
 
               Secure checkout
-            </div>
-                    </aside>
-        </div>
+                        </div>
+          </section>
+        </aside>
 
         <form
-          x-show="$store.cart.itemCount > 0"
-          class="mt-6 space-y-6"
+          class="space-y-6"
           @submit.prevent="completeCheckoutPreview"
           @input="checkoutPreviewComplete = false"
           @change="checkoutPreviewComplete = false"
@@ -679,15 +713,15 @@ document.querySelector('#checkout-app').innerHTML = `
               </p>
 
               <h2
-                class="mt-1 font-display text-3xl text-brand-cream"
-              >
-                Delivery or pickup
-              </h2>
+  class="mt-1 font-display text-3xl text-brand-cream"
+>
+  Delivery details
+</h2>
 
-              <p class="mt-2 text-sm leading-6 text-brand-muted">
-                Choose how the order will be fulfilled. Shipping details
-                are required for dropship orders only.
-              </p>
+<p class="mt-2 text-sm leading-6 text-brand-muted">
+  Confirm the recipient and address where the order should
+  be delivered.
+</p>
             </header>
 
             <div class="p-5 sm:p-6">
@@ -725,53 +759,88 @@ document.querySelector('#checkout-app').innerHTML = `
                   </label>
 
                   <label
-                    class="flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition"
-                    :class="
-                      delivery.fulfillmentType === 'pickup'
-                        ? 'border-brand-gold bg-brand-gold/10'
-                        : 'border-brand-border bg-brand-black'
-                    "
-                  >
-                    <input
-                      type="radio"
-                      name="fulfillment-method"
-                      value="pickup"
-                      x-model="delivery.fulfillmentType"
-                      class="mt-0.5 size-4 accent-[#b78a32]"
-                    >
+  class="flex cursor-not-allowed items-start justify-between gap-3 rounded-xl border border-brand-border bg-brand-black p-4 opacity-60"
+  aria-disabled="true"
+>
+  <span class="flex items-start gap-3">
+    <input
+      type="radio"
+      name="fulfillment-method"
+      value="pickup"
+      class="mt-0.5 size-4 accent-[#b78a32]"
+      disabled
+    >
 
-                    <span>
-                      <span class="block text-sm font-semibold text-brand-cream">
-                        Pickup
-                      </span>
+    <span>
+      <span
+        class="block text-sm font-semibold text-brand-cream"
+      >
+        Pickup
+      </span>
 
-                      <span class="mt-1 block text-xs leading-5 text-brand-muted">
-                        Pickup schedule and location will be confirmed.
-                      </span>
-                    </span>
-                  </label>
+      <span
+        class="mt-1 block text-xs leading-5 text-brand-muted"
+      >
+        Pickup locations and schedules are not yet available.
+      </span>
+    </span>
+  </span>
+
+  <span
+    class="shrink-0 rounded-full border border-brand-gold/30 bg-brand-gold/10 px-2.5 py-1 text-[0.58rem] font-semibold uppercase tracking-[0.1em] text-brand-gold"
+  >
+    Coming Soon
+  </span>
+</label>
                 </div>
               </fieldset>
 
-              <div
-                x-show="delivery.fulfillmentType === 'pickup'"
-                x-transition
-                class="mt-5 rounded-xl border border-brand-gold/25 bg-brand-black px-4 py-3"
-              >
-                <p class="text-sm font-semibold text-brand-cream">
-                  Pickup selected
-                </p>
-
-                <p class="mt-1 text-xs leading-5 text-brand-muted">
-                  The admin will confirm the available pickup location
-                  and schedule after reviewing the order.
-                </p>
-              </div>
 
               <div
                 x-show="delivery.fulfillmentType === 'dropship'"
                 x-transition
               >
+
+              <div class="mt-5">
+  <label
+    for="delivery-region"
+    class="text-sm font-semibold text-brand-cream"
+  >
+    Delivery region
+  </label>
+
+  <select
+    id="delivery-region"
+    x-model="delivery.region"
+    class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition focus:border-brand-gold"
+    required
+  >
+    <option value="" disabled>
+      Select delivery region
+    </option>
+
+    <option value="ncr">
+      NCR
+    </option>
+
+    <option value="luzon">
+      Luzon
+    </option>
+
+    <option value="visayas">
+      Visayas
+    </option>
+
+    <option value="mindanao">
+      Mindanao
+    </option>
+  </select>
+
+  <p class="mt-2 text-xs leading-5 text-brand-muted">
+    Delivery duration and final fulfillment details will be
+    confirmed after order verification.
+  </p>
+</div>
               <label
                 class="mt-5 flex cursor-pointer items-start gap-3 rounded-xl border border-brand-border bg-brand-black p-4"
               >
@@ -1051,27 +1120,23 @@ document.querySelector('#checkout-app').innerHTML = `
               </label>
 
               <select
-                id="payment-method"
-                x-model="payment.method"
-                class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition focus:border-brand-gold"
-                required
-              >
-                <option value="" disabled>
-                  Select payment method
-                </option>
+  id="payment-method"
+  x-model="payment.method"
+  class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition focus:border-brand-gold"
+  required
+>
+  <option value="" disabled>
+    Select payment method
+  </option>
 
-                <option value="e-wallet">
-                  E-wallet transfer
-                </option>
+  <option value="e-wallet">
+    E-wallet transfer
+  </option>
 
-                <option value="bank-transfer">
-                  Bank transfer
-                </option>
-
-                <option value="other">
-                  Other manual payment
-                </option>
-              </select>
+  <option value="bank-transfer">
+    Bank transfer
+  </option>
+</select>
 
               <div
                 class="mt-5 rounded-xl border border-brand-gold/30 bg-brand-black p-4"
@@ -1101,56 +1166,62 @@ document.querySelector('#checkout-app').innerHTML = `
                 </label>
 
                 <label
-                  for="payment-proof"
-                  class="mt-2 flex cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-brand-border bg-brand-black px-5 py-7 text-center transition hover:border-brand-gold"
-                >
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    class="size-8 text-brand-gold"
-                    aria-hidden="true"
-                  >
-                    <path
-                      d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4"
-                      stroke="currentColor"
-                      stroke-width="1.7"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                  </svg>
+  for="payment-proof"
+  class="mt-2 flex cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-brand-border bg-brand-black px-5 py-7 text-center transition hover:border-brand-gold"
+>
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    class="size-8 text-brand-gold"
+    aria-hidden="true"
+  >
+    <path
+      d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4"
+      stroke="currentColor"
+      stroke-width="1.7"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  </svg>
 
-                  <span class="mt-3 text-sm font-semibold text-brand-cream">
-                    Select receipt or payment screenshot
-                  </span>
+  <span
+    class="mt-3 text-sm font-semibold text-brand-cream"
+  >
+    Select payment screenshot
+  </span>
 
-                  <span class="mt-1 text-xs leading-5 text-brand-muted">
-                    JPG, PNG, WEBP, or PDF — maximum 5 MB
-                  </span>
+  <span
+    class="mt-1 text-xs leading-5 text-brand-muted"
+  >
+    JPG, PNG, or WebP — maximum 5 MB
+  </span>
 
-                  <input
-                    id="payment-proof"
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp,application/pdf"
-                    class="sr-only"
-                    @change="handleProofFile"
-                    required
-                  >
-                </label>
+  <input
+    id="payment-proof"
+    type="file"
+    accept="image/jpeg,image/png,image/webp"
+    class="sr-only"
+    @change="handleProofFile"
+    required
+  >
+</label>
 
-                <div
-                  x-show="payment.proofFileName"
-                  x-transition
-                  class="mt-3 rounded-xl border border-brand-border bg-brand-black px-4 py-3"
-                >
-                  <p class="text-xs uppercase tracking-[0.12em] text-brand-muted">
-                    Selected file
-                  </p>
+<div
+  x-show="payment.proofPreviewUrl"
+  x-transition
+  class="mt-3 overflow-hidden rounded-xl border border-brand-border bg-brand-black p-3"
+>
+  <img
+    :src="payment.proofPreviewUrl"
+    alt="Selected payment proof preview"
+    class="mx-auto max-h-64 w-full rounded-lg object-contain"
+  >
 
-                  <p
-                    class="mt-1 break-all text-sm font-semibold text-brand-cream"
-                    x-text="payment.proofFileName"
-                  ></p>
-                </div>
+  <p
+    class="mt-3 break-all text-center text-xs font-semibold text-brand-cream"
+    x-text="payment.proofFileName"
+  ></p>
+</div>
 
                 <p
                   x-show="paymentError"
@@ -1180,10 +1251,9 @@ document.querySelector('#checkout-app').innerHTML = `
                 </h2>
 
                 <p class="mt-2 text-sm leading-6 text-brand-muted">
-                  Review the order items below before submitting. Any
-                  delivery fee or pickup schedule remains subject to
-                  client confirmation.
-                </p>
+  Review the customer, delivery, and payment information
+  before submitting the order.
+</p>
               </div>
 
               <div class="shrink-0 sm:text-right">
@@ -1196,75 +1266,6 @@ document.querySelector('#checkout-app').innerHTML = `
                   x-text="formatMoney($store.cart.subtotal)"
                 ></strong>
               </div>
-            </div>
-
-            <div class="border-b border-brand-border py-5">
-              <div class="mb-3 flex items-center justify-between gap-3">
-                <p class="text-xs font-semibold uppercase tracking-[0.12em] text-brand-muted">
-                  Items to verify
-                </p>
-
-                <span
-                  class="text-xs font-semibold text-brand-gold"
-                  x-text="
-                    $store.cart.itemCount === 1
-                      ? '1 item'
-                      : $store.cart.itemCount + ' items'
-                  "
-                ></span>
-              </div>
-
-              <div class="flex gap-3 overflow-x-auto pb-2">
-                <template
-                  x-for="item in $store.cart.detailedItems"
-                  :key="'confirmation-' + item.productId"
-                >
-                  <article
-                    class="flex min-w-[15rem] items-center gap-3 rounded-xl border border-brand-border bg-brand-black p-3"
-                  >
-                    <div
-                      class="size-14 shrink-0 overflow-hidden rounded-lg bg-brand-cream"
-                    >
-                      <img
-                        :src="item.product.image"
-                        :alt="item.product.name"
-                        class="size-full object-contain p-1.5"
-                      >
-                    </div>
-
-                    <div class="min-w-0 flex-1">
-                      <p
-                        class="truncate text-sm font-semibold text-brand-cream"
-                        x-text="item.product.name"
-                      ></p>
-
-                      <div class="mt-1 flex items-center justify-between gap-3">
-                        <span
-                          class="text-xs text-brand-muted"
-                          x-text="'Qty ' + item.quantity"
-                        ></span>
-
-                        <strong
-                          class="text-xs text-brand-gold"
-                          x-text="formatMoney(item.lineTotal)"
-                        ></strong>
-                      </div>
-                    </div>
-                  </article>
-                </template>
-              </div>
-
-              <p class="mt-2 text-xs leading-5 text-brand-muted">
-                Fulfillment:
-                <span
-                  class="font-semibold text-brand-cream"
-                  x-text="
-                    delivery.fulfillmentType === 'pickup'
-                      ? 'Pickup'
-                      : 'Dropship'
-                  "
-                ></span>
-              </p>
             </div>
 
             <label
@@ -1323,7 +1324,8 @@ document.querySelector('#checkout-app').innerHTML = `
               the payment and order details.
             </p>
           </section>
-        </form>
+          </form>
+        </div>
       </div>
     </main>
   </div>
