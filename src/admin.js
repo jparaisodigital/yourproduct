@@ -8,6 +8,47 @@ import {
   siteConfig,
 } from './config/site-config.js'
 
+import {
+  packages,
+} from './config/packages-config.js'
+
+import {
+  membershipApplications,
+  membershipStatusLabels,
+  paymentMethodLabels,
+} from './config/admin-preview-data.js'
+
+const adminMembershipApplications =
+  membershipApplications.map((application) => {
+    const selectedPackage =
+      packages.find(
+        (packageItem) =>
+          packageItem.id === application.package_id,
+      ) || null
+
+    return {
+      ...application,
+      package: selectedPackage,
+    }
+  })
+
+const adminPesoFormatter = new Intl.NumberFormat(
+  'en-PH',
+  {
+    style: 'currency',
+    currency: 'PHP',
+    minimumFractionDigits: 0,
+  },
+)
+
+const adminDateFormatter = new Intl.DateTimeFormat(
+  'en-PH',
+  {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  },
+)
+
 window.Alpine = Alpine
 
 const adminNavigationItems = [
@@ -55,7 +96,7 @@ const navigationMarkup = adminNavigationItems
         @click="openPage('${item.id}')"
       >
         <span>${item.label}</span>
-
+    
         <span
           x-show="activePage === '${item.id}'"
           class="size-1.5 rounded-full bg-[#17130d]"
@@ -82,14 +123,14 @@ function renderAdminSidebar() {
             alt="${siteConfig.brand.name}"
             class="size-12 shrink-0 object-contain"
           >
-
+    
           <span class="min-w-0">
             <strong
               class="block truncate text-sm uppercase tracking-[0.14em] text-brand-cream"
             >
               ${siteConfig.brand.name}
             </strong>
-
+    
             <span
               class="mt-1 block text-[0.6rem] uppercase tracking-[0.16em] text-brand-gold"
             >
@@ -98,7 +139,7 @@ function renderAdminSidebar() {
           </span>
         </a>
       </div>
-
+    
       <nav
         class="flex-1 overflow-y-auto px-4 py-7"
         aria-label="Admin dashboard navigation"
@@ -108,12 +149,12 @@ function renderAdminSidebar() {
         >
           Management
         </p>
-
+    
         <div class="space-y-2">
           ${navigationMarkup}
         </div>
       </nav>
-
+    
       <div class="border-t border-brand-border p-4">
         <div
           class="rounded-2xl border border-brand-border bg-brand-black px-4 py-4"
@@ -123,11 +164,11 @@ function renderAdminSidebar() {
           >
             Administrator
           </p>
-
+    
           <p class="mt-2 text-sm font-semibold text-brand-cream">
             Admin Preview
           </p>
-
+    
           <p class="mt-1 text-xs text-brand-muted">
             Frontend interface only
           </p>
@@ -137,36 +178,799 @@ function renderAdminSidebar() {
   `
 }
 
+function renderMembershipApplicationsPage() {
+    return `
+      <section
+        x-show="activePage === 'memberships'"
+        x-transition.opacity
+        aria-labelledby="memberships-page-title"
+      >
+        <div
+          class="rounded-[1.75rem] border border-brand-gold/30 bg-brand-panel p-6 shadow-gold-soft sm:p-8"
+        >
+          <div
+            class="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between"
+          >
+            <div>
+              <p
+                class="text-[0.65rem] font-semibold uppercase tracking-[0.22em] text-brand-gold"
+              >
+                Membership Management
+              </p>
+  
+              <h1
+                id="memberships-page-title"
+                class="mt-2 font-display text-4xl text-brand-cream sm:text-5xl"
+              >
+                Membership applications
+              </h1>
+  
+              <p
+                class="mt-3 max-w-2xl text-sm leading-7 text-brand-muted"
+              >
+                Review package selections, customer information,
+                payment details, and cancellation requests from one
+                organized queue.
+              </p>
+            </div>
+  
+            <div
+              class="grid w-full grid-cols-2 gap-3 sm:w-auto"
+            >
+              <div
+                class="rounded-2xl border border-brand-border bg-brand-black px-4 py-3"
+              >
+                <p
+                  class="text-[0.6rem] uppercase tracking-[0.12em] text-brand-muted"
+                >
+                  For Review
+                </p>
+  
+                <strong
+                  class="mt-1 block font-display text-2xl text-brand-cream"
+                  x-text="pendingVerificationCount"
+                ></strong>
+              </div>
+  
+              <div
+                class="rounded-2xl border border-brand-border bg-brand-black px-4 py-3"
+              >
+                <p
+                  class="text-[0.6rem] uppercase tracking-[0.12em] text-brand-muted"
+                >
+                  Cancellations
+                </p>
+  
+                <strong
+                  class="mt-1 block font-display text-2xl text-brand-cream"
+                  x-text="cancellationRequestCount"
+                ></strong>
+              </div>
+            </div>
+          </div>
+        </div>
+  
+        <div
+          class="mt-6 rounded-[1.5rem] border border-brand-border bg-brand-panel p-4 shadow-panel sm:p-5"
+        >
+          <div
+            class="grid gap-3 md:grid-cols-[minmax(0,1fr)_14rem]"
+          >
+            <label class="relative block">
+              <span class="sr-only">
+                Search applications
+              </span>
+  
+              <svg
+                class="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-brand-muted"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                aria-hidden="true"
+              >
+                <circle cx="11" cy="11" r="6"></circle>
+  
+                <path
+                  d="m16 16 4 4"
+                  stroke-linecap="round"
+                ></path>
+              </svg>
+  
+              <input
+                type="search"
+                x-model.debounce.250ms="applicationSearch"
+                placeholder="Search customer, reference, or package"
+                class="min-h-12 w-full rounded-xl border border-brand-border bg-brand-black pl-11 pr-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
+              >
+            </label>
+  
+            <label class="block">
+              <span class="sr-only">
+                Filter by status
+              </span>
+  
+              <select
+                x-model="applicationStatusFilter"
+                class="min-h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition focus:border-brand-gold"
+              >
+                <option value="all">
+                  All statuses
+                </option>
+  
+                <option value="pending-verification">
+                  Pending Verification
+                </option>
+  
+                <option value="cancellation-requested">
+                  Cancellation Requested
+                </option>
+  
+                <option value="awaiting-payment">
+                  Awaiting Payment
+                </option>
+              </select>
+            </label>
+          </div>
+  
+          <div
+            class="mt-4 flex items-center justify-between gap-4 border-t border-brand-border pt-4"
+          >
+            <p class="text-xs text-brand-muted">
+              Showing
+  
+              <strong
+                class="text-brand-cream"
+                x-text="filteredApplications.length"
+              ></strong>
+  
+              application<span
+                x-show="filteredApplications.length !== 1"
+              >s</span>
+            </p>
+  
+            <button
+              x-show="
+                applicationSearch ||
+                applicationStatusFilter !== 'all'
+              "
+              type="button"
+              class="text-xs font-semibold text-brand-gold transition hover:text-brand-gold-light"
+              @click="
+                applicationSearch = '';
+                applicationStatusFilter = 'all'
+              "
+            >
+              Clear filters
+            </button>
+          </div>
+        </div>
+  
+        <div class="mt-6 space-y-4">
+          <template
+            x-for="application in filteredApplications"
+            :key="application.id"
+          >
+            <article
+              class="rounded-[1.5rem] border border-brand-border bg-brand-panel p-5 shadow-panel transition hover:border-brand-gold/50 sm:p-6"
+            >
+              <div
+                class="grid gap-5 lg:grid-cols-[minmax(0,1.1fr)_minmax(15rem,0.65fr)_auto] lg:items-center"
+              >
+                <div class="min-w-0">
+                  <div
+                    class="flex flex-wrap items-center gap-3"
+                  >
+                    <span
+                      class="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[0.62rem] font-semibold uppercase tracking-[0.08em]"
+                      :class="
+                        application.status ===
+                        'cancellation-requested'
+                          ? 'border-red-400/30 bg-red-400/10 text-red-300'
+                          : 'border-amber-500/40 bg-amber-500/10 text-amber-300'
+                      "
+                    >
+                      <span
+                        class="size-1.5 rounded-full"
+                        :class="
+                          application.status ===
+                          'cancellation-requested'
+                            ? 'bg-red-400'
+                            : 'bg-amber-400'
+                        "
+                        aria-hidden="true"
+                      ></span>
+  
+                      <span
+                        x-text="
+                          applicationStatusLabels[
+                            application.status
+                          ] || application.status
+                        "
+                      ></span>
+                    </span>
+  
+                    <span
+                      class="text-[0.65rem] uppercase tracking-[0.12em] text-brand-muted"
+                      x-text="application.id"
+                    ></span>
+                  </div>
+  
+                  <h2
+                    class="mt-3 truncate font-display text-2xl text-brand-cream sm:text-3xl"
+                    x-text="application.customer_name"
+                  ></h2>
+  
+                  <p
+                    class="mt-1 truncate text-sm text-brand-muted"
+                    x-text="application.customer_email"
+                  ></p>
+                </div>
+  
+                <div
+                  class="grid grid-cols-2 gap-4 border-y border-brand-border py-4 lg:border-y-0 lg:border-l lg:py-0 lg:pl-6"
+                >
+                  <div>
+                    <p
+                      class="text-[0.62rem] uppercase tracking-[0.12em] text-brand-muted"
+                    >
+                      Package
+                    </p>
+  
+                    <strong
+                      class="mt-1 block text-sm text-brand-cream"
+                      x-text="
+                        application.package?.name ||
+                        'Unknown package'
+                      "
+                    ></strong>
+                  </div>
+  
+                  <div>
+                    <p
+                      class="text-[0.62rem] uppercase tracking-[0.12em] text-brand-muted"
+                    >
+                      Amount
+                    </p>
+  
+                    <strong
+                      class="mt-1 block text-sm text-brand-gold"
+                      x-text="formatMoney(application.amount)"
+                    ></strong>
+                  </div>
+  
+                  <div class="col-span-2">
+                    <p
+                      class="text-[0.62rem] uppercase tracking-[0.12em] text-brand-muted"
+                    >
+                      Submitted
+                    </p>
+  
+                    <p
+                      class="mt-1 text-xs text-brand-muted"
+                      x-text="
+                        formatDate(application.submitted_at)
+                      "
+                    ></p>
+                  </div>
+                </div>
+  
+                <button
+                  type="button"
+                  class="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-brand-border px-5 text-sm font-semibold text-brand-cream transition hover:border-brand-gold hover:text-brand-gold lg:w-auto"
+                  @click="
+                    openApplicationDetails(application.id)
+                  "
+                >
+                  Review Details
+                </button>
+              </div>
+            </article>
+          </template>
+  
+          <div
+            x-show="filteredApplications.length === 0"
+            class="rounded-[1.5rem] border border-dashed border-brand-border bg-brand-panel px-6 py-14 text-center"
+          >
+            <h2
+              class="font-display text-2xl text-brand-cream"
+            >
+              No applications found
+            </h2>
+  
+            <p
+              class="mt-2 text-sm leading-6 text-brand-muted"
+            >
+              Try a different search term or status filter.
+            </p>
+          </div>
+        </div>
+      </section>
+    `
+  }
+  
+  function renderApplicationDetailsDrawer() {
+    return `
+      <div
+        x-show="applicationDetailsOpen"
+        x-transition.opacity
+        class="fixed inset-0 z-40 bg-black/65 backdrop-blur-[2px]"
+        aria-hidden="true"
+        @click="closeApplicationDetails()"
+      ></div>
+  
+      <aside
+        x-show="applicationDetailsOpen"
+        x-transition:enter="transition duration-300 ease-out"
+        x-transition:enter-start="translate-x-full"
+        x-transition:enter-end="translate-x-0"
+        x-transition:leave="transition duration-200 ease-in"
+        x-transition:leave-start="translate-x-0"
+        x-transition:leave-end="translate-x-full"
+        class="fixed inset-y-0 right-0 z-50 w-full max-w-xl overflow-y-auto border-l border-brand-border bg-brand-panel shadow-2xl"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="application-drawer-title"
+      >
+        <template x-if="selectedApplication">
+          <div>
+            <div
+              class="sticky top-0 z-10 flex min-h-20 items-center justify-between gap-4 border-b border-brand-border bg-brand-panel/95 px-5 backdrop-blur-xl sm:px-7"
+            >
+              <div class="min-w-0">
+                <p
+                  class="text-[0.62rem] font-semibold uppercase tracking-[0.18em] text-brand-gold"
+                >
+                  Application Review
+                </p>
+  
+                <h2
+                  id="application-drawer-title"
+                  class="mt-1 truncate font-display text-2xl text-brand-cream"
+                  x-text="selectedApplication.customer_name"
+                ></h2>
+              </div>
+  
+              <button
+                type="button"
+                class="grid size-10 shrink-0 place-items-center rounded-full border border-brand-border text-brand-cream transition hover:border-brand-gold hover:text-brand-gold"
+                aria-label="Close application details"
+                @click="closeApplicationDetails()"
+              >
+                <svg
+                  class="size-4"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="m6 6 12 12M18 6 6 18"
+                    stroke-linecap="round"
+                  ></path>
+                </svg>
+              </button>
+            </div>
+  
+            <div class="space-y-5 p-5 sm:p-7">
+              <section
+                class="rounded-2xl border border-brand-border bg-brand-black p-5"
+              >
+                <div
+                  class="flex flex-wrap items-start justify-between gap-4"
+                >
+                  <div>
+                    <p
+                      class="text-[0.62rem] uppercase tracking-[0.14em] text-brand-muted"
+                    >
+                      Selected Package
+                    </p>
+  
+                    <h3
+                      class="mt-2 font-display text-3xl text-brand-cream"
+                      x-text="
+                        selectedApplication.package?.name ||
+                        'Unknown package'
+                      "
+                    ></h3>
+                  </div>
+  
+                  <strong
+                    class="font-display text-3xl text-brand-gold"
+                    x-text="
+                      formatMoney(
+                        selectedApplication.amount,
+                      )
+                    "
+                  ></strong>
+                </div>
+  
+                <div
+                  class="mt-5 border-t border-brand-border pt-5"
+                >
+                  <span
+                    class="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.08em]"
+                    :class="
+                      selectedApplication.status ===
+                      'cancellation-requested'
+                        ? 'border-red-400/30 bg-red-400/10 text-red-300'
+                        : 'border-amber-500/40 bg-amber-500/10 text-amber-300'
+                    "
+                  >
+                    <span
+                      class="size-1.5 rounded-full"
+                      :class="
+                        selectedApplication.status ===
+                        'cancellation-requested'
+                          ? 'bg-red-400'
+                          : 'bg-amber-400'
+                      "
+                      aria-hidden="true"
+                    ></span>
+  
+                    <span
+                      x-text="
+                        applicationStatusLabels[
+                          selectedApplication.status
+                        ] || selectedApplication.status
+                      "
+                    ></span>
+                  </span>
+                </div>
+              </section>
+  
+              <section
+                class="rounded-2xl border border-brand-border bg-brand-black p-5"
+              >
+                <p
+                  class="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-brand-gold"
+                >
+                  Customer Information
+                </p>
+  
+                <dl
+                  class="mt-4 grid gap-4 sm:grid-cols-2"
+                >
+                  <div>
+                    <dt class="text-xs text-brand-muted">
+                      Full name
+                    </dt>
+  
+                    <dd
+                      class="mt-1 text-sm font-semibold text-brand-cream"
+                      x-text="
+                        selectedApplication.customer_name
+                      "
+                    ></dd>
+                  </div>
+  
+                  <div>
+                    <dt class="text-xs text-brand-muted">
+                      Mobile number
+                    </dt>
+  
+                    <dd
+                      class="mt-1 text-sm font-semibold text-brand-cream"
+                      x-text="
+                        selectedApplication.customer_mobile
+                      "
+                    ></dd>
+                  </div>
+  
+                  <div class="sm:col-span-2">
+                    <dt class="text-xs text-brand-muted">
+                      Email address
+                    </dt>
+  
+                    <dd
+                      class="mt-1 break-all text-sm font-semibold text-brand-cream"
+                      x-text="
+                        selectedApplication.customer_email
+                      "
+                    ></dd>
+                  </div>
+                </dl>
+              </section>
+  
+              <section
+                class="rounded-2xl border border-brand-border bg-brand-black p-5"
+              >
+                <p
+                  class="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-brand-gold"
+                >
+                  Payment Information
+                </p>
+  
+                <dl
+                  class="mt-4 grid gap-4 sm:grid-cols-2"
+                >
+                  <div>
+                    <dt class="text-xs text-brand-muted">
+                      Payment method
+                    </dt>
+  
+                    <dd
+                      class="mt-1 text-sm font-semibold text-brand-cream"
+                      x-text="
+                        paymentMethodLabels[
+                          selectedApplication.payment_method
+                        ] ||
+                        selectedApplication.payment_method
+                      "
+                    ></dd>
+                  </div>
+  
+                  <div>
+                    <dt class="text-xs text-brand-muted">
+                      Provider
+                    </dt>
+  
+                    <dd
+                      class="mt-1 text-sm font-semibold text-brand-cream"
+                      x-text="
+                        selectedApplication.payment_provider ||
+                        'Not provided'
+                      "
+                    ></dd>
+                  </div>
+  
+                  <div>
+                    <dt class="text-xs text-brand-muted">
+                      Sender name
+                    </dt>
+  
+                    <dd
+                      class="mt-1 text-sm font-semibold text-brand-cream"
+                      x-text="
+                        selectedApplication.sender_name
+                      "
+                    ></dd>
+                  </div>
+  
+                  <div>
+                    <dt class="text-xs text-brand-muted">
+                      Reference number
+                    </dt>
+  
+                    <dd
+                      class="mt-1 break-all text-sm font-semibold text-brand-cream"
+                      x-text="
+                        selectedApplication.reference_number
+                      "
+                    ></dd>
+                  </div>
+                </dl>
+              </section>
+  
+              <section
+                class="rounded-2xl border border-brand-border bg-brand-black p-5"
+              >
+                <p
+                  class="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-brand-gold"
+                >
+                  Payment Proof
+                </p>
+  
+                <div
+                  x-show="
+                    selectedApplication.payment_proof_url
+                  "
+                  class="mt-4 overflow-hidden rounded-xl border border-brand-border bg-brand-panel"
+                >
+                  <img
+                    :src="
+                      selectedApplication.payment_proof_url
+                    "
+                    alt="Submitted payment proof"
+                    class="max-h-80 w-full object-contain"
+                  >
+                </div>
+  
+                <div
+                  x-show="
+                    !selectedApplication.payment_proof_url
+                  "
+                  class="mt-4 rounded-xl border border-dashed border-brand-border bg-brand-panel px-5 py-8 text-center"
+                >
+                  <p
+                    class="text-sm font-semibold text-brand-cream"
+                  >
+                    Preview image not connected yet
+                  </p>
+  
+                  <p
+                    class="mt-2 break-all text-xs leading-5 text-brand-muted"
+                    x-text="
+                      selectedApplication
+                        .payment_proof_file_name ||
+                      'No file name available'
+                    "
+                  ></p>
+                </div>
+              </section>
+  
+              <section
+                x-show="
+                  selectedApplication.status ===
+                  'cancellation-requested'
+                "
+                class="rounded-2xl border border-red-400/30 bg-red-400/5 p-5"
+              >
+                <p
+                  class="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-red-300"
+                >
+                  Cancellation Request
+                </p>
+  
+                <p
+                  class="mt-3 text-sm leading-6 text-brand-cream"
+                  x-text="
+                    selectedApplication.cancellation_reason ||
+                    'No reason provided.'
+                  "
+                ></p>
+  
+                <p
+                  class="mt-3 text-xs leading-5 text-brand-muted"
+                >
+                  Any applicable refund must be reviewed and
+                  processed manually by the administrator.
+                </p>
+              </section>
+  
+              <div
+                class="rounded-2xl border border-brand-gold/30 bg-brand-gold/10 px-4 py-3"
+              >
+                <p
+                  class="text-xs leading-5 text-brand-muted"
+                >
+                  Review actions will be enabled in the next
+                  checkpoint. This screen currently displays
+                  preview data only.
+                </p>
+              </div>
+            </div>
+          </div>
+        </template>
+      </aside>
+    `
+  }
+
 Alpine.data('adminDashboard', () => ({
+  applications: adminMembershipApplications,
+
+  applicationStatusLabels: membershipStatusLabels,
+
+  paymentMethodLabels,
+
+  selectedApplicationId: null,
+
+  applicationDetailsOpen: false,
+
+  applicationSearch: '',
+
+  applicationStatusFilter: 'all',
+
   activePage: 'overview',
+
   mobileMenuOpen: false,
 
+  get filteredApplications() {
+    const normalizedSearch =
+      this.applicationSearch.trim().toLowerCase()
+
+    return this.applications.filter((application) => {
+      const matchesStatus =
+        this.applicationStatusFilter === 'all' ||
+        application.status === this.applicationStatusFilter
+
+      const searchableContent = [
+        application.customer_name,
+        application.customer_email,
+        application.customer_mobile,
+        application.reference_number,
+        application.package?.name,
+        application.id,
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase()
+
+      const matchesSearch =
+        !normalizedSearch ||
+        searchableContent.includes(normalizedSearch)
+
+      return matchesStatus && matchesSearch
+    })
+  },
+
+  get selectedApplication() {
+    return (
+      this.applications.find(
+        (application) =>
+          application.id === this.selectedApplicationId,
+      ) || null
+    )
+  },
+
+  get pendingVerificationCount() {
+    return this.applications.filter(
+      (application) =>
+        application.status === 'pending-verification',
+    ).length
+  },
+
+  get cancellationRequestCount() {
+    return this.applications.filter(
+      (application) =>
+        application.status === 'cancellation-requested',
+    ).length
+  },
+
+  formatMoney(amount) {
+    return adminPesoFormatter.format(amount || 0)
+  },
+
+  formatDate(dateValue) {
+    if (!dateValue) {
+      return 'Not available'
+    }
+
+    return adminDateFormatter.format(new Date(dateValue))
+  },
+
+  openApplicationDetails(applicationId) {
+    this.selectedApplicationId = applicationId
+    this.applicationDetailsOpen = true
+    document.body.classList.add('overflow-hidden')
+  },
+
+  closeApplicationDetails() {
+    this.applicationDetailsOpen = false
+  
+    if (!this.mobileMenuOpen) {
+      document.body.classList.remove('overflow-hidden')
+    }
+  
+    window.setTimeout(() => {
+      if (!this.applicationDetailsOpen) {
+        this.selectedApplicationId = null
+      }
+    }, 250)
+  },
+  
   get activePageTitle() {
     return adminPageTitles[this.activePage] || 'Overview'
   },
-
+  
   openPage(pageName) {
     if (!adminPageTitles[pageName]) {
       return
     }
-
+  
+    this.closeApplicationDetails()
     this.activePage = pageName
     this.closeMobileMenu()
-
+  
     window.scrollTo({
       top: 0,
       behavior: 'smooth',
     })
   },
-
+  
   openMobileMenu() {
+    this.closeApplicationDetails()
     this.mobileMenuOpen = true
     document.body.classList.add('overflow-hidden')
   },
-
+  
   closeMobileMenu() {
     this.mobileMenuOpen = false
-    document.body.classList.remove('overflow-hidden')
+  
+    if (!this.applicationDetailsOpen) {
+      document.body.classList.remove('overflow-hidden')
+    }
   },
 
   destroy() {
@@ -174,15 +978,14 @@ Alpine.data('adminDashboard', () => ({
   },
 }))
 
-document.title =
-  `Admin Dashboard | ${siteConfig.brand.name}`
+document.title = `Admin Dashboard | ${siteConfig.brand.name}`
 
 document.querySelector('#admin-app').innerHTML = `
   <div
     x-data="adminDashboard"
     x-cloak
     class="min-h-screen bg-brand-black text-brand-cream"
-    @keydown.escape.window="closeMobileMenu()"
+    @keydown.escape.window="closeMobileMenu(); closeApplicationDetails()"
   >
     <aside
       class="fixed inset-y-0 left-0 z-30 hidden w-72 border-r border-brand-border bg-brand-panel lg:block"
@@ -327,8 +1130,8 @@ document.querySelector('#admin-app').innerHTML = `
 
               <strong
                 class="mt-4 block font-display text-4xl text-brand-cream"
+                x-text="pendingVerificationCount"
               >
-                2
               </strong>
 
               <p class="mt-2 text-xs leading-5 text-brand-muted">
@@ -347,8 +1150,8 @@ document.querySelector('#admin-app').innerHTML = `
 
               <strong
                 class="mt-4 block font-display text-4xl text-brand-cream"
+                x-text="cancellationRequestCount"
               >
-                1
               </strong>
 
               <p class="mt-2 text-xs leading-5 text-brand-muted">
@@ -437,8 +1240,8 @@ document.querySelector('#admin-app').innerHTML = `
 
                   <span
                     class="rounded-full bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-300"
+                    x-text="pendingVerificationCount"
                   >
-                    2
                   </span>
                 </button>
 
@@ -510,44 +1313,52 @@ document.querySelector('#admin-app').innerHTML = `
           </div>
         </section>
 
-        ${adminNavigationItems
-          .filter((item) => item.id !== 'overview')
-          .map(
-            (item) => `
-              <section
-                x-show="activePage === '${item.id}'"
-                x-transition.opacity
-                aria-labelledby="${item.id}-page-title"
-              >
-                <div
-                  class="rounded-[1.75rem] border border-brand-border bg-brand-panel p-6 shadow-panel sm:p-8"
-                >
-                  <p
-                    class="text-[0.65rem] font-semibold uppercase tracking-[0.22em] text-brand-gold"
-                  >
-                    Admin Management
-                  </p>
+        ${renderMembershipApplicationsPage()}
 
-                  <h1
-                    id="${item.id}-page-title"
-                    class="mt-2 font-display text-4xl text-brand-cream sm:text-5xl"
-                  >
-                    ${item.label}
-                  </h1>
+${adminNavigationItems
+  .filter(
+    (item) =>
+      item.id !== 'overview' &&
+      item.id !== 'memberships',
+  )
+  .map(
+    (item) => `
+      <section
+        x-show="activePage === '${item.id}'"
+        x-transition.opacity
+        aria-labelledby="${item.id}-page-title"
+      >
+        <div
+          class="rounded-[1.75rem] border border-brand-border bg-brand-panel p-6 shadow-panel sm:p-8"
+        >
+          <p
+            class="text-[0.65rem] font-semibold uppercase tracking-[0.22em] text-brand-gold"
+          >
+            Admin Management
+          </p>
 
-                  <p
-                    class="mt-3 max-w-2xl text-sm leading-7 text-brand-muted"
-                  >
-                    This management page will be added in the next
-                    admin dashboard checkpoint.
-                  </p>
-                </div>
-              </section>
-            `,
-          )
-          .join('')}
-      </main>
+          <h1
+            id="${item.id}-page-title"
+            class="mt-2 font-display text-4xl text-brand-cream sm:text-5xl"
+          >
+            ${item.label}
+          </h1>
+
+          <p
+            class="mt-3 max-w-2xl text-sm leading-7 text-brand-muted"
+          >
+            This management page will be added in the next
+            admin dashboard checkpoint.
+          </p>
+        </div>
+      </section>
+    `,
+  )
+  .join('')}
+            </main>
     </div>
+
+    ${renderApplicationDetailsDrawer()}
   </div>
 `
 
