@@ -10,25 +10,6 @@ import {
 
 window.Alpine = Alpine
 
-const savedTheme =
-  window.localStorage.getItem('your-product-theme')
-
-const initialTheme =
-  savedTheme === 'ivory'
-    ? 'ivory'
-    : 'black'
-
-if (initialTheme === 'ivory') {
-  document.documentElement.setAttribute(
-    'data-theme',
-    'ivory',
-  )
-} else {
-  document.documentElement.removeAttribute(
-    'data-theme',
-  )
-}
-
 const adminNavigationItems = [
   {
     id: 'overview',
@@ -65,7 +46,7 @@ const navigationMarkup = adminNavigationItems
     (item) => `
       <button
         type="button"
-        class="flex min-h-12 w-full items-center justify-between gap-3 rounded-xl px-4 py-3 text-left text-sm font-semibold transition"
+        class="flex min-h-12 w-full items-center justify-between rounded-xl px-4 text-left text-sm font-semibold transition"
         :class="
           activePage === '${item.id}'
             ? 'bg-brand-gold text-[#17130d]'
@@ -73,87 +54,17 @@ const navigationMarkup = adminNavigationItems
         "
         @click="openPage('${item.id}')"
       >
-        <span class="min-w-0 leading-5">
-          ${item.label}
-        </span>
+        <span>${item.label}</span>
 
         <span
           x-show="activePage === '${item.id}'"
-          class="size-1.5 shrink-0 rounded-full bg-[#17130d]"
+          class="size-1.5 rounded-full bg-[#17130d]"
           aria-hidden="true"
         ></span>
       </button>
     `,
   )
   .join('')
-
-function renderThemeToggle() {
-  return `
-    <button
-      type="button"
-      class="premium-icon grid size-10 shrink-0 place-items-center rounded-full border border-brand-border text-brand-cream hover:border-brand-gold hover:bg-brand-gold/10 hover:text-brand-gold sm:size-11"
-      :aria-label="
-        theme === 'black'
-          ? 'Switch to Ivory and Gold theme'
-          : 'Switch to Black and Gold theme'
-      "
-      :title="
-        theme === 'black'
-          ? 'Ivory and Gold theme'
-          : 'Black and Gold theme'
-      "
-      @click="toggleTheme()"
-    >
-      <svg
-        x-cloak
-        x-show="theme === 'black'"
-        class="size-5"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="1.6"
-        aria-hidden="true"
-      >
-        <circle
-          cx="12"
-          cy="12"
-          r="3.5"
-        />
-
-        <path
-          d="M12 2.75v2M12 19.25v2M2.75 12h2M19.25 12h2M5.45 5.45l1.4 1.4M17.15 17.15l1.4 1.4M18.55 5.45l-1.4 1.4M6.85 17.15l-1.4 1.4"
-          stroke-linecap="round"
-        />
-      </svg>
-
-      <svg
-        x-cloak
-        x-show="theme === 'ivory'"
-        class="size-5"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="1.6"
-        aria-hidden="true"
-      >
-        <path
-          d="M20.25 15.4A8.25 8.25 0 0 1 8.6 3.75a8.25 8.25 0 1 0 11.65 11.65Z"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        />
-      </svg>
-
-      <span
-        class="sr-only"
-        x-text="
-          theme === 'black'
-            ? 'Switch to Ivory and Gold theme'
-            : 'Switch to Black and Gold theme'
-        "
-      ></span>
-    </button>
-  `
-}
 
 function renderAdminSidebar() {
   return `
@@ -229,62 +140,9 @@ function renderAdminSidebar() {
 Alpine.data('adminDashboard', () => ({
   activePage: 'overview',
   mobileMenuOpen: false,
-  theme: initialTheme,
-  themeTransitionTimer: null,
 
   get activePageTitle() {
-    return (
-      adminPageTitles[this.activePage] ||
-      'Overview'
-    )
-  },
-
-  init() {
-    this.applyTheme()
-  },
-
-  applyTheme() {
-    if (this.theme === 'ivory') {
-      document.documentElement.setAttribute(
-        'data-theme',
-        'ivory',
-      )
-    } else {
-      document.documentElement.removeAttribute(
-        'data-theme',
-      )
-    }
-
-    window.localStorage.setItem(
-      'your-product-theme',
-      this.theme,
-    )
-  },
-
-  toggleTheme() {
-    const root = document.documentElement
-
-    window.clearTimeout(
-      this.themeTransitionTimer,
-    )
-
-    root.classList.add('theme-transitioning')
-
-    window.requestAnimationFrame(() => {
-      this.theme =
-        this.theme === 'black'
-          ? 'ivory'
-          : 'black'
-
-      this.applyTheme()
-
-      this.themeTransitionTimer =
-        window.setTimeout(() => {
-          root.classList.remove(
-            'theme-transitioning',
-          )
-        }, 650)
-    })
+    return adminPageTitles[this.activePage] || 'Overview'
   },
 
   openPage(pageName) {
@@ -303,34 +161,16 @@ Alpine.data('adminDashboard', () => ({
 
   openMobileMenu() {
     this.mobileMenuOpen = true
-
-    document.body.classList.add(
-      'mobile-menu-open',
-    )
+    document.body.classList.add('overflow-hidden')
   },
 
   closeMobileMenu() {
     this.mobileMenuOpen = false
-
-    document.body.classList.remove(
-      'mobile-menu-open',
-    )
+    document.body.classList.remove('overflow-hidden')
   },
 
   destroy() {
-    document.body.classList.remove(
-      'mobile-menu-open',
-    )
-
-    document.documentElement.classList.remove(
-      'theme-transitioning',
-    )
-
-    if (this.themeTransitionTimer) {
-      window.clearTimeout(
-        this.themeTransitionTimer,
-      )
-    }
+    document.body.classList.remove('overflow-hidden')
   },
 }))
 
@@ -343,14 +183,9 @@ document.querySelector('#admin-app').innerHTML = `
     x-cloak
     class="min-h-screen bg-brand-black text-brand-cream"
     @keydown.escape.window="closeMobileMenu()"
-    @resize.window="
-      if (window.innerWidth >= 1024) {
-        closeMobileMenu()
-      }
-    "
   >
     <aside
-      class="fixed inset-y-0 left-0 z-30 hidden w-64 border-r border-brand-border bg-brand-panel lg:block"
+      class="fixed inset-y-0 left-0 z-30 hidden w-72 border-r border-brand-border bg-brand-panel lg:block"
     >
       ${renderAdminSidebar()}
     </aside>
@@ -364,7 +199,6 @@ document.querySelector('#admin-app').innerHTML = `
     ></div>
 
     <aside
-      x-cloak
       x-show="mobileMenuOpen"
       x-transition:enter="transition duration-300 ease-out"
       x-transition:enter-start="-translate-x-full"
@@ -380,17 +214,17 @@ document.querySelector('#admin-app').innerHTML = `
       ${renderAdminSidebar()}
     </aside>
 
-    <div class="min-h-screen lg:pl-64">
+    <div class="min-h-screen lg:pl-72">
       <header
         class="sticky top-0 z-20 border-b border-brand-border bg-brand-panel/95 backdrop-blur-xl"
       >
         <div
-          class="mx-auto flex min-h-[4.5rem] w-full max-w-[1180px] items-center justify-between gap-4 px-5 sm:px-7 lg:px-8"
+          class="mx-auto flex min-h-16 w-[min(1280px,92%)] items-center justify-between gap-4"
         >
           <div class="flex min-w-0 items-center gap-3">
             <button
               type="button"
-              class="premium-icon grid size-10 shrink-0 place-items-center rounded-full border border-brand-border text-brand-cream hover:border-brand-gold hover:bg-brand-gold/10 hover:text-brand-gold lg:hidden"
+              class="grid size-10 shrink-0 place-items-center rounded-full border border-brand-border text-brand-cream transition hover:border-brand-gold hover:text-brand-gold lg:hidden"
               aria-label="Open admin menu"
               @click="openMobileMenu()"
             >
@@ -411,7 +245,7 @@ document.querySelector('#admin-app').innerHTML = `
 
             <div class="min-w-0">
               <p
-                class="text-[0.58rem] font-semibold uppercase tracking-[0.2em] text-brand-gold sm:text-[0.62rem]"
+                class="text-[0.6rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
               >
                 Admin Portal
               </p>
@@ -423,18 +257,16 @@ document.querySelector('#admin-app').innerHTML = `
             </div>
           </div>
 
-          <div class="flex shrink-0 items-center gap-2 sm:gap-3">
-            ${renderThemeToggle()}
-
+          <div class="flex items-center gap-3">
             <span
-              class="hidden rounded-full border border-brand-gold/30 bg-brand-gold/10 px-3 py-1.5 text-[0.62rem] font-semibold uppercase tracking-[0.12em] text-brand-gold xl:inline-flex"
+              class="hidden rounded-full border border-brand-gold/30 bg-brand-gold/10 px-3 py-1.5 text-[0.62rem] font-semibold uppercase tracking-[0.12em] text-brand-gold sm:inline-flex"
             >
               UI Preview
             </span>
 
             <a
               href="/"
-              class="hidden text-xs font-semibold text-brand-muted transition hover:text-brand-gold sm:inline"
+              class="text-xs font-semibold text-brand-muted transition hover:text-brand-gold sm:text-sm"
             >
               View Store
             </a>
@@ -443,7 +275,7 @@ document.querySelector('#admin-app').innerHTML = `
       </header>
 
       <main
-        class="mx-auto w-full max-w-[1180px] px-5 py-8 sm:px-7 sm:py-10 lg:px-8 lg:py-12"
+        class="mx-auto w-[min(1280px,92%)] py-8 sm:py-10"
       >
         <section
           x-show="activePage === 'overview'"
@@ -458,7 +290,7 @@ document.querySelector('#admin-app').innerHTML = `
               aria-hidden="true"
             ></div>
 
-            <div class="relative max-w-3xl">
+            <div class="relative">
               <p
                 class="text-[0.65rem] font-semibold uppercase tracking-[0.24em] text-brand-gold"
               >
@@ -467,7 +299,7 @@ document.querySelector('#admin-app').innerHTML = `
 
               <h1
                 id="admin-overview-title"
-                class="mt-3 font-display text-4xl leading-[1.05] text-brand-cream sm:text-5xl lg:text-[3.5rem]"
+                class="mt-3 font-display text-4xl leading-none text-brand-cream sm:text-5xl"
               >
                 Business overview
               </h1>
@@ -482,10 +314,10 @@ document.querySelector('#admin-app').innerHTML = `
           </div>
 
           <div
-            class="mt-6 grid grid-cols-1 gap-4 sm:mt-8 sm:grid-cols-2 sm:gap-5 min-[2100px]:grid-cols-4"
+            class="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4"
           >
             <article
-              class="rounded-[1.4rem] border border-brand-border bg-brand-panel p-6 shadow-panel"
+              class="rounded-[1.4rem] border border-brand-border bg-brand-panel p-5 shadow-panel"
             >
               <p
                 class="text-xs uppercase tracking-[0.13em] text-brand-muted"
@@ -494,7 +326,7 @@ document.querySelector('#admin-app').innerHTML = `
               </p>
 
               <strong
-                class="mt-5 block font-display text-4xl text-brand-cream"
+                class="mt-4 block font-display text-4xl text-brand-cream"
               >
                 2
               </strong>
@@ -505,7 +337,7 @@ document.querySelector('#admin-app').innerHTML = `
             </article>
 
             <article
-              class="rounded-[1.4rem] border border-brand-border bg-brand-panel p-6 shadow-panel"
+              class="rounded-[1.4rem] border border-brand-border bg-brand-panel p-5 shadow-panel"
             >
               <p
                 class="text-xs uppercase tracking-[0.13em] text-brand-muted"
@@ -514,7 +346,7 @@ document.querySelector('#admin-app').innerHTML = `
               </p>
 
               <strong
-                class="mt-5 block font-display text-4xl text-brand-cream"
+                class="mt-4 block font-display text-4xl text-brand-cream"
               >
                 1
               </strong>
@@ -525,7 +357,7 @@ document.querySelector('#admin-app').innerHTML = `
             </article>
 
             <article
-              class="rounded-[1.4rem] border border-brand-border bg-brand-panel p-6 shadow-panel"
+              class="rounded-[1.4rem] border border-brand-border bg-brand-panel p-5 shadow-panel"
             >
               <p
                 class="text-xs uppercase tracking-[0.13em] text-brand-muted"
@@ -534,7 +366,7 @@ document.querySelector('#admin-app').innerHTML = `
               </p>
 
               <strong
-                class="mt-5 block font-display text-4xl text-brand-cream"
+                class="mt-4 block font-display text-4xl text-brand-cream"
               >
                 3
               </strong>
@@ -545,7 +377,7 @@ document.querySelector('#admin-app').innerHTML = `
             </article>
 
             <article
-              class="rounded-[1.4rem] border border-brand-gold/40 bg-brand-panel p-6 shadow-gold-soft"
+              class="rounded-[1.4rem] border border-brand-gold/40 bg-brand-panel p-5 shadow-gold-soft"
             >
               <p
                 class="text-xs uppercase tracking-[0.13em] text-brand-muted"
@@ -554,7 +386,7 @@ document.querySelector('#admin-app').innerHTML = `
               </p>
 
               <strong
-                class="mt-5 block font-display text-4xl text-brand-gold"
+                class="mt-4 block font-display text-4xl text-brand-gold"
               >
                 24
               </strong>
@@ -566,10 +398,10 @@ document.querySelector('#admin-app').innerHTML = `
           </div>
 
           <div
-            class="mt-6 grid gap-6 sm:mt-8 xl:grid-cols-[1.15fr_0.85fr]"
+            class="mt-6 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]"
           >
             <section
-              class="rounded-[1.5rem] border border-brand-border bg-brand-panel p-6 shadow-panel sm:p-7"
+              class="rounded-[1.5rem] border border-brand-border bg-brand-panel p-5 shadow-panel sm:p-6"
             >
               <p
                 class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
@@ -578,18 +410,18 @@ document.querySelector('#admin-app').innerHTML = `
               </p>
 
               <h2
-                class="mt-3 font-display text-3xl leading-tight text-brand-cream sm:text-4xl"
+                class="mt-2 font-display text-3xl text-brand-cream"
               >
                 Items requiring attention
               </h2>
 
-              <div class="mt-6 space-y-4">
+              <div class="mt-5 space-y-3">
                 <button
                   type="button"
-                  class="group flex w-full flex-col gap-4 rounded-2xl border border-brand-border bg-brand-black px-5 py-5 text-left transition hover:border-brand-gold sm:flex-row sm:items-center sm:justify-between"
+                  class="flex w-full items-center justify-between gap-4 rounded-xl border border-brand-border bg-brand-black px-4 py-4 text-left transition hover:border-brand-gold"
                   @click="openPage('memberships')"
                 >
-                  <span class="min-w-0">
+                  <span>
                     <strong
                       class="block text-sm text-brand-cream"
                     >
@@ -597,25 +429,25 @@ document.querySelector('#admin-app').innerHTML = `
                     </strong>
 
                     <span
-                      class="mt-1.5 block text-xs leading-5 text-brand-muted"
+                      class="mt-1 block text-xs text-brand-muted"
                     >
                       Review payment proofs and package selections
                     </span>
                   </span>
 
                   <span
-                    class="inline-flex w-fit shrink-0 rounded-full bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-500"
+                    class="rounded-full bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-300"
                   >
-                    2 pending
+                    2
                   </span>
                 </button>
 
                 <button
                   type="button"
-                  class="group flex w-full flex-col gap-4 rounded-2xl border border-brand-border bg-brand-black px-5 py-5 text-left transition hover:border-brand-gold sm:flex-row sm:items-center sm:justify-between"
+                  class="flex w-full items-center justify-between gap-4 rounded-xl border border-brand-border bg-brand-black px-4 py-4 text-left transition hover:border-brand-gold"
                   @click="openPage('orders')"
                 >
-                  <span class="min-w-0">
+                  <span>
                     <strong
                       class="block text-sm text-brand-cream"
                     >
@@ -623,23 +455,23 @@ document.querySelector('#admin-app').innerHTML = `
                     </strong>
 
                     <span
-                      class="mt-1.5 block text-xs leading-5 text-brand-muted"
+                      class="mt-1 block text-xs text-brand-muted"
                     >
                       Verify orders and payment submissions
                     </span>
                   </span>
 
                   <span
-                    class="inline-flex w-fit shrink-0 rounded-full bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-500"
+                    class="rounded-full bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-300"
                   >
-                    3 pending
+                    3
                   </span>
                 </button>
               </div>
             </section>
 
             <aside
-              class="rounded-[1.5rem] border border-brand-border bg-brand-panel p-6 shadow-panel sm:p-7"
+              class="rounded-[1.5rem] border border-brand-border bg-brand-panel p-5 shadow-panel sm:p-6"
             >
               <p
                 class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
@@ -648,46 +480,30 @@ document.querySelector('#admin-app').innerHTML = `
               </p>
 
               <h2
-                class="mt-3 font-display text-3xl leading-tight text-brand-cream sm:text-4xl"
+                class="mt-2 font-display text-3xl text-brand-cream"
               >
                 Frontend preview
               </h2>
 
               <div
-                class="mt-6 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-5"
+                class="mt-5 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4"
               >
                 <div class="flex items-center gap-3">
                   <span
-                    class="size-2 rounded-full bg-emerald-500"
+                    class="size-2 rounded-full bg-emerald-400"
                     aria-hidden="true"
                   ></span>
 
-                  <strong class="text-sm text-emerald-600">
+                  <strong class="text-sm text-emerald-200">
                     Interface ready
                   </strong>
                 </div>
 
                 <p
-                  class="mt-3 text-xs leading-5 text-brand-muted"
+                  class="mt-2 text-xs leading-5 text-emerald-100/80"
                 >
                   Supabase authentication and database actions are not
                   connected yet.
-                </p>
-              </div>
-
-              <div
-                class="mt-4 rounded-2xl border border-brand-border bg-brand-black p-5"
-              >
-                <p
-                  class="text-xs font-semibold uppercase tracking-[0.12em] text-brand-muted"
-                >
-                  Current Stage
-                </p>
-
-                <p
-                  class="mt-2 text-sm font-semibold text-brand-cream"
-                >
-                  Admin interface planning
                 </p>
               </div>
             </aside>
@@ -695,9 +511,7 @@ document.querySelector('#admin-app').innerHTML = `
         </section>
 
         ${adminNavigationItems
-          .filter(
-            (item) => item.id !== 'overview',
-          )
+          .filter((item) => item.id !== 'overview')
           .map(
             (item) => `
               <section
@@ -706,7 +520,7 @@ document.querySelector('#admin-app').innerHTML = `
                 aria-labelledby="${item.id}-page-title"
               >
                 <div
-                  class="rounded-[1.75rem] border border-brand-border bg-brand-panel p-6 shadow-panel sm:p-8 lg:p-10"
+                  class="rounded-[1.75rem] border border-brand-border bg-brand-panel p-6 shadow-panel sm:p-8"
                 >
                   <p
                     class="text-[0.65rem] font-semibold uppercase tracking-[0.22em] text-brand-gold"
@@ -716,13 +530,13 @@ document.querySelector('#admin-app').innerHTML = `
 
                   <h1
                     id="${item.id}-page-title"
-                    class="mt-3 font-display text-4xl leading-tight text-brand-cream sm:text-5xl"
+                    class="mt-2 font-display text-4xl text-brand-cream sm:text-5xl"
                   >
                     ${item.label}
                   </h1>
 
                   <p
-                    class="mt-4 max-w-2xl text-sm leading-7 text-brand-muted sm:text-base"
+                    class="mt-3 max-w-2xl text-sm leading-7 text-brand-muted"
                   >
                     This management page will be added in the next
                     admin dashboard checkpoint.

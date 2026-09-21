@@ -34,6 +34,11 @@ export default defineConfig({
           import.meta.dirname,
           'dashboard/index.html',
         ),
+
+        admin: resolve(
+          import.meta.dirname,
+          'admin/index.html',
+        ),
       },
     },
   },
