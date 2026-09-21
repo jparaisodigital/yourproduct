@@ -4,9 +4,160 @@ import Alpine from 'alpinejs'
 
 import logoImage from './assets/logoyourproduct.png'
 
-import {
-  siteConfig,
-} from './config/site-config.js'
+import { packages } from './config/packages-config.js'
+import { siteConfig } from './config/site-config.js'
+
+const pesoFormatter = new Intl.NumberFormat('en-PH', {
+  style: 'currency',
+  currency: 'PHP',
+  minimumFractionDigits: 0,
+})
+
+const registrationParams = new URLSearchParams(
+  window.location.search,
+)
+
+const requestedPackageId =
+  registrationParams.get('package')?.trim() || ''
+
+const incomingReferralCode =
+  registrationParams.get('ref')?.trim() || ''
+
+const selectedPackage =
+  packages.find(
+    (packageItem) =>
+      packageItem.id === requestedPackageId &&
+      packageItem.isActive,
+  ) || null
+
+  const dashboardPreviewUrl = selectedPackage
+  ? `/dashboard/?package=${encodeURIComponent(
+      selectedPackage.id,
+    )}&membership=awaiting-payment`
+  : '/dashboard/'
+
+const packageSelectionMarkup = selectedPackage
+  ? `
+      <aside
+        class="mt-6 overflow-hidden rounded-2xl border border-brand-gold/40 bg-brand-black"
+        aria-label="Selected membership package"
+      >
+        <div
+          class="flex flex-col gap-4 border-b border-brand-border px-5 py-5 sm:flex-row sm:items-start sm:justify-between"
+        >
+          <div>
+            <p
+              class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
+            >
+              Selected package
+            </p>
+
+            <h3
+              class="mt-2 font-display text-2xl leading-tight text-brand-cream"
+            >
+              ${selectedPackage.name}
+            </h3>
+
+            <p
+              class="mt-2 text-xs leading-5 text-brand-muted"
+            >
+              ${selectedPackage.description}
+            </p>
+          </div>
+
+          <div class="sm:text-right">
+            <p
+              class="text-[0.6rem] font-medium uppercase tracking-[0.14em] text-brand-muted"
+            >
+              Package price
+            </p>
+
+            <p
+              class="mt-1 font-display text-2xl text-brand-gold"
+            >
+              ${pesoFormatter.format(selectedPackage.price)}
+            </p>
+          </div>
+        </div>
+
+        <div class="px-5 py-5">
+          <p
+            class="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-brand-gold"
+          >
+            Package inclusions
+          </p>
+
+          <ul
+            class="mt-3 grid gap-x-5 gap-y-2 sm:grid-cols-2"
+          >
+            ${selectedPackage.inclusions
+              .map(
+                (inclusion) => `
+                  <li
+                    class="flex items-start gap-2 text-xs leading-5 text-brand-muted"
+                  >
+                    <span
+                      class="mt-1.5 size-1.5 shrink-0 rounded-full bg-brand-gold"
+                      aria-hidden="true"
+                    ></span>
+
+                    <span>${inclusion}</span>
+                  </li>
+                `,
+              )
+              .join('')}
+          </ul>
+
+          <div
+            class="mt-4 rounded-xl border border-brand-border bg-brand-panel px-4 py-3"
+          >
+            <p class="text-xs leading-5 text-brand-muted">
+              Creating an account does not automatically activate your
+              membership. Payment verification and admin approval are
+              still required.
+            </p>
+          </div>
+
+          <a
+            href="/#packages"
+            class="mt-4 inline-flex text-xs font-semibold text-brand-gold transition hover:text-brand-gold-light"
+          >
+            Change selected package
+          </a>
+        </div>
+      </aside>
+    `
+  : `
+      <aside
+        class="mt-6 rounded-2xl border border-brand-border bg-brand-black px-5 py-5"
+        aria-label="Free customer account"
+      >
+        <p
+          class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
+        >
+          Free customer account
+        </p>
+
+        <h3
+          class="mt-2 font-display text-2xl text-brand-cream"
+        >
+          Start as a customer.
+        </h3>
+
+        <p class="mt-2 text-xs leading-5 text-brand-muted">
+          Create your free account to access products, submit orders,
+          and view your order history. You may apply for a membership
+          package later.
+        </p>
+
+        <a
+          href="/#packages"
+          class="mt-4 inline-flex text-xs font-semibold text-brand-gold transition hover:text-brand-gold-light"
+        >
+          View membership packages
+        </a>
+      </aside>
+    `
 
 window.Alpine = Alpine
 
@@ -18,10 +169,11 @@ Alpine.data('registerPage', () => ({
     emailAddress: '',
     password: '',
     confirmPassword: '',
-    referralCode: '',
+    referralCode: incomingReferralCode,
     acceptedTerms: false,
   },
 
+  selectedPackageId: selectedPackage?.id || '',
   showPassword: false,
   registrationError: '',
   registrationTested: false,
@@ -98,17 +250,20 @@ document.querySelector('#register-app').innerHTML = `
 
     <main class="px-5 py-10 sm:py-16">
       <div
-        class="mx-auto grid w-full max-w-6xl overflow-hidden rounded-[2rem] border border-brand-border bg-brand-panel shadow-panel lg:grid-cols-2"
+        class="mx-auto grid w-full max-w-6xl overflow-clip rounded-[2rem] border border-brand-border bg-brand-panel shadow-panel lg:grid-cols-2"
       >
         <section
-          class="relative hidden min-h-[720px] flex-col justify-between overflow-hidden bg-brand-black px-10 py-12 lg:flex xl:px-12"
-        >
+  class="relative hidden min-h-[720px] overflow-clip bg-brand-black lg:block"
+>
           <div
-            class="absolute -right-20 -top-20 size-72 rounded-full bg-brand-gold/10 blur-3xl"
-            aria-hidden="true"
-          ></div>
+  class="absolute -right-20 -top-20 size-72 rounded-full bg-brand-gold/10 blur-3xl"
+  aria-hidden="true"
+></div>
 
-          <div class="relative">
+<div
+  class="sticky top-0 flex min-h-screen flex-col justify-between px-10 py-12 xl:px-12"
+>
+  <div class="relative">
             <p
               class="text-xs font-semibold uppercase tracking-[0.28em] text-brand-gold"
             >
@@ -120,31 +275,77 @@ document.querySelector('#register-app').innerHTML = `
             >
               Begin your
               <span class="italic text-brand-gold">
-                member journey.
+                customer journey.
               </span>
             </h1>
 
             <p
               class="mt-6 max-w-sm text-sm leading-7 text-brand-muted"
             >
-              Register your personal account to prepare access to member
-              benefits, order history, points, rewards, and referrals.
+              Create your account to access products, orders, order
+              history, and available membership opportunities.
             </p>
+
+            ${
+              selectedPackage
+                ? `
+                    <div
+                      class="mt-8 rounded-2xl border border-brand-gold/30 bg-brand-panel/70 p-5"
+                    >
+                      <p
+                        class="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-brand-gold"
+                      >
+                        Your selected package
+                      </p>
+
+                      <p
+                        class="mt-2 font-display text-2xl text-brand-cream"
+                      >
+                        ${selectedPackage.name}
+                      </p>
+
+                      <p
+                        class="mt-1 text-sm text-brand-gold"
+                      >
+                        ${pesoFormatter.format(selectedPackage.price)}
+                      </p>
+                    </div>
+                  `
+                : `
+                    <div
+                      class="mt-8 rounded-2xl border border-brand-border bg-brand-panel/70 p-5"
+                    >
+                      <p
+                        class="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-brand-gold"
+                      >
+                        Customer access
+                      </p>
+
+                      <p
+                        class="mt-2 text-sm leading-6 text-brand-muted"
+                      >
+                        Registration is free. Membership remains optional
+                        until you choose and complete a package.
+                      </p>
+                    </div>
+                  `
+            }
           </div>
 
           <div class="relative mt-12">
-            <div
-              class="h-px w-16 bg-brand-gold"
-              aria-hidden="true"
-            ></div>
+  <div
+    class="h-px w-16 bg-brand-gold"
+    aria-hidden="true"
+  ></div>
 
-            <p
-              class="mt-4 text-xs uppercase tracking-[0.18em] text-brand-muted"
-            >
-              ${siteConfig.brand.tagline}
-            </p>
-          </div>
-        </section>
+  <p
+    class="mt-4 text-xs uppercase tracking-[0.18em] text-brand-muted"
+  >
+    ${siteConfig.brand.tagline}
+  </p>
+</div>
+</div>
+</section>
 
         <section class="px-5 py-9 sm:px-10 sm:py-12">
           <div class="mx-auto max-w-xl">
@@ -157,12 +358,22 @@ document.querySelector('#register-app').innerHTML = `
             <h2
               class="mt-3 font-display text-4xl text-brand-cream sm:text-5xl lg:mt-0"
             >
-              Member registration
+              ${
+                selectedPackage
+                  ? 'Complete your registration'
+                  : 'Customer registration'
+              }
             </h2>
 
             <p class="mt-3 text-sm leading-6 text-brand-muted">
-              Enter your information to create a member account.
+              ${
+                selectedPackage
+                  ? 'Create your free account to continue your selected package application.'
+                  : 'Enter your information to create a free customer account.'
+              }
             </p>
+
+            ${packageSelectionMarkup}
 
             <form
               class="mt-8"
@@ -254,32 +465,6 @@ document.querySelector('#register-app').innerHTML = `
 
               <div class="mt-5">
                 <label
-                  for="referral-code"
-                  class="text-sm font-semibold text-brand-cream"
-                >
-                  Referral code
-                  <span class="font-normal text-brand-muted">
-                    (Optional)
-                  </span>
-                </label>
-
-                <input
-                  id="referral-code"
-                  type="text"
-                  x-model.trim="account.referralCode"
-                  autocomplete="off"
-                  placeholder="Enter the code of your direct referrer"
-                  class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
-                >
-
-                <p class="mt-2 text-xs leading-5 text-brand-muted">
-                  Leave this blank if you were not referred by an
-                  existing member.
-                </p>
-              </div>
-
-              <div class="mt-5">
-                <label
                   for="register-password"
                   class="text-sm font-semibold text-brand-cream"
                 >
@@ -334,6 +519,30 @@ document.querySelector('#register-app').innerHTML = `
                 >
               </div>
 
+              ${
+                incomingReferralCode
+                  ? `
+                      <div
+                        class="mt-5 rounded-xl border border-brand-border bg-brand-black px-4 py-3"
+                      >
+                        <p
+                          class="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-brand-gold"
+                        >
+                          Referral link detected
+                        </p>
+
+                        <p
+                          class="mt-1 text-xs leading-5 text-brand-muted"
+                        >
+                          Your referring member will be recorded when
+                          account registration is connected to the
+                          backend.
+                        </p>
+                      </div>
+                    `
+                  : ''
+              }
+
               <label
                 class="mt-6 flex cursor-pointer items-start gap-3"
               >
@@ -346,7 +555,8 @@ document.querySelector('#register-app').innerHTML = `
 
                 <span class="text-xs leading-5 text-brand-muted">
                   I confirm that the information provided is correct and
-                  I agree to the membership terms and privacy policy.
+                  I agree to the account, purchase, privacy, and
+                  applicable membership terms.
                 </span>
               </label>
 
@@ -358,20 +568,45 @@ document.querySelector('#register-app').innerHTML = `
               ></p>
 
               <div
-                x-show="registrationTested"
-                x-transition
-                class="mt-5 rounded-xl border border-[#2f6b59] bg-[#234f42] px-4 py-3 text-sm font-medium leading-6 text-[#fff8e9] shadow-sm"
-                role="status"
-              >
-                Registration form validation is working. No account has
-                been created yet.
-              </div>
+  x-show="registrationTested"
+  x-transition
+  class="mt-5 rounded-xl border border-[#2f6b59] bg-[#234f42] px-4 py-4 text-sm font-medium leading-6 text-[#fff8e9] shadow-sm"
+  role="status"
+>
+  <p>
+    ${
+      selectedPackage
+        ? `
+            Registration validation is working. Continue to
+            preview your pending
+            ${selectedPackage.shortLabel} application.
+          `
+        : `
+            Registration validation is working. Continue to
+            preview your free customer dashboard.
+          `
+    }
+  </p>
+
+  <a
+    href="${dashboardPreviewUrl}"
+    class="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-brand-gold px-6 text-sm font-semibold text-[#17130d] transition hover:bg-brand-gold-light"
+  >
+    Continue to dashboard preview
+  </a>
+</div>
 
               <button
-                type="submit"
-                class="mt-6 inline-flex h-12 w-full items-center justify-center rounded-full bg-brand-gold px-7 text-sm font-semibold text-brand-black transition hover:bg-brand-gold-light"
-              >
-                Create account
+  x-show="!registrationTested"
+  x-transition
+  type="submit"
+  class="mt-6 inline-flex h-12 w-full items-center justify-center rounded-full bg-brand-gold px-7 text-sm font-semibold text-brand-black transition hover:bg-brand-gold-light"
+>
+                ${
+                  selectedPackage
+                    ? 'Create account and continue'
+                    : 'Create free account'
+                }
               </button>
             </form>
 

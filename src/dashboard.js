@@ -5,64 +5,593 @@ import Alpine from 'alpinejs'
 import logoImage from './assets/logoyourproduct.png'
 
 import {
-    siteConfig,
+  siteConfig,
 } from './config/site-config.js'
 
 import {
-    products,
-    productCategories,
+  products,
+  productCategories,
 } from './config/products-config.js'
 
 import {
-    renderProductCard,
+  packages,
+} from './config/packages-config.js'
+
+import {
+  renderProductCard,
 } from './components/product-card.js'
 
 import {
-    renderCartDrawer,
+  renderCartDrawer,
 } from './components/cart-drawer.js'
 
 import {
-    renderProductDrawer,
+  renderProductDrawer,
 } from './components/product-drawer.js'
 
 import {
-    registerCartStore,
+  registerCartStore,
 } from './stores/cart-store.js'
 
 import {
-    registerProductViewStore,
+  registerProductViewStore,
 } from './stores/product-view-store.js'
 
 import {
-    flyToCart,
+  flyToCart,
 } from './lib/fly-to-cart.js'
 
+const dashboardParams = new URLSearchParams(
+  window.location.search,
+)
+
+const requestedPackageId =
+dashboardParams.get('package')?.trim() || ''
+
+const requestedMembershipStatus =
+dashboardParams.get('membership')?.trim() || ''
+
+const selectedDashboardPackage =
+packages.find(
+  (packageItem) =>
+    packageItem.id === requestedPackageId &&
+  packageItem.isActive,
+) || null
+
+const allowedMembershipStatuses = [
+  'awaiting-payment',
+  'pending-verification',
+]
+
+const hasPendingMembership =
+Boolean(selectedDashboardPackage) &&
+allowedMembershipStatuses.includes(
+  requestedMembershipStatus,
+)
+const dashboardPesoFormatter = new Intl.NumberFormat(
+  'en-PH',
+  {
+    style: 'currency',
+    currency: 'PHP',
+    minimumFractionDigits: 0,
+  },
+)
+
+const pendingMembershipMarkup = hasPendingMembership
+? `
+      <section
+        class="mt-6 overflow-hidden rounded-[1.5rem] border border-amber-500/40 bg-brand-panel shadow-gold-soft"
+        aria-label="Pending membership application"
+      >
+        <div
+          class="flex flex-col gap-5 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6"
+        >
+          <div>
+            <div class="flex flex-wrap items-center gap-3">
+              <p
+                class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
+              >
+                Membership Application
+              </p>
+
+              <span
+                class="inline-flex items-center gap-2 rounded-full border border-amber-500/40 bg-amber-500/10 px-3 py-1 text-[0.62rem] font-semibold uppercase tracking-[0.1em] text-amber-300"
+              >
+                <span
+  class="relative flex size-2"
+  aria-hidden="true"
+>
+  <span
+  class="absolute inline-flex size-full rounded-full bg-amber-400 opacity-60 motion-safe:animate-ping motion-reduce:animate-none"
+  style="animation-duration: 1.8s;"
+></span>
+
+  <span
+    class="relative inline-flex size-2 rounded-full bg-amber-400 [box-shadow:0_0_10px_rgba(251,191,36,0.85)]"
+  ></span>
+</span>
+
+                <span
+  x-text="
+    membershipApplicationStatus === 'pending-verification'
+      ? 'Pending Verification'
+      : 'Awaiting Payment'
+  "
+></span>
+              </span>
+            </div>
+
+            <h2
+              class="mt-3 font-display text-3xl text-brand-cream"
+            >
+              ${selectedDashboardPackage.name}
+            </h2>
+
+            <p
+  class="mt-2 max-w-2xl text-sm leading-6 text-brand-muted"
+  x-text="
+    membershipApplicationStatus === 'pending-verification'
+      ? 'Your payment proof has been submitted and is now waiting for admin review. Your membership remains inactive until approved.'
+      : 'Your free customer account remains active. Continue to payment to submit your transaction details and payment proof for admin verification.'
+  "
+></p>
+            <button
+  x-show="membershipApplicationStatus === 'awaiting-payment'"
+  x-transition
+  type="button"
+  class="premium-cta mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-brand-gold px-6 text-sm font-semibold text-[#17130d] sm:w-auto"
+  @click="openPage('membershipPayment')"
+>
+  Continue to Payment
+</button>
+          </div>
+
+          <div
+            class="shrink-0 rounded-2xl border border-brand-border bg-brand-black px-5 py-4 sm:text-right"
+          >
+            <p
+              class="text-[0.62rem] font-medium uppercase tracking-[0.15em] text-brand-muted"
+            >
+              Selected Package
+            </p>
+
+            <p
+              class="mt-1 font-display text-2xl text-brand-gold"
+            >
+              ${dashboardPesoFormatter.format(
+selectedDashboardPackage.price,
+)}
+            </p>
+          </div>
+        </div>
+      </section>
+    `
+: ''
+
+const membershipPaymentPageMarkup = hasPendingMembership
+? `
+      <section
+        x-show="activePage === 'membershipPayment'"
+        x-transition.opacity
+        aria-labelledby="membership-payment-title"
+      >
+        <div
+          class="rounded-[1.75rem] border border-brand-gold/30 bg-brand-panel p-6 shadow-gold-soft sm:p-8"
+        >
+          <div
+            class="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between"
+          >
+            <div>
+              <p
+                class="text-[0.65rem] font-semibold uppercase tracking-[0.22em] text-brand-gold"
+              >
+                Membership Payment
+              </p>
+
+              <h1
+                id="membership-payment-title"
+                class="mt-2 font-display text-4xl text-brand-cream sm:text-5xl"
+              >
+                Complete your package payment.
+              </h1>
+
+              <p
+                class="mt-3 max-w-2xl text-sm leading-7 text-brand-muted"
+              >
+                Pay using an official e-wallet or bank account, then
+                submit your transaction details and payment proof for
+                admin verification.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              class="inline-flex min-h-11 items-center justify-center rounded-full border border-brand-border px-5 text-sm font-semibold text-brand-cream transition hover:border-brand-gold hover:text-brand-gold"
+              @click="openPage('general')"
+            >
+              Back to Dashboard
+            </button>
+          </div>
+        </div>
+
+        <div
+          class="mt-6 grid gap-6 lg:grid-cols-[0.8fr_1.2fr]"
+        >
+          <aside
+            class="rounded-[1.5rem] border border-brand-border bg-brand-panel p-5 shadow-panel sm:p-6"
+          >
+            <p
+              class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
+            >
+              Payment Summary
+            </p>
+
+            <h2
+              class="mt-2 font-display text-3xl text-brand-cream"
+            >
+              ${selectedDashboardPackage.name}
+            </h2>
+
+            <p class="mt-2 text-sm leading-6 text-brand-muted">
+              ${selectedDashboardPackage.description}
+            </p>
+
+            <div
+              class="mt-5 border-t border-brand-border pt-5"
+            >
+              <p
+                class="text-xs uppercase tracking-[0.13em] text-brand-muted"
+              >
+                Amount Due
+              </p>
+
+              <p
+                class="mt-2 font-display text-4xl text-brand-gold"
+              >
+                ${dashboardPesoFormatter.format(
+selectedDashboardPackage.price,
+)}
+              </p>
+            </div>
+
+            <div
+              class="mt-5 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3"
+            >
+              <p class="text-xs leading-5 text-amber-100">
+                Membership remains inactive until the payment is
+                reviewed and approved by the admin.
+              </p>
+            </div>
+          </aside>
+
+          <section
+            class="rounded-[1.5rem] border border-brand-border bg-brand-panel p-5 shadow-panel sm:p-6"
+          >
+            <p
+              class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
+            >
+              Payment Details
+            </p>
+
+            <h2
+              class="mt-2 font-display text-3xl text-brand-cream"
+            >
+              Select how you want to pay.
+            </h2>
+
+            <form
+  class="mt-6"
+  @submit.prevent="testMembershipPayment"
+  @input="
+    membershipPaymentError = ''
+    membershipPaymentTested = false
+  "
+>
+  <fieldset>
+    <legend
+      class="text-sm font-semibold text-brand-cream"
+    >
+      Payment method
+    </legend>
+
+    <div class="mt-3 grid gap-3 sm:grid-cols-2">
+      <label
+        class="cursor-pointer rounded-2xl border p-4 transition"
+        :class="
+          membershipPaymentForm.paymentMethod === 'e-wallet'
+            ? 'border-brand-gold bg-brand-gold/10'
+            : 'border-brand-border bg-brand-black hover:border-brand-gold/60'
+        "
+      >
+        <input
+          type="radio"
+          name="membership-payment-method"
+          value="e-wallet"
+          x-model="membershipPaymentForm.paymentMethod"
+          class="sr-only"
+          required
+        >
+
+        <span
+          class="block text-sm font-semibold text-brand-cream"
+        >
+          E-wallet
+        </span>
+
+        <span
+          class="mt-1 block text-xs leading-5 text-brand-muted"
+        >
+          Pay using the official company e-wallet account.
+        </span>
+      </label>
+
+      <label
+        class="cursor-pointer rounded-2xl border p-4 transition"
+        :class="
+          membershipPaymentForm.paymentMethod === 'bank-transfer'
+            ? 'border-brand-gold bg-brand-gold/10'
+            : 'border-brand-border bg-brand-black hover:border-brand-gold/60'
+        "
+      >
+        <input
+          type="radio"
+          name="membership-payment-method"
+          value="bank-transfer"
+          x-model="membershipPaymentForm.paymentMethod"
+          class="sr-only"
+          required
+        >
+
+        <span
+          class="block text-sm font-semibold text-brand-cream"
+        >
+          Bank Transfer
+        </span>
+
+        <span
+          class="mt-1 block text-xs leading-5 text-brand-muted"
+        >
+          Transfer to an official company bank account.
+        </span>
+      </label>
+    </div>
+  </fieldset>
+
+  <div
+    x-show="membershipPaymentForm.paymentMethod === 'e-wallet'"
+    x-transition
+    class="mt-4 rounded-2xl border border-brand-gold/30 bg-brand-black p-4"
+  >
+    <p
+      class="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-brand-gold"
+    >
+      Official E-wallet Account
+    </p>
+
+    <p class="mt-2 text-sm leading-6 text-brand-muted">
+      Official e-wallet name and account number will be displayed here
+      after client confirmation.
+    </p>
+  </div>
+
+  <div
+    x-show="membershipPaymentForm.paymentMethod === 'bank-transfer'"
+    x-transition
+    class="mt-4 rounded-2xl border border-brand-gold/30 bg-brand-black p-4"
+  >
+    <p
+      class="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-brand-gold"
+    >
+      Official Bank Account
+    </p>
+
+    <p class="mt-2 text-sm leading-6 text-brand-muted">
+      Official bank name, account name, and account number will be
+      displayed here after client confirmation.
+    </p>
+  </div>
+
+  <div class="mt-5 grid gap-5 sm:grid-cols-2">
+    <div>
+      <label
+        for="membership-sender-name"
+        class="text-sm font-semibold text-brand-cream"
+      >
+        Sender or account name
+      </label>
+
+      <input
+        id="membership-sender-name"
+        type="text"
+        x-model.trim="membershipPaymentForm.senderName"
+        autocomplete="name"
+        placeholder="Name used for payment"
+        class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
+        required
+      >
+    </div>
+
+    <div>
+      <label
+        for="membership-reference-number"
+        class="text-sm font-semibold text-brand-cream"
+      >
+        Reference number
+      </label>
+
+      <input
+        id="membership-reference-number"
+        type="text"
+        x-model.trim="membershipPaymentForm.referenceNumber"
+        inputmode="text"
+        autocomplete="off"
+        placeholder="Transaction reference"
+        class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
+        required
+      >
+    </div>
+  </div>
+
+  <div class="mt-5">
+    <label
+      for="membership-payment-proof"
+      class="text-sm font-semibold text-brand-cream"
+    >
+      Payment screenshot
+    </label>
+
+    <label
+      for="membership-payment-proof"
+      class="mt-2 flex min-h-32 cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-brand-border bg-brand-black px-5 py-6 text-center transition hover:border-brand-gold"
+    >
+      <span
+        class="text-sm font-semibold text-brand-gold"
+      >
+        Choose payment screenshot
+      </span>
+
+      <span
+        class="mt-2 text-xs leading-5 text-brand-muted"
+      >
+        JPG, PNG, or WebP only. Maximum file size is 5 MB.
+      </span>
+
+      <div
+  x-show="membershipPaymentForm.proofPreviewUrl"
+  x-transition
+  class="mt-4 w-full overflow-hidden rounded-xl border border-brand-border bg-brand-panel p-2"
+>
+  <img
+    :src="membershipPaymentForm.proofPreviewUrl"
+    alt="Selected payment screenshot preview"
+    class="mx-auto max-h-56 w-full rounded-lg object-contain"
+  >
+</div>
+
+      <span
+        x-show="membershipPaymentForm.proofFileName"
+        x-text="membershipPaymentForm.proofFileName"
+        class="mt-3 max-w-full truncate text-xs font-semibold text-brand-cream"
+      ></span>
+    </label>
+
+    <input
+      id="membership-payment-proof"
+      type="file"
+      accept="image/jpeg,image/png,image/webp"
+      class="sr-only"
+      @change="handleMembershipProof($event)"
+      required
+    >
+  </div>
+
+  <label
+    class="mt-5 flex cursor-pointer items-start gap-3"
+  >
+    <input
+      type="checkbox"
+      x-model="membershipPaymentForm.acceptedConfirmation"
+      class="mt-1 size-4 shrink-0 accent-brand-gold"
+      required
+    >
+
+    <span class="text-xs leading-5 text-brand-muted">
+      I confirm that the package, amount, payment method,
+      transaction details, and uploaded screenshot are correct.
+    </span>
+  </label>
+
+  <p
+    x-show="membershipPaymentError"
+    x-text="membershipPaymentError"
+    class="mt-5 rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-sm font-medium leading-6 text-red-900"
+    role="alert"
+  ></p>
+
+  <div
+  x-show="membershipPaymentSubmitted"
+  x-transition
+  class="rounded-2xl border border-emerald-400/30 bg-emerald-500/20 px-5 py-4"
+>
+  <div
+    class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+  >
+    <div>
+      <p
+        class="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-emerald-200"
+      >
+        Pending Verification
+      </p>
+
+      <p class="mt-1 font-semibold text-emerald-50">
+        Your payment proof has been submitted.
+      </p>
+
+      <p class="mt-1 text-sm leading-6 text-emerald-50/80">
+        Your membership remains inactive while the admin
+        reviews your payment details.
+      </p>
+
+      <p class="mt-2 text-xs leading-5 text-emerald-100/70">
+        Frontend preview only. No information has been saved
+        or uploaded yet.
+      </p>
+    </div>
+
+    <button
+      type="button"
+      class="inline-flex min-h-11 shrink-0 items-center justify-center rounded-full border border-emerald-200/40 px-5 text-sm font-semibold text-emerald-50 transition hover:bg-emerald-50/10"
+      @click="openPage('general')"
+    >
+      Back to Dashboard
+    </button>
+  </div>
+</div>
+
+  <button
+    x-show="!membershipPaymentTested"
+    x-transition
+    type="submit"
+    class="premium-cta mt-6 inline-flex min-h-12 w-full items-center justify-center rounded-full bg-brand-gold px-7 text-sm font-semibold text-[#17130d]"
+  >
+    Submit Payment for Verification
+  </button>
+</form>
+          </section>
+        </div>
+      </section>
+    `
+: ''
+
 const previewAccount = {
-    firstName: 'Sample',
-    lastName: 'Customer',
-    emailAddress: 'customer@example.com',
-    mobileNumber: '09171234567',
-    
-    address: {
-        province: 'Cavite',
-        cityMunicipality: 'Bacoor',
-        barangay: 'Sample Barangay',
-        houseStreet: '123 Sample Street',
-        landmark: '',
-    },
-    
-    isMember: false,
-    accountType: 'Free Customer',
-    membershipStatus: 'Not active',
-    directReferrals: 0,
-    pointsBalance: 0,
-    availableIncome: 0,
+  firstName: 'Sample',
+  lastName: 'Customer',
+  emailAddress: 'customer@example.com',
+  mobileNumber: '09171234567',
+  
+  address: {
+    province: 'Cavite',
+    cityMunicipality: 'Bacoor',
+    barangay: 'Sample Barangay',
+    houseStreet: '123 Sample Street',
+    landmark: '',
+  },
+  
+  isMember: false,
+  accountType: 'Free Customer',
+  membershipStatus: hasPendingMembership
+  ? 'Awaiting Payment'
+  : 'Not active',
+  pendingPackageId: selectedDashboardPackage?.id || '',
+  directReferrals: 0,
+  pointsBalance: 0,
+  availableIncome: 0,
 }
 
 const previewRewards = [
-    {
-        label: 'Cellphone',
-        icon: `
+  {
+    label: 'Cellphone',
+    icon: `
             <svg
               class="size-6"
               viewBox="0 0 24 24"
@@ -78,17 +607,17 @@ const previewRewards = [
                 height="19"
                 rx="2"
               />
-
+    
               <path
                 d="M10 5h4M11 18.5h2"
                 stroke-linecap="round"
               />
             </svg>
         `,
-    },
-    {
-        label: 'Laptop',
-        icon: `
+  },
+  {
+    label: 'Laptop',
+    icon: `
             <svg
               class="size-6"
               viewBox="0 0 24 24"
@@ -104,7 +633,7 @@ const previewRewards = [
                 height="11"
                 rx="1.5"
               />
-
+    
               <path
                 d="M2.5 19h19M8.5 19l.8-2h5.4l.8 2"
                 stroke-linecap="round"
@@ -112,10 +641,10 @@ const previewRewards = [
               />
             </svg>
         `,
-    },
-    {
-        label: 'Motorcycle',
-        icon: `
+  },
+  {
+    label: 'Motorcycle',
+    icon: `
             <svg
               class="size-6"
               viewBox="0 0 24 24"
@@ -126,7 +655,7 @@ const previewRewards = [
             >
               <circle cx="6" cy="17" r="3" />
               <circle cx="18" cy="17" r="3" />
-
+    
               <path
                 d="M6 17h5l3-6h3.5M9 10h4l3 7M14 8h3"
                 stroke-linecap="round"
@@ -134,10 +663,10 @@ const previewRewards = [
               />
             </svg>
         `,
-    },
-    {
-        label: 'Car',
-        icon: `
+  },
+  {
+    label: 'Car',
+    icon: `
             <svg
               class="size-6"
               viewBox="0 0 24 24"
@@ -151,23 +680,23 @@ const previewRewards = [
                 stroke-linecap="round"
                 stroke-linejoin="round"
               />
-
+    
               <path
                 d="M5 17v2M19 17v2M6.5 14h1M16.5 14h1"
                 stroke-linecap="round"
               />
             </svg>
         `,
-    },
+  },
 ]
 
 const activeProducts = products.filter(
-    (product) => product.isActive,
+  (product) => product.isActive,
 )
 
 const dashboardCategoryButtons = productCategories
-    .map(
-        (category) => `
+.map(
+  (category) => `
           <button
             type="button"
             class="rounded-full border px-4 py-2 text-xs font-semibold transition sm:px-5 sm:py-2.5 sm:text-sm"
@@ -184,24 +713,24 @@ const dashboardCategoryButtons = productCategories
             ${category.label}
           </button>
         `,
-    )
-    .join('')
+)
+.join('')
 
 const dashboardProductCards = activeProducts
-    .map((product) => {
-        const searchText = [
-            product.name,
-            product.sku,
-            product.slug,
-            product.collectionLabel,
-            product.category,
-        ]
-            .join(' ')
-            .toLowerCase()
-            .replaceAll('\\', '\\\\')
-            .replaceAll("'", "\\'")
-
-        return `
+.map((product) => {
+  const searchText = [
+    product.name,
+    product.sku,
+    product.slug,
+    product.collectionLabel,
+    product.category,
+  ]
+  .join(' ')
+  .toLowerCase()
+  .replaceAll('\\', '\\\\')
+  .replaceAll("'", "\\'")
+  
+  return `
           <div
             x-show="
               (
@@ -220,11 +749,11 @@ const dashboardProductCards = activeProducts
             ${renderProductCard(product)}
           </div>
         `
-    })
-    .join('')
+})
+.join('')
 
 function renderSidebar() {
-    return `
+  return `
     <div class="flex h-full flex-col">
       <div
         class="flex min-h-20 items-center justify-between gap-3 border-b border-brand-border px-5"
@@ -558,13 +1087,13 @@ function renderSidebar() {
       cy="8"
       r="4"
     />
-
+  
     <path
       d="M4.5 21a7.5 7.5 0 0 1 15 0"
       stroke-linecap="round"
     />
   </svg>
-
+  
   <span>Account</span>
 </button>
       </nav>
@@ -603,135 +1132,267 @@ registerCartStore(Alpine, products)
 registerProductViewStore(Alpine, products)
 
 Alpine.magic('addToCartWithAnimation', () => {
-    return (productId, sourceButton) => {
-        const product = products.find(
-            (item) => item.id === productId,
-        )
-
-        if (!product) {
-            return
-        }
-
-        const cart = Alpine.store('cart')
-        const previousQuantity = cart.quantityFor(productId)
-
-        cart.add(productId)
-
-        if (cart.quantityFor(productId) > previousQuantity) {
-            flyToCart(sourceButton, product.image)
-        }
+  return (productId, sourceButton) => {
+    const product = products.find(
+      (item) => item.id === productId,
+    )
+    
+    if (!product) {
+      return
     }
+    
+    const cart = Alpine.store('cart')
+    const previousQuantity = cart.quantityFor(productId)
+    
+    cart.add(productId)
+    
+    if (cart.quantityFor(productId) > previousQuantity) {
+      flyToCart(sourceButton, product.image)
+    }
+  }
 })
 
 Alpine.data('customerPortal', () => ({
-    activePage: 'general',
-    isMember: previewAccount.isMember,
-    activeCategory: 'all',
-    productSearch: '',
+  activePage: 'general',
+  isMember: previewAccount.isMember,
+  hasPendingMembership,
+  selectedPackage: selectedDashboardPackage,
+  activeCategory: 'all',
+  productSearch: '',
+  membershipPaymentForm: {
+    paymentMethod: '',
+    senderName: '',
+    referenceNumber: '',
+    proofFileName: '',
+    proofPreviewUrl: '',
+    acceptedConfirmation: false,
+  },
+  
+  membershipPaymentError: '',
+  membershipPaymentTested: false,
+  membershipPaymentSubmitted: false,
+  membershipApplicationStatus: hasPendingMembership
+  ? requestedMembershipStatus
+  : 'not-active',
+  
+  mobileMenuOpen: false,
+  ordersOpen: true,
+  walletOpen: true,
+  
+  profileForm: {
+    firstName: previewAccount.firstName,
+    lastName: previewAccount.lastName,
+    emailAddress: previewAccount.emailAddress,
+    mobileNumber: previewAccount.mobileNumber,
     
-    mobileMenuOpen: false,
-    ordersOpen: true,
-    walletOpen: true,
-    
-    profileForm: {
-        firstName: previewAccount.firstName,
-        lastName: previewAccount.lastName,
-        emailAddress: previewAccount.emailAddress,
-        mobileNumber: previewAccount.mobileNumber,
-        
-        address: {
-            province: previewAccount.address.province,
-            cityMunicipality:
-            previewAccount.address.cityMunicipality,
-            barangay: previewAccount.address.barangay,
-            houseStreet: previewAccount.address.houseStreet,
-            landmark: previewAccount.address.landmark,
-        },
+    address: {
+      province: previewAccount.address.province,
+      cityMunicipality:
+      previewAccount.address.cityMunicipality,
+      barangay: previewAccount.address.barangay,
+      houseStreet: previewAccount.address.houseStreet,
+      landmark: previewAccount.address.landmark,
     },
+  },
+  
+  profileFormTested: false,
+  previewNotice: '',
+  previewTimer: null,
+  
+  get filteredProductCount() {
+    const normalizedSearch =
+    this.productSearch.trim().toLowerCase()
     
-    profileFormTested: false,
-    previewNotice: '',
-    previewTimer: null,
-
-    get filteredProductCount() {
-        const normalizedSearch =
-        this.productSearch.trim().toLowerCase()
-
-        return activeProducts.filter((product) => {
-            const matchesCategory =
-            this.activeCategory === 'all' ||
-            product.category === this.activeCategory
-
-            const searchableText = [
-                product.name,
-                product.sku,
-                product.slug,
-                product.collectionLabel,
-                product.category,
-            ]
-                .join(' ')
-                .toLowerCase()
-
-            return (
-                matchesCategory &&
-                (
-                    normalizedSearch === '' ||
-                    searchableText.includes(normalizedSearch)
-                )
-            )
-        }).length
-    },
-    
-    init() {
-        this.$watch('mobileMenuOpen', (isOpen) => {
-            document.body.classList.toggle(
-                'mobile-menu-open',
-                isOpen,
-            )
-        })
-    },
-    
-    openMobileMenu() {
-        this.mobileMenuOpen = true
-    },
-    
-    closeMobileMenu() {
-        this.mobileMenuOpen = false
-    },
-    
-    openPage(pageName) {
-        this.activePage = pageName
-        this.profileFormTested = false
-        this.closeMobileMenu()
-        
-        window.scrollTo({
-            top: 0,
-            behavior: 'smooth',
-        })
-    },
-    
-    testProfileForm() {
-        this.profileFormTested = true
-    },
-    
-    showPreviewNotice(pageName) {
-        clearTimeout(this.previewTimer)
-        
-        this.previewNotice =
-        `${pageName} will be added in the next dashboard checkpoint.`
-        
-        this.previewTimer = setTimeout(() => {
-            this.previewNotice = ''
-        }, 3200)
-    },
-    
-    destroy() {
-        clearTimeout(this.previewTimer)
-        
-        document.body.classList.remove(
-            'mobile-menu-open',
+    return activeProducts.filter((product) => {
+      const matchesCategory =
+      this.activeCategory === 'all' ||
+      product.category === this.activeCategory
+      
+      const searchableText = [
+        product.name,
+        product.sku,
+        product.slug,
+        product.collectionLabel,
+        product.category,
+      ]
+      .join(' ')
+      .toLowerCase()
+      
+      return (
+        matchesCategory &&
+        (
+          normalizedSearch === '' ||
+          searchableText.includes(normalizedSearch)
         )
-    },
+      )
+    }).length
+  },
+  
+  init() {
+    this.$watch('mobileMenuOpen', (isOpen) => {
+      document.body.classList.toggle(
+        'mobile-menu-open',
+        isOpen,
+      )
+    })
+  },
+  
+  openMobileMenu() {
+    this.mobileMenuOpen = true
+  },
+  
+  closeMobileMenu() {
+    this.mobileMenuOpen = false
+  },
+  
+  openPage(pageName) {
+    this.activePage = pageName
+    this.profileFormTested = false
+    this.closeMobileMenu()
+    
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    })
+  },
+  
+  testProfileForm() {
+    this.profileFormTested = true
+  },
+  
+  handleMembershipProof(event) {
+    const file = event.target.files?.[0]
+    
+    this.membershipPaymentError = ''
+    this.membershipPaymentTested = false
+    this.membershipPaymentForm.proofFileName = ''
+    
+    if (this.membershipPaymentForm.proofPreviewUrl) {
+      URL.revokeObjectURL(
+        this.membershipPaymentForm.proofPreviewUrl,
+      )
+      
+      this.membershipPaymentForm.proofPreviewUrl = ''
+    }
+    
+    if (!file) {
+      return
+    }
+    
+    const allowedFileTypes = [
+      'image/jpeg',
+      'image/png',
+      'image/webp',
+    ]
+    
+    const maximumFileSize = 5 * 1024 * 1024
+    
+    if (!allowedFileTypes.includes(file.type)) {
+      this.membershipPaymentError =
+      'Upload a JPG, PNG, or WebP image only.'
+      
+      event.target.value = ''
+      return
+    }
+    
+    if (file.size > maximumFileSize) {
+      this.membershipPaymentError =
+      'The payment screenshot must not exceed 5 MB.'
+      
+      event.target.value = ''
+      return
+    }
+    
+    this.membershipPaymentForm.proofFileName = file.name
+    
+    this.membershipPaymentForm.proofPreviewUrl =
+    URL.createObjectURL(file)
+  },
+  
+  testMembershipPayment() {
+    this.membershipPaymentError = ''
+    this.membershipPaymentTested = false
+    
+    if (!this.membershipPaymentForm.paymentMethod) {
+      this.membershipPaymentError =
+      'Select an e-wallet or bank transfer payment method.'
+      return
+    }
+    
+    if (!this.membershipPaymentForm.senderName.trim()) {
+      this.membershipPaymentError =
+      'Enter the sender or account name.'
+      return
+    }
+    
+    if (!this.membershipPaymentForm.referenceNumber.trim()) {
+      this.membershipPaymentError =
+      'Enter the transaction reference number.'
+      return
+    }
+    
+    if (!this.membershipPaymentForm.proofFileName) {
+      this.membershipPaymentError =
+      'Upload your payment screenshot.'
+      return
+    }
+    
+    if (
+      !this.membershipPaymentForm.acceptedConfirmation
+    ) {
+      this.membershipPaymentError =
+      'Confirm that the payment information is correct.'
+      return
+    }
+    
+    this.membershipPaymentTested = true
+    this.membershipPaymentSubmitted = true
+    this.membershipApplicationStatus =
+    'pending-verification'
+    
+    const dashboardUrl = new URL(window.location.href)
+    
+    dashboardUrl.searchParams.set(
+      'membership',
+      'pending-verification',
+    )
+    
+    window.history.replaceState(
+      {},
+      '',
+      dashboardUrl,
+    )
+    
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    })
+  },
+  
+  showPreviewNotice(pageName) {
+    clearTimeout(this.previewTimer)
+    
+    this.previewNotice =
+    `${pageName} will be added in the next dashboard checkpoint.`
+    
+    this.previewTimer = setTimeout(() => {
+      this.previewNotice = ''
+    }, 3200)
+  },
+  
+  destroy() {
+    document.body.classList.remove('overflow-hidden')
+    
+    if (this.previewNoticeTimer) {
+      window.clearTimeout(this.previewNoticeTimer)
+    }
+    
+    if (this.membershipPaymentForm.proofPreviewUrl) {
+      URL.revokeObjectURL(
+        this.membershipPaymentForm.proofPreviewUrl,
+      )
+    }
+  },
 }))
 
 document.title =
@@ -813,13 +1474,15 @@ document.querySelector('#dashboard-app').innerHTML = `
               <p
                 class="truncate text-sm font-semibold text-brand-cream"
                 x-text="
-                  activePage === 'account'
-                    ? 'Account Settings'
-                    : activePage === 'createOrder'
-                      ? 'Create Order'
-                    : activePage === 'orderHistory'
-                      ? 'Order History'
-                      : 'General Dashboard'
+                  activePage === 'membershipPayment'
+  ? 'Membership Payment'
+  : activePage === 'account'
+    ? 'Account Settings'
+    : activePage === 'createOrder'
+      ? 'Create Order'
+      : activePage === 'orderHistory'
+        ? 'Order History'
+        : 'General Dashboard'
                 "
               >
               </p>
@@ -950,6 +1613,8 @@ document.querySelector('#dashboard-app').innerHTML = `
           </div>
         </section>
 
+        ${pendingMembershipMarkup}
+
         <section
           x-show="!isMember"
           x-transition.opacity
@@ -1010,16 +1675,26 @@ document.querySelector('#dashboard-app').innerHTML = `
             </p>
 
             <strong
-              class="mt-3 block font-display text-2xl text-brand-cream"
-            >
-              Not Active
-            </strong>
+  class="mt-3 block font-display text-2xl text-brand-cream"
+  x-text="
+    membershipApplicationStatus === 'pending-verification'
+      ? 'Pending Verification'
+      : membershipApplicationStatus === 'awaiting-payment'
+        ? 'Awaiting Payment'
+        : 'Not Active'
+  "
+></strong>
 
-            <p
-              class="mt-3 text-xs leading-5 text-brand-muted"
-            >
-              Upgrade remains optional
-            </p>
+<p
+  class="mt-3 text-xs leading-5 text-brand-muted"
+  x-text="
+    membershipApplicationStatus === 'pending-verification'
+      ? 'Payment proof is waiting for admin review'
+      : membershipApplicationStatus === 'awaiting-payment'
+        ? 'Payment proof has not been submitted'
+        : 'Upgrade remains optional'
+  "
+></p>
           </article>
 
           <article
@@ -1449,6 +2124,8 @@ document.querySelector('#dashboard-app').innerHTML = `
           points, income, or order data is being saved yet.
         </p>
         </div>
+
+        ${membershipPaymentPageMarkup}
 
         <section
           x-show="activePage === 'account'"

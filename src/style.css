@@ -10,6 +10,33 @@
 ======================================== */
 
 @theme {
+  /* Default: Black and Gold */
+  --color-brand-black: #0d0905;
+  --color-brand-charcoal: #171008;
+  --color-brand-panel: #21170d;
+  --color-brand-cream: #f5e6c8;
+  --color-brand-gold: #c79332;
+  --color-brand-gold-light: #e2b75a;
+  --color-brand-bronze: #9a6b31;
+  --color-brand-muted: #b9aa91;
+  --color-brand-border: #4b351e;
+
+  --font-display: "Cormorant Garamond", Georgia, serif;
+  --font-body: "DM Sans", Arial, sans-serif;
+
+  --shadow-gold-soft:
+    0 20px 60px rgb(199 147 50 / 18%);
+
+  --shadow-panel:
+    0 24px 70px rgb(0 0 0 / 32%);
+}
+
+
+/* ========================================
+03. ALTERNATE IVORY THEME
+======================================== */
+
+html[data-theme="ivory"] {
   --color-brand-black: #faf8f3;
   --color-brand-charcoal: #f2ede3;
   --color-brand-panel: #ffffff;
@@ -19,28 +46,32 @@
   --color-brand-bronze: #80673d;
   --color-brand-muted: #746d63;
   --color-brand-border: #ded4c2;
-  
-  --font-display: "Cormorant Garamond", Georgia, serif;
-  --font-body: "DM Sans", Arial, sans-serif;
-  
+
   --shadow-gold-soft:
-  0 20px 60px rgb(183 138 50 / 14%);
-  
+    0 20px 60px rgb(183 138 50 / 14%);
+
   --shadow-panel:
-  0 24px 70px rgb(62 48 24 / 12%);
+    0 24px 70px rgb(62 48 24 / 12%);
+
+  color-scheme: light;
 }
 
 
 /* ========================================
-03. BASE STYLES
+04. BASE STYLES
 ======================================== */
 
 @layer base {
   html {
     scroll-behavior: smooth;
     background: var(--color-brand-black);
+    color-scheme: dark;
   }
-  
+
+  html[data-theme="ivory"] {
+    color-scheme: light;
+  }
+
   body {
     margin: 0;
     min-width: 320px;
@@ -50,27 +81,31 @@
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+
+    transition:
+      background-color 260ms ease,
+      color 260ms ease;
   }
-  
+
   button,
   a {
     -webkit-tap-highlight-color: transparent;
   }
-  
+
   button {
     cursor: pointer;
   }
-  
+
   img {
     display: block;
     max-width: 100%;
   }
-  
+
   ::selection {
     background: var(--color-brand-gold);
     color: #17130d;
   }
-  
+
   :focus-visible {
     outline: 2px solid var(--color-brand-gold);
     outline-offset: 4px;
@@ -79,20 +114,26 @@
 
 
 /* ========================================
-04. COLOR OVERRIDES
+05. COLOR OVERRIDES
 ======================================== */
 
 .bg-brand-gold.text-brand-black {
   color: #17130d;
 }
 
+/* Warm product-image background in Black and Gold mode */
 [data-product-card] .bg-brand-cream {
+  background-color: #ead6ae;
+}
+
+/* Original product-image background in Ivory and Gold mode */
+html[data-theme="ivory"] [data-product-card] .bg-brand-cream {
   background-color: #f8f3e9;
 }
 
 
 /* ========================================
-05. ALPINE CLOAK
+06. ALPINE CLOAK
 ======================================== */
 
 [x-cloak] {
@@ -101,7 +142,7 @@
 
 
 /* ========================================
-06. HERO PRODUCT ANIMATION
+07. HERO PRODUCT ANIMATION
 ======================================== */
 
 @keyframes hero-product-float {
@@ -109,7 +150,7 @@
   100% {
     transform: translateY(0);
   }
-  
+
   50% {
     transform: translateY(-10px);
   }
@@ -121,7 +162,7 @@
     opacity: 0.2;
     transform: translateX(-50%) scaleX(0.9);
   }
-  
+
   50% {
     opacity: 0.1;
     transform: translateX(-50%) scaleX(0.72);
@@ -143,7 +184,7 @@
   .hero-product-shadow {
     animation: none;
   }
-  
+
   .hero-product-shadow {
     transform: translateX(-50%);
   }
@@ -151,17 +192,17 @@
 
 
 /* ========================================
-07. SCROLL REVEAL
+08. SCROLL REVEAL
 ======================================== */
 
 .scroll-reveal {
   opacity: 0;
   transform: translateY(18px);
-  
+
   transition:
-  opacity 700ms cubic-bezier(0.22, 1, 0.36, 1),
-  transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
-  
+    opacity 700ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+
   transition-delay: var(--reveal-delay, 0ms);
   will-change: opacity, transform;
 }
@@ -169,11 +210,11 @@
 .scroll-reveal-item {
   opacity: 0;
   transform: translateY(14px);
-  
+
   transition:
-  opacity 650ms cubic-bezier(0.22, 1, 0.36, 1),
-  transform 650ms cubic-bezier(0.22, 1, 0.36, 1);
-  
+    opacity 650ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 650ms cubic-bezier(0.22, 1, 0.36, 1);
+
   transition-delay: var(--reveal-delay, 80ms);
   will-change: opacity, transform;
 }
@@ -186,7 +227,7 @@
 
 
 /* ========================================
-08. STOCK STATUS DOT
+09. STOCK STATUS DOT
 ======================================== */
 
 @keyframes stock-status-breathe {
@@ -197,15 +238,15 @@
     filter: brightness(0.95);
     box-shadow: 0 0 2px rgb(5 150 105 / 18%);
   }
-  
+
   50% {
     opacity: 1;
     transform: scale(1.08);
     filter: brightness(1.15);
-    
+
     box-shadow:
-    0 0 4px rgb(5 150 105 / 45%),
-    0 0 7px rgb(5 150 105 / 22%);
+      0 0 4px rgb(5 150 105 / 45%),
+      0 0 7px rgb(5 150 105 / 22%);
   }
 }
 
@@ -227,7 +268,7 @@
 
 
 /* ========================================
-09. WEBSITE LOADER
+10. WEBSITE LOADER
 ======================================== */
 
 @keyframes site-loader-breathe {
@@ -236,7 +277,7 @@
     transform: scale(0.99);
     opacity: 0.92;
   }
-  
+
   50% {
     transform: scale(1.015);
     opacity: 1;
@@ -255,8 +296,9 @@
   }
 }
 
+
 /* ========================================
-MOBILE MENU SCROLL LOCK
+11. MOBILE MENU SCROLL LOCK
 ======================================== */
 
 body.mobile-menu-open {
@@ -264,180 +306,187 @@ body.mobile-menu-open {
   overscroll-behavior: none;
 }
 
+
 /* ========================================
-   MOBILE PACKAGES SCROLL JOURNEY
-   ======================================== */
+12. MOBILE PACKAGES SCROLL JOURNEY
+======================================== */
 
-   @media (max-width: 639px) {
-    .packages-scroll-stage {
-      position: relative;
-      height: var(--package-stage-height, 265svh);
-    }
-  
-    .packages-scroll-sticky {
-      position: sticky;
-      top: 5rem;
-      display: flex;
-      height: calc(100svh - 6rem);
-      flex-direction: column;
-      justify-content: center;
-    }
-  
-    .packages-scroll-viewport {
-      width: 100%;
-      overflow: hidden;
-    }
-  
-    .packages-scroll-track {
-      display: flex;
-      align-items: stretch;
-      gap: 0.875rem;
-      will-change: transform;
-    }
-  
-    .package-scroll-card {
-      flex: 0 0 88%;
-      opacity: 0.58;
-      transform: scale(0.965);
-      transform-origin: center;
-      transition:
-        opacity 320ms ease,
-        transform 320ms ease,
-        border-color 320ms ease,
-        box-shadow 320ms ease;
-    }
-  
-    .package-scroll-card.is-active {
-      opacity: 1;
-      transform: scale(1);
-    }
-  
-    .packages-scroll-controls {
-      display: grid;
-      grid-template-columns: 1fr auto 1fr;
-      align-items: center;
-      gap: 0.75rem;
-      margin-top: 1rem;
-    }
-  
-    .packages-scroll-instruction {
-      font-size: 0.6rem;
-      font-weight: 600;
-      color: var(--color-brand-muted);
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
-  
-    .packages-scroll-progress {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.35rem;
-    }
-  
-    .package-scroll-dot {
-      width: 0.35rem;
-      height: 0.35rem;
-      border-radius: 999px;
-      background: var(--color-brand-border);
-      transition:
-        width 250ms ease,
-        background-color 250ms ease;
-    }
-  
-    .package-scroll-dot.is-active {
-      width: 1.1rem;
-      background: var(--color-brand-gold);
-    }
-  
-    .packages-scroll-counter {
-      justify-self: end;
-      font-size: 0.65rem;
-      font-weight: 700;
-      color: var(--color-brand-gold);
-      letter-spacing: 0.1em;
-    }
-  }
-  
-  /* Original tablet and desktop package grid */
-  @media (min-width: 640px) {
-    .packages-scroll-stage {
-      height: auto !important;
-    }
-  
-    .packages-scroll-sticky {
-      position: static;
-      height: auto;
-    }
-  
-    .packages-scroll-viewport {
-      overflow: visible;
-    }
-  
-    .packages-scroll-track {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      align-items: stretch;
-      gap: 1rem;
-      transform: none !important;
-    }
-  
-    .package-scroll-card {
-      opacity: 1;
-      transform: none;
-    }
-  
-    .packages-scroll-controls {
-      display: none;
-    }
-  }
-  
-  @media (min-width: 1280px) {
-    .packages-scroll-track {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-    }
-  }
-  
-  /* Accessible fallback */
-  @media (max-width: 639px) and (prefers-reduced-motion: reduce) {
-    .packages-scroll-stage {
-      height: auto;
-    }
-  
-    .packages-scroll-sticky {
-      position: static;
-      height: auto;
-    }
-  
-    .packages-scroll-viewport {
-      overflow-x: auto;
-      scroll-snap-type: x mandatory;
-      scrollbar-width: none;
-    }
-  
-    .packages-scroll-viewport::-webkit-scrollbar {
-      display: none;
-    }
-  
-    .packages-scroll-track {
-      transform: none !important;
-      transition: none;
-    }
-  
-    .package-scroll-card {
-      scroll-snap-align: start;
-      opacity: 1;
-      transform: none;
-      transition: none;
-    }
+@media (max-width: 639px) {
+  .packages-scroll-stage {
+    position: relative;
+    height: var(--package-stage-height, 265svh);
   }
 
-  /* ========================================
-   HERO TRUST POINTS MARQUEE
-   ======================================== */
+  .packages-scroll-sticky {
+    position: sticky;
+    top: 5rem;
+    display: flex;
+    height: calc(100svh - 6rem);
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .packages-scroll-viewport {
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .packages-scroll-track {
+    display: flex;
+    align-items: stretch;
+    gap: 0.875rem;
+    will-change: transform;
+  }
+
+  .package-scroll-card {
+    flex: 0 0 88%;
+    opacity: 0.58;
+    transform: scale(0.965);
+    transform-origin: center;
+
+    transition:
+      opacity 320ms ease,
+      transform 320ms ease,
+      border-color 320ms ease,
+      box-shadow 320ms ease;
+  }
+
+  .package-scroll-card.is-active {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .packages-scroll-controls {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 1rem;
+  }
+
+  .packages-scroll-instruction {
+    font-size: 0.6rem;
+    font-weight: 600;
+    color: var(--color-brand-muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .packages-scroll-progress {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+  }
+
+  .package-scroll-dot {
+    width: 0.35rem;
+    height: 0.35rem;
+    border-radius: 999px;
+    background: var(--color-brand-border);
+
+    transition:
+      width 250ms ease,
+      background-color 250ms ease;
+  }
+
+  .package-scroll-dot.is-active {
+    width: 1.1rem;
+    background: var(--color-brand-gold);
+  }
+
+  .packages-scroll-counter {
+    justify-self: end;
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: var(--color-brand-gold);
+    letter-spacing: 0.1em;
+  }
+}
+
+
+/* Original tablet and desktop package grid */
+@media (min-width: 640px) {
+  .packages-scroll-stage {
+    height: auto !important;
+  }
+
+  .packages-scroll-sticky {
+    position: static;
+    height: auto;
+  }
+
+  .packages-scroll-viewport {
+    overflow: visible;
+  }
+
+  .packages-scroll-track {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
+    gap: 1rem;
+    transform: none !important;
+  }
+
+  .package-scroll-card {
+    opacity: 1;
+    transform: none;
+  }
+
+  .packages-scroll-controls {
+    display: none;
+  }
+}
+
+@media (min-width: 1280px) {
+  .packages-scroll-track {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+
+/* Accessible package fallback */
+@media (max-width: 639px) and (prefers-reduced-motion: reduce) {
+  .packages-scroll-stage {
+    height: auto;
+  }
+
+  .packages-scroll-sticky {
+    position: static;
+    height: auto;
+  }
+
+  .packages-scroll-viewport {
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+
+  .packages-scroll-viewport::-webkit-scrollbar {
+    display: none;
+  }
+
+  .packages-scroll-track {
+    transform: none !important;
+    transition: none;
+  }
+
+  .package-scroll-card {
+    scroll-snap-align: start;
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+
+/* ========================================
+13. HERO TRUST POINTS MARQUEE
+======================================== */
 
 .hero-trust-marquee {
   width: 100%;
+
   -webkit-mask-image: linear-gradient(
     to right,
     transparent,
@@ -445,6 +494,7 @@ body.mobile-menu-open {
     #000 96%,
     transparent
   );
+
   mask-image: linear-gradient(
     to right,
     transparent,
@@ -496,8 +546,9 @@ body.mobile-menu-open {
   }
 }
 
+
 /* ========================================
-10. PREMIUM CTA MOTION SYSTEM
+14. PREMIUM CTA MOTION SYSTEM
 ======================================== */
 
 .premium-cta {
@@ -654,5 +705,47 @@ body.mobile-menu-open {
 
   .premium-cta::before {
     display: none;
+  }
+}
+
+/* ========================================
+15. THEME CHANGE TRANSITION
+======================================== */
+
+html.theme-transitioning,
+html.theme-transitioning body,
+html.theme-transitioning header,
+html.theme-transitioning main,
+html.theme-transitioning section,
+html.theme-transitioning article,
+html.theme-transitioning aside,
+html.theme-transitioning footer,
+html.theme-transitioning nav,
+html.theme-transitioning div,
+html.theme-transitioning button,
+html.theme-transitioning a,
+html.theme-transitioning input,
+html.theme-transitioning select,
+html.theme-transitioning textarea,
+html.theme-transitioning svg,
+html.theme-transitioning path,
+html.theme-transitioning circle {
+  transition-property:
+    background-color,
+    color,
+    border-color,
+    box-shadow,
+    fill,
+    stroke;
+
+  transition-duration: 600ms;
+  transition-timing-function:
+    cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.theme-transitioning,
+  html.theme-transitioning * {
+    transition-duration: 0.01ms !important;
   }
 }

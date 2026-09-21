@@ -1,49 +1,71 @@
 export const packages = [
-    {
-      id: 'starter',
-      name: 'Your Starter',
-      shortLabel: 'Starter',
-      price: null,
-      description:
-        'A starting point for individuals ready to discover Your Product.',
-      inclusions: [],
-      isFeatured: false,
-      isActive: true,
-    },
-  
-    {
-      id: 'builder',
-      name: 'Your Builder',
-      shortLabel: 'Builder',
-      price: null,
-      description:
-        'A package for individuals ready to build meaningful momentum.',
-      inclusions: [],
-      isFeatured: false,
-      isActive: true,
-    },
-  
-    {
-      id: 'leader',
-      name: 'Your Leader',
-      shortLabel: 'Leader',
-      price: null,
-      description:
-        'A package designed for individuals ready to move forward with purpose.',
-      inclusions: [],
-      isFeatured: true,
-      isActive: true,
-    },
-  
-    {
-      id: 'prestige',
-      name: 'Your Prestige',
-      shortLabel: 'Prestige',
-      price: null,
-      description:
-        'A premium path for individuals pursuing their highest possibilities.',
-      inclusions: [],
-      isFeatured: false,
-      isActive: true,
-    },
-  ]
+  {
+    id: 'starter',
+    name: 'Your Starter',
+    shortLabel: 'Starter',
+    price: 1000,
+    description:
+      'Perfect start for new partners.',
+    inclusions: [
+      '5 Bottles (85ml)',
+      '5 Stickers',
+      'Business Access',
+    ],
+    isFeatured: false,
+    isActive: true,
+  },
+
+  {
+    id: 'builder',
+    name: 'Your Builder',
+    shortLabel: 'Builder',
+    price: 5000,
+    description:
+      'Build today. A stronger tomorrow.',
+    inclusions: [
+      '1 Tester Kit',
+      '27 Bottles (85ml)',
+      '27 Stickers',
+      'Business Programs',
+    ],
+    isFeatured: false,
+    isActive: true,
+  },
+
+  {
+    id: 'leader',
+    name: 'Your Leader',
+    shortLabel: 'Leader',
+    price: 10000,
+    description:
+      'Lead your way to greater success.',
+    inclusions: [
+      '1 Tester Kit',
+      '55 Bottles (85ml)',
+      '55 Stickers',
+      '1 Tarpaulin',
+      'Business Programs',
+    ],
+    isFeatured: false,
+    isActive: true,
+  },
+
+  {
+    id: 'prestige',
+    name: 'Your Prestige',
+    shortLabel: 'Prestige',
+    price: 50000,
+    description:
+      'Maximize today. Multiply tomorrow.',
+    inclusions: [
+      '2 Tester Kits',
+      '250 Bottles (85ml)',
+      '250 Stickers',
+      '1 Tarpaulin',
+      '1 Mini Stall',
+      'Business Programs',
+    ],
+    isFeatured: true,
+    isActive: true,
+  },
+]

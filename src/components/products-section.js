@@ -67,11 +67,26 @@ export function renderProductsSection(
         </div>
 
         <div
-          class="mt-8 flex flex-wrap gap-2 sm:mt-10 sm:gap-3"
-          aria-label="Filter products by collection"
-        >
-          ${categoryButtons}
-        </div>
+  class="mt-8 flex flex-wrap gap-2 sm:mt-10 sm:gap-3"
+  aria-label="Filter products or view packages"
+>
+  ${categoryButtons}
+
+  <button
+    type="button"
+    class="rounded-full border border-brand-gold/60 px-4 py-2 text-xs font-semibold text-brand-gold transition duration-300 hover:border-brand-gold hover:bg-brand-gold hover:text-brand-black sm:px-5 sm:py-2.5 sm:text-sm"
+    @click="
+      document
+        .querySelector('#packages')
+        ?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        })
+    "
+  >
+    Packages
+  </button>
+</div>
 
         <div
           class="mt-8 grid grid-cols-2 gap-3 sm:mt-10 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4"
