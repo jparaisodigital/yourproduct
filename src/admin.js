@@ -5,85 +5,85 @@ import Alpine from 'alpinejs'
 import logoImage from './assets/logoyourproduct.png'
 
 import {
-  siteConfig,
+    siteConfig,
 } from './config/site-config.js'
 
 import {
-  packages,
+    packages,
 } from './config/packages-config.js'
 
 import {
-  membershipApplications,
-  membershipStatusLabels,
-  paymentMethodLabels,
+    membershipApplications,
+    membershipStatusLabels,
+    paymentMethodLabels,
 } from './config/admin-preview-data.js'
 
 const adminMembershipApplications =
-  membershipApplications.map((application) => {
+membershipApplications.map((application) => {
     const selectedPackage =
-      packages.find(
+    packages.find(
         (packageItem) =>
-          packageItem.id === application.package_id,
-      ) || null
-
+            packageItem.id === application.package_id,
+    ) || null
+    
     return {
-      ...application,
-      package: selectedPackage,
+        ...application,
+        package: selectedPackage,
     }
-  })
+})
 
 const adminPesoFormatter = new Intl.NumberFormat(
-  'en-PH',
-  {
-    style: 'currency',
-    currency: 'PHP',
-    minimumFractionDigits: 0,
-  },
+    'en-PH',
+    {
+        style: 'currency',
+        currency: 'PHP',
+        minimumFractionDigits: 0,
+    },
 )
 
 const adminDateFormatter = new Intl.DateTimeFormat(
-  'en-PH',
-  {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  },
+    'en-PH',
+    {
+        dateStyle: 'medium',
+        timeStyle: 'short',
+    },
 )
 
 window.Alpine = Alpine
 
 const adminNavigationItems = [
-  {
-    id: 'overview',
-    label: 'Overview',
-  },
-  {
-    id: 'memberships',
-    label: 'Membership Applications',
-  },
-  {
-    id: 'orders',
-    label: 'Orders',
-  },
-  {
-    id: 'customers',
-    label: 'Customers',
-  },
-  {
-    id: 'products',
-    label: 'Products',
-  },
+    {
+        id: 'overview',
+        label: 'Overview',
+    },
+    {
+        id: 'memberships',
+        label: 'Membership Applications',
+    },
+    {
+        id: 'orders',
+        label: 'Orders',
+    },
+    {
+        id: 'customers',
+        label: 'Customers',
+    },
+    {
+        id: 'products',
+        label: 'Products',
+    },
 ]
 
 const adminPageTitles = {
-  overview: 'Overview',
-  memberships: 'Membership Applications',
-  orders: 'Orders',
-  customers: 'Customers',
-  products: 'Products',
+    overview: 'Overview',
+    memberships: 'Membership Applications',
+    orders: 'Orders',
+    customers: 'Customers',
+    products: 'Products',
 }
 
 const navigationMarkup = adminNavigationItems
-  .map(
+.map(
     (item) => `
       <button
         type="button"
@@ -104,11 +104,11 @@ const navigationMarkup = adminNavigationItems
         ></span>
       </button>
     `,
-  )
-  .join('')
+)
+.join('')
 
 function renderAdminSidebar() {
-  return `
+    return `
     <div class="flex h-full flex-col">
       <div
         class="flex min-h-24 items-center border-b border-brand-border px-5"
@@ -307,8 +307,20 @@ function renderMembershipApplicationsPage() {
                 </option>
   
                 <option value="awaiting-payment">
-                  Awaiting Payment
-                </option>
+  Awaiting Payment
+</option>
+
+<option value="approved">
+  Approved
+</option>
+
+<option value="rejected">
+  Rejected
+</option>
+
+<option value="cancelled">
+  Cancelled
+</option>
               </select>
             </label>
           </div>
@@ -363,23 +375,17 @@ function renderMembershipApplicationsPage() {
                   >
                     <span
                       class="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[0.62rem] font-semibold uppercase tracking-[0.08em]"
-                      :class="
-                        application.status ===
-                        'cancellation-requested'
-                          ? 'border-red-400/30 bg-red-400/10 text-red-300'
-                          : 'border-amber-500/40 bg-amber-500/10 text-amber-300'
-                      "
+                      :class="applicationStatusBadgeClass(application.status)"
                     >
                       <span
-                        class="size-1.5 rounded-full"
-                        :class="
-                          application.status ===
-                          'cancellation-requested'
-                            ? 'bg-red-400'
-                            : 'bg-amber-400'
-                        "
-                        aria-hidden="true"
-                      ></span>
+  class="size-1.5 rounded-full"
+  :class="
+    applicationStatusDotClass(
+      application.status,
+    )
+  "
+  aria-hidden="true"
+></span>
   
                       <span
                         x-text="
@@ -487,9 +493,9 @@ function renderMembershipApplicationsPage() {
         </div>
       </section>
     `
-  }
-  
-  function renderApplicationDetailsDrawer() {
+}
+
+function renderApplicationDetailsDrawer() {
     return `
       <div
         x-show="applicationDetailsOpen"
@@ -590,24 +596,22 @@ function renderMembershipApplicationsPage() {
                   class="mt-5 border-t border-brand-border pt-5"
                 >
                   <span
-                    class="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.08em]"
-                    :class="
-                      selectedApplication.status ===
-                      'cancellation-requested'
-                        ? 'border-red-400/30 bg-red-400/10 text-red-300'
-                        : 'border-amber-500/40 bg-amber-500/10 text-amber-300'
-                    "
-                  >
-                    <span
-                      class="size-1.5 rounded-full"
-                      :class="
-                        selectedApplication.status ===
-                        'cancellation-requested'
-                          ? 'bg-red-400'
-                          : 'bg-amber-400'
-                      "
-                      aria-hidden="true"
-                    ></span>
+  class="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.08em]"
+  :class="
+    applicationStatusBadgeClass(
+      selectedApplication.status,
+    )
+  "
+>
+  <span
+    class="size-1.5 rounded-full"
+    :class="
+      applicationStatusDotClass(
+        selectedApplication.status,
+      )
+    "
+    aria-hidden="true"
+  ></span>
   
                     <span
                       x-text="
@@ -819,163 +823,494 @@ function renderMembershipApplicationsPage() {
                 </p>
               </section>
   
-              <div
-                class="rounded-2xl border border-brand-gold/30 bg-brand-gold/10 px-4 py-3"
-              >
-                <p
-                  class="text-xs leading-5 text-brand-muted"
-                >
-                  Review actions will be enabled in the next
-                  checkpoint. This screen currently displays
-                  preview data only.
-                </p>
-              </div>
+              <section
+  class="rounded-2xl border border-brand-border bg-brand-black p-5"
+>
+  <p
+    class="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-brand-gold"
+  >
+    Admin Review
+  </p>
+
+  <div
+    x-show="
+      selectedApplication.status ===
+      'pending-verification'
+    "
+    class="mt-4 grid gap-3 sm:grid-cols-2"
+  >
+    <button
+      type="button"
+      class="inline-flex min-h-11 items-center justify-center rounded-full border border-red-400/40 px-5 text-sm font-semibold text-red-300 transition hover:border-red-300 hover:bg-red-400/10"
+      @click="openReviewPanel('reject-payment')"
+    >
+      Reject Payment
+    </button>
+
+    <button
+      type="button"
+      class="inline-flex min-h-11 items-center justify-center rounded-full bg-emerald-600 px-5 text-sm font-semibold text-white transition hover:bg-emerald-500"
+      @click="openReviewPanel('approve-membership')"
+    >
+      Approve Membership
+    </button>
+  </div>
+
+  <div
+    x-show="
+      selectedApplication.status ===
+      'cancellation-requested'
+    "
+    class="mt-4 grid gap-3 sm:grid-cols-2"
+  >
+    <button
+      type="button"
+      class="inline-flex min-h-11 items-center justify-center rounded-full border border-brand-border px-5 text-sm font-semibold text-brand-cream transition hover:border-brand-gold hover:text-brand-gold"
+      @click="
+        openReviewPanel('decline-cancellation')
+      "
+    >
+      Decline Cancellation
+    </button>
+
+    <button
+      type="button"
+      class="inline-flex min-h-11 items-center justify-center rounded-full bg-red-700 px-5 text-sm font-semibold text-white transition hover:bg-red-600"
+      @click="
+        openReviewPanel('approve-cancellation')
+      "
+    >
+      Approve Cancellation
+    </button>
+  </div>
+
+  <div
+    x-show="
+      selectedApplication.status === 'approved' ||
+      selectedApplication.status === 'rejected' ||
+      selectedApplication.status === 'cancelled'
+    "
+    class="mt-4 rounded-xl border border-brand-border bg-brand-panel p-4"
+  >
+    <p
+      class="text-sm font-semibold text-brand-cream"
+      x-text="
+        applicationStatusLabels[
+          selectedApplication.status
+        ] || selectedApplication.status
+      "
+    ></p>
+
+    <p
+      class="mt-2 text-xs leading-5 text-brand-muted"
+    >
+      This application has already been reviewed in the
+      current frontend preview session.
+    </p>
+
+    <div
+      x-show="selectedApplication.admin_note"
+      class="mt-4 border-t border-brand-border pt-4"
+    >
+      <p
+        class="text-[0.62rem] uppercase tracking-[0.12em] text-brand-muted"
+      >
+        Admin Note
+      </p>
+
+      <p
+        class="mt-2 text-sm leading-6 text-brand-cream"
+        x-text="selectedApplication.admin_note"
+      ></p>
+
+      <p
+        class="mt-3 text-xs text-brand-muted"
+        x-text="
+          selectedApplication.reviewed_at
+            ? formatDate(
+                selectedApplication.reviewed_at,
+              )
+            : ''
+        "
+      ></p>
+    </div>
+  </div>
+
+  <form
+    x-show="reviewPanelOpen"
+    x-transition
+    class="mt-5 rounded-2xl border border-brand-gold/30 bg-brand-panel p-4"
+    @submit.prevent="confirmReviewAction()"
+  >
+    <h3
+      class="font-display text-2xl text-brand-cream"
+      x-text="reviewActionTitle"
+    ></h3>
+
+    <p
+      class="mt-2 text-xs leading-5 text-brand-muted"
+      x-text="reviewActionDescription"
+    ></p>
+
+    <label
+      for="admin-review-note"
+      class="mt-4 block text-[0.62rem] font-semibold uppercase tracking-[0.14em] text-brand-muted"
+    >
+      Admin Note
+    </label>
+
+    <textarea
+      id="admin-review-note"
+      x-model="reviewNote"
+      rows="4"
+      maxlength="500"
+      placeholder="Enter the reason or review note"
+      class="mt-2 w-full resize-none rounded-xl border border-brand-border bg-brand-black px-4 py-3 text-sm leading-6 text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
+    ></textarea>
+
+    <p
+      x-show="reviewError"
+      x-text="reviewError"
+      class="mt-2 text-xs leading-5 text-red-300"
+      role="alert"
+    ></p>
+
+    <div class="mt-4 grid gap-3 sm:grid-cols-2">
+      <button
+        type="button"
+        class="inline-flex min-h-11 items-center justify-center rounded-full border border-brand-border px-4 text-sm font-semibold text-brand-cream transition hover:border-brand-gold hover:text-brand-gold"
+        @click="closeReviewPanel()"
+      >
+        Go Back
+      </button>
+
+      <button
+        type="submit"
+        class="inline-flex min-h-11 items-center justify-center rounded-full px-4 text-sm font-semibold text-white transition"
+        :class="
+          reviewAction === 'approve-membership'
+            ? 'bg-emerald-600 hover:bg-emerald-500'
+            : reviewAction ===
+                'decline-cancellation'
+              ? 'bg-brand-gold text-[#17130d] hover:bg-brand-gold-light'
+              : 'bg-red-700 hover:bg-red-600'
+        "
+      >
+        Confirm Action
+      </button>
+    </div>
+  </form>
+</section>
             </div>
           </div>
         </template>
       </aside>
     `
-  }
+}
 
 Alpine.data('adminDashboard', () => ({
-  applications: adminMembershipApplications,
+    applications: adminMembershipApplications,
+    
+    applicationStatusLabels: membershipStatusLabels,
+    
+    paymentMethodLabels,
+    
+    selectedApplicationId: null,
+    
+    applicationDetailsOpen: false,
+    
+    applicationSearch: '',
+    
+    applicationStatusFilter: 'all',
+    
+    reviewPanelOpen: false,
+    
+    reviewAction: '',
+    
+    reviewNote: '',
+    
+    reviewError: '',
+    
+    activePage: 'overview',
+    
+    mobileMenuOpen: false,
+    
+    get filteredApplications() {
+        const normalizedSearch =
+        this.applicationSearch.trim().toLowerCase()
+        
+        return this.applications.filter((application) => {
+            const matchesStatus =
+            this.applicationStatusFilter === 'all' ||
+            application.status === this.applicationStatusFilter
+            
+            const searchableContent = [
+                application.customer_name,
+                application.customer_email,
+                application.customer_mobile,
+                application.reference_number,
+                application.package?.name,
+                application.id,
+            ]
+            .filter(Boolean)
+            .join(' ')
+            .toLowerCase()
+            
+            const matchesSearch =
+            !normalizedSearch ||
+            searchableContent.includes(normalizedSearch)
+            
+            return matchesStatus && matchesSearch
+        })
+    },
+    
+    get selectedApplication() {
+        return (
+            this.applications.find(
+                (application) =>
+                    application.id === this.selectedApplicationId,
+            ) || null
+        )
+    },
+    
+    get pendingVerificationCount() {
+        return this.applications.filter(
+            (application) =>
+                application.status === 'pending-verification',
+        ).length
+    },
+    
+    get cancellationRequestCount() {
+        return this.applications.filter(
+            (application) =>
+                application.status === 'cancellation-requested',
+        ).length
+    },
 
-  applicationStatusLabels: membershipStatusLabels,
+    get reviewActionTitle() {
+        const titles = {
+          'approve-membership': 'Approve membership',
+          'reject-payment': 'Reject payment',
+          'approve-cancellation': 'Approve cancellation',
+          'decline-cancellation': 'Decline cancellation',
+        }
+      
+        return titles[this.reviewAction] || 'Review application'
+      },
+      
+      get reviewActionDescription() {
+        const descriptions = {
+          'approve-membership':
+            'The customer membership will be marked as approved.',
+      
+          'reject-payment':
+            'The submitted payment will be rejected and the membership will remain inactive.',
+      
+          'approve-cancellation':
+            'The application will be cancelled. Any applicable refund must still be processed manually.',
+      
+          'decline-cancellation':
+            'The cancellation request will be declined and the application will return to payment verification.',
+        }
+      
+        return descriptions[this.reviewAction] || ''
+      },
+      
+      openReviewPanel(actionName) {
+        if (!this.selectedApplication) {
+          return
+        }
+      
+        const allowedActions = {
+          'pending-verification': [
+            'approve-membership',
+            'reject-payment',
+          ],
+      
+          'cancellation-requested': [
+            'approve-cancellation',
+            'decline-cancellation',
+          ],
+        }
+      
+        const statusActions =
+          allowedActions[this.selectedApplication.status] || []
+      
+        if (!statusActions.includes(actionName)) {
+          return
+        }
+      
+        this.reviewAction = actionName
+        this.reviewNote = ''
+        this.reviewError = ''
+        this.reviewPanelOpen = true
+      },
+      
+      closeReviewPanel() {
+        this.reviewPanelOpen = false
+        this.reviewAction = ''
+        this.reviewNote = ''
+        this.reviewError = ''
+      },
+      
+      confirmReviewAction() {
+        const normalizedNote = this.reviewNote.trim()
+      
+        if (!this.selectedApplication) {
+          this.reviewError = 'Application details are unavailable.'
+          return
+        }
+      
+        if (normalizedNote.length < 3) {
+          this.reviewError =
+            'Enter a short admin note before confirming.'
+          return
+        }
+      
+        const nextStatuses = {
+          'approve-membership': 'approved',
+          'reject-payment': 'rejected',
+          'approve-cancellation': 'cancelled',
+          'decline-cancellation': 'pending-verification',
+        }
+      
+        const nextStatus = nextStatuses[this.reviewAction]
+      
+        if (!nextStatus) {
+          this.reviewError = 'Select a valid review action.'
+          return
+        }
+      
+        const applicationIndex = this.applications.findIndex(
+          (application) =>
+            application.id === this.selectedApplicationId,
+        )
+      
+        if (applicationIndex === -1) {
+          this.reviewError = 'Application could not be found.'
+          return
+        }
+      
+        this.applications[applicationIndex] = {
+          ...this.applications[applicationIndex],
+          status: nextStatus,
+          admin_note: normalizedNote,
+          reviewed_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        }
+      
+        this.closeReviewPanel()
+      },
 
-  paymentMethodLabels,
-
-  selectedApplicationId: null,
-
-  applicationDetailsOpen: false,
-
-  applicationSearch: '',
-
-  applicationStatusFilter: 'all',
-
-  activePage: 'overview',
-
-  mobileMenuOpen: false,
-
-  get filteredApplications() {
-    const normalizedSearch =
-      this.applicationSearch.trim().toLowerCase()
-
-    return this.applications.filter((application) => {
-      const matchesStatus =
-        this.applicationStatusFilter === 'all' ||
-        application.status === this.applicationStatusFilter
-
-      const searchableContent = [
-        application.customer_name,
-        application.customer_email,
-        application.customer_mobile,
-        application.reference_number,
-        application.package?.name,
-        application.id,
-      ]
-        .filter(Boolean)
-        .join(' ')
-        .toLowerCase()
-
-      const matchesSearch =
-        !normalizedSearch ||
-        searchableContent.includes(normalizedSearch)
-
-      return matchesStatus && matchesSearch
-    })
-  },
-
-  get selectedApplication() {
-    return (
-      this.applications.find(
-        (application) =>
-          application.id === this.selectedApplicationId,
-      ) || null
-    )
-  },
-
-  get pendingVerificationCount() {
-    return this.applications.filter(
-      (application) =>
-        application.status === 'pending-verification',
-    ).length
-  },
-
-  get cancellationRequestCount() {
-    return this.applications.filter(
-      (application) =>
-        application.status === 'cancellation-requested',
-    ).length
-  },
-
-  formatMoney(amount) {
-    return adminPesoFormatter.format(amount || 0)
-  },
-
-  formatDate(dateValue) {
-    if (!dateValue) {
-      return 'Not available'
-    }
-
-    return adminDateFormatter.format(new Date(dateValue))
-  },
-
-  openApplicationDetails(applicationId) {
-    this.selectedApplicationId = applicationId
-    this.applicationDetailsOpen = true
-    document.body.classList.add('overflow-hidden')
-  },
-
-  closeApplicationDetails() {
-    this.applicationDetailsOpen = false
-  
-    if (!this.mobileMenuOpen) {
-      document.body.classList.remove('overflow-hidden')
-    }
-  
-    window.setTimeout(() => {
-      if (!this.applicationDetailsOpen) {
-        this.selectedApplicationId = null
-      }
-    }, 250)
-  },
-  
-  get activePageTitle() {
-    return adminPageTitles[this.activePage] || 'Overview'
-  },
-  
-  openPage(pageName) {
-    if (!adminPageTitles[pageName]) {
-      return
-    }
-  
-    this.closeApplicationDetails()
-    this.activePage = pageName
-    this.closeMobileMenu()
-  
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth',
-    })
-  },
-  
-  openMobileMenu() {
-    this.closeApplicationDetails()
-    this.mobileMenuOpen = true
-    document.body.classList.add('overflow-hidden')
-  },
-  
-  closeMobileMenu() {
-    this.mobileMenuOpen = false
-  
-    if (!this.applicationDetailsOpen) {
-      document.body.classList.remove('overflow-hidden')
-    }
-  },
-
-  destroy() {
-    document.body.classList.remove('overflow-hidden')
-  },
+      applicationStatusBadgeClass(status) {
+        const statusClasses = {
+          'awaiting-payment':
+            'border-amber-500/40 bg-amber-500/10 text-amber-300',
+      
+          'pending-verification':
+            'border-amber-500/40 bg-amber-500/10 text-amber-300',
+      
+          'cancellation-requested':
+            'border-red-400/30 bg-red-400/10 text-red-300',
+      
+          approved:
+            'border-emerald-500/30 bg-emerald-500/10 text-emerald-300',
+      
+          rejected:
+            'border-red-500/30 bg-red-500/10 text-red-300',
+      
+          cancelled:
+            'border-brand-border bg-brand-panel text-brand-muted',
+        }
+      
+        return (
+          statusClasses[status] ||
+          'border-brand-border bg-brand-panel text-brand-muted'
+        )
+      },
+      
+      applicationStatusDotClass(status) {
+        const statusClasses = {
+          'awaiting-payment': 'bg-amber-400',
+          'pending-verification': 'bg-amber-400',
+          'cancellation-requested': 'bg-red-400',
+          approved: 'bg-emerald-400',
+          rejected: 'bg-red-400',
+          cancelled: 'bg-brand-muted',
+        }
+      
+        return statusClasses[status] || 'bg-brand-muted'
+      },
+    
+    formatMoney(amount) {
+        return adminPesoFormatter.format(amount || 0)
+    },
+    
+    formatDate(dateValue) {
+        if (!dateValue) {
+            return 'Not available'
+        }
+        
+        return adminDateFormatter.format(new Date(dateValue))
+    },
+    
+    openApplicationDetails(applicationId) {
+        this.selectedApplicationId = applicationId
+        this.applicationDetailsOpen = true
+        document.body.classList.add('overflow-hidden')
+    },
+    
+    closeApplicationDetails() {
+        this.closeReviewPanel()
+        this.applicationDetailsOpen = false
+      
+        if (!this.mobileMenuOpen) {
+          document.body.classList.remove('overflow-hidden')
+        }
+      
+        window.setTimeout(() => {
+          if (!this.applicationDetailsOpen) {
+            this.selectedApplicationId = null
+          }
+        }, 250)
+      },
+    
+    get activePageTitle() {
+        return adminPageTitles[this.activePage] || 'Overview'
+    },
+    
+    openPage(pageName) {
+        if (!adminPageTitles[pageName]) {
+            return
+        }
+        
+        this.closeApplicationDetails()
+        this.activePage = pageName
+        this.closeMobileMenu()
+        
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth',
+        })
+    },
+    
+    openMobileMenu() {
+        this.closeApplicationDetails()
+        this.mobileMenuOpen = true
+        document.body.classList.add('overflow-hidden')
+    },
+    
+    closeMobileMenu() {
+        this.mobileMenuOpen = false
+        
+        if (!this.applicationDetailsOpen) {
+            document.body.classList.remove('overflow-hidden')
+        }
+    },
+    
+    destroy() {
+        document.body.classList.remove('overflow-hidden')
+    },
 }))
 
 document.title = `Admin Dashboard | ${siteConfig.brand.name}`
@@ -1316,13 +1651,13 @@ document.querySelector('#admin-app').innerHTML = `
         ${renderMembershipApplicationsPage()}
 
 ${adminNavigationItems
-  .filter(
-    (item) =>
-      item.id !== 'overview' &&
-      item.id !== 'memberships',
-  )
-  .map(
-    (item) => `
+    .filter(
+        (item) =>
+            item.id !== 'overview' &&
+        item.id !== 'memberships',
+    )
+    .map(
+        (item) => `
       <section
         x-show="activePage === '${item.id}'"
         x-transition.opacity
@@ -1336,14 +1671,14 @@ ${adminNavigationItems
           >
             Admin Management
           </p>
-
+        
           <h1
             id="${item.id}-page-title"
             class="mt-2 font-display text-4xl text-brand-cream sm:text-5xl"
           >
             ${item.label}
           </h1>
-
+        
           <p
             class="mt-3 max-w-2xl text-sm leading-7 text-brand-muted"
           >
@@ -1353,13 +1688,13 @@ ${adminNavigationItems
         </div>
       </section>
     `,
-  )
-  .join('')}
+    )
+    .join('')}
             </main>
     </div>
-
+    
     ${renderApplicationDetailsDrawer()}
   </div>
 `
-
-Alpine.start()
+    
+    Alpine.start()
