@@ -11,6 +11,11 @@ export const customerOrders = [
 
     status: 'pending-verification',
 
+    inventory_deducted: false,
+    inventory_deducted_at: null,
+    inventory_restored: false,
+    inventory_restored_at: null,
+
     items: [
       {
         id: 'order-item-001',
@@ -20,13 +25,11 @@ export const customerOrders = [
         product_image_url: null,
 
         pricing_type: 'regular',
-
         quantity: 2,
         unit_price: 299,
 
         // Cost snapshot when the order was created.
         unit_cost: 90,
-
         line_total: 598,
       },
     ],
@@ -38,7 +41,6 @@ export const customerOrders = [
 
     fulfillment_type: 'dropship',
     delivery_region: 'NCR',
-
     recipient_name: 'Juan Dela Cruz',
 
     delivery_address:
@@ -51,8 +53,8 @@ export const customerOrders = [
     payment_provider: 'GCash',
     sender_name: 'Juan Dela Cruz',
     reference_number: 'GCASH-38472910',
-
     payment_proof_url: null,
+
     payment_proof_file_name:
       'order-001-payment.jpg',
 
@@ -60,8 +62,11 @@ export const customerOrders = [
     reviewed_at: null,
     approved_at: null,
 
-    submitted_at: '2026-09-21T05:30:00.000Z',
-    updated_at: '2026-09-21T05:30:00.000Z',
+    submitted_at:
+      '2026-09-21T05:30:00.000Z',
+
+    updated_at:
+      '2026-09-21T05:30:00.000Z',
   },
 
   {
@@ -76,6 +81,11 @@ export const customerOrders = [
 
     status: 'pending-verification',
 
+    inventory_deducted: false,
+    inventory_deducted_at: null,
+    inventory_restored: false,
+    inventory_restored_at: null,
+
     items: [
       {
         id: 'order-item-002',
@@ -85,7 +95,6 @@ export const customerOrders = [
         product_image_url: null,
 
         pricing_type: 'member',
-
         quantity: 1,
         unit_price: 149,
         unit_cost: 90,
@@ -100,7 +109,6 @@ export const customerOrders = [
         product_image_url: null,
 
         pricing_type: 'member',
-
         quantity: 1,
         unit_price: 149,
         unit_cost: 90,
@@ -115,7 +123,6 @@ export const customerOrders = [
 
     fulfillment_type: 'dropship',
     delivery_region: 'LUZON',
-
     recipient_name: 'Maria Santos',
 
     delivery_address:
@@ -127,8 +134,8 @@ export const customerOrders = [
     payment_provider: 'BDO',
     sender_name: 'Maria Santos',
     reference_number: 'BDO-72910483',
-
     payment_proof_url: null,
+
     payment_proof_file_name:
       'order-002-payment.png',
 
@@ -136,8 +143,11 @@ export const customerOrders = [
     reviewed_at: null,
     approved_at: null,
 
-    submitted_at: '2026-09-21T06:15:00.000Z',
-    updated_at: '2026-09-21T06:15:00.000Z',
+    submitted_at:
+      '2026-09-21T06:15:00.000Z',
+
+    updated_at:
+      '2026-09-21T06:15:00.000Z',
   },
 
   {
@@ -152,6 +162,16 @@ export const customerOrders = [
 
     status: 'processing',
 
+    // This preview order was already approved.
+    // Its three units are already reflected in stock.
+    inventory_deducted: true,
+
+    inventory_deducted_at:
+      '2026-09-21T07:10:00.000Z',
+
+    inventory_restored: false,
+    inventory_restored_at: null,
+
     items: [
       {
         id: 'order-item-004',
@@ -161,7 +181,6 @@ export const customerOrders = [
         product_image_url: null,
 
         pricing_type: 'regular',
-
         quantity: 3,
         unit_price: 299,
         unit_cost: 90,
@@ -176,7 +195,6 @@ export const customerOrders = [
 
     fulfillment_type: 'dropship',
     delivery_region: 'VISAYAS',
-
     recipient_name: 'Carlo Reyes',
 
     delivery_address:
@@ -189,29 +207,38 @@ export const customerOrders = [
     payment_provider: 'Maya',
     sender_name: 'Carlo Reyes',
     reference_number: 'MAYA-91827463',
-
     payment_proof_url: null,
+
     payment_proof_file_name:
       'order-003-payment.webp',
 
     admin_note:
       'Payment verified. Prepare items for shipment.',
 
-    reviewed_at: '2026-09-21T07:10:00.000Z',
-    approved_at: '2026-09-21T07:10:00.000Z',
+    reviewed_at:
+      '2026-09-21T07:10:00.000Z',
 
-    submitted_at: '2026-09-20T09:45:00.000Z',
-    updated_at: '2026-09-21T07:10:00.000Z',
+    approved_at:
+      '2026-09-21T07:10:00.000Z',
+
+    submitted_at:
+      '2026-09-20T09:45:00.000Z',
+
+    updated_at:
+      '2026-09-21T07:10:00.000Z',
   },
 ]
 
 export const orderStatusLabels = {
-  'pending-verification': 'Pending Verification',
+  'pending-verification':
+    'Pending Verification',
+
   processing: 'Processing',
   shipped: 'Shipped',
   delivered: 'Delivered',
   rejected: 'Rejected',
   cancelled: 'Cancelled',
+  refunded: 'Refunded',
 }
 
 export const fulfillmentTypeLabels = {

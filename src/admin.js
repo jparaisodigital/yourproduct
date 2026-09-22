@@ -1370,7 +1370,7 @@ function renderOrderDetailsDrawer() {
     class="mt-5"
   >
     <div
-      x-show="selectedOrder.status === 'pending'"
+      x-show="selectedOrder.status === 'pending-verification'"
       class="grid gap-3 sm:grid-cols-2"
     >
       <button
@@ -1390,14 +1390,26 @@ function renderOrderDetailsDrawer() {
       </button>
     </div>
   
-    <button
-      x-show="selectedOrder.status === 'processing'"
-      type="button"
-      class="inline-flex min-h-11 w-full items-center justify-center rounded-full bg-brand-gold px-5 text-sm font-semibold text-[#17130d] transition hover:brightness-110"
-      @click="openOrderReview('ship')"
-    >
-      Mark as Shipped
-    </button>
+    <div
+  x-show="selectedOrder.status === 'processing'"
+  class="grid gap-3 sm:grid-cols-2"
+>
+  <button
+    type="button"
+    class="inline-flex min-h-11 items-center justify-center rounded-full bg-brand-gold px-5 text-sm font-semibold text-[#17130d] transition hover:brightness-110"
+    @click="openOrderReview('ship')"
+  >
+    Mark as Shipped
+  </button>
+  
+  <button
+    type="button"
+    class="inline-flex min-h-11 items-center justify-center rounded-full border border-red-400/40 px-5 text-sm font-semibold text-red-300 transition hover:bg-red-400/10"
+    @click="openOrderReview('cancel')"
+  >
+    Cancel & Return Stock
+  </button>
+</div>
   
     <button
       x-show="selectedOrder.status === 'shipped'"
@@ -1419,106 +1431,161 @@ function renderOrderDetailsDrawer() {
       <p class="mt-1 text-xs leading-5 text-emerald-100/80">
         This order has been marked as delivered.
       </p>
+  
+      <button
+  type="button"
+  class="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-full border border-violet-400/40 px-5 text-sm font-semibold text-violet-300 transition hover:bg-violet-400/10"
+  @click="openOrderReview('refund')"
+>
+  Refund & Return Stock
+</button>
     </div>
   
     <div
-      x-show="selectedOrder.status === 'rejected'"
-      class="rounded-xl border border-red-400/30 bg-red-400/10 px-4 py-3"
-    >
-      <p class="text-sm font-semibold text-red-200">
-        Order rejected
-      </p>
-  
-      <p class="mt-1 text-xs leading-5 text-red-100/80">
-        No additional order action is available.
-      </p>
-    </div>
-  </div>
-  
+  x-show="selectedOrder.status === 'rejected'"
+  class="rounded-xl border border-red-400/30 bg-red-400/10 px-4 py-3"
+>
+  <p class="text-sm font-semibold text-red-200">
+    Order rejected
+  </p>
+
+  <p class="mt-1 text-xs leading-5 text-red-100/80">
+    No additional order action is available.
+  </p>
+</div>
+
+<div
+  x-show="selectedOrder.status === 'cancelled'"
+  class="rounded-xl border border-brand-border bg-brand-black/40 px-4 py-3"
+>
+  <p class="text-sm font-semibold text-brand-cream">
+    Order cancelled
+  </p>
+
+  <p class="mt-1 text-xs leading-5 text-brand-muted">
+    The deducted inventory has been returned.
+  </p>
+</div>
+
+<div
+  x-show="selectedOrder.status === 'refunded'"
+  class="rounded-xl border border-violet-400/30 bg-violet-400/10 px-4 py-3"
+>
+  <p class="text-sm font-semibold text-violet-200">
+    Order refunded
+  </p>
+
+  <p class="mt-1 text-xs leading-5 text-violet-100/80">
+    The refunded items have been returned to inventory.
+  </p>
+</div>
+</div>
+
   <div
-    x-show="orderReviewPanelOpen"
-    x-transition
-    class="mt-5 rounded-2xl border border-brand-border bg-brand-panel p-4"
+  x-show="orderReviewPanelOpen"
+  x-transition
+  class="mt-5 rounded-2xl border border-brand-border bg-brand-panel p-4"
+>
+  <p
+    class="text-sm font-semibold text-brand-cream"
+    x-text="
+      orderReviewAction === 'approve'
+        ? 'Approve payment and process order'
+        : orderReviewAction === 'reject'
+          ? 'Reject this order'
+          : orderReviewAction === 'ship'
+            ? 'Mark order as shipped'
+            : orderReviewAction === 'deliver'
+              ? 'Mark order as delivered'
+              : orderReviewAction === 'cancel'
+                ? 'Cancel order and return stock'
+                : orderReviewAction === 'refund'
+                  ? 'Refund order and return stock'
+                  : 'Update order'
+    "
+  ></p>
+
+  <p
+    class="mt-2 text-xs leading-5 text-brand-muted"
+    x-text="
+      orderReviewAction === 'approve'
+        ? 'The payment will be accepted and the order will move to processing.'
+        : orderReviewAction === 'reject'
+          ? 'The order will be rejected after confirmation.'
+          : orderReviewAction === 'ship'
+            ? 'Confirm that the package has been handed over for delivery.'
+            : orderReviewAction === 'deliver'
+              ? 'Confirm that the customer has received the order.'
+              : orderReviewAction === 'cancel'
+                ? 'The order will be cancelled and its deducted stock will be returned.'
+                : orderReviewAction === 'refund'
+                  ? 'The order will be marked as refunded and its stock will be returned.'
+                  : 'Confirm this order update.'
+    "
+  ></p>
+
+  <label
+    for="order-review-note"
+    class="mt-4 block text-xs font-semibold uppercase tracking-[0.12em] text-brand-muted"
   >
-    <p
-      class="text-sm font-semibold text-brand-cream"
-      x-text="
-        orderReviewAction === 'approve'
-          ? 'Approve payment and process order'
-          : orderReviewAction === 'reject'
-            ? 'Reject this order'
-            : orderReviewAction === 'ship'
-              ? 'Mark order as shipped'
-              : 'Mark order as delivered'
-      "
-    ></p>
-  
-    <p
-      class="mt-2 text-xs leading-5 text-brand-muted"
-      x-text="
-        orderReviewAction === 'approve'
-          ? 'The payment will be accepted and the order will move to processing.'
-          : orderReviewAction === 'reject'
-            ? 'The order will be rejected after confirmation.'
-            : orderReviewAction === 'ship'
-              ? 'Confirm that the package has been handed over for delivery.'
-              : 'Confirm that the customer has received the order.'
-      "
-    ></p>
-  
-    <label
-      for="order-review-note"
-      class="mt-4 block text-xs font-semibold uppercase tracking-[0.12em] text-brand-muted"
+    Admin note
+  </label>
+
+  <textarea
+    id="order-review-note"
+    x-model.trim="orderReviewNote"
+    rows="3"
+    maxlength="300"
+    placeholder="Add a short note for this status update"
+    class="mt-2 w-full resize-none rounded-xl border border-brand-border bg-brand-black px-4 py-3 text-sm leading-6 text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
+  ></textarea>
+
+  <p
+    x-show="orderReviewError"
+    x-text="orderReviewError"
+    class="mt-2 text-xs leading-5 text-red-300"
+    role="alert"
+  ></p>
+
+  <div class="mt-4 grid gap-3 sm:grid-cols-2">
+    <button
+      type="button"
+      class="inline-flex min-h-11 items-center justify-center rounded-full border border-brand-border px-4 text-sm font-semibold text-brand-cream transition hover:border-brand-gold hover:text-brand-gold"
+      @click="closeOrderReview()"
     >
-      Admin note
-    </label>
-  
-    <textarea
-      id="order-review-note"
-      x-model.trim="orderReviewNote"
-      rows="3"
-      maxlength="300"
-      placeholder="Add a short note for this status update"
-      class="mt-2 w-full resize-none rounded-xl border border-brand-border bg-brand-black px-4 py-3 text-sm leading-6 text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
-    ></textarea>
-  
-    <p
-      x-show="orderReviewError"
-      x-text="orderReviewError"
-      class="mt-2 text-xs leading-5 text-red-300"
-      role="alert"
-    ></p>
-  
-    <div class="mt-4 grid gap-3 sm:grid-cols-2">
-      <button
-        type="button"
-        class="inline-flex min-h-11 items-center justify-center rounded-full border border-brand-border px-4 text-sm font-semibold text-brand-cream transition hover:border-brand-gold hover:text-brand-gold"
-        @click="closeOrderReview()"
-      >
-        Keep Current Status
-      </button>
-  
-      <button
-        type="button"
-        class="inline-flex min-h-11 items-center justify-center rounded-full px-4 text-sm font-semibold transition"
-        :class="
-          orderReviewAction === 'reject'
-            ? 'bg-red-700 text-white hover:bg-red-600'
+      Keep Current Status
+    </button>
+
+    <button
+      type="button"
+      class="inline-flex min-h-11 items-center justify-center rounded-full px-4 text-sm font-semibold transition"
+      :class="
+        orderReviewAction === 'reject' ||
+        orderReviewAction === 'cancel'
+          ? 'bg-red-700 text-white hover:bg-red-600'
+          : orderReviewAction === 'refund'
+            ? 'bg-violet-600 text-white hover:bg-violet-500'
             : 'bg-brand-gold text-[#17130d] hover:brightness-110'
-        "
-        @click="submitOrderReview()"
-        x-text="
-          orderReviewAction === 'approve'
-            ? 'Confirm Approval'
-            : orderReviewAction === 'reject'
-              ? 'Confirm Rejection'
-              : orderReviewAction === 'ship'
-                ? 'Confirm Shipment'
-                : 'Confirm Delivery'
-        "
-      ></button>
-    </div>
+      "
+      @click="submitOrderReview()"
+      x-text="
+        orderReviewAction === 'approve'
+          ? 'Confirm Approval'
+          : orderReviewAction === 'reject'
+            ? 'Confirm Rejection'
+            : orderReviewAction === 'ship'
+              ? 'Confirm Shipment'
+              : orderReviewAction === 'deliver'
+                ? 'Confirm Delivery'
+                : orderReviewAction === 'cancel'
+                  ? 'Confirm Cancellation'
+                  : orderReviewAction === 'refund'
+                    ? 'Confirm Refund'
+                    : 'Confirm Update'
+      "
+    ></button>
   </div>
+</div>
   
   <div
     x-show="selectedOrder.admin_note"
@@ -2524,10 +2591,11 @@ Alpine.data('adminDashboard', () => ({
   inventoryMovementTypeLabel(type) {
     const typeLabels = {
       restock: 'Restock',
-      add: 'Added Adjustment',
-      remove: 'Removed Adjustment',
-      'order-sale': 'Approved Order',
-      'cancellation-return': 'Returned Stock',
+      add: 'Stock Added',
+      remove: 'Stock Removed',
+      'order-sale': 'Order Sale',
+      'cancellation-return': 'Cancellation Return',
+      'refund-return': 'Refund Return',
     }
     
     return typeLabels[type] || type
@@ -2549,6 +2617,9 @@ Alpine.data('adminDashboard', () => ({
       
       'cancellation-return':
       'border-amber-500/30 bg-amber-500/10 text-amber-300',
+      
+      'refund-return':
+      'border-violet-500/30 bg-violet-500/10 text-violet-300',
     }
     
     return (
@@ -2723,9 +2794,204 @@ Alpine.data('adminDashboard', () => ({
       delivered: 'bg-emerald-400',
       rejected: 'bg-red-400',
       cancelled: 'bg-brand-muted',
+      refunded: 'bg-violet-400',
+    }
+  
+    return (
+      statusClasses[status] ||
+      'bg-brand-muted'
+    )
+  },
+  
+  deductInventoryForOrder(order) {
+    if (order.inventory_deducted) {
+      return true
     }
     
-    return statusClasses[status] || 'bg-brand-muted'
+    const quantitiesByProduct = new Map()
+    
+    order.items.forEach((item) => {
+      const currentQuantity =
+      quantitiesByProduct.get(item.product_id) || 0
+      
+      quantitiesByProduct.set(
+        item.product_id,
+        currentQuantity + Number(item.quantity || 0),
+      )
+    })
+    
+    for (
+      const [productId, requiredQuantity]
+      of quantitiesByProduct
+    ) {
+      const product = this.inventoryProducts.find(
+        (inventoryProduct) =>
+          inventoryProduct.id === productId,
+      )
+      
+      if (!product) {
+        this.orderReviewError =
+        `Product ${productId} was not found in inventory.`
+        
+        return false
+      }
+      
+      const availableStock = Number(
+        product.stockQuantity || 0,
+      )
+      
+      if (availableStock < requiredQuantity) {
+        this.orderReviewError =
+        `${product.name} only has ` +
+        `${availableStock} available stock. ` +
+        `${requiredQuantity} unit(s) are required.`
+        
+        return false
+      }
+    }
+    
+    const movementTime = new Date().toISOString()
+    const newMovements = []
+    
+    this.inventoryProducts =
+    this.inventoryProducts.map((product) => {
+      const soldQuantity =
+      quantitiesByProduct.get(product.id) || 0
+      
+      if (soldQuantity <= 0) {
+        return product
+      }
+      
+      const previousStock = Number(
+        product.stockQuantity || 0,
+      )
+      
+      const newStock =
+      previousStock - soldQuantity
+      
+      newMovements.push({
+        id:
+        `inventory-movement-${order.id}-` +
+        `${product.id}-${Date.now()}`,
+        
+        product_id: product.id,
+        product_name: product.name,
+        type: 'order-sale',
+        quantity: -soldQuantity,
+        previous_stock: previousStock,
+        new_stock: newStock,
+        reason:
+        `Approved order ${order.order_number}`,
+        order_id: order.id,
+        order_number: order.order_number,
+        created_at: movementTime,
+      })
+      
+      return {
+        ...product,
+        stockQuantity: newStock,
+      }
+    })
+    
+    this.inventoryMovements.unshift(
+      ...newMovements,
+    )
+    
+    this.inventoryFeedback =
+    `${order.order_number} approved. ` +
+    `Inventory was updated automatically.`
+    
+    window.setTimeout(() => {
+      this.inventoryFeedback = ''
+    }, 4000)
+    
+    return true
+  },
+  
+  restoreInventoryForOrder(order, movementType) {
+    if (
+      !order.inventory_deducted ||
+      order.inventory_restored
+    ) {
+      return true
+    }
+    
+    const quantitiesByProduct = new Map()
+    
+    order.items.forEach((item) => {
+      const currentQuantity =
+      quantitiesByProduct.get(item.product_id) || 0
+      
+      quantitiesByProduct.set(
+        item.product_id,
+        currentQuantity + Number(item.quantity || 0),
+      )
+    })
+    
+    for (const productId of quantitiesByProduct.keys()) {
+      const productExists =
+      this.inventoryProducts.some(
+        (product) => product.id === productId,
+      )
+      
+      if (!productExists) {
+        this.orderReviewError =
+        `Product ${productId} was not found in inventory.`
+        
+        return false
+      }
+    }
+    
+    const movementTime = new Date().toISOString()
+    const newMovements = []
+    
+    this.inventoryProducts =
+    this.inventoryProducts.map((product) => {
+      const returnedQuantity =
+      quantitiesByProduct.get(product.id) || 0
+      
+      if (returnedQuantity <= 0) {
+        return product
+      }
+      
+      const previousStock = Number(
+        product.stockQuantity || 0,
+      )
+      
+      const newStock =
+      previousStock + returnedQuantity
+      
+      newMovements.push({
+        id:
+        `inventory-return-${order.id}-` +
+        `${product.id}-${Date.now()}`,
+        
+        product_id: product.id,
+        product_name: product.name,
+        type: movementType,
+        quantity: returnedQuantity,
+        previous_stock: previousStock,
+        new_stock: newStock,
+        reason:
+        movementType === 'refund-return'
+        ? `Refunded order ${order.order_number}`
+        : `Cancelled order ${order.order_number}`,
+        order_id: order.id,
+        order_number: order.order_number,
+        created_at: movementTime,
+      })
+      
+      return {
+        ...product,
+        stockQuantity: newStock,
+      }
+    })
+    
+    this.inventoryMovements.unshift(
+      ...newMovements,
+    )
+    
+    return true
   },
   
   openOrderReview(action) {
@@ -2753,9 +3019,13 @@ Alpine.data('adminDashboard', () => ({
       return
     }
     
-    if (!this.orderReviewNote.trim()) {
+    const adminNote =
+    this.orderReviewNote.trim()
+    
+    if (!adminNote) {
       this.orderReviewError =
       'Add an admin note before updating this order.'
+      
       return
     }
     
@@ -2764,41 +3034,119 @@ Alpine.data('adminDashboard', () => ({
       reject: 'rejected',
       ship: 'shipped',
       deliver: 'delivered',
+      cancel: 'cancelled',
+      refund: 'refunded',
     }
     
     const allowedActionByStatus = {
-      pending: ['approve', 'reject'],
-      processing: ['ship'],
-      shipped: ['deliver'],
+      'pending-verification': [
+        'approve',
+        'reject',
+      ],
+      processing: [
+        'ship',
+        'cancel',
+      ],
+      shipped: [
+        'deliver',
+      ],
+      delivered: [
+        'refund',
+      ],
     }
     
     const allowedActions =
     allowedActionByStatus[order.status] || []
     
-    if (!allowedActions.includes(this.orderReviewAction)) {
+    if (
+      !allowedActions.includes(
+        this.orderReviewAction,
+      )
+    ) {
       this.orderReviewError =
       'This action is not available for the current order status.'
+      
       return
     }
     
     const nextStatus =
-    nextStatusByAction[this.orderReviewAction]
+    nextStatusByAction[
+      this.orderReviewAction
+    ]
     
-    const orderIndex = this.orders.findIndex(
-      (orderItem) => orderItem.id === order.id,
+    const orderIndex =
+    this.orders.findIndex(
+      (orderItem) =>
+        orderItem.id === order.id,
     )
     
     if (orderIndex === -1 || !nextStatus) {
       this.orderReviewError =
       'Unable to update this order.'
+      
       return
     }
+    
+    if (
+      this.orderReviewAction === 'approve' &&
+      !this.deductInventoryForOrder(order)
+    ) {
+      return
+    }
+    
+    const isInventoryReturnAction =
+    this.orderReviewAction === 'cancel' ||
+    this.orderReviewAction === 'refund'
+    
+    if (isInventoryReturnAction) {
+      const movementType =
+      this.orderReviewAction === 'refund'
+      ? 'refund-return'
+      : 'cancellation-return'
+      
+      const stockWasRestored =
+      this.restoreInventoryForOrder(
+        order,
+        movementType,
+      )
+      
+      if (!stockWasRestored) {
+        return
+      }
+    }
+    
+    const reviewedAt =
+    new Date().toISOString()
     
     this.orders[orderIndex] = {
       ...this.orders[orderIndex],
       status: nextStatus,
-      admin_note: this.orderReviewNote.trim(),
-      reviewed_at: new Date().toISOString(),
+      admin_note: adminNote,
+      reviewed_at: reviewedAt,
+      
+      inventory_deducted:
+      this.orderReviewAction === 'approve'
+      ? true
+      : this.orders[orderIndex]
+      .inventory_deducted,
+      
+      inventory_deducted_at:
+      this.orderReviewAction === 'approve'
+      ? reviewedAt
+      : this.orders[orderIndex]
+      .inventory_deducted_at,
+      
+      inventory_restored:
+      isInventoryReturnAction
+      ? true
+      : this.orders[orderIndex]
+      .inventory_restored,
+      
+      inventory_restored_at:
+      isInventoryReturnAction
+      ? reviewedAt
+      : this.orders[orderIndex]
+      .inventory_restored_at,
     }
     
     this.closeOrderReview()
