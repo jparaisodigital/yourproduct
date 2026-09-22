@@ -35,6 +35,15 @@ import {
 } from './components/customer-support-chat.js'
 
 import {
+  registerMemberReferralCard,
+  renderMemberReferralCard,
+} from './components/member-referral-card.js'
+
+import {
+  renderMemberReferralsPage,
+} from './components/member-referrals-page.js'
+
+import {
   registerCartStore,
 } from './stores/cart-store.js'
 
@@ -55,6 +64,9 @@ dashboardParams.get('package')?.trim() || ''
 
 const requestedMembershipStatus =
 dashboardParams.get('membership')?.trim() || ''
+
+const isApprovedMemberPreview =
+  requestedMembershipStatus === 'active'
 
 const selectedDashboardPackage =
 packages.find(
@@ -867,11 +879,20 @@ selectedDashboardPackage.price,
 : ''
 
 const previewAccount = {
-  firstName: 'Sample',
-  lastName: 'Customer',
-  emailAddress: 'customer@example.com',
+  firstName: isApprovedMemberPreview
+    ? 'Juan'
+    : 'Sample',
+
+  lastName: isApprovedMemberPreview
+    ? 'Dela Cruz'
+    : 'Customer',
+
+  emailAddress: isApprovedMemberPreview
+    ? 'juan@example.com'
+    : 'customer@example.com',
+
   mobileNumber: '09171234567',
-  
+
   address: {
     province: 'Cavite',
     cityMunicipality: 'Bacoor',
@@ -879,14 +900,27 @@ const previewAccount = {
     houseStreet: '123 Sample Street',
     landmark: '',
   },
-  
-  isMember: false,
-  accountType: 'Free Customer',
-  membershipStatus: hasPendingMembership
-  ? 'Awaiting Payment'
-  : 'Not active',
-  pendingPackageId: selectedDashboardPackage?.id || '',
-  directReferrals: 0,
+
+  isMember: isApprovedMemberPreview,
+
+  accountType: isApprovedMemberPreview
+    ? 'Approved Member'
+    : 'Free Customer',
+
+  membershipStatus: isApprovedMemberPreview
+    ? 'Active'
+    : hasPendingMembership
+      ? 'Awaiting Payment'
+      : 'Not active',
+
+  pendingPackageId:
+    selectedDashboardPackage?.id || '',
+
+  referralCode: isApprovedMemberPreview
+    ? 'YP-A8K29'
+    : '',
+
+  directReferrals: 3,
   pointsBalance: 0,
   availableIncome: 0,
 }
@@ -1361,6 +1395,43 @@ function renderSidebar() {
             </button>
           </div>
         </div>
+
+                <button
+          x-show="isMember"
+          x-transition
+          type="button"
+          class="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold transition"
+          :class="
+            activePage === 'referrals'
+              ? 'bg-brand-gold text-[#17130d]'
+              : 'text-brand-cream hover:bg-brand-charcoal'
+          "
+          @click="openPage('referrals')"
+          :aria-current="
+            activePage === 'referrals'
+              ? 'page'
+              : false
+          "
+        >
+          <svg
+            class="size-5"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.7"
+            aria-hidden="true"
+          >
+            <circle cx="9" cy="8" r="3"></circle>
+            <circle cx="17" cy="10" r="2.5"></circle>
+
+            <path
+              d="M3.5 20a5.5 5.5 0 0 1 11 0M14 15.5a4.5 4.5 0 0 1 6.5 4"
+              stroke-linecap="round"
+            ></path>
+          </svg>
+
+          <span>My Referrals</span>
+        </button>
     
         <button
   type="button"
@@ -1420,8 +1491,8 @@ function renderSidebar() {
             </p>
     
             <p class="truncate text-xs text-brand-muted">
-              Free Customer
-            </p>
+  ${previewAccount.accountType}
+</p>
           </div>
         </div>
       </div>
@@ -1434,6 +1505,11 @@ window.Alpine = Alpine
 registerCartStore(Alpine, products)
 registerProductViewStore(Alpine, products)
 registerCustomerSupportChat(Alpine)
+registerMemberReferralCard(Alpine, {
+  referralCode: previewAccount.referralCode,
+  memberName:
+    `${previewAccount.firstName} ${previewAccount.lastName}`,
+})
 
 Alpine.magic('addToCartWithAnimation', () => {
   return (productId, sourceButton) => {
@@ -1866,13 +1942,15 @@ document.querySelector('#dashboard-app').innerHTML = `
       ? 'Application Details'
       : activePage === 'membershipPayment'
         ? 'Membership Payment'
-        : activePage === 'account'
-          ? 'Account Settings'
-          : activePage === 'createOrder'
-            ? 'Create Order'
-            : activePage === 'orderHistory'
-              ? 'Order History'
-              : 'General Dashboard'
+        : activePage === 'referrals'
+          ? 'My Referrals'
+          : activePage === 'account'
+            ? 'Account Settings'
+            : activePage === 'createOrder'
+              ? 'Create Order'
+              : activePage === 'orderHistory'
+                ? 'Order History'
+                : 'General Dashboard'
   "
 ></p>
             </div>
@@ -2218,7 +2296,9 @@ document.querySelector('#dashboard-app').innerHTML = `
               Create Order
             </button>
           </article>
-        </section>
+                </section>
+
+        ${renderMemberReferralCard()}
 
         <div
           class="mt-6 grid gap-6 xl:grid-cols-[1.25fr_0.75fr]"
@@ -2522,7 +2602,9 @@ document.querySelector('#dashboard-app').innerHTML = `
           Dashboard interface preview — no account,
           points, income, or order data is being saved yet.
         </p>
-        </div>
+                </div>
+
+        ${renderMemberReferralsPage()}
 
         ${membershipApplicationPageMarkup}
 
