@@ -5,103 +5,130 @@ import Alpine from 'alpinejs'
 import logoImage from './assets/logoyourproduct.png'
 
 import {
-    siteConfig,
+  siteConfig,
 } from './config/site-config.js'
 
 import {
-    packages,
+  packages,
 } from './config/packages-config.js'
 
 import {
-    membershipApplications,
-    membershipStatusLabels,
-    paymentMethodLabels,
+  products,
+} from './config/products-config.js'
+
+import {
+  renderAdminSalesInventoryPage,
+} from './components/admin-sales-inventory-page.js'
+
+import {
+  renderAdminInventoryAdjustmentDrawer,
+} from './components/admin-inventory-adjustment-drawer.js'
+
+import {
+  renderAdminInventoryMovementHistory,
+} from './components/admin-inventory-movement-history.js'
+
+import {
+  membershipApplications,
+  membershipStatusLabels,
+  paymentMethodLabels,
 } from './config/admin-preview-data.js'
 
 import {
-    customerOrders,
-    orderStatusLabels,
-    fulfillmentTypeLabels,
-    orderPaymentMethodLabels,
+  customerOrders,
+  orderStatusLabels,
+  fulfillmentTypeLabels,
+  orderPaymentMethodLabels,
 } from './config/admin-orders-preview-data.js'
 
 const adminMembershipApplications =
 membershipApplications.map((application) => {
-    const selectedPackage =
-    packages.find(
-        (packageItem) =>
-            packageItem.id === application.package_id,
-    ) || null
-    
-    return {
-        ...application,
-        package: selectedPackage,
-    }
+  const selectedPackage =
+  packages.find(
+    (packageItem) =>
+      packageItem.id === application.package_id,
+  ) || null
+  
+  return {
+    ...application,
+    package: selectedPackage,
+  }
 })
 
 const adminCustomerOrders = customerOrders.map(
-    (order) => ({
-        ...order,
-        
-        items: order.items.map((item) => ({
-            ...item,
-        })),
-    }),
+  (order) => ({
+    ...order,
+    
+    items: order.items.map((item) => ({
+      ...item,
+    })),
+  }),
+)
+
+const adminInventoryProducts = products.map(
+  (product) => ({
+    ...product,
+  }),
 )
 
 const adminPesoFormatter = new Intl.NumberFormat(
-    'en-PH',
-    {
-        style: 'currency',
-        currency: 'PHP',
-        minimumFractionDigits: 0,
-    },
+  'en-PH',
+  {
+    style: 'currency',
+    currency: 'PHP',
+    minimumFractionDigits: 0,
+  },
 )
 
 const adminDateFormatter = new Intl.DateTimeFormat(
-    'en-PH',
-    {
-        dateStyle: 'medium',
-        timeStyle: 'short',
-    },
+  'en-PH',
+  {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  },
 )
 
 window.Alpine = Alpine
 
 const adminNavigationItems = [
-    {
-        id: 'overview',
-        label: 'Overview',
-    },
-    {
-        id: 'memberships',
-        label: 'Membership Applications',
-    },
-    {
-        id: 'orders',
-        label: 'Orders',
-    },
-    {
-        id: 'customers',
-        label: 'Customers',
-    },
-    {
-        id: 'products',
-        label: 'Products',
-    },
+  {
+    id: 'overview',
+    label: 'Overview',
+  },
+  {
+    id: 'memberships',
+    label: 'Membership Applications',
+  },
+  {
+    id: 'orders',
+    label: 'Orders',
+  },
+  {
+    id: 'sales-inventory',
+    label: 'Sales & Inventory',
+  },
+  {
+    id: 'customers',
+    label: 'Customers',
+  },
+  {
+    id: 'products',
+    label: 'Products',
+  },
 ]
 
 const adminPageTitles = {
-    overview: 'Overview',
-    memberships: 'Membership Applications',
-    orders: 'Orders',
-    customers: 'Customers',
-    products: 'Products',
+  overview: 'Overview',
+  memberships: 'Membership Applications',
+  orders: 'Orders',
+'sales-inventory': 'Sales & Inventory',
+  customers: 'Customers',
+  products: 'Products',
 }
 
 const navigationMarkup = adminNavigationItems
 .map(
-    (item) => `
+  (item) => `
       <button
         type="button"
         class="flex min-h-12 w-full items-center justify-between rounded-xl px-4 text-left text-sm font-semibold transition"
@@ -125,7 +152,7 @@ const navigationMarkup = adminNavigationItems
 .join('')
 
 function renderAdminSidebar() {
-    return `
+  return `
     <div class="flex h-full flex-col">
       <div
         class="flex min-h-24 items-center border-b border-brand-border px-5"
@@ -196,7 +223,7 @@ function renderAdminSidebar() {
 }
 
 function renderMembershipApplicationsPage() {
-    return `
+  return `
       <section
         x-show="activePage === 'memberships'"
         x-transition.opacity
@@ -513,7 +540,7 @@ function renderMembershipApplicationsPage() {
 }
 
 function renderOrdersPage() {
-    return `
+  return `
       <section
         x-show="activePage === 'orders'"
         x-transition.opacity
@@ -838,7 +865,7 @@ function renderOrdersPage() {
 }
 
 function renderOrderDetailsDrawer() {
-    return `
+  return `
       <div
         x-show="orderDetailsOpen"
         x-transition.opacity
@@ -1322,21 +1349,21 @@ function renderOrderDetailsDrawer() {
   >
     Admin Review
   </p>
-
+  
   <h3
     id="order-review-actions-title"
     class="mt-2 font-display text-2xl text-brand-cream"
   >
     Update order status
   </h3>
-
+  
   <p
     class="mt-2 text-xs leading-5 text-brand-muted"
   >
     Review the order and payment details before
     choosing the next valid status.
   </p>
-
+  
   <div
     x-show="!orderReviewPanelOpen"
     x-transition.opacity
@@ -1353,7 +1380,7 @@ function renderOrderDetailsDrawer() {
       >
         Approve Payment
       </button>
-
+  
       <button
         type="button"
         class="inline-flex min-h-11 items-center justify-center rounded-full border border-red-400/40 px-5 text-sm font-semibold text-red-300 transition hover:border-red-300 hover:bg-red-400/10 hover:text-red-200"
@@ -1362,7 +1389,7 @@ function renderOrderDetailsDrawer() {
         Reject Order
       </button>
     </div>
-
+  
     <button
       x-show="selectedOrder.status === 'processing'"
       type="button"
@@ -1371,7 +1398,7 @@ function renderOrderDetailsDrawer() {
     >
       Mark as Shipped
     </button>
-
+  
     <button
       x-show="selectedOrder.status === 'shipped'"
       type="button"
@@ -1380,7 +1407,7 @@ function renderOrderDetailsDrawer() {
     >
       Mark as Delivered
     </button>
-
+  
     <div
       x-show="selectedOrder.status === 'delivered'"
       class="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3"
@@ -1388,12 +1415,12 @@ function renderOrderDetailsDrawer() {
       <p class="text-sm font-semibold text-emerald-200">
         Order completed
       </p>
-
+  
       <p class="mt-1 text-xs leading-5 text-emerald-100/80">
         This order has been marked as delivered.
       </p>
     </div>
-
+  
     <div
       x-show="selectedOrder.status === 'rejected'"
       class="rounded-xl border border-red-400/30 bg-red-400/10 px-4 py-3"
@@ -1401,13 +1428,13 @@ function renderOrderDetailsDrawer() {
       <p class="text-sm font-semibold text-red-200">
         Order rejected
       </p>
-
+  
       <p class="mt-1 text-xs leading-5 text-red-100/80">
         No additional order action is available.
       </p>
     </div>
   </div>
-
+  
   <div
     x-show="orderReviewPanelOpen"
     x-transition
@@ -1425,7 +1452,7 @@ function renderOrderDetailsDrawer() {
               : 'Mark order as delivered'
       "
     ></p>
-
+  
     <p
       class="mt-2 text-xs leading-5 text-brand-muted"
       x-text="
@@ -1438,14 +1465,14 @@ function renderOrderDetailsDrawer() {
               : 'Confirm that the customer has received the order.'
       "
     ></p>
-
+  
     <label
       for="order-review-note"
       class="mt-4 block text-xs font-semibold uppercase tracking-[0.12em] text-brand-muted"
     >
       Admin note
     </label>
-
+  
     <textarea
       id="order-review-note"
       x-model.trim="orderReviewNote"
@@ -1454,14 +1481,14 @@ function renderOrderDetailsDrawer() {
       placeholder="Add a short note for this status update"
       class="mt-2 w-full resize-none rounded-xl border border-brand-border bg-brand-black px-4 py-3 text-sm leading-6 text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
     ></textarea>
-
+  
     <p
       x-show="orderReviewError"
       x-text="orderReviewError"
       class="mt-2 text-xs leading-5 text-red-300"
       role="alert"
     ></p>
-
+  
     <div class="mt-4 grid gap-3 sm:grid-cols-2">
       <button
         type="button"
@@ -1470,7 +1497,7 @@ function renderOrderDetailsDrawer() {
       >
         Keep Current Status
       </button>
-
+  
       <button
         type="button"
         class="inline-flex min-h-11 items-center justify-center rounded-full px-4 text-sm font-semibold transition"
@@ -1492,7 +1519,7 @@ function renderOrderDetailsDrawer() {
       ></button>
     </div>
   </div>
-
+  
   <div
     x-show="selectedOrder.admin_note"
     class="mt-5 border-t border-brand-border pt-5"
@@ -1502,12 +1529,12 @@ function renderOrderDetailsDrawer() {
     >
       Latest Admin Note
     </p>
-
+  
     <p
       class="mt-2 text-sm leading-6 text-brand-cream"
       x-text="selectedOrder.admin_note"
     ></p>
-
+  
     <p
       x-show="selectedOrder.reviewed_at"
       class="mt-2 text-xs text-brand-muted"
@@ -1526,7 +1553,7 @@ function renderOrderDetailsDrawer() {
 }
 
 function renderApplicationDetailsDrawer() {
-    return `
+  return `
       <div
         x-show="applicationDetailsOpen"
         x-transition.opacity
@@ -2039,522 +2066,999 @@ function renderApplicationDetailsDrawer() {
 }
 
 Alpine.data('adminDashboard', () => ({
-    applications: adminMembershipApplications,
+  applications: adminMembershipApplications,
+  
+  applicationStatusLabels: membershipStatusLabels,
+  
+  paymentMethodLabels,
+  
+  orders: adminCustomerOrders,
+  
+  inventoryProducts: adminInventoryProducts,
+  
+  inventorySearch: '',
+  
+  inventoryStatusFilter: 'all',
+  
+  selectedInventoryProductId: null,
+  
+  inventoryAdjustmentOpen: false,
+  
+  inventoryAdjustmentType: 'restock',
+  
+  inventoryAdjustmentQuantity: '',
+  
+  inventoryAdjustmentReason: '',
+  
+  inventoryAdjustmentError: '',
+  
+  inventoryFeedback: '',
+  
+  inventoryMovements: [],
+  
+  inventoryMovementFilter: 'all',
+  
+  approvedOrderStatuses: [
+    'processing',
+    'shipped',
+    'delivered',
+  ],
+  
+  orderStatusLabels,
+  
+  fulfillmentTypeLabels,
+  
+  orderPaymentMethodLabels,
+  
+  selectedApplicationId: null,
+  
+  applicationDetailsOpen: false,
+  
+  applicationSearch: '',
+  
+  applicationStatusFilter: 'all',
+  
+  selectedOrderId: null,
+  
+  orderDetailsOpen: false,
+  
+  orderSearch: '',
+  
+  orderStatusFilter: 'all',
+  
+  orderReviewPanelOpen: false,
+  orderReviewAction: '',
+  orderReviewNote: '',
+  orderReviewError: '',
+  
+  reviewPanelOpen: false,
+  
+  reviewAction: '',
+  
+  reviewNote: '',
+  
+  reviewError: '',
+  
+  activePage: 'overview',
+  
+  mobileMenuOpen: false,
+  
+  get filteredApplications() {
+    const normalizedSearch =
+    this.applicationSearch.trim().toLowerCase()
     
-    applicationStatusLabels: membershipStatusLabels,
-    
-    paymentMethodLabels,
-    
-    orders: adminCustomerOrders,
-    
-    orderStatusLabels,
-    
-    fulfillmentTypeLabels,
-    
-    orderPaymentMethodLabels,
-    
-    selectedApplicationId: null,
-    
-    applicationDetailsOpen: false,
-    
-    applicationSearch: '',
-    
-    applicationStatusFilter: 'all',
-    
-    selectedOrderId: null,
-    
-    orderDetailsOpen: false,
-    
-    orderSearch: '',
-    
-    orderStatusFilter: 'all',
-    
-    orderReviewPanelOpen: false,
-    orderReviewAction: '',
-    orderReviewNote: '',
-    orderReviewError: '',
-    
-    reviewPanelOpen: false,
-    
-    reviewAction: '',
-    
-    reviewNote: '',
-    
-    reviewError: '',
-    
-    activePage: 'overview',
-    
-    mobileMenuOpen: false,
-    
-    get filteredApplications() {
-        const normalizedSearch =
-        this.applicationSearch.trim().toLowerCase()
-        
-        return this.applications.filter((application) => {
-            const matchesStatus =
-            this.applicationStatusFilter === 'all' ||
-            application.status === this.applicationStatusFilter
-            
-            const searchableContent = [
-                application.customer_name,
-                application.customer_email,
-                application.customer_mobile,
-                application.reference_number,
-                application.package?.name,
-                application.id,
-            ]
-            .filter(Boolean)
-            .join(' ')
-            .toLowerCase()
-            
-            const matchesSearch =
-            !normalizedSearch ||
-            searchableContent.includes(normalizedSearch)
-            
-            return matchesStatus && matchesSearch
-        })
-    },
-    
-    get selectedApplication() {
-        return (
-            this.applications.find(
-                (application) =>
-                    application.id === this.selectedApplicationId,
-            ) || null
-        )
-    },
-    
-    get pendingVerificationCount() {
-        return this.applications.filter(
-            (application) =>
-                application.status === 'pending-verification',
-        ).length
-    },
-    
-    get cancellationRequestCount() {
-        return this.applications.filter(
-            (application) =>
-                application.status === 'cancellation-requested',
-        ).length
-    },
-    
-    get filteredOrders() {
-        const normalizedSearch =
-        this.orderSearch.trim().toLowerCase()
-        
-        return this.orders.filter((order) => {
-            const matchesStatus =
-            this.orderStatusFilter === 'all' ||
-            order.status === this.orderStatusFilter
-            
-            const searchableContent = [
-                order.order_number,
-                order.customer_name,
-                order.customer_email,
-                order.customer_mobile,
-                order.reference_number,
-                order.delivery_region,
-                ...order.items.map(
-                    (item) => item.product_name,
-                ),
-            ]
-            .filter(Boolean)
-            .join(' ')
-            .toLowerCase()
-            
-            const matchesSearch =
-            !normalizedSearch ||
-            searchableContent.includes(normalizedSearch)
-            
-            return matchesStatus && matchesSearch
-        })
-    },
-    
-    get selectedOrder() {
-        return (
-            this.orders.find(
-                (order) => order.id === this.selectedOrderId,
-            ) || null
-        )
-    },
-    
-    get pendingOrderCount() {
-        return this.orders.filter(
-            (order) =>
-                order.status === 'pending-verification',
-        ).length
-    },
-    
-    orderStatusBadgeClass(status) {
-        const statusClasses = {
-            'pending-verification':
-            'border-amber-500/40 bg-amber-500/10 text-amber-300',
-            
-            processing:
-            'border-blue-500/30 bg-blue-500/10 text-blue-300',
-            
-            shipped:
-            'border-violet-500/30 bg-violet-500/10 text-violet-300',
-            
-            delivered:
-            'border-emerald-500/30 bg-emerald-500/10 text-emerald-300',
-            
-            rejected:
-            'border-red-500/30 bg-red-500/10 text-red-300',
-            
-            cancelled:
-            'border-brand-border bg-brand-panel text-brand-muted',
-        }
-        
-        return (
-            statusClasses[status] ||
-            'border-brand-border bg-brand-panel text-brand-muted'
-        )
-    },
-    
-    orderStatusDotClass(status) {
-        const statusClasses = {
-            'pending-verification': 'bg-amber-400',
-            processing: 'bg-blue-400',
-            shipped: 'bg-violet-400',
-            delivered: 'bg-emerald-400',
-            rejected: 'bg-red-400',
-            cancelled: 'bg-brand-muted',
-        }
-        
-        return statusClasses[status] || 'bg-brand-muted'
-    },
-
-    openOrderReview(action) {
-        if (!this.selectedOrder) {
-          return
-        }
+    return this.applications.filter((application) => {
+      const matchesStatus =
+      this.applicationStatusFilter === 'all' ||
+      application.status === this.applicationStatusFilter
       
-        this.orderReviewAction = action
-        this.orderReviewNote = ''
-        this.orderReviewError = ''
-        this.orderReviewPanelOpen = true
+      const searchableContent = [
+        application.customer_name,
+        application.customer_email,
+        application.customer_mobile,
+        application.reference_number,
+        application.package?.name,
+        application.id,
+      ]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase()
+      
+      const matchesSearch =
+      !normalizedSearch ||
+      searchableContent.includes(normalizedSearch)
+      
+      return matchesStatus && matchesSearch
+    })
+  },
+  
+  get selectedApplication() {
+    return (
+      this.applications.find(
+        (application) =>
+          application.id === this.selectedApplicationId,
+      ) || null
+    )
+  },
+  
+  get pendingVerificationCount() {
+    return this.applications.filter(
+      (application) =>
+        application.status === 'pending-verification',
+    ).length
+  },
+  
+  get cancellationRequestCount() {
+    return this.applications.filter(
+      (application) =>
+        application.status === 'cancellation-requested',
+    ).length
+  },
+  
+  get filteredOrders() {
+    const normalizedSearch =
+    this.orderSearch.trim().toLowerCase()
+    
+    return this.orders.filter((order) => {
+      const matchesStatus =
+      this.orderStatusFilter === 'all' ||
+      order.status === this.orderStatusFilter
+      
+      const searchableContent = [
+        order.order_number,
+        order.customer_name,
+        order.customer_email,
+        order.customer_mobile,
+        order.reference_number,
+        order.delivery_region,
+        ...order.items.map(
+          (item) => item.product_name,
+        ),
+      ]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase()
+      
+      const matchesSearch =
+      !normalizedSearch ||
+      searchableContent.includes(normalizedSearch)
+      
+      return matchesStatus && matchesSearch
+    })
+  },
+  
+  get selectedOrder() {
+    return (
+      this.orders.find(
+        (order) => order.id === this.selectedOrderId,
+      ) || null
+    )
+  },
+  
+  get pendingOrderCount() {
+    return this.orders.filter(
+      (order) =>
+        order.status === 'pending-verification',
+    ).length
+  },
+  
+  get approvedOrders() {
+    return this.orders.filter(
+      (order) =>
+        this.approvedOrderStatuses.includes(
+        order.status,
+      ),
+    )
+  },
+  
+  get approvedSalesTotal() {
+    return this.approvedOrders.reduce(
+      (total, order) =>
+        total + Number(order.subtotal || 0),
+      0,
+    )
+  },
+  
+  get approvedProductCost() {
+    return this.approvedOrders.reduce(
+      (orderTotal, order) => {
+        const itemCost = order.items.reduce(
+          (itemTotal, item) =>
+            itemTotal +
+          Number(item.unit_cost || 0) *
+          Number(item.quantity || 0),
+          0,
+        )
+        
+        return orderTotal + itemCost
       },
-      
-      closeOrderReview() {
-        this.orderReviewPanelOpen = false
-        this.orderReviewAction = ''
-        this.orderReviewNote = ''
-        this.orderReviewError = ''
+      0,
+    )
+  },
+  
+  get estimatedGrossProfit() {
+    return (
+      this.approvedSalesTotal -
+      this.approvedProductCost
+    )
+  },
+  
+  get monthlyApprovedSales() {
+    const now = new Date()
+    
+    return this.approvedOrders.reduce(
+      (total, order) => {
+        const approvedDateValue =
+        order.approved_at ||
+        order.reviewed_at ||
+        order.updated_at
+        
+        if (!approvedDateValue) {
+          return total
+        }
+        
+        const approvedDate =
+        new Date(approvedDateValue)
+        
+        const isCurrentMonth =
+        approvedDate.getFullYear() ===
+        now.getFullYear() &&
+        approvedDate.getMonth() ===
+        now.getMonth()
+        
+        return isCurrentMonth
+        ? total + Number(order.subtotal || 0)
+        : total
       },
-      
-      submitOrderReview() {
-        const order = this.selectedOrder
-      
-        if (!order) {
-          return
-        }
-      
-        if (!this.orderReviewNote.trim()) {
-          this.orderReviewError =
-            'Add an admin note before updating this order.'
-          return
-        }
-      
-        const nextStatusByAction = {
-          approve: 'processing',
-          reject: 'rejected',
-          ship: 'shipped',
-          deliver: 'delivered',
-        }
-      
-        const allowedActionByStatus = {
-          pending: ['approve', 'reject'],
-          processing: ['ship'],
-          shipped: ['deliver'],
-        }
-      
-        const allowedActions =
-          allowedActionByStatus[order.status] || []
-      
-        if (!allowedActions.includes(this.orderReviewAction)) {
-          this.orderReviewError =
-            'This action is not available for the current order status.'
-          return
-        }
-      
-        const nextStatus =
-          nextStatusByAction[this.orderReviewAction]
-      
-        const orderIndex = this.orders.findIndex(
-          (orderItem) => orderItem.id === order.id,
+      0,
+    )
+  },
+  
+  get approvedUnitsSold() {
+    return this.approvedOrders.reduce(
+      (orderTotal, order) => {
+        const itemQuantity = order.items.reduce(
+          (itemTotal, item) =>
+            itemTotal +
+          Number(item.quantity || 0),
+          0,
         )
-      
-        if (orderIndex === -1 || !nextStatus) {
-          this.orderReviewError =
-            'Unable to update this order.'
-          return
-        }
-      
-        this.orders[orderIndex] = {
-          ...this.orders[orderIndex],
-          status: nextStatus,
-          admin_note: this.orderReviewNote.trim(),
-          reviewed_at: new Date().toISOString(),
-        }
-      
-        this.closeOrderReview()
+        
+        return orderTotal + itemQuantity
       },
+      0,
+    )
+  },
+  
+  get availableStockUnits() {
+    return this.inventoryProducts.reduce(
+      (total, product) =>
+        total +
+      Number(product.stockQuantity || 0),
+      0,
+    )
+  },
+  
+  get lowStockProductCount() {
+    return this.inventoryProducts.filter(
+      (product) =>
+        this.inventoryStatus(product) ===
+      'low-stock',
+    ).length
+  },
+  
+  get outOfStockProductCount() {
+    return this.inventoryProducts.filter(
+      (product) =>
+        this.inventoryStatus(product) ===
+      'out-of-stock',
+    ).length
+  },
+  
+  get filteredInventoryProducts() {
+    const normalizedSearch =
+    this.inventorySearch
+    .trim()
+    .toLowerCase()
     
-    openOrderDetails(orderId) {
-        this.closeApplicationDetails()
-        this.selectedOrderId = orderId
-        this.orderDetailsOpen = true
-        document.body.classList.add('overflow-hidden')
-    },
-    
-    closeOrderDetails() {
-        this.closeOrderReview()
-        this.orderDetailsOpen = false
+    return this.inventoryProducts.filter(
+      (product) => {
+        const productStatus =
+        this.inventoryStatus(product)
         
-        if (
-            !this.mobileMenuOpen &&
-            !this.applicationDetailsOpen
-        ) {
-            document.body.classList.remove('overflow-hidden')
-        }
+        const matchesStatus =
+        this.inventoryStatusFilter ===
+        'all' ||
+        productStatus ===
+        this.inventoryStatusFilter
         
-        window.setTimeout(() => {
-            if (!this.orderDetailsOpen) {
-                this.selectedOrderId = null
-            }
-        }, 250)
-    },
-    
-    get reviewActionTitle() {
-        const titles = {
-            'approve-membership': 'Approve membership',
-            'reject-payment': 'Reject payment',
-            'approve-cancellation': 'Approve cancellation',
-            'decline-cancellation': 'Decline cancellation',
-        }
+        const searchableContent = [
+          product.name,
+          product.sku,
+          product.collectionLabel,
+          product.category,
+        ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase()
         
-        return titles[this.reviewAction] || 'Review application'
-    },
-    
-    get reviewActionDescription() {
-        const descriptions = {
-            'approve-membership':
-            'The customer membership will be marked as approved.',
-            
-            'reject-payment':
-            'The submitted payment will be rejected and the membership will remain inactive.',
-            
-            'approve-cancellation':
-            'The application will be cancelled. Any applicable refund must still be processed manually.',
-            
-            'decline-cancellation':
-            'The cancellation request will be declined and the application will return to payment verification.',
-        }
-        
-        return descriptions[this.reviewAction] || ''
-    },
-    
-    openReviewPanel(actionName) {
-        if (!this.selectedApplication) {
-            return
-        }
-        
-        const allowedActions = {
-            'pending-verification': [
-                'approve-membership',
-                'reject-payment',
-            ],
-            
-            'cancellation-requested': [
-                'approve-cancellation',
-                'decline-cancellation',
-            ],
-        }
-        
-        const statusActions =
-        allowedActions[this.selectedApplication.status] || []
-        
-        if (!statusActions.includes(actionName)) {
-            return
-        }
-        
-        this.reviewAction = actionName
-        this.reviewNote = ''
-        this.reviewError = ''
-        this.reviewPanelOpen = true
-    },
-    
-    closeReviewPanel() {
-        this.reviewPanelOpen = false
-        this.reviewAction = ''
-        this.reviewNote = ''
-        this.reviewError = ''
-    },
-    
-    confirmReviewAction() {
-        const normalizedNote = this.reviewNote.trim()
-        
-        if (!this.selectedApplication) {
-            this.reviewError = 'Application details are unavailable.'
-            return
-        }
-        
-        if (normalizedNote.length < 3) {
-            this.reviewError =
-            'Enter a short admin note before confirming.'
-            return
-        }
-        
-        const nextStatuses = {
-            'approve-membership': 'approved',
-            'reject-payment': 'rejected',
-            'approve-cancellation': 'cancelled',
-            'decline-cancellation': 'pending-verification',
-        }
-        
-        const nextStatus = nextStatuses[this.reviewAction]
-        
-        if (!nextStatus) {
-            this.reviewError = 'Select a valid review action.'
-            return
-        }
-        
-        const applicationIndex = this.applications.findIndex(
-            (application) =>
-                application.id === this.selectedApplicationId,
+        const matchesSearch =
+        !normalizedSearch ||
+        searchableContent.includes(
+          normalizedSearch,
         )
         
-        if (applicationIndex === -1) {
-            this.reviewError = 'Application could not be found.'
-            return
-        }
-        
-        this.applications[applicationIndex] = {
-            ...this.applications[applicationIndex],
-            status: nextStatus,
-            admin_note: normalizedNote,
-            reviewed_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-        }
-        
-        this.closeReviewPanel()
-    },
+        return matchesStatus && matchesSearch
+      },
+    )
+  },
+  
+  inventoryStatus(product) {
+    const stockQuantity =
+    Number(product.stockQuantity || 0)
     
-    applicationStatusBadgeClass(status) {
-        const statusClasses = {
-            'awaiting-payment':
-            'border-amber-500/40 bg-amber-500/10 text-amber-300',
-            
-            'pending-verification':
-            'border-amber-500/40 bg-amber-500/10 text-amber-300',
-            
-            'cancellation-requested':
-            'border-red-400/30 bg-red-400/10 text-red-300',
-            
-            approved:
-            'border-emerald-500/30 bg-emerald-500/10 text-emerald-300',
-            
-            rejected:
-            'border-red-500/30 bg-red-500/10 text-red-300',
-            
-            cancelled:
-            'border-brand-border bg-brand-panel text-brand-muted',
-        }
-        
-        return (
-            statusClasses[status] ||
-            'border-brand-border bg-brand-panel text-brand-muted'
+    const lowStockThreshold =
+    Number(product.lowStockThreshold || 0)
+    
+    if (stockQuantity <= 0) {
+      return 'out-of-stock'
+    }
+    
+    if (stockQuantity <= lowStockThreshold) {
+      return 'low-stock'
+    }
+    
+    return 'in-stock'
+  },
+  
+  inventoryStatusLabel(status) {
+    const statusLabels = {
+      'in-stock': 'In Stock',
+      'low-stock': 'Low Stock',
+      'out-of-stock': 'Out of Stock',
+    }
+    
+    return statusLabels[status] || status
+  },
+  
+  inventoryStatusBadgeClass(status) {
+    const statusClasses = {
+      'in-stock':
+      'border-emerald-500/30 bg-emerald-500/10 text-emerald-300',
+      
+      'low-stock':
+      'border-amber-500/30 bg-amber-500/10 text-amber-300',
+      
+      'out-of-stock':
+      'border-red-500/30 bg-red-500/10 text-red-300',
+    }
+    
+    return (
+      statusClasses[status] ||
+      'border-brand-border text-brand-muted'
+    )
+  },
+  
+  inventoryStatusDotClass(status) {
+    const statusClasses = {
+      'in-stock': 'bg-emerald-400',
+      'low-stock': 'bg-amber-400',
+      'out-of-stock': 'bg-red-400',
+    }
+    
+    return (
+      statusClasses[status] ||
+      'bg-brand-muted'
+    )
+  },
+  
+  get filteredInventoryMovements() {
+    if (this.inventoryMovementFilter === 'all') {
+      return this.inventoryMovements
+    }
+    
+    return this.inventoryMovements.filter(
+      (movement) =>
+        movement.type ===
+      this.inventoryMovementFilter,
+    )
+  },
+  
+  get selectedInventoryProduct() {
+    return (
+      this.inventoryProducts.find(
+        (product) =>
+          product.id ===
+        this.selectedInventoryProductId,
+      ) || null
+    )
+  },
+  
+  get projectedInventoryStock() {
+    if (!this.selectedInventoryProduct) {
+      return 0
+    }
+    
+    const currentStock = Number(
+      this.selectedInventoryProduct
+      .stockQuantity || 0,
+    )
+    
+    const quantity = Number.parseInt(
+      this.inventoryAdjustmentQuantity,
+      10,
+    )
+    
+    if (!Number.isInteger(quantity) || quantity <= 0) {
+      return currentStock
+    }
+    
+    if (this.inventoryAdjustmentType === 'remove') {
+      return currentStock - quantity
+    }
+    
+    return currentStock + quantity
+  },
+  
+  unitsSoldForProduct(productId) {
+    return this.approvedOrders.reduce(
+      (orderTotal, order) => {
+        const itemQuantity = order.items
+        .filter(
+          (item) =>
+            item.product_id === productId,
         )
-    },
-    
-    applicationStatusDotClass(status) {
-        const statusClasses = {
-            'awaiting-payment': 'bg-amber-400',
-            'pending-verification': 'bg-amber-400',
-            'cancellation-requested': 'bg-red-400',
-            approved: 'bg-emerald-400',
-            rejected: 'bg-red-400',
-            cancelled: 'bg-brand-muted',
-        }
+        .reduce(
+          (itemTotal, item) =>
+            itemTotal +
+          Number(item.quantity || 0),
+          0,
+        )
         
-        return statusClasses[status] || 'bg-brand-muted'
-    },
+        return orderTotal + itemQuantity
+      },
+      0,
+    )
+  },
+  
+  inventoryMovementTypeLabel(type) {
+    const typeLabels = {
+      restock: 'Restock',
+      add: 'Added Adjustment',
+      remove: 'Removed Adjustment',
+      'order-sale': 'Approved Order',
+      'cancellation-return': 'Returned Stock',
+    }
     
-    formatMoney(amount) {
-        return adminPesoFormatter.format(amount || 0)
-    },
+    return typeLabels[type] || type
+  },
+  
+  inventoryMovementBadgeClass(type) {
+    const typeClasses = {
+      restock:
+      'border-emerald-500/30 bg-emerald-500/10 text-emerald-300',
+      
+      add:
+      'border-blue-500/30 bg-blue-500/10 text-blue-300',
+      
+      remove:
+      'border-red-500/30 bg-red-500/10 text-red-300',
+      
+      'order-sale':
+      'border-violet-500/30 bg-violet-500/10 text-violet-300',
+      
+      'cancellation-return':
+      'border-amber-500/30 bg-amber-500/10 text-amber-300',
+    }
     
-    formatDate(dateValue) {
-        if (!dateValue) {
-            return 'Not available'
-        }
-        
-        return adminDateFormatter.format(new Date(dateValue))
-    },
+    return (
+      typeClasses[type] ||
+      'border-brand-border text-brand-muted'
+    )
+  },
+  
+  openInventoryAdjustment(
+    productId,
+    adjustmentType = 'restock',
+  ) {
+    const productExists =
+    this.inventoryProducts.some(
+      (product) =>
+        product.id === productId,
+    )
     
-    openApplicationDetails(applicationId) {
-        this.selectedApplicationId = applicationId
-        this.applicationDetailsOpen = true
-        document.body.classList.add('overflow-hidden')
-    },
+    if (!productExists) {
+      return
+    }
     
-    closeApplicationDetails() {
-        this.closeReviewPanel()
-        this.applicationDetailsOpen = false
-        
-        if (
-            !this.mobileMenuOpen &&
-            !this.orderDetailsOpen
-        ) {
-            document.body.classList.remove('overflow-hidden')
-        }
-        
-        window.setTimeout(() => {
-            if (!this.applicationDetailsOpen) {
-                this.selectedApplicationId = null
-            }
-        }, 250)
-    },
+    this.selectedInventoryProductId = productId
+    this.inventoryAdjustmentType = adjustmentType
+    this.inventoryAdjustmentQuantity = ''
+    this.inventoryAdjustmentReason = ''
+    this.inventoryAdjustmentError = ''
+    this.inventoryAdjustmentOpen = true
     
-    get activePageTitle() {
-        return adminPageTitles[this.activePage] || 'Overview'
-    },
+    document.body.classList.add('overflow-hidden')
+  },
+  
+  closeInventoryAdjustment() {
+    this.inventoryAdjustmentOpen = false
+    this.inventoryAdjustmentError = ''
     
-    openPage(pageName) {
-        if (!adminPageTitles[pageName]) {
-            return
-        }
-        
-        this.closeApplicationDetails()
-        this.closeOrderDetails()
-        this.activePage = pageName
-        this.closeMobileMenu()
-        
-        window.scrollTo({
-            top: 0,
-            behavior: 'smooth',
-        })
-    },
+    if (
+      !this.mobileMenuOpen &&
+      !this.applicationDetailsOpen &&
+      !this.orderDetailsOpen
+    ) {
+      document.body.classList.remove(
+        'overflow-hidden',
+      )
+    }
     
-    openMobileMenu() {
-        this.closeApplicationDetails()
-        this.closeOrderDetails()
-        this.mobileMenuOpen = true
-        document.body.classList.add('overflow-hidden')
-    },
+    window.setTimeout(() => {
+      if (!this.inventoryAdjustmentOpen) {
+        this.selectedInventoryProductId = null
+        this.inventoryAdjustmentQuantity = ''
+        this.inventoryAdjustmentReason = ''
+      }
+    }, 250)
+  },
+  
+  saveInventoryAdjustment() {
+    const product =
+    this.selectedInventoryProduct
     
-    closeMobileMenu() {
-        this.mobileMenuOpen = false
-        
-        if (!this.applicationDetailsOpen) {
-            document.body.classList.remove('overflow-hidden')
-        }
-    },
+    if (!product) {
+      this.inventoryAdjustmentError =
+      'The selected product is unavailable.'
+      return
+    }
     
-    destroy() {
-        document.body.classList.remove('overflow-hidden')
-    },
+    const quantity = Number.parseInt(
+      this.inventoryAdjustmentQuantity,
+      10,
+    )
+    
+    if (!Number.isInteger(quantity) || quantity <= 0) {
+      this.inventoryAdjustmentError =
+      'Enter a valid quantity greater than zero.'
+      return
+    }
+    
+    const reason =
+    this.inventoryAdjustmentReason.trim()
+    
+    if (!reason) {
+      this.inventoryAdjustmentError =
+      'Enter a reason for this stock update.'
+      return
+    }
+    
+    const previousStock = Number(
+      product.stockQuantity || 0,
+    )
+    
+    const stockChange =
+    this.inventoryAdjustmentType === 'remove'
+    ? -quantity
+    : quantity
+    
+    const newStock =
+    previousStock + stockChange
+    
+    if (newStock < 0) {
+      this.inventoryAdjustmentError =
+      'The quantity to remove is greater than the available stock.'
+      return
+    }
+    
+    const movement = {
+      id: `inventory-movement-${Date.now()}`,
+      product_id: product.id,
+      product_name: product.name,
+      type: this.inventoryAdjustmentType,
+      quantity: stockChange,
+      previous_stock: previousStock,
+      new_stock: newStock,
+      reason,
+      created_at: new Date().toISOString(),
+    }
+    
+    this.inventoryProducts =
+    this.inventoryProducts.map(
+      (inventoryProduct) =>
+        inventoryProduct.id === product.id
+      ? {
+        ...inventoryProduct,
+        stockQuantity: newStock,
+      }
+      : inventoryProduct,
+    )
+    
+    this.inventoryMovements.unshift(movement)
+    
+    this.inventoryFeedback =
+    `${product.name} stock updated from ` +
+    `${previousStock} to ${newStock}.`
+    
+    this.closeInventoryAdjustment()
+    
+    window.setTimeout(() => {
+      this.inventoryFeedback = ''
+    }, 4000)
+  },
+  
+  orderStatusBadgeClass(status) {
+    const statusClasses = {
+      'pending-verification':
+      'border-amber-500/40 bg-amber-500/10 text-amber-300',
+      
+      processing:
+      'border-blue-500/30 bg-blue-500/10 text-blue-300',
+      
+      shipped:
+      'border-violet-500/30 bg-violet-500/10 text-violet-300',
+      
+      delivered:
+      'border-emerald-500/30 bg-emerald-500/10 text-emerald-300',
+      
+      rejected:
+      'border-red-500/30 bg-red-500/10 text-red-300',
+      
+      cancelled:
+      'border-brand-border bg-brand-panel text-brand-muted',
+    }
+    
+    return (
+      statusClasses[status] ||
+      'border-brand-border bg-brand-panel text-brand-muted'
+    )
+  },
+  
+  orderStatusDotClass(status) {
+    const statusClasses = {
+      'pending-verification': 'bg-amber-400',
+      processing: 'bg-blue-400',
+      shipped: 'bg-violet-400',
+      delivered: 'bg-emerald-400',
+      rejected: 'bg-red-400',
+      cancelled: 'bg-brand-muted',
+    }
+    
+    return statusClasses[status] || 'bg-brand-muted'
+  },
+  
+  openOrderReview(action) {
+    if (!this.selectedOrder) {
+      return
+    }
+    
+    this.orderReviewAction = action
+    this.orderReviewNote = ''
+    this.orderReviewError = ''
+    this.orderReviewPanelOpen = true
+  },
+  
+  closeOrderReview() {
+    this.orderReviewPanelOpen = false
+    this.orderReviewAction = ''
+    this.orderReviewNote = ''
+    this.orderReviewError = ''
+  },
+  
+  submitOrderReview() {
+    const order = this.selectedOrder
+    
+    if (!order) {
+      return
+    }
+    
+    if (!this.orderReviewNote.trim()) {
+      this.orderReviewError =
+      'Add an admin note before updating this order.'
+      return
+    }
+    
+    const nextStatusByAction = {
+      approve: 'processing',
+      reject: 'rejected',
+      ship: 'shipped',
+      deliver: 'delivered',
+    }
+    
+    const allowedActionByStatus = {
+      pending: ['approve', 'reject'],
+      processing: ['ship'],
+      shipped: ['deliver'],
+    }
+    
+    const allowedActions =
+    allowedActionByStatus[order.status] || []
+    
+    if (!allowedActions.includes(this.orderReviewAction)) {
+      this.orderReviewError =
+      'This action is not available for the current order status.'
+      return
+    }
+    
+    const nextStatus =
+    nextStatusByAction[this.orderReviewAction]
+    
+    const orderIndex = this.orders.findIndex(
+      (orderItem) => orderItem.id === order.id,
+    )
+    
+    if (orderIndex === -1 || !nextStatus) {
+      this.orderReviewError =
+      'Unable to update this order.'
+      return
+    }
+    
+    this.orders[orderIndex] = {
+      ...this.orders[orderIndex],
+      status: nextStatus,
+      admin_note: this.orderReviewNote.trim(),
+      reviewed_at: new Date().toISOString(),
+    }
+    
+    this.closeOrderReview()
+  },
+  
+  openOrderDetails(orderId) {
+    this.closeApplicationDetails()
+    this.selectedOrderId = orderId
+    this.orderDetailsOpen = true
+    document.body.classList.add('overflow-hidden')
+  },
+  
+  closeOrderDetails() {
+    this.closeOrderReview()
+    this.orderDetailsOpen = false
+    
+    if (
+      !this.mobileMenuOpen &&
+      !this.applicationDetailsOpen
+    ) {
+      document.body.classList.remove('overflow-hidden')
+    }
+    
+    window.setTimeout(() => {
+      if (!this.orderDetailsOpen) {
+        this.selectedOrderId = null
+      }
+    }, 250)
+  },
+  
+  get reviewActionTitle() {
+    const titles = {
+      'approve-membership': 'Approve membership',
+      'reject-payment': 'Reject payment',
+      'approve-cancellation': 'Approve cancellation',
+      'decline-cancellation': 'Decline cancellation',
+    }
+    
+    return titles[this.reviewAction] || 'Review application'
+  },
+  
+  get reviewActionDescription() {
+    const descriptions = {
+      'approve-membership':
+      'The customer membership will be marked as approved.',
+      
+      'reject-payment':
+      'The submitted payment will be rejected and the membership will remain inactive.',
+      
+      'approve-cancellation':
+      'The application will be cancelled. Any applicable refund must still be processed manually.',
+      
+      'decline-cancellation':
+      'The cancellation request will be declined and the application will return to payment verification.',
+    }
+    
+    return descriptions[this.reviewAction] || ''
+  },
+  
+  openReviewPanel(actionName) {
+    if (!this.selectedApplication) {
+      return
+    }
+    
+    const allowedActions = {
+      'pending-verification': [
+        'approve-membership',
+        'reject-payment',
+      ],
+      
+      'cancellation-requested': [
+        'approve-cancellation',
+        'decline-cancellation',
+      ],
+    }
+    
+    const statusActions =
+    allowedActions[this.selectedApplication.status] || []
+    
+    if (!statusActions.includes(actionName)) {
+      return
+    }
+    
+    this.reviewAction = actionName
+    this.reviewNote = ''
+    this.reviewError = ''
+    this.reviewPanelOpen = true
+  },
+  
+  closeReviewPanel() {
+    this.reviewPanelOpen = false
+    this.reviewAction = ''
+    this.reviewNote = ''
+    this.reviewError = ''
+  },
+  
+  confirmReviewAction() {
+    const normalizedNote = this.reviewNote.trim()
+    
+    if (!this.selectedApplication) {
+      this.reviewError = 'Application details are unavailable.'
+      return
+    }
+    
+    if (normalizedNote.length < 3) {
+      this.reviewError =
+      'Enter a short admin note before confirming.'
+      return
+    }
+    
+    const nextStatuses = {
+      'approve-membership': 'approved',
+      'reject-payment': 'rejected',
+      'approve-cancellation': 'cancelled',
+      'decline-cancellation': 'pending-verification',
+    }
+    
+    const nextStatus = nextStatuses[this.reviewAction]
+    
+    if (!nextStatus) {
+      this.reviewError = 'Select a valid review action.'
+      return
+    }
+    
+    const applicationIndex = this.applications.findIndex(
+      (application) =>
+        application.id === this.selectedApplicationId,
+    )
+    
+    if (applicationIndex === -1) {
+      this.reviewError = 'Application could not be found.'
+      return
+    }
+    
+    this.applications[applicationIndex] = {
+      ...this.applications[applicationIndex],
+      status: nextStatus,
+      admin_note: normalizedNote,
+      reviewed_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }
+    
+    this.closeReviewPanel()
+  },
+  
+  applicationStatusBadgeClass(status) {
+    const statusClasses = {
+      'awaiting-payment':
+      'border-amber-500/40 bg-amber-500/10 text-amber-300',
+      
+      'pending-verification':
+      'border-amber-500/40 bg-amber-500/10 text-amber-300',
+      
+      'cancellation-requested':
+      'border-red-400/30 bg-red-400/10 text-red-300',
+      
+      approved:
+      'border-emerald-500/30 bg-emerald-500/10 text-emerald-300',
+      
+      rejected:
+      'border-red-500/30 bg-red-500/10 text-red-300',
+      
+      cancelled:
+      'border-brand-border bg-brand-panel text-brand-muted',
+    }
+    
+    return (
+      statusClasses[status] ||
+      'border-brand-border bg-brand-panel text-brand-muted'
+    )
+  },
+  
+  applicationStatusDotClass(status) {
+    const statusClasses = {
+      'awaiting-payment': 'bg-amber-400',
+      'pending-verification': 'bg-amber-400',
+      'cancellation-requested': 'bg-red-400',
+      approved: 'bg-emerald-400',
+      rejected: 'bg-red-400',
+      cancelled: 'bg-brand-muted',
+    }
+    
+    return statusClasses[status] || 'bg-brand-muted'
+  },
+  
+  formatMoney(amount) {
+    return adminPesoFormatter.format(amount || 0)
+  },
+  
+  formatDate(dateValue) {
+    if (!dateValue) {
+      return 'Not available'
+    }
+    
+    return adminDateFormatter.format(new Date(dateValue))
+  },
+  
+  openApplicationDetails(applicationId) {
+    this.selectedApplicationId = applicationId
+    this.applicationDetailsOpen = true
+    document.body.classList.add('overflow-hidden')
+  },
+  
+  closeApplicationDetails() {
+    this.closeReviewPanel()
+    this.applicationDetailsOpen = false
+    
+    if (
+      !this.mobileMenuOpen &&
+      !this.orderDetailsOpen
+    ) {
+      document.body.classList.remove('overflow-hidden')
+    }
+    
+    window.setTimeout(() => {
+      if (!this.applicationDetailsOpen) {
+        this.selectedApplicationId = null
+      }
+    }, 250)
+  },
+  
+  get activePageTitle() {
+    return adminPageTitles[this.activePage] || 'Overview'
+  },
+  
+  openPage(pageName) {
+    if (!adminPageTitles[pageName]) {
+      return
+    }
+    
+    this.closeApplicationDetails()
+    this.closeOrderDetails()
+    this.closeInventoryAdjustment()
+    this.activePage = pageName
+    this.closeMobileMenu()
+    
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    })
+  },
+  
+  openMobileMenu() {
+    this.closeApplicationDetails()
+    this.closeOrderDetails()
+    this.mobileMenuOpen = true
+    document.body.classList.add('overflow-hidden')
+  },
+  
+  closeMobileMenu() {
+    this.mobileMenuOpen = false
+    
+    if (!this.applicationDetailsOpen) {
+      document.body.classList.remove('overflow-hidden')
+    }
+  },
+  
+  destroy() {
+    document.body.classList.remove('overflow-hidden')
+  },
 }))
 
 document.title = `Admin Dashboard | ${siteConfig.brand.name}`
@@ -2564,7 +3068,7 @@ document.querySelector('#admin-app').innerHTML = `
     x-data="adminDashboard"
     x-cloak
     class="min-h-screen bg-brand-black text-brand-cream"
-    @keydown.escape.window="closeMobileMenu(); closeApplicationDetails(); closeOrderDetails()"
+    @keydown.escape.window="closeMobileMenu(); closeApplicationDetails(); closeOrderDetails(); closeInventoryAdjustment()"
   >
     <aside
       class="fixed inset-y-0 left-0 z-30 hidden w-72 border-r border-brand-border bg-brand-panel lg:block"
@@ -2896,15 +3400,20 @@ document.querySelector('#admin-app').innerHTML = `
 
 ${renderOrdersPage()}
 
+${renderAdminSalesInventoryPage()}
+
+${renderAdminInventoryMovementHistory()}
+
 ${adminNavigationItems
-    .filter(
-        (item) =>
-            item.id !== 'overview' &&
-        item.id !== 'memberships' &&
-        item.id !== 'orders',
-    )
-    .map(
-        (item) => `
+  .filter(
+    (item) =>
+      item.id !== 'overview' &&
+    item.id !== 'memberships' &&
+    item.id !== 'orders' &&
+    item.id !== 'sales-inventory',
+  )
+  .map(
+    (item) => `
       <section
         x-show="activePage === '${item.id}'"
         x-transition.opacity
@@ -2935,15 +3444,16 @@ ${adminNavigationItems
         </div>
       </section>
     `,
-    )
-    .join('')}
+  )
+  .join('')}
             </main>
     </div>
     
     ${renderApplicationDetailsDrawer()}
     
     ${renderOrderDetailsDrawer()}
+    ${renderAdminInventoryAdjustmentDrawer()}
   </div>
 `
-    
-    Alpine.start()
+  
+  Alpine.start()

@@ -41,15 +41,24 @@ export const products = [
 
     regularPrice: 299,
     memberPrice: 149,
+
+    // Temporary preview costing.
+    // Replace this when the client provides the final cost.
+    costPrice: 90,
+
     image: perfumeMenImage,
 
     isFeatured: true,
     isActive: true,
     isPointsQualified: false,
     pointsPerUnit: 0,
+
     stockQuantity: 20,
+    lowStockThreshold: 5,
+
     isSample: true,
   },
+
   {
     id: 'sample-women-01',
     sku: 'W01',
@@ -72,15 +81,21 @@ export const products = [
 
     regularPrice: 299,
     memberPrice: 149,
+    costPrice: 90,
+
     image: perfumeWomenImage,
 
     isFeatured: true,
     isActive: true,
     isPointsQualified: false,
     pointsPerUnit: 0,
+
     stockQuantity: 20,
+    lowStockThreshold: 5,
+
     isSample: true,
   },
+
   {
     id: 'sample-men-02',
     sku: 'M02',
@@ -103,15 +118,22 @@ export const products = [
 
     regularPrice: 299,
     memberPrice: 149,
+    costPrice: 90,
+
     image: perfume1Image,
 
     isFeatured: false,
     isActive: true,
     isPointsQualified: false,
     pointsPerUnit: 0,
-    stockQuantity: 20,
+
+    // Low-stock sample for the admin preview.
+    stockQuantity: 4,
+    lowStockThreshold: 5,
+
     isSample: true,
   },
+
   {
     id: 'sample-women-02',
     sku: 'W02',
@@ -134,13 +156,19 @@ export const products = [
 
     regularPrice: 299,
     memberPrice: 149,
+    costPrice: 90,
+
     image: perfume2Image,
 
     isFeatured: false,
     isActive: true,
     isPointsQualified: false,
     pointsPerUnit: 0,
-    stockQuantity: 20,
+
+    // Three units were used by the processing preview order.
+    stockQuantity: 17,
+    lowStockThreshold: 5,
+
     isSample: true,
   },
 ]
