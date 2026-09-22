@@ -93,11 +93,17 @@ import {
   renderMembershipModal,
 } from './components/membership-modal.js'
 
+import {
+  registerCustomerSupportChat,
+  renderCustomerSupportChat,
+} from './components/customer-support-chat.js'
+
 window.Alpine = Alpine
 
 registerCartStore(Alpine, products)
 registerProductViewStore(Alpine, products)
 registerMembershipModal(Alpine)
+registerCustomerSupportChat(Alpine)
 
 Alpine.magic(
   'addToCartWithAnimation',
@@ -167,6 +173,9 @@ document.querySelector('#app').innerHTML = `
   ${renderProductDrawer()}
 
   ${renderMembershipModal()}
+
+  ${renderCustomerSupportChat()}
+
 `
 
 Alpine.start()

@@ -749,3 +749,65 @@ html.theme-transitioning circle {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ========================================
+16. CUSTOMER SUPPORT CHAT HEAD
+======================================== */
+
+@keyframes customer-support-glow {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 0 rgb(183 138 50 / 35%),
+      0 12px 30px rgb(0 0 0 / 35%),
+      0 0 18px rgb(183 138 50 / 30%);
+  }
+
+  50% {
+    box-shadow:
+      0 0 0 10px rgb(183 138 50 / 0%),
+      0 16px 36px rgb(0 0 0 / 45%),
+      0 0 30px rgb(183 138 50 / 70%);
+  }
+}
+
+.customer-support-chat {
+  touch-action: none;
+  user-select: none;
+  -webkit-user-drag: none;
+
+  animation:
+    customer-support-glow
+    2.4s
+    ease-in-out
+    infinite;
+
+  will-change:
+    transform,
+    left,
+    top,
+    box-shadow;
+}
+
+.customer-support-chat--dragging {
+  animation: none;
+
+  box-shadow:
+    0 18px 40px rgb(0 0 0 / 45%),
+    0 0 30px rgb(183 138 50 / 85%);
+}
+
+.customer-support-chat img {
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .customer-support-chat {
+    animation: none;
+
+    box-shadow:
+      0 12px 30px rgb(0 0 0 / 35%),
+      0 0 18px rgb(183 138 50 / 45%);
+  }
+}

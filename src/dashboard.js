@@ -30,6 +30,11 @@ import {
 } from './components/product-drawer.js'
 
 import {
+  registerCustomerSupportChat,
+  renderCustomerSupportChat,
+} from './components/customer-support-chat.js'
+
+import {
   registerCartStore,
 } from './stores/cart-store.js'
 
@@ -97,7 +102,7 @@ selectedDashboardPackage?.inclusions
 .join('') || ''
 
 const pendingMembershipMarkup = hasPendingMembership
-  ? `
+? `
       <section
         class="mt-6 overflow-hidden rounded-[1.5rem] border border-amber-500/40 bg-brand-panel shadow-gold-soft"
         aria-label="Membership application"
@@ -202,17 +207,17 @@ const pendingMembershipMarkup = hasPendingMembership
               class="mt-2 font-display text-3xl text-brand-gold"
             >
               ${dashboardPesoFormatter.format(
-                selectedDashboardPackage.price,
-              )}
+selectedDashboardPackage.price,
+)}
             </p>
           </div>
         </div>
       </section>
     `
-  : ''
+: ''
 
 const membershipApplicationPageMarkup = hasPendingMembership
-  ? `
+? `
       <section
         x-show="activePage === 'membershipApplication'"
         x-transition.opacity
@@ -289,8 +294,8 @@ const membershipApplicationPageMarkup = hasPendingMembership
                 class="shrink-0 font-display text-3xl text-brand-gold"
               >
                 ${dashboardPesoFormatter.format(
-                  selectedDashboardPackage.price,
-                )}
+selectedDashboardPackage.price,
+)}
               </p>
             </div>
 
@@ -458,7 +463,7 @@ const membershipApplicationPageMarkup = hasPendingMembership
         </div>
       </section>
     `
-  : ''
+: ''
 
 const membershipPaymentPageMarkup = hasPendingMembership
 ? `
@@ -1428,6 +1433,7 @@ window.Alpine = Alpine
 
 registerCartStore(Alpine, products)
 registerProductViewStore(Alpine, products)
+registerCustomerSupportChat(Alpine)
 
 Alpine.magic('addToCartWithAnimation', () => {
   return (productId, sourceButton) => {
@@ -3221,8 +3227,11 @@ document.querySelector('#dashboard-app').innerHTML = `
       x-text="previewNotice"
     ></div>
 
-    ${renderCartDrawer()}
+       ${renderCartDrawer()}
+
     ${renderProductDrawer()}
+
+    ${renderCustomerSupportChat()}
   </div>
 `
 
