@@ -29,6 +29,10 @@ import {
 } from './components/admin-inventory-movement-history.js'
 
 import {
+  renderAdminSalesRecords,
+} from './components/admin-sales-records.js'
+
+import {
   membershipApplications,
   membershipStatusLabels,
   paymentMethodLabels,
@@ -1448,12 +1452,12 @@ function renderOrderDetailsDrawer() {
   <p class="text-sm font-semibold text-red-200">
     Order rejected
   </p>
-
+  
   <p class="mt-1 text-xs leading-5 text-red-100/80">
     No additional order action is available.
   </p>
 </div>
-
+  
 <div
   x-show="selectedOrder.status === 'cancelled'"
   class="rounded-xl border border-brand-border bg-brand-black/40 px-4 py-3"
@@ -1461,12 +1465,12 @@ function renderOrderDetailsDrawer() {
   <p class="text-sm font-semibold text-brand-cream">
     Order cancelled
   </p>
-
+  
   <p class="mt-1 text-xs leading-5 text-brand-muted">
     The deducted inventory has been returned.
   </p>
 </div>
-
+  
 <div
   x-show="selectedOrder.status === 'refunded'"
   class="rounded-xl border border-violet-400/30 bg-violet-400/10 px-4 py-3"
@@ -1474,13 +1478,13 @@ function renderOrderDetailsDrawer() {
   <p class="text-sm font-semibold text-violet-200">
     Order refunded
   </p>
-
+  
   <p class="mt-1 text-xs leading-5 text-violet-100/80">
     The refunded items have been returned to inventory.
   </p>
 </div>
 </div>
-
+  
   <div
   x-show="orderReviewPanelOpen"
   x-transition
@@ -1504,7 +1508,7 @@ function renderOrderDetailsDrawer() {
                   : 'Update order'
     "
   ></p>
-
+  
   <p
     class="mt-2 text-xs leading-5 text-brand-muted"
     x-text="
@@ -1523,14 +1527,14 @@ function renderOrderDetailsDrawer() {
                   : 'Confirm this order update.'
     "
   ></p>
-
+  
   <label
     for="order-review-note"
     class="mt-4 block text-xs font-semibold uppercase tracking-[0.12em] text-brand-muted"
   >
     Admin note
   </label>
-
+  
   <textarea
     id="order-review-note"
     x-model.trim="orderReviewNote"
@@ -1539,14 +1543,14 @@ function renderOrderDetailsDrawer() {
     placeholder="Add a short note for this status update"
     class="mt-2 w-full resize-none rounded-xl border border-brand-border bg-brand-black px-4 py-3 text-sm leading-6 text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
   ></textarea>
-
+  
   <p
     x-show="orderReviewError"
     x-text="orderReviewError"
     class="mt-2 text-xs leading-5 text-red-300"
     role="alert"
   ></p>
-
+  
   <div class="mt-4 grid gap-3 sm:grid-cols-2">
     <button
       type="button"
@@ -1555,7 +1559,7 @@ function renderOrderDetailsDrawer() {
     >
       Keep Current Status
     </button>
-
+  
     <button
       type="button"
       class="inline-flex min-h-11 items-center justify-center rounded-full px-4 text-sm font-semibold transition"
@@ -2165,6 +2169,10 @@ Alpine.data('adminDashboard', () => ({
   
   inventoryMovementFilter: 'all',
   
+  salesDateFilter: 'all',
+  salesStatusFilter: 'all',
+  salesCustomerTypeFilter: 'all',
+  
   approvedOrderStatuses: [
     'processing',
     'shipped',
@@ -2530,6 +2538,146 @@ Alpine.data('adminDashboard', () => ({
       this.inventoryMovementFilter,
     )
   },
+
+  get filteredSalesOrders() {
+    let filteredOrders = [
+      ...this.orders,
+    ]
+  
+    if (this.salesStatusFilter !== 'all') {
+      filteredOrders =
+        filteredOrders.filter(
+          (order) =>
+            order.status ===
+            this.salesStatusFilter,
+        )
+    }
+  
+    if (
+      this.salesCustomerTypeFilter !== 'all'
+    ) {
+      filteredOrders =
+        filteredOrders.filter(
+          (order) =>
+            order.customer_type ===
+            this.salesCustomerTypeFilter,
+        )
+    }
+  
+    if (this.salesDateFilter !== 'all') {
+      const now = new Date()
+  
+      filteredOrders =
+        filteredOrders.filter((order) => {
+          const orderDate =
+            new Date(order.submitted_at)
+  
+          if (
+            Number.isNaN(orderDate.getTime())
+          ) {
+            return false
+          }
+  
+          if (
+            this.salesDateFilter === 'today'
+          ) {
+            return (
+              orderDate.toDateString() ===
+              now.toDateString()
+            )
+          }
+  
+          const dateRangeDays = {
+            '7-days': 7,
+            '30-days': 30,
+          }
+  
+          const selectedDays =
+            dateRangeDays[
+              this.salesDateFilter
+            ]
+  
+          if (!selectedDays) {
+            return true
+          }
+  
+          const cutoffDate = new Date(now)
+  
+          cutoffDate.setDate(
+            cutoffDate.getDate() -
+            selectedDays,
+          )
+  
+          return orderDate >= cutoffDate
+        })
+    }
+  
+    return filteredOrders.sort(
+      (firstOrder, secondOrder) =>
+        new Date(
+          secondOrder.submitted_at,
+        ).getTime() -
+        new Date(
+          firstOrder.submitted_at,
+        ).getTime(),
+    )
+  },
+  
+  isRecognizedSalesOrder(order) {
+    return this.approvedOrderStatuses.includes(
+      order.status,
+    )
+  },
+  
+  orderProductSales(order) {
+    return Number(
+      order.subtotal ||
+      order.total_amount ||
+      0,
+    )
+  },
+  
+  orderProductCost(order) {
+    return order.items.reduce(
+      (totalCost, item) =>
+        totalCost +
+        Number(item.unit_cost || 0) *
+        Number(item.quantity || 0),
+      0,
+    )
+  },
+  
+  orderEstimatedGrossProfit(order) {
+    if (!this.isRecognizedSalesOrder(order)) {
+      return 0
+    }
+  
+    return (
+      this.orderProductSales(order) -
+      this.orderProductCost(order)
+    )
+  },
+  
+  salesRecognitionLabel(order) {
+    const uncountedLabels = {
+      'pending-verification':
+        'Waiting for approval',
+  
+      rejected:
+        'Rejected — not counted',
+  
+      cancelled:
+        'Cancelled — reversed',
+  
+      refunded:
+        'Refunded — reversed',
+    }
+  
+    return (
+      uncountedLabels[order.status] ||
+      'Not counted in sales'
+    )
+  },
   
   get selectedInventoryProduct() {
     return (
@@ -2593,7 +2741,7 @@ Alpine.data('adminDashboard', () => ({
       restock: 'Restock',
       add: 'Stock Added',
       remove: 'Stock Removed',
-      'order-sale': 'Order Sale',
+      'order-sale': 'Order Deduction',
       'cancellation-return': 'Cancellation Return',
       'refund-return': 'Refund Return',
     }
@@ -2796,7 +2944,7 @@ Alpine.data('adminDashboard', () => ({
       cancelled: 'bg-brand-muted',
       refunded: 'bg-violet-400',
     }
-  
+    
     return (
       statusClasses[status] ||
       'bg-brand-muted'
@@ -3749,6 +3897,8 @@ document.querySelector('#admin-app').innerHTML = `
 ${renderOrdersPage()}
 
 ${renderAdminSalesInventoryPage()}
+
+${renderAdminSalesRecords()}
 
 ${renderAdminInventoryMovementHistory()}
 
