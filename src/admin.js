@@ -17,6 +17,10 @@ import {
 } from './config/products-config.js'
 
 import {
+  packageSupplies,
+} from './config/package-supplies-config.js'
+
+import {
   renderAdminSalesInventoryPage,
 } from './components/admin-sales-inventory-page.js'
 
@@ -33,8 +37,13 @@ import {
 } from './components/admin-sales-records.js'
 
 import {
+  renderAdminPackageFulfillmentPanel,
+} from './components/admin-package-fulfillment-panel.js'
+
+import {
   membershipApplications,
   membershipStatusLabels,
+  membershipFulfillmentStatusLabels,
   paymentMethodLabels,
 } from './config/admin-preview-data.js'
 
@@ -72,6 +81,12 @@ const adminCustomerOrders = customerOrders.map(
 const adminInventoryProducts = products.map(
   (product) => ({
     ...product,
+  }),
+)
+
+const adminPackageSupplies = packageSupplies.map(
+  (supply) => ({
+    ...supply,
   }),
 )
 
@@ -418,37 +433,100 @@ function renderMembershipApplicationsPage() {
                 class="grid gap-5 lg:grid-cols-[minmax(0,1.1fr)_minmax(15rem,0.65fr)_auto] lg:items-center"
               >
                 <div class="min-w-0">
-                  <div
-                    class="flex flex-wrap items-center gap-3"
-                  >
-                    <span
-                      class="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[0.62rem] font-semibold uppercase tracking-[0.08em]"
-                      :class="applicationStatusBadgeClass(application.status)"
-                    >
-                      <span
-  class="size-1.5 rounded-full"
-  :class="
-    applicationStatusDotClass(
-      application.status,
-    )
-  "
-  aria-hidden="true"
-></span>
+                  
   
-                      <span
-                        x-text="
-                          applicationStatusLabels[
-                            application.status
-                          ] || application.status
-                        "
-                      ></span>
-                    </span>
+                <div
+  class="flex flex-wrap items-center gap-3"
+>
+  <!-- Payment/application status -->
+  <span
+    class="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[0.62rem] font-semibold uppercase tracking-[0.08em]"
+    :class="
+      applicationStatusBadgeClass(
+        application.status
+      )
+    "
+  >
+    <span
+      class="size-1.5 shrink-0 rounded-full"
+      :class="
+        applicationStatusDotClass(
+          application.status
+        )
+      "
+      aria-hidden="true"
+    ></span>
   
-                    <span
-                      class="text-[0.65rem] uppercase tracking-[0.12em] text-brand-muted"
-                      x-text="application.id"
-                    ></span>
-                  </div>
+    <span
+      x-text="
+        applicationStatusLabels[
+          application.status
+        ] || application.status
+      "
+    ></span>
+  </span>
+  
+  <!-- Package fulfillment status -->
+  <span
+    x-show="
+      application.status === 'approved' &&
+      application.fulfillment_status &&
+      application.fulfillment_status !==
+        'not-ready'
+    "
+    class="inline-flex items-center gap-2 text-[0.62rem] font-semibold uppercase tracking-[0.08em]"
+    :class="
+      application.fulfillment_status ===
+      'pending-allocation'
+        ? 'text-amber-300'
+        : application.fulfillment_status ===
+          'ready-for-packing'
+          ? 'text-brand-gold'
+          : application.fulfillment_status ===
+            'shipped'
+            ? 'text-blue-300'
+            : application.fulfillment_status ===
+              'completed'
+              ? 'text-emerald-300'
+              : 'text-brand-muted'
+    "
+  >
+    <span
+      class="size-1.5 shrink-0 rounded-full"
+      :class="
+        application.fulfillment_status ===
+        'pending-allocation'
+          ? 'bg-amber-400'
+          : application.fulfillment_status ===
+            'ready-for-packing'
+            ? 'bg-brand-gold'
+            : application.fulfillment_status ===
+              'shipped'
+              ? 'bg-blue-400'
+              : application.fulfillment_status ===
+                'completed'
+                ? 'bg-emerald-400'
+                : 'bg-brand-muted'
+      "
+      aria-hidden="true"
+    ></span>
+  
+    <span
+      x-text="
+        'Package · ' +
+        membershipFulfillmentStatusLabel(
+          application.fulfillment_status
+        )
+      "
+    ></span>
+  </span>
+  
+  <!-- Application reference -->
+  <span
+    class="text-[0.65rem] uppercase tracking-[0.12em] text-brand-muted"
+    x-text="application.id"
+  ></span>
+</div>
   
                   <h2
                     class="mt-3 truncate font-display text-2xl text-brand-cream sm:text-3xl"
@@ -2129,6 +2207,9 @@ function renderApplicationDetailsDrawer() {
     </div>
   </form>
 </section>
+  
+  ${renderAdminPackageFulfillmentPanel()}
+  
             </div>
           </div>
         </template>
@@ -2139,13 +2220,18 @@ function renderApplicationDetailsDrawer() {
 Alpine.data('adminDashboard', () => ({
   applications: adminMembershipApplications,
   
-  applicationStatusLabels: membershipStatusLabels,
+  applicationStatusLabels:
+  membershipStatusLabels,
+  
+  membershipFulfillmentStatusLabels,
   
   paymentMethodLabels,
   
   orders: adminCustomerOrders,
   
   inventoryProducts: adminInventoryProducts,
+  
+  packageSupplies: adminPackageSupplies,
   
   inventorySearch: '',
   
@@ -2214,6 +2300,14 @@ Alpine.data('adminDashboard', () => ({
   
   reviewError: '',
   
+  packageAllocationQuantities: {},
+  
+  packageAllocationError: '',
+  
+  packageFulfillmentAction: '',
+  
+  packageFulfillmentError: '',
+  
   activePage: 'overview',
   
   mobileMenuOpen: false,
@@ -2254,6 +2348,121 @@ Alpine.data('adminDashboard', () => ({
           application.id === this.selectedApplicationId,
       ) || null
     )
+  },
+  
+  get packageAllocationTotal() {
+    return this.inventoryProducts.reduce(
+      (total, product) => {
+        const quantity = Number.parseInt(
+          this.packageAllocationQuantities[
+            product.id
+          ],
+          10,
+        )
+        
+        if (
+          !Number.isInteger(quantity) ||
+          quantity <= 0
+        ) {
+          return total
+        }
+        
+        return total + quantity
+      },
+      0,
+    )
+  },
+  
+  get packageAllocationProgress() {
+    const requiredQuantity = Number(
+      this.selectedApplication
+      ?.package
+      ?.productQuantity || 0,
+    )
+    
+    if (requiredQuantity <= 0) {
+      return 0
+    }
+    
+    return Math.min(
+      100,
+      Math.round(
+        (
+          this.packageAllocationTotal /
+          requiredQuantity
+        ) * 100,
+      ),
+    )
+  },
+  
+  get canConfirmPackageAllocation() {
+    const application =
+    this.selectedApplication
+    
+    const selectedPackage =
+    application?.package
+    
+    if (
+      !application ||
+      !selectedPackage ||
+      application.status !== 'approved' ||
+      application.package_inventory_deducted
+    ) {
+      return false
+    }
+    
+    const requiredQuantity = Number(
+      selectedPackage.productQuantity || 0,
+    )
+    
+    if (
+      requiredQuantity <= 0 ||
+      this.packageAllocationTotal !==
+      requiredQuantity
+    ) {
+      return false
+    }
+    
+    const productQuantitiesAreValid =
+    this.inventoryProducts.every(
+      (product) => {
+        const rawQuantity =
+        this.packageAllocationQuantities[
+          product.id
+        ]
+        
+        const quantity =
+        rawQuantity === '' ||
+        rawQuantity === undefined
+        ? 0
+        : Number(rawQuantity)
+        
+        return (
+          Number.isInteger(quantity) &&
+          quantity >= 0 &&
+          quantity <=
+          Number(product.stockQuantity || 0)
+        )
+      },
+    )
+    
+    if (!productQuantitiesAreValid) {
+      return false
+    }
+    
+    return selectedPackage
+    .fixedInventoryItems
+    .every((inclusion) => {
+      const availableStock =
+      this.packageSupplyStock(
+        inclusion.inventoryItemId,
+      )
+      
+      return (
+        availableStock >=
+        Number(inclusion.quantity || 0)
+      )
+    })
   },
   
   get pendingVerificationCount() {
@@ -2538,88 +2747,88 @@ Alpine.data('adminDashboard', () => ({
       this.inventoryMovementFilter,
     )
   },
-
+  
   get filteredSalesOrders() {
     let filteredOrders = [
       ...this.orders,
     ]
-  
+    
     if (this.salesStatusFilter !== 'all') {
       filteredOrders =
-        filteredOrders.filter(
-          (order) =>
-            order.status ===
-            this.salesStatusFilter,
-        )
+      filteredOrders.filter(
+        (order) =>
+          order.status ===
+        this.salesStatusFilter,
+      )
     }
-  
+    
     if (
       this.salesCustomerTypeFilter !== 'all'
     ) {
       filteredOrders =
-        filteredOrders.filter(
-          (order) =>
-            order.customer_type ===
-            this.salesCustomerTypeFilter,
-        )
+      filteredOrders.filter(
+        (order) =>
+          order.customer_type ===
+        this.salesCustomerTypeFilter,
+      )
     }
-  
+    
     if (this.salesDateFilter !== 'all') {
       const now = new Date()
-  
+      
       filteredOrders =
-        filteredOrders.filter((order) => {
-          const orderDate =
-            new Date(order.submitted_at)
-  
-          if (
-            Number.isNaN(orderDate.getTime())
-          ) {
-            return false
-          }
-  
-          if (
-            this.salesDateFilter === 'today'
-          ) {
-            return (
-              orderDate.toDateString() ===
-              now.toDateString()
-            )
-          }
-  
-          const dateRangeDays = {
-            '7-days': 7,
-            '30-days': 30,
-          }
-  
-          const selectedDays =
-            dateRangeDays[
-              this.salesDateFilter
-            ]
-  
-          if (!selectedDays) {
-            return true
-          }
-  
-          const cutoffDate = new Date(now)
-  
-          cutoffDate.setDate(
-            cutoffDate.getDate() -
-            selectedDays,
+      filteredOrders.filter((order) => {
+        const orderDate =
+        new Date(order.submitted_at)
+        
+        if (
+          Number.isNaN(orderDate.getTime())
+        ) {
+          return false
+        }
+        
+        if (
+          this.salesDateFilter === 'today'
+        ) {
+          return (
+            orderDate.toDateString() ===
+            now.toDateString()
           )
-  
-          return orderDate >= cutoffDate
-        })
+        }
+        
+        const dateRangeDays = {
+          '7-days': 7,
+          '30-days': 30,
+        }
+        
+        const selectedDays =
+        dateRangeDays[
+          this.salesDateFilter
+        ]
+        
+        if (!selectedDays) {
+          return true
+        }
+        
+        const cutoffDate = new Date(now)
+        
+        cutoffDate.setDate(
+          cutoffDate.getDate() -
+          selectedDays,
+        )
+        
+        return orderDate >= cutoffDate
+      })
     }
-  
+    
     return filteredOrders.sort(
       (firstOrder, secondOrder) =>
         new Date(
-          secondOrder.submitted_at,
-        ).getTime() -
-        new Date(
-          firstOrder.submitted_at,
-        ).getTime(),
+        secondOrder.submitted_at,
+      ).getTime() -
+      new Date(
+        firstOrder.submitted_at,
+      ).getTime(),
     )
   },
   
@@ -2641,8 +2850,8 @@ Alpine.data('adminDashboard', () => ({
     return order.items.reduce(
       (totalCost, item) =>
         totalCost +
-        Number(item.unit_cost || 0) *
-        Number(item.quantity || 0),
+      Number(item.unit_cost || 0) *
+      Number(item.quantity || 0),
       0,
     )
   },
@@ -2651,7 +2860,7 @@ Alpine.data('adminDashboard', () => ({
     if (!this.isRecognizedSalesOrder(order)) {
       return 0
     }
-  
+    
     return (
       this.orderProductSales(order) -
       this.orderProductCost(order)
@@ -2661,18 +2870,18 @@ Alpine.data('adminDashboard', () => ({
   salesRecognitionLabel(order) {
     const uncountedLabels = {
       'pending-verification':
-        'Waiting for approval',
-  
+      'Waiting for approval',
+      
       rejected:
-        'Rejected — not counted',
-  
+      'Rejected — not counted',
+      
       cancelled:
-        'Cancelled — reversed',
-  
+      'Cancelled — reversed',
+      
       refunded:
-        'Refunded — reversed',
+      'Refunded — reversed',
     }
-  
+    
     return (
       uncountedLabels[order.status] ||
       'Not counted in sales'
@@ -2680,10 +2889,15 @@ Alpine.data('adminDashboard', () => ({
   },
   
   get selectedInventoryProduct() {
+    const allInventoryItems = [
+      ...this.inventoryProducts,
+      ...this.packageSupplies,
+    ]
+    
     return (
-      this.inventoryProducts.find(
-        (product) =>
-          product.id ===
+      allInventoryItems.find(
+        (inventoryItem) =>
+          inventoryItem.id ===
         this.selectedInventoryProductId,
       ) || null
     )
@@ -2744,6 +2958,8 @@ Alpine.data('adminDashboard', () => ({
       'order-sale': 'Order Deduction',
       'cancellation-return': 'Cancellation Return',
       'refund-return': 'Refund Return',
+      'package-fulfillment':
+      'Package Fulfillment',
     }
     
     return typeLabels[type] || type
@@ -2767,7 +2983,10 @@ Alpine.data('adminDashboard', () => ({
       'border-amber-500/30 bg-amber-500/10 text-amber-300',
       
       'refund-return':
-      'border-violet-500/30 bg-violet-500/10 text-violet-300',
+      'border-emerald-500/30 bg-emerald-500/10 text-emerald-300',
+      
+      'package-fulfillment':
+      'border-brand-gold/40 bg-brand-gold/10 text-brand-gold',
     }
     
     return (
@@ -2777,27 +2996,35 @@ Alpine.data('adminDashboard', () => ({
   },
   
   openInventoryAdjustment(
-    productId,
+    inventoryItemId,
     adjustmentType = 'restock',
   ) {
-    const productExists =
-    this.inventoryProducts.some(
-      (product) =>
-        product.id === productId,
+    const inventoryItemExists = [
+      ...this.inventoryProducts,
+      ...this.packageSupplies,
+    ].some(
+      (inventoryItem) =>
+        inventoryItem.id === inventoryItemId,
     )
     
-    if (!productExists) {
+    if (!inventoryItemExists) {
       return
     }
     
-    this.selectedInventoryProductId = productId
-    this.inventoryAdjustmentType = adjustmentType
+    this.selectedInventoryProductId =
+    inventoryItemId
+    
+    this.inventoryAdjustmentType =
+    adjustmentType
+    
     this.inventoryAdjustmentQuantity = ''
     this.inventoryAdjustmentReason = ''
     this.inventoryAdjustmentError = ''
     this.inventoryAdjustmentOpen = true
     
-    document.body.classList.add('overflow-hidden')
+    document.body.classList.add(
+      'overflow-hidden',
+    )
   },
   
   closeInventoryAdjustment() {
@@ -2824,12 +3051,13 @@ Alpine.data('adminDashboard', () => ({
   },
   
   saveInventoryAdjustment() {
-    const product =
+    const inventoryItem =
     this.selectedInventoryProduct
     
-    if (!product) {
+    if (!inventoryItem) {
       this.inventoryAdjustmentError =
-      'The selected product is unavailable.'
+      'The selected inventory item is unavailable.'
+      
       return
     }
     
@@ -2838,9 +3066,13 @@ Alpine.data('adminDashboard', () => ({
       10,
     )
     
-    if (!Number.isInteger(quantity) || quantity <= 0) {
+    if (
+      !Number.isInteger(quantity) ||
+      quantity <= 0
+    ) {
       this.inventoryAdjustmentError =
       'Enter a valid quantity greater than zero.'
+      
       return
     }
     
@@ -2850,11 +3082,12 @@ Alpine.data('adminDashboard', () => ({
     if (!reason) {
       this.inventoryAdjustmentError =
       'Enter a reason for this stock update.'
+      
       return
     }
     
     const previousStock = Number(
-      product.stockQuantity || 0,
+      inventoryItem.stockQuantity || 0,
     )
     
     const stockChange =
@@ -2868,37 +3101,69 @@ Alpine.data('adminDashboard', () => ({
     if (newStock < 0) {
       this.inventoryAdjustmentError =
       'The quantity to remove is greater than the available stock.'
+      
       return
     }
     
+    const isPackageSupply =
+    this.packageSupplies.some(
+      (supply) =>
+        supply.id === inventoryItem.id,
+    )
+    
     const movement = {
       id: `inventory-movement-${Date.now()}`,
-      product_id: product.id,
-      product_name: product.name,
+      
+      product_id: inventoryItem.id,
+      product_name: inventoryItem.name,
+      
+      inventory_item_type:
+      isPackageSupply
+      ? 'package-supply'
+      : 'product',
+      
       type: this.inventoryAdjustmentType,
+      
       quantity: stockChange,
       previous_stock: previousStock,
       new_stock: newStock,
+      
       reason,
+      
       created_at: new Date().toISOString(),
     }
     
-    this.inventoryProducts =
-    this.inventoryProducts.map(
-      (inventoryProduct) =>
-        inventoryProduct.id === product.id
-      ? {
-        ...inventoryProduct,
-        stockQuantity: newStock,
-      }
-      : inventoryProduct,
+    if (isPackageSupply) {
+      this.packageSupplies =
+      this.packageSupplies.map(
+        (supply) =>
+          supply.id === inventoryItem.id
+        ? {
+          ...supply,
+          stockQuantity: newStock,
+        }
+        : supply,
+      )
+    } else {
+      this.inventoryProducts =
+      this.inventoryProducts.map(
+        (product) =>
+          product.id === inventoryItem.id
+        ? {
+          ...product,
+          stockQuantity: newStock,
+        }
+        : product,
+      )
+    }
+    
+    this.inventoryMovements.unshift(
+      movement,
     )
     
-    this.inventoryMovements.unshift(movement)
-    
     this.inventoryFeedback =
-    `${product.name} stock updated from ` +
-    `${previousStock} to ${newStock}.`
+    `${inventoryItem.name} stock updated ` +
+    `from ${previousStock} to ${newStock}.`
     
     this.closeInventoryAdjustment()
     
@@ -3325,6 +3590,349 @@ Alpine.data('adminDashboard', () => ({
     }, 250)
   },
   
+  confirmPackageAllocation() {
+    if (!this.validatePackageAllocation()) {
+      return
+    }
+    
+    const application =
+    this.selectedApplication
+    
+    const selectedPackage =
+    application?.package
+    
+    if (!application || !selectedPackage) {
+      this.packageAllocationError =
+      'Package information is unavailable.'
+      
+      return
+    }
+    
+    if (
+      application.package_inventory_deducted
+    ) {
+      this.packageAllocationError =
+      'This package has already been confirmed.'
+      
+      return
+    }
+    
+    const applicationIndex =
+    this.applications.findIndex(
+      (applicationItem) =>
+        applicationItem.id ===
+      application.id,
+    )
+    
+    if (applicationIndex === -1) {
+      this.packageAllocationError =
+      'The membership application could not be found.'
+      
+      return
+    }
+    
+    const confirmedAt =
+    new Date().toISOString()
+    
+    const packageAllocation =
+    this.inventoryProducts
+    .map((product) => ({
+      product_id: product.id,
+      product_name: product.name,
+      product_image_url: product.image,
+      quantity: Number(
+        this.packageAllocationQuantities[
+          product.id
+        ] || 0,
+      ),
+    }))
+    .filter(
+      (allocation) =>
+        allocation.quantity > 0,
+    )
+    
+    const packageSupplyAllocation =
+    selectedPackage.fixedInventoryItems.map(
+      (inclusion) => ({
+        inventory_item_id:
+        inclusion.inventoryItemId,
+        
+        inventory_item_name:
+        inclusion.name,
+        
+        quantity: Number(
+          inclusion.quantity || 0,
+        ),
+      }),
+    )
+    
+    const newMovements = []
+    
+    this.inventoryProducts =
+    this.inventoryProducts.map(
+      (product) => {
+        const allocation =
+        packageAllocation.find(
+          (allocationItem) =>
+            allocationItem.product_id ===
+          product.id,
+        )
+        
+        if (!allocation) {
+          return product
+        }
+        
+        const previousStock = Number(
+          product.stockQuantity || 0,
+        )
+        
+        const newStock =
+        previousStock -
+        allocation.quantity
+        
+        newMovements.push({
+          id:
+          `package-product-${application.id}-` +
+          `${product.id}-${Date.now()}`,
+          
+          product_id: product.id,
+          product_name: product.name,
+          
+          inventory_item_type: 'product',
+          
+          type: 'package-fulfillment',
+          
+          quantity: -allocation.quantity,
+          
+          previous_stock: previousStock,
+          new_stock: newStock,
+          
+          reason:
+          `${selectedPackage.name} fulfillment ` +
+          `for ${application.customer_name}`,
+          
+          membership_application_id:
+          application.id,
+          
+          created_at: confirmedAt,
+        })
+        
+        return {
+          ...product,
+          stockQuantity: newStock,
+        }
+      },
+    )
+    
+    this.packageSupplies =
+    this.packageSupplies.map(
+      (supply) => {
+        const allocation =
+        packageSupplyAllocation.find(
+          (allocationItem) =>
+            allocationItem
+          .inventory_item_id ===
+          supply.id,
+        )
+        
+        if (!allocation) {
+          return supply
+        }
+        
+        const previousStock = Number(
+          supply.stockQuantity || 0,
+        )
+        
+        const newStock =
+        previousStock -
+        allocation.quantity
+        
+        newMovements.push({
+          id:
+          `package-supply-${application.id}-` +
+          `${supply.id}-${Date.now()}`,
+          
+          product_id: supply.id,
+          product_name: supply.name,
+          
+          inventory_item_type:
+          'package-supply',
+          
+          type: 'package-fulfillment',
+          
+          quantity: -allocation.quantity,
+          
+          previous_stock: previousStock,
+          new_stock: newStock,
+          
+          reason:
+          `${selectedPackage.name} fulfillment ` +
+          `for ${application.customer_name}`,
+          
+          membership_application_id:
+          application.id,
+          
+          created_at: confirmedAt,
+        })
+        
+        return {
+          ...supply,
+          stockQuantity: newStock,
+        }
+      },
+    )
+    
+    this.applications[applicationIndex] = {
+      ...this.applications[applicationIndex],
+      
+      fulfillment_status:
+      'ready-for-packing',
+      
+      package_allocation:
+      packageAllocation,
+      
+      package_supply_allocation:
+      packageSupplyAllocation,
+      
+      package_inventory_deducted: true,
+      
+      package_inventory_deducted_at:
+      confirmedAt,
+      
+      package_inventory_restored: false,
+      
+      package_inventory_restored_at: null,
+      
+      fulfillment_confirmed_at:
+      confirmedAt,
+      
+      updated_at: confirmedAt,
+    }
+    
+    this.inventoryMovements.unshift(
+      ...newMovements,
+    )
+    
+    this.packageAllocationError = ''
+    
+    this.inventoryFeedback =
+    `${selectedPackage.name} package confirmed. ` +
+    `${this.packageAllocationTotal} perfume bottles ` +
+    `and fixed supplies were deducted.`
+    
+    window.setTimeout(() => {
+      this.inventoryFeedback = ''
+    }, 4000)
+  },
+  
+  openPackageFulfillmentAction(action) {
+    const application = this.selectedApplication
+    
+    if (!application) {
+      this.packageFulfillmentError =
+      'Application details are unavailable.'
+      return
+    }
+    
+    const requiredStatusByAction = {
+      ship: 'ready-for-packing',
+      complete: 'shipped',
+    }
+    
+    const requiredStatus =
+    requiredStatusByAction[action]
+    
+    if (
+      !requiredStatus ||
+      application.fulfillment_status !==
+      requiredStatus
+    ) {
+      this.packageFulfillmentError =
+      'This package action is not available for the current status.'
+      return
+    }
+    
+    this.packageFulfillmentAction = action
+    this.packageFulfillmentError = ''
+  },
+  
+  closePackageFulfillmentAction() {
+    this.packageFulfillmentAction = ''
+    this.packageFulfillmentError = ''
+  },
+  
+  confirmPackageFulfillmentAction() {
+    const application = this.selectedApplication
+    
+    if (!application) {
+      this.packageFulfillmentError =
+      'Application details are unavailable.'
+      return
+    }
+    
+    const nextStatusByAction = {
+      ship: 'shipped',
+      complete: 'completed',
+    }
+    
+    const requiredStatusByAction = {
+      ship: 'ready-for-packing',
+      complete: 'shipped',
+    }
+    
+    const action = this.packageFulfillmentAction
+    const nextStatus = nextStatusByAction[action]
+    const requiredStatus =
+    requiredStatusByAction[action]
+    
+    if (
+      !nextStatus ||
+      !requiredStatus ||
+      application.fulfillment_status !==
+      requiredStatus
+    ) {
+      this.packageFulfillmentError =
+      'This package action is no longer available.'
+      return
+    }
+    
+    const applicationIndex =
+    this.applications.findIndex(
+      (applicationItem) =>
+        applicationItem.id === application.id,
+    )
+    
+    if (applicationIndex === -1) {
+      this.packageFulfillmentError =
+      'The membership application could not be found.'
+      return
+    }
+    
+    const updatedAt = new Date().toISOString()
+    
+    this.applications[applicationIndex] = {
+      ...this.applications[applicationIndex],
+      
+      fulfillment_status: nextStatus,
+      
+      package_shipped_at:
+      action === 'ship'
+      ? updatedAt
+      : this.applications[applicationIndex]
+      .package_shipped_at || null,
+      
+      package_completed_at:
+      action === 'complete'
+      ? updatedAt
+      : this.applications[applicationIndex]
+      .package_completed_at || null,
+      
+      updated_at: updatedAt,
+    }
+    
+    this.closePackageFulfillmentAction()
+  },
+  
   get reviewActionTitle() {
     const titles = {
       'approve-membership': 'Approve membership',
@@ -3429,12 +4037,43 @@ Alpine.data('adminDashboard', () => ({
       return
     }
     
+    const reviewedAt =
+    new Date().toISOString()
+    
+    const isMembershipApproval =
+    this.reviewAction ===
+    'approve-membership'
+    
     this.applications[applicationIndex] = {
       ...this.applications[applicationIndex],
+      
       status: nextStatus,
+      
       admin_note: normalizedNote,
-      reviewed_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
+      
+      reviewed_at: reviewedAt,
+      updated_at: reviewedAt,
+      
+      approved_at:
+      isMembershipApproval
+      ? reviewedAt
+      : this.applications[
+        applicationIndex
+      ].approved_at,
+      
+      membership_activated_at:
+      isMembershipApproval
+      ? reviewedAt
+      : this.applications[
+        applicationIndex
+      ].membership_activated_at,
+      
+      fulfillment_status:
+      isMembershipApproval
+      ? 'pending-allocation'
+      : this.applications[
+        applicationIndex
+      ].fulfillment_status,
     }
     
     this.closeReviewPanel()
@@ -3480,6 +4119,249 @@ Alpine.data('adminDashboard', () => ({
     return statusClasses[status] || 'bg-brand-muted'
   },
   
+  initializePackageAllocation() {
+    const initialQuantities = {}
+    
+    this.inventoryProducts.forEach(
+      (product) => {
+        initialQuantities[product.id] = 0
+      },
+    )
+    
+    const savedAllocation =
+    this.selectedApplication
+    ?.package_allocation || []
+    
+    savedAllocation.forEach((item) => {
+      if (
+        Object.hasOwn(
+          initialQuantities,
+          item.product_id,
+        )
+      ) {
+        initialQuantities[item.product_id] =
+        Number(item.quantity || 0)
+      }
+    })
+    
+    this.packageAllocationQuantities =
+    initialQuantities
+    
+    this.packageAllocationError = ''
+  },
+  
+  membershipFulfillmentStatusLabel(status) {
+    return (
+      this.membershipFulfillmentStatusLabels[
+        status
+      ] ||
+      status ||
+      'Not Ready'
+    )
+  },
+  
+  packageSupplyStock(supplyId) {
+    const supply = this.packageSupplies.find(
+      (packageSupply) =>
+        packageSupply.id === supplyId,
+    )
+    
+    return Number(
+      supply?.stockQuantity || 0,
+    )
+  },
+  
+  updatePackageAllocationQuantity(
+    productId,
+    rawValue,
+  ) {
+    const product =
+    this.inventoryProducts.find(
+      (inventoryProduct) =>
+        inventoryProduct.id === productId,
+    )
+    
+    if (!product) {
+      this.packageAllocationError =
+      'The selected product is unavailable.'
+      
+      return
+    }
+    
+    const availableStock = Number(
+      product.stockQuantity || 0,
+    )
+    
+    const requestedQuantity =
+    rawValue === ''
+    ? 0
+    : Number.parseInt(rawValue, 10)
+    
+    if (
+      !Number.isInteger(requestedQuantity) ||
+      requestedQuantity < 0
+    ) {
+      this.packageAllocationQuantities = {
+        ...this.packageAllocationQuantities,
+        [productId]: 0,
+      }
+      
+      this.packageAllocationError =
+      `Enter a valid quantity for ${product.name}.`
+      
+      return
+    }
+    
+    const safeQuantity = Math.min(
+      requestedQuantity,
+      availableStock,
+    )
+    
+    this.packageAllocationQuantities = {
+      ...this.packageAllocationQuantities,
+      [productId]: safeQuantity,
+    }
+    
+    if (requestedQuantity > availableStock) {
+      this.packageAllocationError =
+      `${product.name} only has ` +
+      `${availableStock} available stock.`
+      
+      return
+    }
+    
+    this.validatePackageAllocation()
+  },
+  
+  validatePackageAllocation() {
+    const application =
+    this.selectedApplication
+    
+    const selectedPackage =
+    application?.package
+    
+    if (!application || !selectedPackage) {
+      this.packageAllocationError =
+      'Package information is unavailable.'
+      
+      return false
+    }
+    
+    if (application.status !== 'approved') {
+      this.packageAllocationError =
+      'The membership payment must be approved before package allocation.'
+      
+      return false
+    }
+    
+    if (
+      application.package_inventory_deducted
+    ) {
+      this.packageAllocationError =
+      'This package has already been confirmed.'
+      
+      return false
+    }
+    
+    for (const product of this.inventoryProducts) {
+      const rawQuantity =
+      this.packageAllocationQuantities[
+        product.id
+      ]
+      
+      const quantity =
+      rawQuantity === '' ||
+      rawQuantity === undefined
+      ? 0
+      : Number(rawQuantity)
+      
+      if (
+        !Number.isInteger(quantity) ||
+        quantity < 0
+      ) {
+        this.packageAllocationError =
+        `Enter a valid quantity for ${product.name}.`
+        
+        return false
+      }
+      
+      const availableStock = Number(
+        product.stockQuantity || 0,
+      )
+      
+      if (quantity > availableStock) {
+        this.packageAllocationError =
+        `${product.name} only has ` +
+        `${availableStock} available stock.`
+        
+        return false
+      }
+    }
+    
+    const requiredQuantity = Number(
+      selectedPackage.productQuantity || 0,
+    )
+    
+    if (
+      this.packageAllocationTotal <
+      requiredQuantity
+    ) {
+      const remainingQuantity =
+      requiredQuantity -
+      this.packageAllocationTotal
+      
+      this.packageAllocationError =
+      `Add ${remainingQuantity} more bottle` +
+      `${remainingQuantity === 1 ? '' : 's'} ` +
+      `to complete this package.`
+      
+      return false
+    }
+    
+    if (
+      this.packageAllocationTotal >
+      requiredQuantity
+    ) {
+      const excessQuantity =
+      this.packageAllocationTotal -
+      requiredQuantity
+      
+      this.packageAllocationError =
+      `Remove ${excessQuantity} bottle` +
+      `${excessQuantity === 1 ? '' : 's'}. ` +
+      `The package limit cannot be exceeded.`
+      
+      return false
+    }
+    
+    for (
+      const inclusion of
+      selectedPackage.fixedInventoryItems
+    ) {
+      const availableStock =
+      this.packageSupplyStock(
+        inclusion.inventoryItemId,
+      )
+      
+      const requiredStock = Number(
+        inclusion.quantity || 0,
+      )
+      
+      if (availableStock < requiredStock) {
+        this.packageAllocationError =
+        `${inclusion.name} only has ` +
+        `${availableStock} available. ` +
+        `${requiredStock} required.`
+        
+        return false
+      }
+    }
+    
+    this.packageAllocationError = ''
+    
+    return true
+  },
+  
   formatMoney(amount) {
     return adminPesoFormatter.format(amount || 0)
   },
@@ -3493,13 +4375,21 @@ Alpine.data('adminDashboard', () => ({
   },
   
   openApplicationDetails(applicationId) {
-    this.selectedApplicationId = applicationId
+    this.selectedApplicationId =
+    applicationId
+    
+    this.initializePackageAllocation()
+    
     this.applicationDetailsOpen = true
-    document.body.classList.add('overflow-hidden')
+    
+    document.body.classList.add(
+      'overflow-hidden',
+    )
   },
   
   closeApplicationDetails() {
     this.closeReviewPanel()
+    this.closePackageFulfillmentAction()
     this.applicationDetailsOpen = false
     
     if (
@@ -3512,6 +4402,9 @@ Alpine.data('adminDashboard', () => ({
     window.setTimeout(() => {
       if (!this.applicationDetailsOpen) {
         this.selectedApplicationId = null
+        
+        this.packageAllocationQuantities = {}
+        this.packageAllocationError = ''
       }
     }, 250)
   },

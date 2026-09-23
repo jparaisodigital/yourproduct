@@ -1,3 +1,7 @@
+import {
+  renderAdminPackageSuppliesSection,
+} from './admin-package-supplies-section.js'
+
 export function renderAdminSalesInventoryPage() {
     return `
       <section
@@ -479,6 +483,8 @@ export function renderAdminSalesInventoryPage() {
             </p>
           </div>
         </div>
+
+        ${renderAdminPackageSuppliesSection()}
       </section>
     `
-  }
+}
