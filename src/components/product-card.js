@@ -1,67 +1,74 @@
-const pesoFormatter = new Intl.NumberFormat('en-PH', {
-  style: 'currency',
-  currency: 'PHP',
-  minimumFractionDigits: 0,
-})
+const pesoFormatter = new Intl.NumberFormat(
+  'en-PH',
+  {
+    style: 'currency',
+    currency: 'PHP',
+    minimumFractionDigits: 0,
+  },
+)
 
 export function renderProductCard(product) {
-  const isAvailable = product.stockQuantity > 0
+  const isAvailable =
+    Number(product.stockQuantity || 0) > 0
 
   const stockLabel = isAvailable
     ? 'In stock'
     : 'Out of stock'
 
   const stockTextClass = isAvailable
-    ? 'text-emerald-700'
-    : 'text-red-700'
+    ? 'text-emerald-400'
+    : 'text-red-400'
 
   const stockDotClass = isAvailable
-  ? 'bg-emerald-600'
-  : 'bg-red-600'
+    ? 'bg-emerald-400'
+    : 'bg-red-400'
 
   const memberPriceMarkup = product.memberPrice
     ? `
         <div
-          class="mt-2 grid gap-0.5 sm:mt-1.5 sm:flex sm:items-center sm:justify-between sm:gap-3"
+          class="mt-2 flex items-center justify-between gap-3"
         >
           <span
-            class="text-[0.55rem] font-medium uppercase tracking-[0.06em] text-brand-muted sm:text-[0.68rem] sm:tracking-[0.16em]"
+            class="text-[0.55rem] font-medium uppercase tracking-[0.08em] text-brand-muted sm:text-[0.68rem] sm:tracking-[0.16em]"
           >
-            Member price
+            Reseller price
           </span>
 
           <span
-            class="text-sm font-semibold text-brand-gold sm:text-base"
+            class="shrink-0 text-sm font-semibold text-brand-gold sm:text-base"
           >
-            ${pesoFormatter.format(product.memberPrice)}
+            ${pesoFormatter.format(
+              product.memberPrice,
+            )}
           </span>
         </div>
       `
     : ''
 
-  const pointsMarkup = product.isPointsQualified
-    ? `
-        <span
-          class="inline-flex items-center gap-1 text-[0.58rem] text-brand-muted sm:gap-1.5 sm:text-xs"
-        >
-          <svg
-            viewBox="0 0 20 20"
-            fill="none"
-            class="size-3 text-brand-gold sm:size-3.5"
-            aria-hidden="true"
+  const pointsMarkup =
+    product.isPointsQualified
+      ? `
+          <span
+            class="inline-flex items-center gap-1.5 text-[0.58rem] text-brand-muted sm:text-xs"
           >
-            <path
-              d="M10 2.5l2.02 4.1 4.53.66-3.28 3.2.78 4.52L10 12.85l-4.05 2.13.78-4.52-3.28-3.2 4.53-.66L10 2.5Z"
-              stroke="currentColor"
-              stroke-width="1.4"
-              stroke-linejoin="round"
-            />
-          </svg>
+            <svg
+              viewBox="0 0 20 20"
+              fill="none"
+              class="size-3 text-brand-gold sm:size-3.5"
+              aria-hidden="true"
+            >
+              <path
+                d="M10 2.5l2.02 4.1 4.53.66-3.28 3.2.78 4.52L10 12.85l-4.05 2.13.78-4.52-3.28-3.2 4.53-.66L10 2.5Z"
+                stroke="currentColor"
+                stroke-width="1.4"
+                stroke-linejoin="round"
+              />
+            </svg>
 
-          ${product.pointsPerUnit} points
-        </span>
-      `
-    : ''
+            ${product.pointsPerUnit} points
+          </span>
+        `
+      : ''
 
   return `
     <article
@@ -77,7 +84,7 @@ export function renderProductCard(product) {
     >
       <button
         type="button"
-        class="group/image relative block aspect-square w-full cursor-zoom-in overflow-hidden bg-brand-cream text-left"
+        class="group/image relative block aspect-[4/5] w-full cursor-zoom-in overflow-hidden bg-brand-black text-left"
         data-action="quick-view"
         data-product-id="${product.id}"
         aria-label="View details for ${product.name}"
@@ -86,17 +93,17 @@ export function renderProductCard(product) {
         <img
           src="${product.image}"
           alt="${product.name}"
-          class="size-full object-contain p-4 transition duration-500 ease-out group-hover/image:-translate-y-2 group-hover/image:scale-[1.04] sm:p-8"
+          class="size-full object-cover object-center transition duration-500 ease-out group-hover/image:scale-[1.025]"
           loading="lazy"
         >
       </button>
 
-      <div class="p-3 sm:p-6">
+      <div class="p-4 sm:p-6">
         <div
-          class="flex flex-col items-start gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
+          class="flex flex-wrap items-center justify-between gap-2"
         >
           <span
-            class="text-[0.5rem] font-semibold uppercase tracking-[0.05em] text-brand-gold sm:text-[0.68rem] sm:tracking-[0.12em]"
+            class="text-[0.55rem] font-semibold uppercase tracking-[0.08em] text-brand-gold sm:text-[0.68rem] sm:tracking-[0.14em]"
           >
             ${product.collectionLabel}
           </span>
@@ -104,52 +111,50 @@ export function renderProductCard(product) {
           ${pointsMarkup}
         </div>
 
-        <h3
-          class="mt-2 line-clamp-2 min-h-[2.5rem] font-display text-lg leading-[1.1] text-brand-cream sm:mt-3 sm:min-h-0 sm:text-2xl sm:leading-tight"
+        <div
+          class="mt-3 flex items-center justify-between gap-3"
         >
-          ${product.name}
-        </h3>
+          <h3
+            class="min-w-0 truncate font-display text-xl leading-tight text-brand-cream sm:text-2xl"
+          >
+            ${product.name}
+          </h3>
 
-        <p
-          class="mt-2 hidden min-h-12 text-sm leading-6 text-brand-muted sm:block"
-        >
-          ${product.shortDescription}
-        </p>
+          <span
+            class="${stockTextClass} inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap text-[0.62rem] font-semibold sm:text-xs"
+            aria-label="${stockLabel}"
+          >
+            <span
+              class="${stockDotClass} ${
+                isAvailable
+                  ? 'stock-status-dot'
+                  : ''
+              } block size-1.5 shrink-0 rounded-full"
+              aria-hidden="true"
+            ></span>
+
+            ${stockLabel}
+          </span>
+        </div>
 
         <div
-          class="mt-3 border-t border-brand-border pt-3 sm:mt-5 sm:pt-4"
+          class="mt-4 border-t border-brand-border pt-4"
         >
           <div
-            class="grid gap-0.5 sm:flex sm:items-center sm:justify-between sm:gap-3"
+            class="flex items-center justify-between gap-3"
           >
-            <div
-              class="flex w-full items-center justify-between gap-2 sm:w-auto sm:justify-start sm:gap-3"
+            <span
+              class="text-[0.55rem] font-medium uppercase tracking-[0.08em] text-brand-muted sm:text-[0.68rem] sm:tracking-[0.16em]"
             >
-              <span
-                class="text-[0.55rem] font-medium uppercase tracking-[0.06em] text-brand-muted sm:text-[0.68rem] sm:tracking-[0.16em]"
-              >
-                Regular price
-              </span>
-
-              <span
-  class="${stockTextClass} inline-flex items-center gap-1.5 whitespace-nowrap text-[0.58rem] font-semibold normal-case sm:text-xs"
-  aria-label="${stockLabel}"
->
-  <span
-    class="${stockDotClass} ${
-      isAvailable ? 'stock-status-dot' : ''
-    } block size-1.5 shrink-0 rounded-full"
-    aria-hidden="true"
-  ></span>
-
-  ${stockLabel}
-</span>
-            </div>
+              Regular price
+            </span>
 
             <span
-              class="text-sm font-semibold text-brand-cream sm:text-base"
+              class="shrink-0 text-sm font-semibold text-brand-cream sm:text-base"
             >
-              ${pesoFormatter.format(product.regularPrice)}
+              ${pesoFormatter.format(
+                product.regularPrice,
+              )}
             </span>
           </div>
 
@@ -157,7 +162,7 @@ export function renderProductCard(product) {
         </div>
 
         <div
-          class="mt-3 flex items-center gap-1.5 sm:mt-4 sm:gap-2.5"
+          class="mt-4 flex items-center gap-2.5"
         >
           <button
             type="button"
@@ -198,7 +203,7 @@ export function renderProductCard(product) {
 
           <button
             type="button"
-            class="inline-flex h-9 min-w-0 flex-1 items-center justify-center gap-1 rounded-lg bg-brand-gold px-2 text-[0.62rem] font-bold uppercase tracking-[0.04em] text-[#17130d] shadow-[0_8px_22px_rgb(183_138_50_/_0.18)] transition duration-200 hover:-translate-y-0.5 hover:bg-brand-gold-light active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 sm:h-11 sm:gap-2 sm:rounded-xl sm:px-4 sm:text-xs sm:tracking-[0.1em]"
+            class="inline-flex h-10 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-lg bg-brand-gold px-3 text-[0.65rem] font-bold uppercase tracking-[0.05em] text-[#17130d] shadow-[0_8px_22px_rgb(183_138_50_/_0.18)] transition duration-200 hover:-translate-y-0.5 hover:bg-brand-gold-light active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 sm:h-11 sm:gap-2 sm:rounded-xl sm:px-4 sm:text-xs sm:tracking-[0.1em]"
             data-action="add-to-cart"
             data-product-id="${product.id}"
             @click.prevent="$addToCartWithAnimation('${product.id}', $event.currentTarget)"
@@ -236,9 +241,13 @@ export function renderProductCard(product) {
 
             <span
               x-text="
-                $store.cart.quantityFor('${product.id}') > 0
+                $store.cart.quantityFor(
+                  '${product.id}'
+                ) > 0
                   ? 'Added (' +
-                    $store.cart.quantityFor('${product.id}') +
+                    $store.cart.quantityFor(
+                      '${product.id}'
+                    ) +
                     ')'
                   : 'Add to cart'
               "

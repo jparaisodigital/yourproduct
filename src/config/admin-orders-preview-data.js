@@ -19,42 +19,43 @@ export const customerOrders = [
     items: [
       {
         id: 'order-item-001',
+
+        // Matches M01 in products-config.js.
         product_id: 'sample-men-01',
-        product_name: 'Sample 1',
+        product_name: 'M01',
         product_category: "Men's Collection",
         product_image_url: null,
 
         pricing_type: 'regular',
         quantity: 2,
-        unit_price: 299,
+        unit_price: 350,
 
-        // Cost snapshot when the order was created.
-        unit_cost: 90,
-        line_total: 598,
+        // Company cost is awaiting final confirmation.
+        unit_cost: null,
+
+        line_total: 700,
       },
     ],
 
     item_count: 2,
-    subtotal: 598,
+    subtotal: 700,
     delivery_fee: 0,
-    total_amount: 598,
+    total_amount: 700,
 
     fulfillment_type: 'dropship',
     delivery_region: 'NCR',
-    recipient_name: 'Juan Dela Cruz',
 
+    recipient_name: 'Juan Dela Cruz',
     delivery_address:
       '123 Sample Street, Barangay Example, Quezon City',
-
-    delivery_note:
-      'Please call before delivery.',
+    delivery_note: 'Please call before delivery.',
 
     payment_method: 'e-wallet',
     payment_provider: 'GCash',
     sender_name: 'Juan Dela Cruz',
     reference_number: 'GCASH-38472910',
-    payment_proof_url: null,
 
+    payment_proof_url: null,
     payment_proof_file_name:
       'order-001-payment.jpg',
 
@@ -64,7 +65,6 @@ export const customerOrders = [
 
     submitted_at:
       '2026-09-21T05:30:00.000Z',
-
     updated_at:
       '2026-09-21T05:30:00.000Z',
   },
@@ -89,53 +89,62 @@ export const customerOrders = [
     items: [
       {
         id: 'order-item-002',
+
+        // Matches W01 in products-config.js.
         product_id: 'sample-women-01',
-        product_name: 'Sample 2',
+        product_name: 'W01',
         product_category: "Women's Collection",
         product_image_url: null,
 
         pricing_type: 'member',
         quantity: 1,
-        unit_price: 149,
-        unit_cost: 90,
-        line_total: 149,
+        unit_price: 180,
+
+        // Company cost is awaiting final confirmation.
+        unit_cost: null,
+
+        line_total: 180,
       },
 
       {
         id: 'order-item-003',
+
+        // Matches M02 in products-config.js.
         product_id: 'sample-men-02',
-        product_name: 'Sample 3',
+        product_name: 'M02',
         product_category: "Men's Collection",
         product_image_url: null,
 
         pricing_type: 'member',
         quantity: 1,
-        unit_price: 149,
-        unit_cost: 90,
-        line_total: 149,
+        unit_price: 180,
+
+        // Company cost is awaiting final confirmation.
+        unit_cost: null,
+
+        line_total: 180,
       },
     ],
 
     item_count: 2,
-    subtotal: 298,
+    subtotal: 360,
     delivery_fee: 0,
-    total_amount: 298,
+    total_amount: 360,
 
     fulfillment_type: 'dropship',
     delivery_region: 'LUZON',
-    recipient_name: 'Maria Santos',
 
+    recipient_name: 'Maria Santos',
     delivery_address:
       '45 Sample Avenue, Barangay Test, Calamba, Laguna',
-
     delivery_note: '',
 
     payment_method: 'bank-transfer',
     payment_provider: 'BDO',
     sender_name: 'Maria Santos',
     reference_number: 'BDO-72910483',
-    payment_proof_url: null,
 
+    payment_proof_url: null,
     payment_proof_file_name:
       'order-002-payment.png',
 
@@ -145,7 +154,6 @@ export const customerOrders = [
 
     submitted_at:
       '2026-09-21T06:15:00.000Z',
-
     updated_at:
       '2026-09-21T06:15:00.000Z',
   },
@@ -163,43 +171,45 @@ export const customerOrders = [
     status: 'processing',
 
     // This preview order was already approved.
-    // Its three units are already reflected in stock.
+    // Its three W02 units are already reflected in stock.
     inventory_deducted: true,
-
     inventory_deducted_at:
       '2026-09-21T07:10:00.000Z',
-
     inventory_restored: false,
     inventory_restored_at: null,
 
     items: [
       {
         id: 'order-item-004',
+
+        // Matches W02 in products-config.js.
         product_id: 'sample-women-02',
-        product_name: 'Sample 4',
+        product_name: 'W02',
         product_category: "Women's Collection",
         product_image_url: null,
 
         pricing_type: 'regular',
         quantity: 3,
-        unit_price: 299,
-        unit_cost: 90,
-        line_total: 897,
+        unit_price: 350,
+
+        // Company cost is awaiting final confirmation.
+        unit_cost: null,
+
+        line_total: 1050,
       },
     ],
 
     item_count: 3,
-    subtotal: 897,
+    subtotal: 1050,
     delivery_fee: 0,
-    total_amount: 897,
+    total_amount: 1050,
 
     fulfillment_type: 'dropship',
     delivery_region: 'VISAYAS',
-    recipient_name: 'Carlo Reyes',
 
+    recipient_name: 'Carlo Reyes',
     delivery_address:
       '78 Demo Road, Barangay Sample, Cebu City',
-
     delivery_note:
       'Deliver during office hours.',
 
@@ -207,8 +217,8 @@ export const customerOrders = [
     payment_provider: 'Maya',
     sender_name: 'Carlo Reyes',
     reference_number: 'MAYA-91827463',
-    payment_proof_url: null,
 
+    payment_proof_url: null,
     payment_proof_file_name:
       'order-003-payment.webp',
 
@@ -217,13 +227,11 @@ export const customerOrders = [
 
     reviewed_at:
       '2026-09-21T07:10:00.000Z',
-
     approved_at:
       '2026-09-21T07:10:00.000Z',
 
     submitted_at:
       '2026-09-20T09:45:00.000Z',
-
     updated_at:
       '2026-09-21T07:10:00.000Z',
   },
@@ -258,5 +266,5 @@ export const customerTypeLabels = {
 
 export const pricingTypeLabels = {
   regular: 'Regular Price',
-  member: 'Member Price',
+  member: 'Reseller Price',
 }

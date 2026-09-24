@@ -246,7 +246,7 @@ document.querySelector('#checkout-app').innerHTML = `
             />
           </svg>
 
-          Secure checkout
+          Manual payment
         </div>
       </div>
     </header>
@@ -387,12 +387,12 @@ document.querySelector('#checkout-app').innerHTML = `
                   class="grid grid-cols-[5rem_1fr] gap-4 p-5 sm:grid-cols-[6rem_1fr] sm:p-6"
                 >
                   <div
-                    class="size-20 overflow-hidden rounded-xl bg-brand-cream sm:size-24"
+                    class="h-28 w-full overflow-hidden rounded-xl border border-brand-border bg-brand-black sm:h-32"
                   >
                     <img
                       :src="item.product.image"
                       :alt="item.product.name"
-                      class="size-full object-contain p-2"
+                      class="size-full object-cover object-center"
                     >
                   </div>
 
@@ -421,7 +421,10 @@ document.querySelector('#checkout-app').innerHTML = `
                     <p
                       class="mt-1 text-xs text-brand-muted"
                       x-text="
-                        formatMoney(item.product.regularPrice) +
+                        'Regular price · ' +
+                        formatMoney(
+                          item.product.regularPrice
+                        ) +
                         ' each'
                       "
                     ></p>
@@ -548,8 +551,9 @@ document.querySelector('#checkout-app').innerHTML = `
             </div>
 
             <p class="mt-4 text-xs leading-5 text-brand-muted">
-              Delivery fees and final checkout rules remain subject to
-              client confirmation.
+              Estimated delivery is 1–3 days via J&amp;T after
+              dispatch. The delivery fee will be confirmed during
+              order review.
             </p>
 
             <div
@@ -579,7 +583,7 @@ document.querySelector('#checkout-app').innerHTML = `
                 />
               </svg>
 
-              Secure checkout
+              Manual payment verification
                         </div>
           </section>
         </aside>
@@ -837,8 +841,8 @@ document.querySelector('#checkout-app').innerHTML = `
   </select>
 
   <p class="mt-2 text-xs leading-5 text-brand-muted">
-    Delivery duration and final fulfillment details will be
-    confirmed after order verification.
+    Estimated delivery is 1–3 days via J&amp;T after dispatch.
+    The final delivery fee will be confirmed during order review.
   </p>
 </div>
               <label

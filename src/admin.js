@@ -2543,17 +2543,50 @@ Alpine.data('adminDashboard', () => ({
     )
   },
   
+  hasConfirmedUnitCost(item) {
+    if (
+      item.unit_cost === null ||
+      item.unit_cost === undefined ||
+      item.unit_cost === ''
+    ) {
+      return false
+    }
+  
+    const unitCost = Number(item.unit_cost)
+  
+    return (
+      Number.isFinite(unitCost) &&
+      unitCost >= 0
+    )
+  },
+  
   get approvedProductCost() {
+    if (this.approvedOrders.length === 0) {
+      return 0
+    }
+  
+    const hasMissingCost =
+    this.approvedOrders.some((order) =>
+      order.items.some(
+        (item) =>
+          !this.hasConfirmedUnitCost(item),
+      ),
+    )
+  
+    if (hasMissingCost) {
+      return null
+    }
+  
     return this.approvedOrders.reduce(
       (orderTotal, order) => {
         const itemCost = order.items.reduce(
           (itemTotal, item) =>
             itemTotal +
-          Number(item.unit_cost || 0) *
-          Number(item.quantity || 0),
+            Number(item.unit_cost) *
+            Number(item.quantity || 0),
           0,
         )
-        
+  
         return orderTotal + itemCost
       },
       0,
@@ -2561,6 +2594,10 @@ Alpine.data('adminDashboard', () => ({
   },
   
   get estimatedGrossProfit() {
+    if (this.approvedProductCost === null) {
+      return null
+    }
+  
     return (
       this.approvedSalesTotal -
       this.approvedProductCost
@@ -2847,23 +2884,40 @@ Alpine.data('adminDashboard', () => ({
   },
   
   orderProductCost(order) {
+    const hasMissingCost =
+    order.items.some(
+      (item) =>
+        !this.hasConfirmedUnitCost(item),
+    )
+  
+    if (hasMissingCost) {
+      return null
+    }
+  
     return order.items.reduce(
       (totalCost, item) =>
         totalCost +
-      Number(item.unit_cost || 0) *
-      Number(item.quantity || 0),
+        Number(item.unit_cost) *
+        Number(item.quantity || 0),
       0,
     )
   },
   
   orderEstimatedGrossProfit(order) {
     if (!this.isRecognizedSalesOrder(order)) {
-      return 0
+      return null
     }
-    
+  
+    const productCost =
+    this.orderProductCost(order)
+  
+    if (productCost === null) {
+      return null
+    }
+  
     return (
       this.orderProductSales(order) -
-      this.orderProductCost(order)
+      productCost
     )
   },
   
@@ -4364,6 +4418,29 @@ Alpine.data('adminDashboard', () => ({
   
   formatMoney(amount) {
     return adminPesoFormatter.format(amount || 0)
+  },
+  
+  formatOptionalMoney(
+    amount,
+    fallback = 'Pending confirmation',
+  ) {
+    if (
+      amount === null ||
+      amount === undefined ||
+      amount === ''
+    ) {
+      return fallback
+    }
+  
+    const numericAmount = Number(amount)
+  
+    if (!Number.isFinite(numericAmount)) {
+      return fallback
+    }
+  
+    return adminPesoFormatter.format(
+      numericAmount,
+    )
   },
   
   formatDate(dateValue) {

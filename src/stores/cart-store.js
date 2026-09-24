@@ -1,8 +1,18 @@
 const CART_STORAGE_KEY = 'your-product-cart-v1'
 
-export function registerCartStore(Alpine, products) {
+export function registerCartStore(
+  Alpine,
+  products,
+  options = {},
+) {
+  const pricingType =
+    options.pricingType === 'member'
+      ? 'member'
+      : 'regular'
+
   Alpine.store('cart', {
     items: [],
+    pricingType,
 
     init() {
       this.load()
@@ -35,6 +45,7 @@ export function registerCartStore(Alpine, products) {
 
             if (
               !product ||
+              product.stockQuantity <= 0 ||
               !Number.isInteger(item.quantity) ||
               item.quantity <= 0
             ) {
@@ -51,7 +62,11 @@ export function registerCartStore(Alpine, products) {
           })
           .filter(Boolean)
       } catch (error) {
-        console.error('Unable to load cart:', error)
+        console.error(
+          'Unable to load cart:',
+          error,
+        )
+
         this.items = []
       }
     },
@@ -63,7 +78,10 @@ export function registerCartStore(Alpine, products) {
           JSON.stringify(this.items),
         )
       } catch (error) {
-        console.error('Unable to save cart:', error)
+        console.error(
+          'Unable to save cart:',
+          error,
+        )
       }
     },
 
@@ -73,12 +91,16 @@ export function registerCartStore(Alpine, products) {
           productItem.id === productId,
       )
 
-      if (!product || product.stockQuantity <= 0) {
+      if (
+        !product ||
+        product.stockQuantity <= 0
+      ) {
         return
       }
 
       const existingItem = this.items.find(
-        (item) => item.productId === productId,
+        (item) =>
+          item.productId === productId,
       )
 
       if (existingItem) {
@@ -114,7 +136,8 @@ export function registerCartStore(Alpine, products) {
 
     decrease(productId) {
       const existingItem = this.items.find(
-        (item) => item.productId === productId,
+        (item) =>
+          item.productId === productId,
       )
 
       if (!existingItem) {
@@ -142,7 +165,8 @@ export function registerCartStore(Alpine, products) {
 
     remove(productId) {
       this.items = this.items.filter(
-        (item) => item.productId !== productId,
+        (item) =>
+          item.productId !== productId,
       )
 
       this.save()
@@ -160,6 +184,31 @@ export function registerCartStore(Alpine, products) {
       )
 
       return item?.quantity ?? 0
+    },
+
+    unitPriceFor(product) {
+      const regularPrice = Number(
+        product?.regularPrice || 0,
+      )
+
+      const resellerPrice = Number(
+        product?.memberPrice || 0,
+      )
+
+      if (
+        this.pricingType === 'member' &&
+        resellerPrice > 0
+      ) {
+        return resellerPrice
+      }
+
+      return regularPrice
+    },
+
+    get priceLabel() {
+      return this.pricingType === 'member'
+        ? 'Reseller price'
+        : 'Regular price'
     },
 
     get itemCount() {
@@ -182,11 +231,16 @@ export function registerCartStore(Alpine, products) {
             return null
           }
 
+          const unitPrice =
+            this.unitPriceFor(product)
+
           return {
             ...item,
             product,
+            pricingType: this.pricingType,
+            unitPrice,
             lineTotal:
-              product.regularPrice * item.quantity,
+              unitPrice * item.quantity,
           }
         })
         .filter(Boolean)

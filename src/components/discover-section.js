@@ -1,6 +1,3 @@
-import perfumeMenBackground from '../assets/products/perfume1.png'
-import perfumeWomenBackground from '../assets/products/perfume-women.png'
-
 export function renderDiscoverSection() {
   return `
     <section
@@ -48,6 +45,7 @@ export function renderDiscoverSection() {
             <a
               href="#shop"
               class="inline-flex h-11 items-center justify-center rounded-xl bg-brand-gold px-5 text-xs font-semibold uppercase tracking-[0.08em] text-[#17130d] transition duration-200 hover:-translate-y-0.5 hover:bg-brand-gold-light"
+              @click="activeCategory = 'all'"
             >
               View Perfumes
             </a>
@@ -69,6 +67,13 @@ export function renderDiscoverSection() {
               class="pointer-events-none absolute -right-16 -top-16 size-52 rounded-full bg-brand-gold/15 blur-3xl"
               aria-hidden="true"
             ></div>
+
+            <div
+              class="pointer-events-none absolute bottom-6 right-6 font-display text-[8rem] leading-none text-brand-gold/[0.025]"
+              aria-hidden="true"
+            >
+              20
+            </div>
 
             <div class="relative flex h-full flex-col justify-between">
               <div
@@ -132,6 +137,38 @@ export function renderDiscoverSection() {
                   One shared collection with fragrances for both men
                   and women.
                 </p>
+
+                <div
+                  class="mt-5 grid grid-cols-2 border-t border-brand-border pt-4"
+                >
+                  <div>
+                    <p
+                      class="text-[0.6rem] font-semibold uppercase tracking-[0.16em] text-brand-muted"
+                    >
+                      For Him
+                    </p>
+
+                    <p
+                      class="mt-1 font-display text-2xl text-brand-cream"
+                    >
+                      10
+                    </p>
+                  </div>
+
+                  <div class="border-l border-brand-border pl-4">
+                    <p
+                      class="text-[0.6rem] font-semibold uppercase tracking-[0.16em] text-brand-muted"
+                    >
+                      For Her
+                    </p>
+
+                    <p
+                      class="mt-1 font-display text-2xl text-brand-cream"
+                    >
+                      10
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           </article>
@@ -139,12 +176,17 @@ export function renderDiscoverSection() {
           <article
             class="group relative overflow-hidden rounded-[1.4rem] border border-brand-border bg-brand-panel p-5 shadow-panel transition duration-300 hover:-translate-y-1 hover:border-brand-gold/50"
           >
-            <img
-              src="${perfumeMenBackground}"
-              alt=""
-              class="pointer-events-none absolute -bottom-8 -right-8 h-[105%] w-[65%] object-contain object-right-bottom opacity-[0.12] sm:-bottom-6 sm:-right-6 sm:w-[68%]"
+            <div
+              class="pointer-events-none absolute -right-12 -top-12 size-40 rounded-full border border-brand-gold/10"
+              aria-hidden="true"
+            ></div>
+
+            <div
+              class="pointer-events-none absolute -right-4 bottom-0 font-display text-[7rem] leading-none text-brand-gold/[0.035]"
               aria-hidden="true"
             >
+              10
+            </div>
 
             <div class="relative z-10">
               <div class="flex items-start justify-between gap-4">
@@ -155,7 +197,7 @@ export function renderDiscoverSection() {
                 </span>
 
                 <span
-                  class="font-display text-3xl leading-none text-brand-gold/30"
+                  class="font-display text-3xl leading-none text-brand-gold/40"
                   aria-hidden="true"
                 >
                   10
@@ -168,16 +210,37 @@ export function renderDiscoverSection() {
                 Fragrances for men
               </h3>
 
-              <p class="mt-2 text-sm leading-6 text-brand-muted">
-                Browse scent profiles created for different styles,
-                moods, and occasions.
+              <p class="mt-2 max-w-xs text-sm leading-6 text-brand-muted">
+                Browse scents created for different styles, moods,
+                and occasions.
               </p>
 
               <a
                 href="#shop"
-                class="mt-4 inline-flex items-center text-xs font-semibold uppercase tracking-[0.08em] text-brand-gold"
+                class="mt-5 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.08em] text-brand-gold transition group-hover:text-brand-gold-light"
+                @click="activeCategory = 'men'"
               >
                 View collection
+
+                <svg
+                  class="size-4 transition-transform duration-200 group-hover:translate-x-1"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.7"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M5 12h14"
+                    stroke-linecap="round"
+                  />
+
+                  <path
+                    d="m14 7 5 5-5 5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
               </a>
             </div>
           </article>
@@ -185,12 +248,17 @@ export function renderDiscoverSection() {
           <article
             class="group relative overflow-hidden rounded-[1.4rem] border border-brand-border bg-brand-panel p-5 shadow-panel transition duration-300 hover:-translate-y-1 hover:border-brand-gold/50"
           >
-            <img
-              src="${perfumeWomenBackground}"
-              alt=""
-              class="pointer-events-none absolute -bottom-8 -right-8 h-[105%] w-[65%] object-contain object-right-bottom opacity-[0.12] sm:-bottom-6 sm:-right-6 sm:w-[68%]"
+            <div
+              class="pointer-events-none absolute -right-12 -top-12 size-40 rounded-full border border-brand-gold/10"
+              aria-hidden="true"
+            ></div>
+
+            <div
+              class="pointer-events-none absolute -right-4 bottom-0 font-display text-[7rem] leading-none text-brand-gold/[0.035]"
               aria-hidden="true"
             >
+              10
+            </div>
 
             <div class="relative z-10">
               <div class="flex items-start justify-between gap-4">
@@ -201,7 +269,7 @@ export function renderDiscoverSection() {
                 </span>
 
                 <span
-                  class="font-display text-3xl leading-none text-brand-gold/30"
+                  class="font-display text-3xl leading-none text-brand-gold/40"
                   aria-hidden="true"
                 >
                   10
@@ -214,16 +282,37 @@ export function renderDiscoverSection() {
                 Fragrances for women
               </h3>
 
-              <p class="mt-2 text-sm leading-6 text-brand-muted">
-                Explore distinct fragrances with personal and memorable
-                scent profiles.
+              <p class="mt-2 max-w-xs text-sm leading-6 text-brand-muted">
+                Explore distinct fragrances with personal and
+                memorable scent profiles.
               </p>
 
               <a
                 href="#shop"
-                class="mt-4 inline-flex items-center text-xs font-semibold uppercase tracking-[0.08em] text-brand-gold"
+                class="mt-5 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.08em] text-brand-gold transition group-hover:text-brand-gold-light"
+                @click="activeCategory = 'women'"
               >
                 View collection
+
+                <svg
+                  class="size-4 transition-transform duration-200 group-hover:translate-x-1"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.7"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M5 12h14"
+                    stroke-linecap="round"
+                  />
+
+                  <path
+                    d="m14 7 5 5-5 5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
               </a>
             </div>
           </article>
