@@ -186,14 +186,14 @@ export function renderCartDrawer() {
                     </p>
 
                     <p
-                      class="mt-0.5 text-sm font-semibold text-brand-gold"
-                      x-text="
-                        '₱' +
-                        Number(
-                          item.product.regularPrice || 0
-                        ).toLocaleString('en-PH')
-                      "
-                    ></p>
+  class="mt-0.5 text-sm font-semibold text-brand-gold"
+  x-text="
+    '₱' +
+    Number(
+      item.unitPrice || 0
+    ).toLocaleString('en-PH')
+  "
+></p>
                   </div>
 
                   <div

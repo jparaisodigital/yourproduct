@@ -401,51 +401,50 @@ document.querySelector('#checkout-app').innerHTML = `
                       class="flex items-start justify-between gap-3"
                     >
                       <div class="min-w-0">
-                        <p
-                          class="text-[0.58rem] font-semibold uppercase tracking-[0.12em] text-brand-gold sm:text-[0.65rem]"
-                          x-text="item.product.collectionLabel"
-                        ></p>
+  <p
+    class="text-[0.58rem] font-semibold uppercase tracking-[0.12em] text-brand-gold sm:text-[0.65rem]"
+    x-text="item.product.collectionLabel"
+  ></p>
 
-                        <h3
-                          class="mt-1 truncate font-display text-xl text-brand-cream sm:text-2xl"
-                          x-text="item.product.name"
-                        ></h3>
-                      </div>
+  <h3
+    class="mt-1 truncate font-display text-xl text-brand-cream sm:text-2xl"
+    x-text="item.product.name"
+  ></h3>
+</div>
 
-                      <strong
-                        class="shrink-0 text-sm text-brand-cream sm:text-base"
-                        x-text="formatMoney(item.lineTotal)"
-                      ></strong>
-                    </div>
+<strong
+  class="shrink-0 text-sm text-brand-cream sm:text-base"
+  x-text="formatMoney(item.lineTotal)"
+></strong>
+</div>
 
-                    <p
-                      class="mt-1 text-xs text-brand-muted"
-                      x-text="
-                        'Regular price · ' +
-                        formatMoney(
-                          item.product.regularPrice
-                        ) +
-                        ' each'
-                      "
-                    ></p>
+<p
+  class="mt-1 text-xs text-brand-muted"
+  x-text="
+    $store.cart.priceLabel +
+    ' · ' +
+    formatMoney(item.unitPrice) +
+    ' each'
+  "
+></p>
 
-                    <div
-                      class="mt-4 flex flex-wrap items-center justify-between gap-3"
-                    >
-                      <div
-                        class="flex items-center rounded-full border border-brand-border"
-                      >
-                        <button
-                          type="button"
-                          class="grid size-9 place-items-center text-brand-cream transition hover:text-brand-gold"
-                          aria-label="Decrease quantity"
-                          @click="
-  $store.cart.decrease(item.productId)
-  checkoutPreviewComplete = false
-"
-                        >
-                          −
-                        </button>
+<div
+  class="mt-4 flex flex-wrap items-center justify-between gap-3"
+>
+  <div
+    class="flex items-center rounded-full border border-brand-border"
+  >
+    <button
+      type="button"
+      class="grid size-9 place-items-center text-brand-cream transition hover:text-brand-gold"
+      aria-label="Decrease quantity"
+      @click="
+        $store.cart.decrease(item.productId)
+        checkoutPreviewComplete = false
+      "
+    >
+      −
+    </button>
 
                         <span
                           class="min-w-8 text-center text-sm font-semibold text-brand-cream"
