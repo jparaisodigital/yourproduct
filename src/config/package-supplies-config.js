@@ -1,20 +1,4 @@
 export const packageSupplies = [
-    {
-      id: 'supply-sticker',
-      sku: 'SUP-STICKER',
-      name: 'Sticker',
-      category: 'packaging-supply',
-      unitLabel: 'piece',
-  
-      stockQuantity: 1000,
-      lowStockThreshold: 100,
-  
-      costPerUnit: null,
-  
-      trackInventory: true,
-      isActive: true,
-      isSample: true,
-    },
   
     {
       id: 'supply-tester-kit',

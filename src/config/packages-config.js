@@ -19,17 +19,10 @@ export const packages = [
 
     ...packageProductRules,
 
-    fixedInventoryItems: [
-      {
-        inventoryItemId: 'supply-sticker',
-        name: 'Sticker',
-        quantity: 5,
-      },
-    ],
+    fixedInventoryItems: [],
 
     inclusions: [
       '5 Assorted Bottles (85ml)',
-      '5 Stickers',
       'Business Access',
     ],
 
@@ -56,17 +49,11 @@ export const packages = [
         name: 'Tester Kit',
         quantity: 1,
       },
-      {
-        inventoryItemId: 'supply-sticker',
-        name: 'Sticker',
-        quantity: 27,
-      },
     ],
 
     inclusions: [
       '1 Tester Kit',
       '27 Assorted Bottles (85ml)',
-      '27 Stickers',
       'Business Programs',
     ],
 
@@ -94,11 +81,6 @@ export const packages = [
         quantity: 1,
       },
       {
-        inventoryItemId: 'supply-sticker',
-        name: 'Sticker',
-        quantity: 55,
-      },
-      {
         inventoryItemId: 'supply-tarpaulin',
         name: 'Tarpaulin',
         quantity: 1,
@@ -108,7 +90,6 @@ export const packages = [
     inclusions: [
       '1 Tester Kit',
       '55 Assorted Bottles (85ml)',
-      '55 Stickers',
       '1 Tarpaulin',
       'Business Programs',
     ],
@@ -137,11 +118,6 @@ export const packages = [
         quantity: 2,
       },
       {
-        inventoryItemId: 'supply-sticker',
-        name: 'Sticker',
-        quantity: 250,
-      },
-      {
         inventoryItemId: 'supply-tarpaulin',
         name: 'Tarpaulin',
         quantity: 1,
@@ -156,7 +132,6 @@ export const packages = [
     inclusions: [
       '2 Tester Kits',
       '250 Assorted Bottles (85ml)',
-      '250 Stickers',
       '1 Tarpaulin',
       '1 Mini Stall',
       'Business Programs',

@@ -67,16 +67,16 @@ export function renderAdminSalesInventoryPage() {
           <p
             class="text-[0.65rem] uppercase tracking-[0.13em] text-brand-muted"
           >
-            Approved Sales
+            Today's Sales
           </p>
 
           <strong
             class="mt-3 block font-display text-3xl text-brand-gold"
-            x-text="formatMoney(approvedSalesTotal)"
+            x-text="formatMoney(dailyApprovedSales)"
           ></strong>
 
           <p class="mt-2 text-xs text-brand-muted">
-            Approved product orders
+            Approved sales today
           </p>
         </article>
 
@@ -86,11 +86,72 @@ export function renderAdminSalesInventoryPage() {
           <p
             class="text-[0.65rem] uppercase tracking-[0.13em] text-brand-muted"
           >
+            This Week's Sales
+          </p>
+
+          <strong
+            class="mt-3 block font-display text-3xl text-brand-cream"
+            x-text="formatMoney(weeklyApprovedSales)"
+          ></strong>
+
+          <p class="mt-2 text-xs text-brand-muted">
+            Monday through today
+          </p>
+        </article>
+
+        <article
+          class="rounded-[1.4rem] border border-brand-border bg-brand-panel p-5 shadow-panel"
+        >
+          <p
+            class="text-[0.65rem] uppercase tracking-[0.13em] text-brand-muted"
+          >
+            This Month's Sales
+          </p>
+
+          <strong
+            class="mt-3 block font-display text-3xl text-brand-cream"
+            x-text="formatMoney(monthlyApprovedSales)"
+          ></strong>
+
+          <p class="mt-2 text-xs text-brand-muted">
+            Current calendar month
+          </p>
+        </article>
+
+        <article
+          class="rounded-[1.4rem] border border-brand-gold/30 bg-brand-panel p-5 shadow-panel"
+        >
+          <p
+            class="text-[0.65rem] uppercase tracking-[0.13em] text-brand-muted"
+          >
+            All-Time Sales
+          </p>
+
+          <strong
+            class="mt-3 block font-display text-3xl text-brand-gold"
+            x-text="formatMoney(approvedSalesTotal)"
+          ></strong>
+
+          <p class="mt-2 text-xs text-brand-muted">
+            All approved product orders
+          </p>
+        </article>
+      </div>
+
+      <div
+        class="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4"
+      >
+        <article
+          class="rounded-[1.25rem] border border-brand-border bg-brand-panel p-5"
+        >
+          <p
+            class="text-[0.65rem] uppercase tracking-[0.13em] text-brand-muted"
+          >
             Estimated Product Cost
           </p>
 
           <strong
-            class="mt-3 block font-display text-3xl"
+            class="mt-2 block font-display text-3xl"
             :class="
               approvedProductCost === null
                 ? 'text-brand-muted'
@@ -110,7 +171,7 @@ export function renderAdminSalesInventoryPage() {
         </article>
 
         <article
-          class="rounded-[1.4rem] border border-emerald-500/30 bg-brand-panel p-5 shadow-panel"
+          class="rounded-[1.25rem] border border-emerald-500/30 bg-brand-panel p-5"
         >
           <p
             class="text-[0.65rem] uppercase tracking-[0.13em] text-brand-muted"
@@ -119,7 +180,7 @@ export function renderAdminSalesInventoryPage() {
           </p>
 
           <strong
-            class="mt-3 block font-display text-3xl"
+            class="mt-2 block font-display text-3xl"
             :class="
               estimatedGrossProfit === null
                 ? 'text-brand-muted'
@@ -138,29 +199,6 @@ export function renderAdminSalesInventoryPage() {
           ></p>
         </article>
 
-        <article
-          class="rounded-[1.4rem] border border-brand-border bg-brand-panel p-5 shadow-panel"
-        >
-          <p
-            class="text-[0.65rem] uppercase tracking-[0.13em] text-brand-muted"
-          >
-            Monthly Sales
-          </p>
-
-          <strong
-            class="mt-3 block font-display text-3xl text-brand-cream"
-            x-text="formatMoney(monthlyApprovedSales)"
-          ></strong>
-
-          <p class="mt-2 text-xs text-brand-muted">
-            Current calendar month
-          </p>
-        </article>
-      </div>
-
-      <div
-        class="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4"
-      >
         <article
           class="rounded-[1.25rem] border border-brand-border bg-brand-panel p-5"
         >
@@ -190,7 +228,11 @@ export function renderAdminSalesInventoryPage() {
             x-text="approvedUnitsSold"
           ></strong>
         </article>
+      </div>
 
+      <div
+        class="mt-4 grid gap-4 sm:grid-cols-2"
+      >
         <article
           class="rounded-[1.25rem] border border-amber-500/30 bg-brand-panel p-5"
         >
