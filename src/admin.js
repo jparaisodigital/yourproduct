@@ -54,6 +54,11 @@ import {
   orderPaymentMethodLabels,
 } from './config/admin-orders-preview-data.js'
 
+import {
+  registerAdminReferralsPayoutsPage,
+  renderAdminReferralsPayoutsPage,
+} from './components/admin-referrals-payouts-page.js'
+
 const adminMembershipApplications =
 membershipApplications.map((application) => {
   const selectedPackage =
@@ -109,6 +114,8 @@ const adminDateFormatter = new Intl.DateTimeFormat(
 
 window.Alpine = Alpine
 
+registerAdminReferralsPayoutsPage(Alpine)
+
 const adminNavigationItems = [
   {
     id: 'overview',
@@ -127,6 +134,10 @@ const adminNavigationItems = [
     label: 'Sales & Inventory',
   },
   {
+    id: 'referrals-payouts',
+    label: 'Referrals & Payouts',
+  },
+  {
     id: 'customers',
     label: 'Customers',
   },
@@ -140,7 +151,8 @@ const adminPageTitles = {
   overview: 'Overview',
   memberships: 'Membership Applications',
   orders: 'Orders',
-'sales-inventory': 'Sales & Inventory',
+  'sales-inventory': 'Sales & Inventory',
+  'referrals-payouts': 'Referrals & Payouts',
   customers: 'Customers',
   products: 'Products',
 }
@@ -1493,14 +1505,26 @@ function renderOrderDetailsDrawer() {
   </button>
 </div>
   
-    <button
-      x-show="selectedOrder.status === 'shipped'"
-      type="button"
-      class="inline-flex min-h-11 w-full items-center justify-center rounded-full bg-emerald-600 px-5 text-sm font-semibold text-white transition hover:bg-emerald-500"
-      @click="openOrderReview('deliver')"
-    >
-      Mark as Delivered
-    </button>
+    <div
+  x-show="selectedOrder.status === 'shipped'"
+  class="grid gap-3 sm:grid-cols-2"
+>
+  <button
+    type="button"
+    class="inline-flex min-h-11 items-center justify-center rounded-full border border-red-400/40 px-5 text-sm font-semibold text-red-300 transition hover:border-red-300 hover:bg-red-400/10 hover:text-red-200"
+    @click="openOrderReview('unship')"
+  >
+    Mark as Unshipped
+  </button>
+
+  <button
+    type="button"
+    class="inline-flex min-h-11 items-center justify-center rounded-full bg-emerald-600 px-5 text-sm font-semibold text-white transition hover:bg-emerald-500"
+    @click="openOrderReview('deliver')"
+  >
+    Mark as Delivered
+  </button>
+</div>
   
     <div
       x-show="selectedOrder.status === 'delivered'"
@@ -1576,9 +1600,10 @@ function renderOrderDetailsDrawer() {
         : orderReviewAction === 'reject'
           ? 'Reject this order'
           : orderReviewAction === 'ship'
-            ? 'Mark order as shipped'
-            : orderReviewAction === 'deliver'
-              ? 'Mark order as delivered'
+  ? 'Mark order as shipped'
+  : orderReviewAction === 'unship'
+    ? 'Return order to processing'
+    : orderReviewAction === 'deliver'
               : orderReviewAction === 'cancel'
                 ? 'Cancel order and return stock'
                 : orderReviewAction === 'refund'
@@ -1595,8 +1620,10 @@ function renderOrderDetailsDrawer() {
         : orderReviewAction === 'reject'
           ? 'The order will be rejected after confirmation.'
           : orderReviewAction === 'ship'
-            ? 'Confirm that the package has been handed over for delivery.'
-            : orderReviewAction === 'deliver'
+  ? 'Confirm that the package has been handed over for delivery.'
+  : orderReviewAction === 'unship'
+    ? 'Use this only to correct an accidental shipment update. Payment approval and deducted inventory will remain unchanged.'
+    : orderReviewAction === 'deliver'
               ? 'Confirm that the customer has received the order.'
               : orderReviewAction === 'cancel'
                 ? 'The order will be cancelled and its deducted stock will be returned.'
@@ -1643,7 +1670,8 @@ function renderOrderDetailsDrawer() {
       class="inline-flex min-h-11 items-center justify-center rounded-full px-4 text-sm font-semibold transition"
       :class="
         orderReviewAction === 'reject' ||
-        orderReviewAction === 'cancel'
+orderReviewAction === 'cancel' ||
+orderReviewAction === 'unship'
           ? 'bg-red-700 text-white hover:bg-red-600'
           : orderReviewAction === 'refund'
             ? 'bg-violet-600 text-white hover:bg-violet-500'
@@ -1656,8 +1684,10 @@ function renderOrderDetailsDrawer() {
           : orderReviewAction === 'reject'
             ? 'Confirm Rejection'
             : orderReviewAction === 'ship'
-              ? 'Confirm Shipment'
-              : orderReviewAction === 'deliver'
+  ? 'Confirm Shipment'
+  : orderReviewAction === 'unship'
+    ? 'Confirm Unshipped'
+    : orderReviewAction === 'deliver'
                 ? 'Confirm Delivery'
                 : orderReviewAction === 'cancel'
                   ? 'Confirm Cancellation'
@@ -2530,8 +2560,51 @@ Alpine.data('adminDashboard', () => ({
     return this.orders.filter(
       (order) =>
         this.approvedOrderStatuses.includes(
-        order.status,
-      ),
+          order.status,
+        ),
+    )
+  },
+  
+  approvedOrderDate(order) {
+    const approvedDateValue =
+      order.approved_at ||
+      order.reviewed_at ||
+      order.updated_at
+  
+    if (!approvedDateValue) {
+      return null
+    }
+  
+    const approvedDate =
+      new Date(approvedDateValue)
+  
+    if (Number.isNaN(approvedDate.getTime())) {
+      return null
+    }
+  
+    return approvedDate
+  },
+  
+  approvedSalesBetween(startDate, endDate) {
+    return this.approvedOrders.reduce(
+      (total, order) => {
+        const approvedDate =
+          this.approvedOrderDate(order)
+  
+        if (
+          !approvedDate ||
+          approvedDate < startDate ||
+          approvedDate > endDate
+        ) {
+          return total
+        }
+  
+        return (
+          total +
+          Number(order.subtotal || 0)
+        )
+      },
+      0,
     )
   },
   
@@ -2540,6 +2613,55 @@ Alpine.data('adminDashboard', () => ({
       (total, order) =>
         total + Number(order.subtotal || 0),
       0,
+    )
+  },
+  
+  get dailyApprovedSales() {
+    const now = new Date()
+  
+    const startOfToday = new Date(now)
+    startOfToday.setHours(0, 0, 0, 0)
+  
+    return this.approvedSalesBetween(
+      startOfToday,
+      now,
+    )
+  },
+  
+  get weeklyApprovedSales() {
+    const now = new Date()
+  
+    const startOfWeek = new Date(now)
+    const daysSinceMonday =
+      (startOfWeek.getDay() + 6) % 7
+  
+    startOfWeek.setDate(
+      startOfWeek.getDate() -
+        daysSinceMonday,
+    )
+  
+    startOfWeek.setHours(0, 0, 0, 0)
+  
+    return this.approvedSalesBetween(
+      startOfWeek,
+      now,
+    )
+  },
+  
+  get monthlyApprovedSales() {
+    const now = new Date()
+  
+    const startOfMonth = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      1,
+    )
+  
+    startOfMonth.setHours(0, 0, 0, 0)
+  
+    return this.approvedSalesBetween(
+      startOfMonth,
+      now,
     )
   },
   
@@ -2566,12 +2688,12 @@ Alpine.data('adminDashboard', () => ({
     }
   
     const hasMissingCost =
-    this.approvedOrders.some((order) =>
-      order.items.some(
-        (item) =>
-          !this.hasConfirmedUnitCost(item),
-      ),
-    )
+      this.approvedOrders.some((order) =>
+        order.items.some(
+          (item) =>
+            !this.hasConfirmedUnitCost(item),
+        ),
+      )
   
     if (hasMissingCost) {
       return null
@@ -2604,47 +2726,17 @@ Alpine.data('adminDashboard', () => ({
     )
   },
   
-  get monthlyApprovedSales() {
-    const now = new Date()
-    
-    return this.approvedOrders.reduce(
-      (total, order) => {
-        const approvedDateValue =
-        order.approved_at ||
-        order.reviewed_at ||
-        order.updated_at
-        
-        if (!approvedDateValue) {
-          return total
-        }
-        
-        const approvedDate =
-        new Date(approvedDateValue)
-        
-        const isCurrentMonth =
-        approvedDate.getFullYear() ===
-        now.getFullYear() &&
-        approvedDate.getMonth() ===
-        now.getMonth()
-        
-        return isCurrentMonth
-        ? total + Number(order.subtotal || 0)
-        : total
-      },
-      0,
-    )
-  },
-  
   get approvedUnitsSold() {
     return this.approvedOrders.reduce(
       (orderTotal, order) => {
-        const itemQuantity = order.items.reduce(
-          (itemTotal, item) =>
-            itemTotal +
-          Number(item.quantity || 0),
-          0,
-        )
-        
+        const itemQuantity =
+          order.items.reduce(
+            (itemTotal, item) =>
+              itemTotal +
+              Number(item.quantity || 0),
+            0,
+          )
+  
         return orderTotal + itemQuantity
       },
       0,
@@ -3500,6 +3592,7 @@ Alpine.data('adminDashboard', () => ({
       approve: 'processing',
       reject: 'rejected',
       ship: 'shipped',
+      unship: 'processing',
       deliver: 'delivered',
       cancel: 'cancelled',
       refund: 'refunded',
@@ -3515,6 +3608,7 @@ Alpine.data('adminDashboard', () => ({
         'cancel',
       ],
       shipped: [
+        'unship',
         'deliver',
       ],
       delivered: [
@@ -3881,31 +3975,32 @@ Alpine.data('adminDashboard', () => ({
   
   openPackageFulfillmentAction(action) {
     const application = this.selectedApplication
-    
+  
     if (!application) {
       this.packageFulfillmentError =
-      'Application details are unavailable.'
+        'Application details are unavailable.'
       return
     }
-    
+  
     const requiredStatusByAction = {
       ship: 'ready-for-packing',
+      unship: 'shipped',
       complete: 'shipped',
     }
-    
+  
     const requiredStatus =
-    requiredStatusByAction[action]
-    
+      requiredStatusByAction[action]
+  
     if (
       !requiredStatus ||
       application.fulfillment_status !==
-      requiredStatus
+        requiredStatus
     ) {
       this.packageFulfillmentError =
-      'This package action is not available for the current status.'
+        'This package action is not available for the current status.'
       return
     }
-    
+  
     this.packageFulfillmentAction = action
     this.packageFulfillmentError = ''
   },
@@ -3917,73 +4012,77 @@ Alpine.data('adminDashboard', () => ({
   
   confirmPackageFulfillmentAction() {
     const application = this.selectedApplication
-    
+  
     if (!application) {
       this.packageFulfillmentError =
-      'Application details are unavailable.'
+        'Application details are unavailable.'
       return
     }
-    
+  
     const nextStatusByAction = {
       ship: 'shipped',
+      unship: 'ready-for-packing',
       complete: 'completed',
     }
-    
+  
     const requiredStatusByAction = {
       ship: 'ready-for-packing',
+      unship: 'shipped',
       complete: 'shipped',
     }
-    
+  
     const action = this.packageFulfillmentAction
     const nextStatus = nextStatusByAction[action]
     const requiredStatus =
-    requiredStatusByAction[action]
-    
+      requiredStatusByAction[action]
+  
     if (
       !nextStatus ||
       !requiredStatus ||
       application.fulfillment_status !==
-      requiredStatus
+        requiredStatus
     ) {
       this.packageFulfillmentError =
-      'This package action is no longer available.'
+        'This package action is no longer available.'
       return
     }
-    
+  
     const applicationIndex =
-    this.applications.findIndex(
-      (applicationItem) =>
-        applicationItem.id === application.id,
-    )
-    
+      this.applications.findIndex(
+        (applicationItem) =>
+          applicationItem.id === application.id,
+      )
+  
     if (applicationIndex === -1) {
       this.packageFulfillmentError =
-      'The membership application could not be found.'
+        'The membership application could not be found.'
       return
     }
-    
+  
     const updatedAt = new Date().toISOString()
-    
+  
     this.applications[applicationIndex] = {
       ...this.applications[applicationIndex],
-      
+  
       fulfillment_status: nextStatus,
-      
+  
       package_shipped_at:
-      action === 'ship'
-      ? updatedAt
-      : this.applications[applicationIndex]
-      .package_shipped_at || null,
-      
+        action === 'ship'
+          ? updatedAt
+          : action === 'unship'
+            ? null
+            : this.applications[applicationIndex]
+                .package_shipped_at || null,
+  
       package_completed_at:
-      action === 'complete'
-      ? updatedAt
-      : this.applications[applicationIndex]
-      .package_completed_at || null,
-      
+        action === 'complete'
+          ? updatedAt
+          : this.applications[applicationIndex]
+              .package_completed_at || null,
+  
       updated_at: updatedAt,
     }
-    
+  
     this.closePackageFulfillmentAction()
   },
   
@@ -4872,13 +4971,16 @@ ${renderAdminSalesRecords()}
 
 ${renderAdminInventoryMovementHistory()}
 
+${renderAdminReferralsPayoutsPage()}
+
 ${adminNavigationItems
   .filter(
     (item) =>
       item.id !== 'overview' &&
-    item.id !== 'memberships' &&
-    item.id !== 'orders' &&
-    item.id !== 'sales-inventory',
+      item.id !== 'memberships' &&
+      item.id !== 'orders' &&
+      item.id !== 'sales-inventory' &&
+      item.id !== 'referrals-payouts',
   )
   .map(
     (item) => `
