@@ -44,6 +44,11 @@ import {
 } from './components/member-referrals-page.js'
 
 import {
+  registerMemberPointsPage,
+  renderMemberPointsPage,
+} from './components/member-points-page.js'
+
+import {
   registerMemberEarningsPage,
   renderMemberEarningsPage,
 } from './components/member-earnings-page.js'
@@ -1456,6 +1461,41 @@ function renderSidebar() {
 
           <span>My Referrals</span>
         </button>
+
+        <button
+  x-show="isMember"
+  x-transition
+  type="button"
+  class="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold transition"
+  :class="
+    activePage === 'points'
+      ? 'bg-brand-gold text-[#17130d]'
+      : 'text-brand-cream hover:bg-brand-charcoal'
+  "
+  @click="openPage('points')"
+  :aria-current="
+    activePage === 'points'
+      ? 'page'
+      : false
+  "
+>
+  <svg
+    class="size-5"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.7"
+    aria-hidden="true"
+  >
+    <circle cx="12" cy="12" r="8"></circle>
+    <path
+      d="M9 12h6M12 9v6"
+      stroke-linecap="round"
+    ></path>
+  </svg>
+
+  <span>My Points</span>
+</button>
     
         <button
   type="button"
@@ -1529,6 +1569,7 @@ window.Alpine = Alpine
 registerCartStore(Alpine, products)
 registerProductViewStore(Alpine, products)
 registerCustomerSupportChat(Alpine)
+registerMemberPointsPage(Alpine)
 registerMemberReferralCard(Alpine, {
   referralCode: previewAccount.referralCode,
   memberName:
@@ -1972,12 +2013,14 @@ document.querySelector('#dashboard-app').innerHTML = `
               <p
   class="truncate text-sm font-semibold text-brand-cream"
   x-text="
-    activePage === 'membershipApplication'
-      ? 'Application Details'
-      : activePage === 'membershipPayment'
-        ? 'Membership Payment'
-        : activePage === 'referrals'
-          ? 'My Referrals'
+  activePage === 'membershipApplication'
+    ? 'Application Details'
+    : activePage === 'membershipPayment'
+      ? 'Membership Payment'
+      : activePage === 'referrals'
+        ? 'My Referrals'
+        : activePage === 'points'
+          ? 'My Points'
           : activePage === 'earnings'
             ? 'Earnings'
             : activePage === 'payoutRequest'
@@ -1989,7 +2032,7 @@ document.querySelector('#dashboard-app').innerHTML = `
                   : activePage === 'orderHistory'
                     ? 'Order History'
                     : 'General Dashboard'
-  "
+"
 ></p>
             </div>
           </div>
@@ -2643,6 +2686,8 @@ document.querySelector('#dashboard-app').innerHTML = `
                 </div>
 
         ${renderMemberReferralsPage()}
+
+        ${renderMemberPointsPage()}
 
         ${renderMemberEarningsPage()}
 

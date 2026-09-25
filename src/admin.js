@@ -59,6 +59,11 @@ import {
   renderAdminReferralsPayoutsPage,
 } from './components/admin-referrals-payouts-page.js'
 
+import {
+  registerAdminPointsAuditPage,
+  renderAdminPointsAuditPage,
+} from './components/admin-points-audit-page.js'
+
 const adminMembershipApplications =
 membershipApplications.map((application) => {
   const selectedPackage =
@@ -116,6 +121,8 @@ window.Alpine = Alpine
 
 registerAdminReferralsPayoutsPage(Alpine)
 
+registerAdminPointsAuditPage(Alpine)
+
 const adminNavigationItems = [
   {
     id: 'overview',
@@ -138,6 +145,10 @@ const adminNavigationItems = [
     label: 'Referrals & Payouts',
   },
   {
+    id: 'points-audit',
+    label: 'Points Audit',
+  },
+  {
     id: 'customers',
     label: 'Customers',
   },
@@ -153,6 +164,7 @@ const adminPageTitles = {
   orders: 'Orders',
   'sales-inventory': 'Sales & Inventory',
   'referrals-payouts': 'Referrals & Payouts',
+  'points-audit': 'Points Audit',
   customers: 'Customers',
   products: 'Products',
 }
@@ -1516,7 +1528,7 @@ function renderOrderDetailsDrawer() {
   >
     Mark as Unshipped
   </button>
-
+  
   <button
     type="button"
     class="inline-flex min-h-11 items-center justify-center rounded-full bg-emerald-600 px-5 text-sm font-semibold text-white transition hover:bg-emerald-500"
@@ -2560,28 +2572,28 @@ Alpine.data('adminDashboard', () => ({
     return this.orders.filter(
       (order) =>
         this.approvedOrderStatuses.includes(
-          order.status,
-        ),
+        order.status,
+      ),
     )
   },
   
   approvedOrderDate(order) {
     const approvedDateValue =
-      order.approved_at ||
-      order.reviewed_at ||
-      order.updated_at
-  
+    order.approved_at ||
+    order.reviewed_at ||
+    order.updated_at
+    
     if (!approvedDateValue) {
       return null
     }
-  
+    
     const approvedDate =
-      new Date(approvedDateValue)
-  
+    new Date(approvedDateValue)
+    
     if (Number.isNaN(approvedDate.getTime())) {
       return null
     }
-  
+    
     return approvedDate
   },
   
@@ -2589,8 +2601,8 @@ Alpine.data('adminDashboard', () => ({
     return this.approvedOrders.reduce(
       (total, order) => {
         const approvedDate =
-          this.approvedOrderDate(order)
-  
+        this.approvedOrderDate(order)
+        
         if (
           !approvedDate ||
           approvedDate < startDate ||
@@ -2598,7 +2610,7 @@ Alpine.data('adminDashboard', () => ({
         ) {
           return total
         }
-  
+        
         return (
           total +
           Number(order.subtotal || 0)
@@ -2618,10 +2630,10 @@ Alpine.data('adminDashboard', () => ({
   
   get dailyApprovedSales() {
     const now = new Date()
-  
+    
     const startOfToday = new Date(now)
     startOfToday.setHours(0, 0, 0, 0)
-  
+    
     return this.approvedSalesBetween(
       startOfToday,
       now,
@@ -2630,18 +2642,18 @@ Alpine.data('adminDashboard', () => ({
   
   get weeklyApprovedSales() {
     const now = new Date()
-  
+    
     const startOfWeek = new Date(now)
     const daysSinceMonday =
-      (startOfWeek.getDay() + 6) % 7
-  
+    (startOfWeek.getDay() + 6) % 7
+    
     startOfWeek.setDate(
       startOfWeek.getDate() -
-        daysSinceMonday,
+      daysSinceMonday,
     )
-  
+    
     startOfWeek.setHours(0, 0, 0, 0)
-  
+    
     return this.approvedSalesBetween(
       startOfWeek,
       now,
@@ -2650,15 +2662,15 @@ Alpine.data('adminDashboard', () => ({
   
   get monthlyApprovedSales() {
     const now = new Date()
-  
+    
     const startOfMonth = new Date(
       now.getFullYear(),
       now.getMonth(),
       1,
     )
-  
+    
     startOfMonth.setHours(0, 0, 0, 0)
-  
+    
     return this.approvedSalesBetween(
       startOfMonth,
       now,
@@ -2673,9 +2685,9 @@ Alpine.data('adminDashboard', () => ({
     ) {
       return false
     }
-  
+    
     const unitCost = Number(item.unit_cost)
-  
+    
     return (
       Number.isFinite(unitCost) &&
       unitCost >= 0
@@ -2686,1944 +2698,1944 @@ Alpine.data('adminDashboard', () => ({
     if (this.approvedOrders.length === 0) {
       return 0
     }
-  
+    
     const hasMissingCost =
-      this.approvedOrders.some((order) =>
-        order.items.some(
-          (item) =>
-            !this.hasConfirmedUnitCost(item),
-        ),
-      )
-  
-    if (hasMissingCost) {
-      return null
-    }
-  
-    return this.approvedOrders.reduce(
-      (orderTotal, order) => {
-        const itemCost = order.items.reduce(
-          (itemTotal, item) =>
-            itemTotal +
-            Number(item.unit_cost) *
-            Number(item.quantity || 0),
-          0,
-        )
-  
-        return orderTotal + itemCost
-      },
-      0,
-    )
-  },
-  
-  get estimatedGrossProfit() {
-    if (this.approvedProductCost === null) {
-      return null
-    }
-  
-    return (
-      this.approvedSalesTotal -
-      this.approvedProductCost
-    )
-  },
-  
-  get approvedUnitsSold() {
-    return this.approvedOrders.reduce(
-      (orderTotal, order) => {
-        const itemQuantity =
-          order.items.reduce(
-            (itemTotal, item) =>
-              itemTotal +
-              Number(item.quantity || 0),
-            0,
-          )
-  
-        return orderTotal + itemQuantity
-      },
-      0,
-    )
-  },
-  
-  get availableStockUnits() {
-    return this.inventoryProducts.reduce(
-      (total, product) =>
-        total +
-      Number(product.stockQuantity || 0),
-      0,
-    )
-  },
-  
-  get lowStockProductCount() {
-    return this.inventoryProducts.filter(
-      (product) =>
-        this.inventoryStatus(product) ===
-      'low-stock',
-    ).length
-  },
-  
-  get outOfStockProductCount() {
-    return this.inventoryProducts.filter(
-      (product) =>
-        this.inventoryStatus(product) ===
-      'out-of-stock',
-    ).length
-  },
-  
-  get filteredInventoryProducts() {
-    const normalizedSearch =
-    this.inventorySearch
-    .trim()
-    .toLowerCase()
-    
-    return this.inventoryProducts.filter(
-      (product) => {
-        const productStatus =
-        this.inventoryStatus(product)
-        
-        const matchesStatus =
-        this.inventoryStatusFilter ===
-        'all' ||
-        productStatus ===
-        this.inventoryStatusFilter
-        
-        const searchableContent = [
-          product.name,
-          product.sku,
-          product.collectionLabel,
-          product.category,
-        ]
-        .filter(Boolean)
-        .join(' ')
-        .toLowerCase()
-        
-        const matchesSearch =
-        !normalizedSearch ||
-        searchableContent.includes(
-          normalizedSearch,
-        )
-        
-        return matchesStatus && matchesSearch
-      },
-    )
-  },
-  
-  inventoryStatus(product) {
-    const stockQuantity =
-    Number(product.stockQuantity || 0)
-    
-    const lowStockThreshold =
-    Number(product.lowStockThreshold || 0)
-    
-    if (stockQuantity <= 0) {
-      return 'out-of-stock'
-    }
-    
-    if (stockQuantity <= lowStockThreshold) {
-      return 'low-stock'
-    }
-    
-    return 'in-stock'
-  },
-  
-  inventoryStatusLabel(status) {
-    const statusLabels = {
-      'in-stock': 'In Stock',
-      'low-stock': 'Low Stock',
-      'out-of-stock': 'Out of Stock',
-    }
-    
-    return statusLabels[status] || status
-  },
-  
-  inventoryStatusBadgeClass(status) {
-    const statusClasses = {
-      'in-stock':
-      'border-emerald-500/30 bg-emerald-500/10 text-emerald-300',
-      
-      'low-stock':
-      'border-amber-500/30 bg-amber-500/10 text-amber-300',
-      
-      'out-of-stock':
-      'border-red-500/30 bg-red-500/10 text-red-300',
-    }
-    
-    return (
-      statusClasses[status] ||
-      'border-brand-border text-brand-muted'
-    )
-  },
-  
-  inventoryStatusDotClass(status) {
-    const statusClasses = {
-      'in-stock': 'bg-emerald-400',
-      'low-stock': 'bg-amber-400',
-      'out-of-stock': 'bg-red-400',
-    }
-    
-    return (
-      statusClasses[status] ||
-      'bg-brand-muted'
-    )
-  },
-  
-  get filteredInventoryMovements() {
-    if (this.inventoryMovementFilter === 'all') {
-      return this.inventoryMovements
-    }
-    
-    return this.inventoryMovements.filter(
-      (movement) =>
-        movement.type ===
-      this.inventoryMovementFilter,
-    )
-  },
-  
-  get filteredSalesOrders() {
-    let filteredOrders = [
-      ...this.orders,
-    ]
-    
-    if (this.salesStatusFilter !== 'all') {
-      filteredOrders =
-      filteredOrders.filter(
-        (order) =>
-          order.status ===
-        this.salesStatusFilter,
-      )
-    }
-    
-    if (
-      this.salesCustomerTypeFilter !== 'all'
-    ) {
-      filteredOrders =
-      filteredOrders.filter(
-        (order) =>
-          order.customer_type ===
-        this.salesCustomerTypeFilter,
-      )
-    }
-    
-    if (this.salesDateFilter !== 'all') {
-      const now = new Date()
-      
-      filteredOrders =
-      filteredOrders.filter((order) => {
-        const orderDate =
-        new Date(order.submitted_at)
-        
-        if (
-          Number.isNaN(orderDate.getTime())
-        ) {
-          return false
-        }
-        
-        if (
-          this.salesDateFilter === 'today'
-        ) {
-          return (
-            orderDate.toDateString() ===
-            now.toDateString()
-          )
-        }
-        
-        const dateRangeDays = {
-          '7-days': 7,
-          '30-days': 30,
-        }
-        
-        const selectedDays =
-        dateRangeDays[
-          this.salesDateFilter
-        ]
-        
-        if (!selectedDays) {
-          return true
-        }
-        
-        const cutoffDate = new Date(now)
-        
-        cutoffDate.setDate(
-          cutoffDate.getDate() -
-          selectedDays,
-        )
-        
-        return orderDate >= cutoffDate
-      })
-    }
-    
-    return filteredOrders.sort(
-      (firstOrder, secondOrder) =>
-        new Date(
-        secondOrder.submitted_at,
-      ).getTime() -
-      new Date(
-        firstOrder.submitted_at,
-      ).getTime(),
-    )
-  },
-  
-  isRecognizedSalesOrder(order) {
-    return this.approvedOrderStatuses.includes(
-      order.status,
-    )
-  },
-  
-  orderProductSales(order) {
-    return Number(
-      order.subtotal ||
-      order.total_amount ||
-      0,
-    )
-  },
-  
-  orderProductCost(order) {
-    const hasMissingCost =
-    order.items.some(
+    this.approvedOrders.some((order) =>
+      order.items.some(
       (item) =>
         !this.hasConfirmedUnitCost(item),
-    )
+    ),
+  )
   
-    if (hasMissingCost) {
-      return null
-    }
+  if (hasMissingCost) {
+    return null
+  }
   
-    return order.items.reduce(
-      (totalCost, item) =>
-        totalCost +
+  return this.approvedOrders.reduce(
+    (orderTotal, order) => {
+      const itemCost = order.items.reduce(
+        (itemTotal, item) =>
+          itemTotal +
         Number(item.unit_cost) *
         Number(item.quantity || 0),
-      0,
+        0,
+      )
+      
+      return orderTotal + itemCost
+    },
+    0,
+  )
+},
+
+get estimatedGrossProfit() {
+  if (this.approvedProductCost === null) {
+    return null
+  }
+  
+  return (
+    this.approvedSalesTotal -
+    this.approvedProductCost
+  )
+},
+
+get approvedUnitsSold() {
+  return this.approvedOrders.reduce(
+    (orderTotal, order) => {
+      const itemQuantity =
+      order.items.reduce(
+        (itemTotal, item) =>
+          itemTotal +
+        Number(item.quantity || 0),
+        0,
+      )
+      
+      return orderTotal + itemQuantity
+    },
+    0,
+  )
+},
+
+get availableStockUnits() {
+  return this.inventoryProducts.reduce(
+    (total, product) =>
+      total +
+    Number(product.stockQuantity || 0),
+    0,
+  )
+},
+
+get lowStockProductCount() {
+  return this.inventoryProducts.filter(
+    (product) =>
+      this.inventoryStatus(product) ===
+    'low-stock',
+  ).length
+},
+
+get outOfStockProductCount() {
+  return this.inventoryProducts.filter(
+    (product) =>
+      this.inventoryStatus(product) ===
+    'out-of-stock',
+  ).length
+},
+
+get filteredInventoryProducts() {
+  const normalizedSearch =
+  this.inventorySearch
+  .trim()
+  .toLowerCase()
+  
+  return this.inventoryProducts.filter(
+    (product) => {
+      const productStatus =
+      this.inventoryStatus(product)
+      
+      const matchesStatus =
+      this.inventoryStatusFilter ===
+      'all' ||
+      productStatus ===
+      this.inventoryStatusFilter
+      
+      const searchableContent = [
+        product.name,
+        product.sku,
+        product.collectionLabel,
+        product.category,
+      ]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase()
+      
+      const matchesSearch =
+      !normalizedSearch ||
+      searchableContent.includes(
+        normalizedSearch,
+      )
+      
+      return matchesStatus && matchesSearch
+    },
+  )
+},
+
+inventoryStatus(product) {
+  const stockQuantity =
+  Number(product.stockQuantity || 0)
+  
+  const lowStockThreshold =
+  Number(product.lowStockThreshold || 0)
+  
+  if (stockQuantity <= 0) {
+    return 'out-of-stock'
+  }
+  
+  if (stockQuantity <= lowStockThreshold) {
+    return 'low-stock'
+  }
+  
+  return 'in-stock'
+},
+
+inventoryStatusLabel(status) {
+  const statusLabels = {
+    'in-stock': 'In Stock',
+    'low-stock': 'Low Stock',
+    'out-of-stock': 'Out of Stock',
+  }
+  
+  return statusLabels[status] || status
+},
+
+inventoryStatusBadgeClass(status) {
+  const statusClasses = {
+    'in-stock':
+    'border-emerald-500/30 bg-emerald-500/10 text-emerald-300',
+    
+    'low-stock':
+    'border-amber-500/30 bg-amber-500/10 text-amber-300',
+    
+    'out-of-stock':
+    'border-red-500/30 bg-red-500/10 text-red-300',
+  }
+  
+  return (
+    statusClasses[status] ||
+    'border-brand-border text-brand-muted'
+  )
+},
+
+inventoryStatusDotClass(status) {
+  const statusClasses = {
+    'in-stock': 'bg-emerald-400',
+    'low-stock': 'bg-amber-400',
+    'out-of-stock': 'bg-red-400',
+  }
+  
+  return (
+    statusClasses[status] ||
+    'bg-brand-muted'
+  )
+},
+
+get filteredInventoryMovements() {
+  if (this.inventoryMovementFilter === 'all') {
+    return this.inventoryMovements
+  }
+  
+  return this.inventoryMovements.filter(
+    (movement) =>
+      movement.type ===
+    this.inventoryMovementFilter,
+  )
+},
+
+get filteredSalesOrders() {
+  let filteredOrders = [
+    ...this.orders,
+  ]
+  
+  if (this.salesStatusFilter !== 'all') {
+    filteredOrders =
+    filteredOrders.filter(
+      (order) =>
+        order.status ===
+      this.salesStatusFilter,
     )
-  },
+  }
   
-  orderEstimatedGrossProfit(order) {
-    if (!this.isRecognizedSalesOrder(order)) {
-      return null
-    }
-  
-    const productCost =
-    this.orderProductCost(order)
-  
-    if (productCost === null) {
-      return null
-    }
-  
-    return (
-      this.orderProductSales(order) -
-      productCost
-    )
-  },
-  
-  salesRecognitionLabel(order) {
-    const uncountedLabels = {
-      'pending-verification':
-      'Waiting for approval',
-      
-      rejected:
-      'Rejected — not counted',
-      
-      cancelled:
-      'Cancelled — reversed',
-      
-      refunded:
-      'Refunded — reversed',
-    }
-    
-    return (
-      uncountedLabels[order.status] ||
-      'Not counted in sales'
-    )
-  },
-  
-  get selectedInventoryProduct() {
-    const allInventoryItems = [
-      ...this.inventoryProducts,
-      ...this.packageSupplies,
-    ]
-    
-    return (
-      allInventoryItems.find(
-        (inventoryItem) =>
-          inventoryItem.id ===
-        this.selectedInventoryProductId,
-      ) || null
-    )
-  },
-  
-  get projectedInventoryStock() {
-    if (!this.selectedInventoryProduct) {
-      return 0
-    }
-    
-    const currentStock = Number(
-      this.selectedInventoryProduct
-      .stockQuantity || 0,
-    )
-    
-    const quantity = Number.parseInt(
-      this.inventoryAdjustmentQuantity,
-      10,
-    )
-    
-    if (!Number.isInteger(quantity) || quantity <= 0) {
-      return currentStock
-    }
-    
-    if (this.inventoryAdjustmentType === 'remove') {
-      return currentStock - quantity
-    }
-    
-    return currentStock + quantity
-  },
-  
-  unitsSoldForProduct(productId) {
-    return this.approvedOrders.reduce(
-      (orderTotal, order) => {
-        const itemQuantity = order.items
-        .filter(
-          (item) =>
-            item.product_id === productId,
-        )
-        .reduce(
-          (itemTotal, item) =>
-            itemTotal +
-          Number(item.quantity || 0),
-          0,
-        )
-        
-        return orderTotal + itemQuantity
-      },
-      0,
-    )
-  },
-  
-  inventoryMovementTypeLabel(type) {
-    const typeLabels = {
-      restock: 'Restock',
-      add: 'Stock Added',
-      remove: 'Stock Removed',
-      'order-sale': 'Order Deduction',
-      'cancellation-return': 'Cancellation Return',
-      'refund-return': 'Refund Return',
-      'package-fulfillment':
-      'Package Fulfillment',
-    }
-    
-    return typeLabels[type] || type
-  },
-  
-  inventoryMovementBadgeClass(type) {
-    const typeClasses = {
-      restock:
-      'border-emerald-500/30 bg-emerald-500/10 text-emerald-300',
-      
-      add:
-      'border-blue-500/30 bg-blue-500/10 text-blue-300',
-      
-      remove:
-      'border-red-500/30 bg-red-500/10 text-red-300',
-      
-      'order-sale':
-      'border-violet-500/30 bg-violet-500/10 text-violet-300',
-      
-      'cancellation-return':
-      'border-amber-500/30 bg-amber-500/10 text-amber-300',
-      
-      'refund-return':
-      'border-emerald-500/30 bg-emerald-500/10 text-emerald-300',
-      
-      'package-fulfillment':
-      'border-brand-gold/40 bg-brand-gold/10 text-brand-gold',
-    }
-    
-    return (
-      typeClasses[type] ||
-      'border-brand-border text-brand-muted'
-    )
-  },
-  
-  openInventoryAdjustment(
-    inventoryItemId,
-    adjustmentType = 'restock',
+  if (
+    this.salesCustomerTypeFilter !== 'all'
   ) {
-    const inventoryItemExists = [
-      ...this.inventoryProducts,
-      ...this.packageSupplies,
-    ].some(
-      (inventoryItem) =>
-        inventoryItem.id === inventoryItemId,
+    filteredOrders =
+    filteredOrders.filter(
+      (order) =>
+        order.customer_type ===
+      this.salesCustomerTypeFilter,
     )
+  }
+  
+  if (this.salesDateFilter !== 'all') {
+    const now = new Date()
     
-    if (!inventoryItemExists) {
-      return
-    }
+    filteredOrders =
+    filteredOrders.filter((order) => {
+      const orderDate =
+      new Date(order.submitted_at)
+      
+      if (
+        Number.isNaN(orderDate.getTime())
+      ) {
+        return false
+      }
+      
+      if (
+        this.salesDateFilter === 'today'
+      ) {
+        return (
+          orderDate.toDateString() ===
+          now.toDateString()
+        )
+      }
+      
+      const dateRangeDays = {
+        '7-days': 7,
+        '30-days': 30,
+      }
+      
+      const selectedDays =
+      dateRangeDays[
+        this.salesDateFilter
+      ]
+      
+      if (!selectedDays) {
+        return true
+      }
+      
+      const cutoffDate = new Date(now)
+      
+      cutoffDate.setDate(
+        cutoffDate.getDate() -
+        selectedDays,
+      )
+      
+      return orderDate >= cutoffDate
+    })
+  }
+  
+  return filteredOrders.sort(
+    (firstOrder, secondOrder) =>
+      new Date(
+      secondOrder.submitted_at,
+    ).getTime() -
+    new Date(
+      firstOrder.submitted_at,
+    ).getTime(),
+  )
+},
+
+isRecognizedSalesOrder(order) {
+  return this.approvedOrderStatuses.includes(
+    order.status,
+  )
+},
+
+orderProductSales(order) {
+  return Number(
+    order.subtotal ||
+    order.total_amount ||
+    0,
+  )
+},
+
+orderProductCost(order) {
+  const hasMissingCost =
+  order.items.some(
+    (item) =>
+      !this.hasConfirmedUnitCost(item),
+  )
+  
+  if (hasMissingCost) {
+    return null
+  }
+  
+  return order.items.reduce(
+    (totalCost, item) =>
+      totalCost +
+    Number(item.unit_cost) *
+    Number(item.quantity || 0),
+    0,
+  )
+},
+
+orderEstimatedGrossProfit(order) {
+  if (!this.isRecognizedSalesOrder(order)) {
+    return null
+  }
+  
+  const productCost =
+  this.orderProductCost(order)
+  
+  if (productCost === null) {
+    return null
+  }
+  
+  return (
+    this.orderProductSales(order) -
+    productCost
+  )
+},
+
+salesRecognitionLabel(order) {
+  const uncountedLabels = {
+    'pending-verification':
+    'Waiting for approval',
     
-    this.selectedInventoryProductId =
-    inventoryItemId
+    rejected:
+    'Rejected — not counted',
     
-    this.inventoryAdjustmentType =
-    adjustmentType
+    cancelled:
+    'Cancelled — reversed',
     
-    this.inventoryAdjustmentQuantity = ''
-    this.inventoryAdjustmentReason = ''
-    this.inventoryAdjustmentError = ''
-    this.inventoryAdjustmentOpen = true
+    refunded:
+    'Refunded — reversed',
+  }
+  
+  return (
+    uncountedLabels[order.status] ||
+    'Not counted in sales'
+  )
+},
+
+get selectedInventoryProduct() {
+  const allInventoryItems = [
+    ...this.inventoryProducts,
+    ...this.packageSupplies,
+  ]
+  
+  return (
+    allInventoryItems.find(
+      (inventoryItem) =>
+        inventoryItem.id ===
+      this.selectedInventoryProductId,
+    ) || null
+  )
+},
+
+get projectedInventoryStock() {
+  if (!this.selectedInventoryProduct) {
+    return 0
+  }
+  
+  const currentStock = Number(
+    this.selectedInventoryProduct
+    .stockQuantity || 0,
+  )
+  
+  const quantity = Number.parseInt(
+    this.inventoryAdjustmentQuantity,
+    10,
+  )
+  
+  if (!Number.isInteger(quantity) || quantity <= 0) {
+    return currentStock
+  }
+  
+  if (this.inventoryAdjustmentType === 'remove') {
+    return currentStock - quantity
+  }
+  
+  return currentStock + quantity
+},
+
+unitsSoldForProduct(productId) {
+  return this.approvedOrders.reduce(
+    (orderTotal, order) => {
+      const itemQuantity = order.items
+      .filter(
+        (item) =>
+          item.product_id === productId,
+      )
+      .reduce(
+        (itemTotal, item) =>
+          itemTotal +
+        Number(item.quantity || 0),
+        0,
+      )
+      
+      return orderTotal + itemQuantity
+    },
+    0,
+  )
+},
+
+inventoryMovementTypeLabel(type) {
+  const typeLabels = {
+    restock: 'Restock',
+    add: 'Stock Added',
+    remove: 'Stock Removed',
+    'order-sale': 'Order Deduction',
+    'cancellation-return': 'Cancellation Return',
+    'refund-return': 'Refund Return',
+    'package-fulfillment':
+    'Package Fulfillment',
+  }
+  
+  return typeLabels[type] || type
+},
+
+inventoryMovementBadgeClass(type) {
+  const typeClasses = {
+    restock:
+    'border-emerald-500/30 bg-emerald-500/10 text-emerald-300',
     
-    document.body.classList.add(
+    add:
+    'border-blue-500/30 bg-blue-500/10 text-blue-300',
+    
+    remove:
+    'border-red-500/30 bg-red-500/10 text-red-300',
+    
+    'order-sale':
+    'border-violet-500/30 bg-violet-500/10 text-violet-300',
+    
+    'cancellation-return':
+    'border-amber-500/30 bg-amber-500/10 text-amber-300',
+    
+    'refund-return':
+    'border-emerald-500/30 bg-emerald-500/10 text-emerald-300',
+    
+    'package-fulfillment':
+    'border-brand-gold/40 bg-brand-gold/10 text-brand-gold',
+  }
+  
+  return (
+    typeClasses[type] ||
+    'border-brand-border text-brand-muted'
+  )
+},
+
+openInventoryAdjustment(
+  inventoryItemId,
+  adjustmentType = 'restock',
+) {
+  const inventoryItemExists = [
+    ...this.inventoryProducts,
+    ...this.packageSupplies,
+  ].some(
+    (inventoryItem) =>
+      inventoryItem.id === inventoryItemId,
+  )
+  
+  if (!inventoryItemExists) {
+    return
+  }
+  
+  this.selectedInventoryProductId =
+  inventoryItemId
+  
+  this.inventoryAdjustmentType =
+  adjustmentType
+  
+  this.inventoryAdjustmentQuantity = ''
+  this.inventoryAdjustmentReason = ''
+  this.inventoryAdjustmentError = ''
+  this.inventoryAdjustmentOpen = true
+  
+  document.body.classList.add(
+    'overflow-hidden',
+  )
+},
+
+closeInventoryAdjustment() {
+  this.inventoryAdjustmentOpen = false
+  this.inventoryAdjustmentError = ''
+  
+  if (
+    !this.mobileMenuOpen &&
+    !this.applicationDetailsOpen &&
+    !this.orderDetailsOpen
+  ) {
+    document.body.classList.remove(
       'overflow-hidden',
     )
-  },
+  }
   
-  closeInventoryAdjustment() {
-    this.inventoryAdjustmentOpen = false
-    this.inventoryAdjustmentError = ''
-    
-    if (
-      !this.mobileMenuOpen &&
-      !this.applicationDetailsOpen &&
-      !this.orderDetailsOpen
-    ) {
-      document.body.classList.remove(
-        'overflow-hidden',
-      )
+  window.setTimeout(() => {
+    if (!this.inventoryAdjustmentOpen) {
+      this.selectedInventoryProductId = null
+      this.inventoryAdjustmentQuantity = ''
+      this.inventoryAdjustmentReason = ''
     }
-    
-    window.setTimeout(() => {
-      if (!this.inventoryAdjustmentOpen) {
-        this.selectedInventoryProductId = null
-        this.inventoryAdjustmentQuantity = ''
-        this.inventoryAdjustmentReason = ''
-      }
-    }, 250)
-  },
+  }, 250)
+},
+
+saveInventoryAdjustment() {
+  const inventoryItem =
+  this.selectedInventoryProduct
   
-  saveInventoryAdjustment() {
-    const inventoryItem =
-    this.selectedInventoryProduct
+  if (!inventoryItem) {
+    this.inventoryAdjustmentError =
+    'The selected inventory item is unavailable.'
     
-    if (!inventoryItem) {
-      this.inventoryAdjustmentError =
-      'The selected inventory item is unavailable.'
-      
-      return
-    }
-    
-    const quantity = Number.parseInt(
-      this.inventoryAdjustmentQuantity,
-      10,
-    )
-    
-    if (
-      !Number.isInteger(quantity) ||
-      quantity <= 0
-    ) {
-      this.inventoryAdjustmentError =
-      'Enter a valid quantity greater than zero.'
-      
-      return
-    }
-    
-    const reason =
-    this.inventoryAdjustmentReason.trim()
-    
-    if (!reason) {
-      this.inventoryAdjustmentError =
-      'Enter a reason for this stock update.'
-      
-      return
-    }
-    
-    const previousStock = Number(
-      inventoryItem.stockQuantity || 0,
-    )
-    
-    const stockChange =
-    this.inventoryAdjustmentType === 'remove'
-    ? -quantity
-    : quantity
-    
-    const newStock =
-    previousStock + stockChange
-    
-    if (newStock < 0) {
-      this.inventoryAdjustmentError =
-      'The quantity to remove is greater than the available stock.'
-      
-      return
-    }
-    
-    const isPackageSupply =
-    this.packageSupplies.some(
-      (supply) =>
-        supply.id === inventoryItem.id,
-    )
-    
-    const movement = {
-      id: `inventory-movement-${Date.now()}`,
-      
-      product_id: inventoryItem.id,
-      product_name: inventoryItem.name,
-      
-      inventory_item_type:
-      isPackageSupply
-      ? 'package-supply'
-      : 'product',
-      
-      type: this.inventoryAdjustmentType,
-      
-      quantity: stockChange,
-      previous_stock: previousStock,
-      new_stock: newStock,
-      
-      reason,
-      
-      created_at: new Date().toISOString(),
-    }
-    
-    if (isPackageSupply) {
-      this.packageSupplies =
-      this.packageSupplies.map(
-        (supply) =>
-          supply.id === inventoryItem.id
-        ? {
-          ...supply,
-          stockQuantity: newStock,
-        }
-        : supply,
-      )
-    } else {
-      this.inventoryProducts =
-      this.inventoryProducts.map(
-        (product) =>
-          product.id === inventoryItem.id
-        ? {
-          ...product,
-          stockQuantity: newStock,
-        }
-        : product,
-      )
-    }
-    
-    this.inventoryMovements.unshift(
-      movement,
-    )
-    
-    this.inventoryFeedback =
-    `${inventoryItem.name} stock updated ` +
-    `from ${previousStock} to ${newStock}.`
-    
-    this.closeInventoryAdjustment()
-    
-    window.setTimeout(() => {
-      this.inventoryFeedback = ''
-    }, 4000)
-  },
+    return
+  }
   
-  orderStatusBadgeClass(status) {
-    const statusClasses = {
-      'pending-verification':
-      'border-amber-500/40 bg-amber-500/10 text-amber-300',
-      
-      processing:
-      'border-blue-500/30 bg-blue-500/10 text-blue-300',
-      
-      shipped:
-      'border-violet-500/30 bg-violet-500/10 text-violet-300',
-      
-      delivered:
-      'border-emerald-500/30 bg-emerald-500/10 text-emerald-300',
-      
-      rejected:
-      'border-red-500/30 bg-red-500/10 text-red-300',
-      
-      cancelled:
-      'border-brand-border bg-brand-panel text-brand-muted',
-    }
-    
-    return (
-      statusClasses[status] ||
-      'border-brand-border bg-brand-panel text-brand-muted'
-    )
-  },
+  const quantity = Number.parseInt(
+    this.inventoryAdjustmentQuantity,
+    10,
+  )
   
-  orderStatusDotClass(status) {
-    const statusClasses = {
-      'pending-verification': 'bg-amber-400',
-      processing: 'bg-blue-400',
-      shipped: 'bg-violet-400',
-      delivered: 'bg-emerald-400',
-      rejected: 'bg-red-400',
-      cancelled: 'bg-brand-muted',
-      refunded: 'bg-violet-400',
-    }
+  if (
+    !Number.isInteger(quantity) ||
+    quantity <= 0
+  ) {
+    this.inventoryAdjustmentError =
+    'Enter a valid quantity greater than zero.'
     
-    return (
-      statusClasses[status] ||
-      'bg-brand-muted'
-    )
-  },
+    return
+  }
   
-  deductInventoryForOrder(order) {
-    if (order.inventory_deducted) {
-      return true
-    }
-    
-    const quantitiesByProduct = new Map()
-    
-    order.items.forEach((item) => {
-      const currentQuantity =
-      quantitiesByProduct.get(item.product_id) || 0
-      
-      quantitiesByProduct.set(
-        item.product_id,
-        currentQuantity + Number(item.quantity || 0),
-      )
-    })
-    
-    for (
-      const [productId, requiredQuantity]
-      of quantitiesByProduct
-    ) {
-      const product = this.inventoryProducts.find(
-        (inventoryProduct) =>
-          inventoryProduct.id === productId,
-      )
-      
-      if (!product) {
-        this.orderReviewError =
-        `Product ${productId} was not found in inventory.`
-        
-        return false
-      }
-      
-      const availableStock = Number(
-        product.stockQuantity || 0,
-      )
-      
-      if (availableStock < requiredQuantity) {
-        this.orderReviewError =
-        `${product.name} only has ` +
-        `${availableStock} available stock. ` +
-        `${requiredQuantity} unit(s) are required.`
-        
-        return false
-      }
-    }
-    
-    const movementTime = new Date().toISOString()
-    const newMovements = []
-    
-    this.inventoryProducts =
-    this.inventoryProducts.map((product) => {
-      const soldQuantity =
-      quantitiesByProduct.get(product.id) || 0
-      
-      if (soldQuantity <= 0) {
-        return product
-      }
-      
-      const previousStock = Number(
-        product.stockQuantity || 0,
-      )
-      
-      const newStock =
-      previousStock - soldQuantity
-      
-      newMovements.push({
-        id:
-        `inventory-movement-${order.id}-` +
-        `${product.id}-${Date.now()}`,
-        
-        product_id: product.id,
-        product_name: product.name,
-        type: 'order-sale',
-        quantity: -soldQuantity,
-        previous_stock: previousStock,
-        new_stock: newStock,
-        reason:
-        `Approved order ${order.order_number}`,
-        order_id: order.id,
-        order_number: order.order_number,
-        created_at: movementTime,
-      })
-      
-      return {
-        ...product,
-        stockQuantity: newStock,
-      }
-    })
-    
-    this.inventoryMovements.unshift(
-      ...newMovements,
-    )
-    
-    this.inventoryFeedback =
-    `${order.order_number} approved. ` +
-    `Inventory was updated automatically.`
-    
-    window.setTimeout(() => {
-      this.inventoryFeedback = ''
-    }, 4000)
-    
-    return true
-  },
+  const reason =
+  this.inventoryAdjustmentReason.trim()
   
-  restoreInventoryForOrder(order, movementType) {
-    if (
-      !order.inventory_deducted ||
-      order.inventory_restored
-    ) {
-      return true
-    }
+  if (!reason) {
+    this.inventoryAdjustmentError =
+    'Enter a reason for this stock update.'
     
-    const quantitiesByProduct = new Map()
-    
-    order.items.forEach((item) => {
-      const currentQuantity =
-      quantitiesByProduct.get(item.product_id) || 0
-      
-      quantitiesByProduct.set(
-        item.product_id,
-        currentQuantity + Number(item.quantity || 0),
-      )
-    })
-    
-    for (const productId of quantitiesByProduct.keys()) {
-      const productExists =
-      this.inventoryProducts.some(
-        (product) => product.id === productId,
-      )
-      
-      if (!productExists) {
-        this.orderReviewError =
-        `Product ${productId} was not found in inventory.`
-        
-        return false
-      }
-    }
-    
-    const movementTime = new Date().toISOString()
-    const newMovements = []
-    
-    this.inventoryProducts =
-    this.inventoryProducts.map((product) => {
-      const returnedQuantity =
-      quantitiesByProduct.get(product.id) || 0
-      
-      if (returnedQuantity <= 0) {
-        return product
-      }
-      
-      const previousStock = Number(
-        product.stockQuantity || 0,
-      )
-      
-      const newStock =
-      previousStock + returnedQuantity
-      
-      newMovements.push({
-        id:
-        `inventory-return-${order.id}-` +
-        `${product.id}-${Date.now()}`,
-        
-        product_id: product.id,
-        product_name: product.name,
-        type: movementType,
-        quantity: returnedQuantity,
-        previous_stock: previousStock,
-        new_stock: newStock,
-        reason:
-        movementType === 'refund-return'
-        ? `Refunded order ${order.order_number}`
-        : `Cancelled order ${order.order_number}`,
-        order_id: order.id,
-        order_number: order.order_number,
-        created_at: movementTime,
-      })
-      
-      return {
-        ...product,
-        stockQuantity: newStock,
-      }
-    })
-    
-    this.inventoryMovements.unshift(
-      ...newMovements,
-    )
-    
-    return true
-  },
+    return
+  }
   
-  openOrderReview(action) {
-    if (!this.selectedOrder) {
-      return
-    }
-    
-    this.orderReviewAction = action
-    this.orderReviewNote = ''
-    this.orderReviewError = ''
-    this.orderReviewPanelOpen = true
-  },
+  const previousStock = Number(
+    inventoryItem.stockQuantity || 0,
+  )
   
-  closeOrderReview() {
-    this.orderReviewPanelOpen = false
-    this.orderReviewAction = ''
-    this.orderReviewNote = ''
-    this.orderReviewError = ''
-  },
+  const stockChange =
+  this.inventoryAdjustmentType === 'remove'
+  ? -quantity
+  : quantity
   
-  submitOrderReview() {
-    const order = this.selectedOrder
-    
-    if (!order) {
-      return
-    }
-    
-    const adminNote =
-    this.orderReviewNote.trim()
-    
-    if (!adminNote) {
-      this.orderReviewError =
-      'Add an admin note before updating this order.'
-      
-      return
-    }
-    
-    const nextStatusByAction = {
-      approve: 'processing',
-      reject: 'rejected',
-      ship: 'shipped',
-      unship: 'processing',
-      deliver: 'delivered',
-      cancel: 'cancelled',
-      refund: 'refunded',
-    }
-    
-    const allowedActionByStatus = {
-      'pending-verification': [
-        'approve',
-        'reject',
-      ],
-      processing: [
-        'ship',
-        'cancel',
-      ],
-      shipped: [
-        'unship',
-        'deliver',
-      ],
-      delivered: [
-        'refund',
-      ],
-    }
-    
-    const allowedActions =
-    allowedActionByStatus[order.status] || []
-    
-    if (
-      !allowedActions.includes(
-        this.orderReviewAction,
-      )
-    ) {
-      this.orderReviewError =
-      'This action is not available for the current order status.'
-      
-      return
-    }
-    
-    const nextStatus =
-    nextStatusByAction[
-      this.orderReviewAction
-    ]
-    
-    const orderIndex =
-    this.orders.findIndex(
-      (orderItem) =>
-        orderItem.id === order.id,
-    )
-    
-    if (orderIndex === -1 || !nextStatus) {
-      this.orderReviewError =
-      'Unable to update this order.'
-      
-      return
-    }
-    
-    if (
-      this.orderReviewAction === 'approve' &&
-      !this.deductInventoryForOrder(order)
-    ) {
-      return
-    }
-    
-    const isInventoryReturnAction =
-    this.orderReviewAction === 'cancel' ||
-    this.orderReviewAction === 'refund'
-    
-    if (isInventoryReturnAction) {
-      const movementType =
-      this.orderReviewAction === 'refund'
-      ? 'refund-return'
-      : 'cancellation-return'
-      
-      const stockWasRestored =
-      this.restoreInventoryForOrder(
-        order,
-        movementType,
-      )
-      
-      if (!stockWasRestored) {
-        return
-      }
-    }
-    
-    const reviewedAt =
-    new Date().toISOString()
-    
-    this.orders[orderIndex] = {
-      ...this.orders[orderIndex],
-      status: nextStatus,
-      admin_note: adminNote,
-      reviewed_at: reviewedAt,
-      
-      inventory_deducted:
-      this.orderReviewAction === 'approve'
-      ? true
-      : this.orders[orderIndex]
-      .inventory_deducted,
-      
-      inventory_deducted_at:
-      this.orderReviewAction === 'approve'
-      ? reviewedAt
-      : this.orders[orderIndex]
-      .inventory_deducted_at,
-      
-      inventory_restored:
-      isInventoryReturnAction
-      ? true
-      : this.orders[orderIndex]
-      .inventory_restored,
-      
-      inventory_restored_at:
-      isInventoryReturnAction
-      ? reviewedAt
-      : this.orders[orderIndex]
-      .inventory_restored_at,
-    }
-    
-    this.closeOrderReview()
-  },
+  const newStock =
+  previousStock + stockChange
   
-  openOrderDetails(orderId) {
-    this.closeApplicationDetails()
-    this.selectedOrderId = orderId
-    this.orderDetailsOpen = true
-    document.body.classList.add('overflow-hidden')
-  },
+  if (newStock < 0) {
+    this.inventoryAdjustmentError =
+    'The quantity to remove is greater than the available stock.'
+    
+    return
+  }
   
-  closeOrderDetails() {
-    this.closeOrderReview()
-    this.orderDetailsOpen = false
-    
-    if (
-      !this.mobileMenuOpen &&
-      !this.applicationDetailsOpen
-    ) {
-      document.body.classList.remove('overflow-hidden')
-    }
-    
-    window.setTimeout(() => {
-      if (!this.orderDetailsOpen) {
-        this.selectedOrderId = null
-      }
-    }, 250)
-  },
+  const isPackageSupply =
+  this.packageSupplies.some(
+    (supply) =>
+      supply.id === inventoryItem.id,
+  )
   
-  confirmPackageAllocation() {
-    if (!this.validatePackageAllocation()) {
-      return
-    }
+  const movement = {
+    id: `inventory-movement-${Date.now()}`,
     
-    const application =
-    this.selectedApplication
+    product_id: inventoryItem.id,
+    product_name: inventoryItem.name,
     
-    const selectedPackage =
-    application?.package
+    inventory_item_type:
+    isPackageSupply
+    ? 'package-supply'
+    : 'product',
     
-    if (!application || !selectedPackage) {
-      this.packageAllocationError =
-      'Package information is unavailable.'
-      
-      return
-    }
+    type: this.inventoryAdjustmentType,
     
-    if (
-      application.package_inventory_deducted
-    ) {
-      this.packageAllocationError =
-      'This package has already been confirmed.'
-      
-      return
-    }
+    quantity: stockChange,
+    previous_stock: previousStock,
+    new_stock: newStock,
     
-    const applicationIndex =
-    this.applications.findIndex(
-      (applicationItem) =>
-        applicationItem.id ===
-      application.id,
-    )
+    reason,
     
-    if (applicationIndex === -1) {
-      this.packageAllocationError =
-      'The membership application could not be found.'
-      
-      return
-    }
-    
-    const confirmedAt =
-    new Date().toISOString()
-    
-    const packageAllocation =
-    this.inventoryProducts
-    .map((product) => ({
-      product_id: product.id,
-      product_name: product.name,
-      product_image_url: product.image,
-      quantity: Number(
-        this.packageAllocationQuantities[
-          product.id
-        ] || 0,
-      ),
-    }))
-    .filter(
-      (allocation) =>
-        allocation.quantity > 0,
-    )
-    
-    const packageSupplyAllocation =
-    selectedPackage.fixedInventoryItems.map(
-      (inclusion) => ({
-        inventory_item_id:
-        inclusion.inventoryItemId,
-        
-        inventory_item_name:
-        inclusion.name,
-        
-        quantity: Number(
-          inclusion.quantity || 0,
-        ),
-      }),
-    )
-    
-    const newMovements = []
-    
-    this.inventoryProducts =
-    this.inventoryProducts.map(
-      (product) => {
-        const allocation =
-        packageAllocation.find(
-          (allocationItem) =>
-            allocationItem.product_id ===
-          product.id,
-        )
-        
-        if (!allocation) {
-          return product
-        }
-        
-        const previousStock = Number(
-          product.stockQuantity || 0,
-        )
-        
-        const newStock =
-        previousStock -
-        allocation.quantity
-        
-        newMovements.push({
-          id:
-          `package-product-${application.id}-` +
-          `${product.id}-${Date.now()}`,
-          
-          product_id: product.id,
-          product_name: product.name,
-          
-          inventory_item_type: 'product',
-          
-          type: 'package-fulfillment',
-          
-          quantity: -allocation.quantity,
-          
-          previous_stock: previousStock,
-          new_stock: newStock,
-          
-          reason:
-          `${selectedPackage.name} fulfillment ` +
-          `for ${application.customer_name}`,
-          
-          membership_application_id:
-          application.id,
-          
-          created_at: confirmedAt,
-        })
-        
-        return {
-          ...product,
-          stockQuantity: newStock,
-        }
-      },
-    )
-    
+    created_at: new Date().toISOString(),
+  }
+  
+  if (isPackageSupply) {
     this.packageSupplies =
     this.packageSupplies.map(
-      (supply) => {
-        const allocation =
-        packageSupplyAllocation.find(
-          (allocationItem) =>
-            allocationItem
-          .inventory_item_id ===
-          supply.id,
-        )
-        
-        if (!allocation) {
-          return supply
-        }
-        
-        const previousStock = Number(
-          supply.stockQuantity || 0,
-        )
-        
-        const newStock =
-        previousStock -
-        allocation.quantity
-        
-        newMovements.push({
-          id:
-          `package-supply-${application.id}-` +
-          `${supply.id}-${Date.now()}`,
-          
-          product_id: supply.id,
-          product_name: supply.name,
-          
-          inventory_item_type:
-          'package-supply',
-          
-          type: 'package-fulfillment',
-          
-          quantity: -allocation.quantity,
-          
-          previous_stock: previousStock,
-          new_stock: newStock,
-          
-          reason:
-          `${selectedPackage.name} fulfillment ` +
-          `for ${application.customer_name}`,
-          
-          membership_application_id:
-          application.id,
-          
-          created_at: confirmedAt,
-        })
-        
-        return {
-          ...supply,
-          stockQuantity: newStock,
-        }
-      },
-    )
-    
-    this.applications[applicationIndex] = {
-      ...this.applications[applicationIndex],
-      
-      fulfillment_status:
-      'ready-for-packing',
-      
-      package_allocation:
-      packageAllocation,
-      
-      package_supply_allocation:
-      packageSupplyAllocation,
-      
-      package_inventory_deducted: true,
-      
-      package_inventory_deducted_at:
-      confirmedAt,
-      
-      package_inventory_restored: false,
-      
-      package_inventory_restored_at: null,
-      
-      fulfillment_confirmed_at:
-      confirmedAt,
-      
-      updated_at: confirmedAt,
-    }
-    
-    this.inventoryMovements.unshift(
-      ...newMovements,
-    )
-    
-    this.packageAllocationError = ''
-    
-    this.inventoryFeedback =
-    `${selectedPackage.name} package confirmed. ` +
-    `${this.packageAllocationTotal} perfume bottles ` +
-    `and fixed supplies were deducted.`
-    
-    window.setTimeout(() => {
-      this.inventoryFeedback = ''
-    }, 4000)
-  },
-  
-  openPackageFulfillmentAction(action) {
-    const application = this.selectedApplication
-  
-    if (!application) {
-      this.packageFulfillmentError =
-        'Application details are unavailable.'
-      return
-    }
-  
-    const requiredStatusByAction = {
-      ship: 'ready-for-packing',
-      unship: 'shipped',
-      complete: 'shipped',
-    }
-  
-    const requiredStatus =
-      requiredStatusByAction[action]
-  
-    if (
-      !requiredStatus ||
-      application.fulfillment_status !==
-        requiredStatus
-    ) {
-      this.packageFulfillmentError =
-        'This package action is not available for the current status.'
-      return
-    }
-  
-    this.packageFulfillmentAction = action
-    this.packageFulfillmentError = ''
-  },
-  
-  closePackageFulfillmentAction() {
-    this.packageFulfillmentAction = ''
-    this.packageFulfillmentError = ''
-  },
-  
-  confirmPackageFulfillmentAction() {
-    const application = this.selectedApplication
-  
-    if (!application) {
-      this.packageFulfillmentError =
-        'Application details are unavailable.'
-      return
-    }
-  
-    const nextStatusByAction = {
-      ship: 'shipped',
-      unship: 'ready-for-packing',
-      complete: 'completed',
-    }
-  
-    const requiredStatusByAction = {
-      ship: 'ready-for-packing',
-      unship: 'shipped',
-      complete: 'shipped',
-    }
-  
-    const action = this.packageFulfillmentAction
-    const nextStatus = nextStatusByAction[action]
-    const requiredStatus =
-      requiredStatusByAction[action]
-  
-    if (
-      !nextStatus ||
-      !requiredStatus ||
-      application.fulfillment_status !==
-        requiredStatus
-    ) {
-      this.packageFulfillmentError =
-        'This package action is no longer available.'
-      return
-    }
-  
-    const applicationIndex =
-      this.applications.findIndex(
-        (applicationItem) =>
-          applicationItem.id === application.id,
-      )
-  
-    if (applicationIndex === -1) {
-      this.packageFulfillmentError =
-        'The membership application could not be found.'
-      return
-    }
-  
-    const updatedAt = new Date().toISOString()
-  
-    this.applications[applicationIndex] = {
-      ...this.applications[applicationIndex],
-  
-      fulfillment_status: nextStatus,
-  
-      package_shipped_at:
-        action === 'ship'
-          ? updatedAt
-          : action === 'unship'
-            ? null
-            : this.applications[applicationIndex]
-                .package_shipped_at || null,
-  
-      package_completed_at:
-        action === 'complete'
-          ? updatedAt
-          : this.applications[applicationIndex]
-              .package_completed_at || null,
-  
-      updated_at: updatedAt,
-    }
-  
-    this.closePackageFulfillmentAction()
-  },
-  
-  get reviewActionTitle() {
-    const titles = {
-      'approve-membership': 'Approve membership',
-      'reject-payment': 'Reject payment',
-      'approve-cancellation': 'Approve cancellation',
-      'decline-cancellation': 'Decline cancellation',
-    }
-    
-    return titles[this.reviewAction] || 'Review application'
-  },
-  
-  get reviewActionDescription() {
-    const descriptions = {
-      'approve-membership':
-      'The customer membership will be marked as approved.',
-      
-      'reject-payment':
-      'The submitted payment will be rejected and the membership will remain inactive.',
-      
-      'approve-cancellation':
-      'The application will be cancelled. Any applicable refund must still be processed manually.',
-      
-      'decline-cancellation':
-      'The cancellation request will be declined and the application will return to payment verification.',
-    }
-    
-    return descriptions[this.reviewAction] || ''
-  },
-  
-  openReviewPanel(actionName) {
-    if (!this.selectedApplication) {
-      return
-    }
-    
-    const allowedActions = {
-      'pending-verification': [
-        'approve-membership',
-        'reject-payment',
-      ],
-      
-      'cancellation-requested': [
-        'approve-cancellation',
-        'decline-cancellation',
-      ],
-    }
-    
-    const statusActions =
-    allowedActions[this.selectedApplication.status] || []
-    
-    if (!statusActions.includes(actionName)) {
-      return
-    }
-    
-    this.reviewAction = actionName
-    this.reviewNote = ''
-    this.reviewError = ''
-    this.reviewPanelOpen = true
-  },
-  
-  closeReviewPanel() {
-    this.reviewPanelOpen = false
-    this.reviewAction = ''
-    this.reviewNote = ''
-    this.reviewError = ''
-  },
-  
-  confirmReviewAction() {
-    const normalizedNote = this.reviewNote.trim()
-    
-    if (!this.selectedApplication) {
-      this.reviewError = 'Application details are unavailable.'
-      return
-    }
-    
-    if (normalizedNote.length < 3) {
-      this.reviewError =
-      'Enter a short admin note before confirming.'
-      return
-    }
-    
-    const nextStatuses = {
-      'approve-membership': 'approved',
-      'reject-payment': 'rejected',
-      'approve-cancellation': 'cancelled',
-      'decline-cancellation': 'pending-verification',
-    }
-    
-    const nextStatus = nextStatuses[this.reviewAction]
-    
-    if (!nextStatus) {
-      this.reviewError = 'Select a valid review action.'
-      return
-    }
-    
-    const applicationIndex = this.applications.findIndex(
-      (application) =>
-        application.id === this.selectedApplicationId,
-    )
-    
-    if (applicationIndex === -1) {
-      this.reviewError = 'Application could not be found.'
-      return
-    }
-    
-    const reviewedAt =
-    new Date().toISOString()
-    
-    const isMembershipApproval =
-    this.reviewAction ===
-    'approve-membership'
-    
-    this.applications[applicationIndex] = {
-      ...this.applications[applicationIndex],
-      
-      status: nextStatus,
-      
-      admin_note: normalizedNote,
-      
-      reviewed_at: reviewedAt,
-      updated_at: reviewedAt,
-      
-      approved_at:
-      isMembershipApproval
-      ? reviewedAt
-      : this.applications[
-        applicationIndex
-      ].approved_at,
-      
-      membership_activated_at:
-      isMembershipApproval
-      ? reviewedAt
-      : this.applications[
-        applicationIndex
-      ].membership_activated_at,
-      
-      fulfillment_status:
-      isMembershipApproval
-      ? 'pending-allocation'
-      : this.applications[
-        applicationIndex
-      ].fulfillment_status,
-    }
-    
-    this.closeReviewPanel()
-  },
-  
-  applicationStatusBadgeClass(status) {
-    const statusClasses = {
-      'awaiting-payment':
-      'border-amber-500/40 bg-amber-500/10 text-amber-300',
-      
-      'pending-verification':
-      'border-amber-500/40 bg-amber-500/10 text-amber-300',
-      
-      'cancellation-requested':
-      'border-red-400/30 bg-red-400/10 text-red-300',
-      
-      approved:
-      'border-emerald-500/30 bg-emerald-500/10 text-emerald-300',
-      
-      rejected:
-      'border-red-500/30 bg-red-500/10 text-red-300',
-      
-      cancelled:
-      'border-brand-border bg-brand-panel text-brand-muted',
-    }
-    
-    return (
-      statusClasses[status] ||
-      'border-brand-border bg-brand-panel text-brand-muted'
-    )
-  },
-  
-  applicationStatusDotClass(status) {
-    const statusClasses = {
-      'awaiting-payment': 'bg-amber-400',
-      'pending-verification': 'bg-amber-400',
-      'cancellation-requested': 'bg-red-400',
-      approved: 'bg-emerald-400',
-      rejected: 'bg-red-400',
-      cancelled: 'bg-brand-muted',
-    }
-    
-    return statusClasses[status] || 'bg-brand-muted'
-  },
-  
-  initializePackageAllocation() {
-    const initialQuantities = {}
-    
-    this.inventoryProducts.forEach(
-      (product) => {
-        initialQuantities[product.id] = 0
-      },
-    )
-    
-    const savedAllocation =
-    this.selectedApplication
-    ?.package_allocation || []
-    
-    savedAllocation.forEach((item) => {
-      if (
-        Object.hasOwn(
-          initialQuantities,
-          item.product_id,
-        )
-      ) {
-        initialQuantities[item.product_id] =
-        Number(item.quantity || 0)
+      (supply) =>
+        supply.id === inventoryItem.id
+      ? {
+        ...supply,
+        stockQuantity: newStock,
       }
-    })
-    
-    this.packageAllocationQuantities =
-    initialQuantities
-    
-    this.packageAllocationError = ''
-  },
-  
-  membershipFulfillmentStatusLabel(status) {
-    return (
-      this.membershipFulfillmentStatusLabels[
-        status
-      ] ||
-      status ||
-      'Not Ready'
+      : supply,
     )
-  },
-  
-  packageSupplyStock(supplyId) {
-    const supply = this.packageSupplies.find(
-      (packageSupply) =>
-        packageSupply.id === supplyId,
+  } else {
+    this.inventoryProducts =
+    this.inventoryProducts.map(
+      (product) =>
+        product.id === inventoryItem.id
+      ? {
+        ...product,
+        stockQuantity: newStock,
+      }
+      : product,
     )
+  }
+  
+  this.inventoryMovements.unshift(
+    movement,
+  )
+  
+  this.inventoryFeedback =
+  `${inventoryItem.name} stock updated ` +
+  `from ${previousStock} to ${newStock}.`
+  
+  this.closeInventoryAdjustment()
+  
+  window.setTimeout(() => {
+    this.inventoryFeedback = ''
+  }, 4000)
+},
+
+orderStatusBadgeClass(status) {
+  const statusClasses = {
+    'pending-verification':
+    'border-amber-500/40 bg-amber-500/10 text-amber-300',
     
-    return Number(
-      supply?.stockQuantity || 0,
-    )
-  },
+    processing:
+    'border-blue-500/30 bg-blue-500/10 text-blue-300',
+    
+    shipped:
+    'border-violet-500/30 bg-violet-500/10 text-violet-300',
+    
+    delivered:
+    'border-emerald-500/30 bg-emerald-500/10 text-emerald-300',
+    
+    rejected:
+    'border-red-500/30 bg-red-500/10 text-red-300',
+    
+    cancelled:
+    'border-brand-border bg-brand-panel text-brand-muted',
+  }
   
-  updatePackageAllocationQuantity(
-    productId,
-    rawValue,
+  return (
+    statusClasses[status] ||
+    'border-brand-border bg-brand-panel text-brand-muted'
+  )
+},
+
+orderStatusDotClass(status) {
+  const statusClasses = {
+    'pending-verification': 'bg-amber-400',
+    processing: 'bg-blue-400',
+    shipped: 'bg-violet-400',
+    delivered: 'bg-emerald-400',
+    rejected: 'bg-red-400',
+    cancelled: 'bg-brand-muted',
+    refunded: 'bg-violet-400',
+  }
+  
+  return (
+    statusClasses[status] ||
+    'bg-brand-muted'
+  )
+},
+
+deductInventoryForOrder(order) {
+  if (order.inventory_deducted) {
+    return true
+  }
+  
+  const quantitiesByProduct = new Map()
+  
+  order.items.forEach((item) => {
+    const currentQuantity =
+    quantitiesByProduct.get(item.product_id) || 0
+    
+    quantitiesByProduct.set(
+      item.product_id,
+      currentQuantity + Number(item.quantity || 0),
+    )
+  })
+  
+  for (
+    const [productId, requiredQuantity]
+    of quantitiesByProduct
   ) {
-    const product =
-    this.inventoryProducts.find(
+    const product = this.inventoryProducts.find(
       (inventoryProduct) =>
         inventoryProduct.id === productId,
     )
     
     if (!product) {
-      this.packageAllocationError =
-      'The selected product is unavailable.'
+      this.orderReviewError =
+      `Product ${productId} was not found in inventory.`
       
-      return
+      return false
     }
     
     const availableStock = Number(
       product.stockQuantity || 0,
     )
     
-    const requestedQuantity =
-    rawValue === ''
-    ? 0
-    : Number.parseInt(rawValue, 10)
+    if (availableStock < requiredQuantity) {
+      this.orderReviewError =
+      `${product.name} only has ` +
+      `${availableStock} available stock. ` +
+      `${requiredQuantity} unit(s) are required.`
+      
+      return false
+    }
+  }
+  
+  const movementTime = new Date().toISOString()
+  const newMovements = []
+  
+  this.inventoryProducts =
+  this.inventoryProducts.map((product) => {
+    const soldQuantity =
+    quantitiesByProduct.get(product.id) || 0
     
-    if (
-      !Number.isInteger(requestedQuantity) ||
-      requestedQuantity < 0
-    ) {
-      this.packageAllocationQuantities = {
-        ...this.packageAllocationQuantities,
-        [productId]: 0,
+    if (soldQuantity <= 0) {
+      return product
+    }
+    
+    const previousStock = Number(
+      product.stockQuantity || 0,
+    )
+    
+    const newStock =
+    previousStock - soldQuantity
+    
+    newMovements.push({
+      id:
+      `inventory-movement-${order.id}-` +
+      `${product.id}-${Date.now()}`,
+      
+      product_id: product.id,
+      product_name: product.name,
+      type: 'order-sale',
+      quantity: -soldQuantity,
+      previous_stock: previousStock,
+      new_stock: newStock,
+      reason:
+      `Approved order ${order.order_number}`,
+      order_id: order.id,
+      order_number: order.order_number,
+      created_at: movementTime,
+    })
+    
+    return {
+      ...product,
+      stockQuantity: newStock,
+    }
+  })
+  
+  this.inventoryMovements.unshift(
+    ...newMovements,
+  )
+  
+  this.inventoryFeedback =
+  `${order.order_number} approved. ` +
+  `Inventory was updated automatically.`
+  
+  window.setTimeout(() => {
+    this.inventoryFeedback = ''
+  }, 4000)
+  
+  return true
+},
+
+restoreInventoryForOrder(order, movementType) {
+  if (
+    !order.inventory_deducted ||
+    order.inventory_restored
+  ) {
+    return true
+  }
+  
+  const quantitiesByProduct = new Map()
+  
+  order.items.forEach((item) => {
+    const currentQuantity =
+    quantitiesByProduct.get(item.product_id) || 0
+    
+    quantitiesByProduct.set(
+      item.product_id,
+      currentQuantity + Number(item.quantity || 0),
+    )
+  })
+  
+  for (const productId of quantitiesByProduct.keys()) {
+    const productExists =
+    this.inventoryProducts.some(
+      (product) => product.id === productId,
+    )
+    
+    if (!productExists) {
+      this.orderReviewError =
+      `Product ${productId} was not found in inventory.`
+      
+      return false
+    }
+  }
+  
+  const movementTime = new Date().toISOString()
+  const newMovements = []
+  
+  this.inventoryProducts =
+  this.inventoryProducts.map((product) => {
+    const returnedQuantity =
+    quantitiesByProduct.get(product.id) || 0
+    
+    if (returnedQuantity <= 0) {
+      return product
+    }
+    
+    const previousStock = Number(
+      product.stockQuantity || 0,
+    )
+    
+    const newStock =
+    previousStock + returnedQuantity
+    
+    newMovements.push({
+      id:
+      `inventory-return-${order.id}-` +
+      `${product.id}-${Date.now()}`,
+      
+      product_id: product.id,
+      product_name: product.name,
+      type: movementType,
+      quantity: returnedQuantity,
+      previous_stock: previousStock,
+      new_stock: newStock,
+      reason:
+      movementType === 'refund-return'
+      ? `Refunded order ${order.order_number}`
+      : `Cancelled order ${order.order_number}`,
+      order_id: order.id,
+      order_number: order.order_number,
+      created_at: movementTime,
+    })
+    
+    return {
+      ...product,
+      stockQuantity: newStock,
+    }
+  })
+  
+  this.inventoryMovements.unshift(
+    ...newMovements,
+  )
+  
+  return true
+},
+
+openOrderReview(action) {
+  if (!this.selectedOrder) {
+    return
+  }
+  
+  this.orderReviewAction = action
+  this.orderReviewNote = ''
+  this.orderReviewError = ''
+  this.orderReviewPanelOpen = true
+},
+
+closeOrderReview() {
+  this.orderReviewPanelOpen = false
+  this.orderReviewAction = ''
+  this.orderReviewNote = ''
+  this.orderReviewError = ''
+},
+
+submitOrderReview() {
+  const order = this.selectedOrder
+  
+  if (!order) {
+    return
+  }
+  
+  const adminNote =
+  this.orderReviewNote.trim()
+  
+  if (!adminNote) {
+    this.orderReviewError =
+    'Add an admin note before updating this order.'
+    
+    return
+  }
+  
+  const nextStatusByAction = {
+    approve: 'processing',
+    reject: 'rejected',
+    ship: 'shipped',
+    unship: 'processing',
+    deliver: 'delivered',
+    cancel: 'cancelled',
+    refund: 'refunded',
+  }
+  
+  const allowedActionByStatus = {
+    'pending-verification': [
+      'approve',
+      'reject',
+    ],
+    processing: [
+      'ship',
+      'cancel',
+    ],
+    shipped: [
+      'unship',
+      'deliver',
+    ],
+    delivered: [
+      'refund',
+    ],
+  }
+  
+  const allowedActions =
+  allowedActionByStatus[order.status] || []
+  
+  if (
+    !allowedActions.includes(
+      this.orderReviewAction,
+    )
+  ) {
+    this.orderReviewError =
+    'This action is not available for the current order status.'
+    
+    return
+  }
+  
+  const nextStatus =
+  nextStatusByAction[
+    this.orderReviewAction
+  ]
+  
+  const orderIndex =
+  this.orders.findIndex(
+    (orderItem) =>
+      orderItem.id === order.id,
+  )
+  
+  if (orderIndex === -1 || !nextStatus) {
+    this.orderReviewError =
+    'Unable to update this order.'
+    
+    return
+  }
+  
+  if (
+    this.orderReviewAction === 'approve' &&
+    !this.deductInventoryForOrder(order)
+  ) {
+    return
+  }
+  
+  const isInventoryReturnAction =
+  this.orderReviewAction === 'cancel' ||
+  this.orderReviewAction === 'refund'
+  
+  if (isInventoryReturnAction) {
+    const movementType =
+    this.orderReviewAction === 'refund'
+    ? 'refund-return'
+    : 'cancellation-return'
+    
+    const stockWasRestored =
+    this.restoreInventoryForOrder(
+      order,
+      movementType,
+    )
+    
+    if (!stockWasRestored) {
+      return
+    }
+  }
+  
+  const reviewedAt =
+  new Date().toISOString()
+  
+  this.orders[orderIndex] = {
+    ...this.orders[orderIndex],
+    status: nextStatus,
+    admin_note: adminNote,
+    reviewed_at: reviewedAt,
+    
+    inventory_deducted:
+    this.orderReviewAction === 'approve'
+    ? true
+    : this.orders[orderIndex]
+    .inventory_deducted,
+    
+    inventory_deducted_at:
+    this.orderReviewAction === 'approve'
+    ? reviewedAt
+    : this.orders[orderIndex]
+    .inventory_deducted_at,
+    
+    inventory_restored:
+    isInventoryReturnAction
+    ? true
+    : this.orders[orderIndex]
+    .inventory_restored,
+    
+    inventory_restored_at:
+    isInventoryReturnAction
+    ? reviewedAt
+    : this.orders[orderIndex]
+    .inventory_restored_at,
+  }
+  
+  this.closeOrderReview()
+},
+
+openOrderDetails(orderId) {
+  this.closeApplicationDetails()
+  this.selectedOrderId = orderId
+  this.orderDetailsOpen = true
+  document.body.classList.add('overflow-hidden')
+},
+
+closeOrderDetails() {
+  this.closeOrderReview()
+  this.orderDetailsOpen = false
+  
+  if (
+    !this.mobileMenuOpen &&
+    !this.applicationDetailsOpen
+  ) {
+    document.body.classList.remove('overflow-hidden')
+  }
+  
+  window.setTimeout(() => {
+    if (!this.orderDetailsOpen) {
+      this.selectedOrderId = null
+    }
+  }, 250)
+},
+
+confirmPackageAllocation() {
+  if (!this.validatePackageAllocation()) {
+    return
+  }
+  
+  const application =
+  this.selectedApplication
+  
+  const selectedPackage =
+  application?.package
+  
+  if (!application || !selectedPackage) {
+    this.packageAllocationError =
+    'Package information is unavailable.'
+    
+    return
+  }
+  
+  if (
+    application.package_inventory_deducted
+  ) {
+    this.packageAllocationError =
+    'This package has already been confirmed.'
+    
+    return
+  }
+  
+  const applicationIndex =
+  this.applications.findIndex(
+    (applicationItem) =>
+      applicationItem.id ===
+    application.id,
+  )
+  
+  if (applicationIndex === -1) {
+    this.packageAllocationError =
+    'The membership application could not be found.'
+    
+    return
+  }
+  
+  const confirmedAt =
+  new Date().toISOString()
+  
+  const packageAllocation =
+  this.inventoryProducts
+  .map((product) => ({
+    product_id: product.id,
+    product_name: product.name,
+    product_image_url: product.image,
+    quantity: Number(
+      this.packageAllocationQuantities[
+        product.id
+      ] || 0,
+    ),
+  }))
+  .filter(
+    (allocation) =>
+      allocation.quantity > 0,
+  )
+  
+  const packageSupplyAllocation =
+  selectedPackage.fixedInventoryItems.map(
+    (inclusion) => ({
+      inventory_item_id:
+      inclusion.inventoryItemId,
+      
+      inventory_item_name:
+      inclusion.name,
+      
+      quantity: Number(
+        inclusion.quantity || 0,
+      ),
+    }),
+  )
+  
+  const newMovements = []
+  
+  this.inventoryProducts =
+  this.inventoryProducts.map(
+    (product) => {
+      const allocation =
+      packageAllocation.find(
+        (allocationItem) =>
+          allocationItem.product_id ===
+        product.id,
+      )
+      
+      if (!allocation) {
+        return product
       }
       
+      const previousStock = Number(
+        product.stockQuantity || 0,
+      )
+      
+      const newStock =
+      previousStock -
+      allocation.quantity
+      
+      newMovements.push({
+        id:
+        `package-product-${application.id}-` +
+        `${product.id}-${Date.now()}`,
+        
+        product_id: product.id,
+        product_name: product.name,
+        
+        inventory_item_type: 'product',
+        
+        type: 'package-fulfillment',
+        
+        quantity: -allocation.quantity,
+        
+        previous_stock: previousStock,
+        new_stock: newStock,
+        
+        reason:
+        `${selectedPackage.name} fulfillment ` +
+        `for ${application.customer_name}`,
+        
+        membership_application_id:
+        application.id,
+        
+        created_at: confirmedAt,
+      })
+      
+      return {
+        ...product,
+        stockQuantity: newStock,
+      }
+    },
+  )
+  
+  this.packageSupplies =
+  this.packageSupplies.map(
+    (supply) => {
+      const allocation =
+      packageSupplyAllocation.find(
+        (allocationItem) =>
+          allocationItem
+        .inventory_item_id ===
+        supply.id,
+      )
+      
+      if (!allocation) {
+        return supply
+      }
+      
+      const previousStock = Number(
+        supply.stockQuantity || 0,
+      )
+      
+      const newStock =
+      previousStock -
+      allocation.quantity
+      
+      newMovements.push({
+        id:
+        `package-supply-${application.id}-` +
+        `${supply.id}-${Date.now()}`,
+        
+        product_id: supply.id,
+        product_name: supply.name,
+        
+        inventory_item_type:
+        'package-supply',
+        
+        type: 'package-fulfillment',
+        
+        quantity: -allocation.quantity,
+        
+        previous_stock: previousStock,
+        new_stock: newStock,
+        
+        reason:
+        `${selectedPackage.name} fulfillment ` +
+        `for ${application.customer_name}`,
+        
+        membership_application_id:
+        application.id,
+        
+        created_at: confirmedAt,
+      })
+      
+      return {
+        ...supply,
+        stockQuantity: newStock,
+      }
+    },
+  )
+  
+  this.applications[applicationIndex] = {
+    ...this.applications[applicationIndex],
+    
+    fulfillment_status:
+    'ready-for-packing',
+    
+    package_allocation:
+    packageAllocation,
+    
+    package_supply_allocation:
+    packageSupplyAllocation,
+    
+    package_inventory_deducted: true,
+    
+    package_inventory_deducted_at:
+    confirmedAt,
+    
+    package_inventory_restored: false,
+    
+    package_inventory_restored_at: null,
+    
+    fulfillment_confirmed_at:
+    confirmedAt,
+    
+    updated_at: confirmedAt,
+  }
+  
+  this.inventoryMovements.unshift(
+    ...newMovements,
+  )
+  
+  this.packageAllocationError = ''
+  
+  this.inventoryFeedback =
+  `${selectedPackage.name} package confirmed. ` +
+  `${this.packageAllocationTotal} perfume bottles ` +
+  `and fixed supplies were deducted.`
+  
+  window.setTimeout(() => {
+    this.inventoryFeedback = ''
+  }, 4000)
+},
+
+openPackageFulfillmentAction(action) {
+  const application = this.selectedApplication
+  
+  if (!application) {
+    this.packageFulfillmentError =
+    'Application details are unavailable.'
+    return
+  }
+  
+  const requiredStatusByAction = {
+    ship: 'ready-for-packing',
+    unship: 'shipped',
+    complete: 'shipped',
+  }
+  
+  const requiredStatus =
+  requiredStatusByAction[action]
+  
+  if (
+    !requiredStatus ||
+    application.fulfillment_status !==
+    requiredStatus
+  ) {
+    this.packageFulfillmentError =
+    'This package action is not available for the current status.'
+    return
+  }
+  
+  this.packageFulfillmentAction = action
+  this.packageFulfillmentError = ''
+},
+
+closePackageFulfillmentAction() {
+  this.packageFulfillmentAction = ''
+  this.packageFulfillmentError = ''
+},
+
+confirmPackageFulfillmentAction() {
+  const application = this.selectedApplication
+  
+  if (!application) {
+    this.packageFulfillmentError =
+    'Application details are unavailable.'
+    return
+  }
+  
+  const nextStatusByAction = {
+    ship: 'shipped',
+    unship: 'ready-for-packing',
+    complete: 'completed',
+  }
+  
+  const requiredStatusByAction = {
+    ship: 'ready-for-packing',
+    unship: 'shipped',
+    complete: 'shipped',
+  }
+  
+  const action = this.packageFulfillmentAction
+  const nextStatus = nextStatusByAction[action]
+  const requiredStatus =
+  requiredStatusByAction[action]
+  
+  if (
+    !nextStatus ||
+    !requiredStatus ||
+    application.fulfillment_status !==
+    requiredStatus
+  ) {
+    this.packageFulfillmentError =
+    'This package action is no longer available.'
+    return
+  }
+  
+  const applicationIndex =
+  this.applications.findIndex(
+    (applicationItem) =>
+      applicationItem.id === application.id,
+  )
+  
+  if (applicationIndex === -1) {
+    this.packageFulfillmentError =
+    'The membership application could not be found.'
+    return
+  }
+  
+  const updatedAt = new Date().toISOString()
+  
+  this.applications[applicationIndex] = {
+    ...this.applications[applicationIndex],
+    
+    fulfillment_status: nextStatus,
+    
+    package_shipped_at:
+    action === 'ship'
+    ? updatedAt
+    : action === 'unship'
+    ? null
+    : this.applications[applicationIndex]
+    .package_shipped_at || null,
+    
+    package_completed_at:
+    action === 'complete'
+    ? updatedAt
+    : this.applications[applicationIndex]
+    .package_completed_at || null,
+    
+    updated_at: updatedAt,
+  }
+  
+  this.closePackageFulfillmentAction()
+},
+
+get reviewActionTitle() {
+  const titles = {
+    'approve-membership': 'Approve membership',
+    'reject-payment': 'Reject payment',
+    'approve-cancellation': 'Approve cancellation',
+    'decline-cancellation': 'Decline cancellation',
+  }
+  
+  return titles[this.reviewAction] || 'Review application'
+},
+
+get reviewActionDescription() {
+  const descriptions = {
+    'approve-membership':
+    'The customer membership will be marked as approved.',
+    
+    'reject-payment':
+    'The submitted payment will be rejected and the membership will remain inactive.',
+    
+    'approve-cancellation':
+    'The application will be cancelled. Any applicable refund must still be processed manually.',
+    
+    'decline-cancellation':
+    'The cancellation request will be declined and the application will return to payment verification.',
+  }
+  
+  return descriptions[this.reviewAction] || ''
+},
+
+openReviewPanel(actionName) {
+  if (!this.selectedApplication) {
+    return
+  }
+  
+  const allowedActions = {
+    'pending-verification': [
+      'approve-membership',
+      'reject-payment',
+    ],
+    
+    'cancellation-requested': [
+      'approve-cancellation',
+      'decline-cancellation',
+    ],
+  }
+  
+  const statusActions =
+  allowedActions[this.selectedApplication.status] || []
+  
+  if (!statusActions.includes(actionName)) {
+    return
+  }
+  
+  this.reviewAction = actionName
+  this.reviewNote = ''
+  this.reviewError = ''
+  this.reviewPanelOpen = true
+},
+
+closeReviewPanel() {
+  this.reviewPanelOpen = false
+  this.reviewAction = ''
+  this.reviewNote = ''
+  this.reviewError = ''
+},
+
+confirmReviewAction() {
+  const normalizedNote = this.reviewNote.trim()
+  
+  if (!this.selectedApplication) {
+    this.reviewError = 'Application details are unavailable.'
+    return
+  }
+  
+  if (normalizedNote.length < 3) {
+    this.reviewError =
+    'Enter a short admin note before confirming.'
+    return
+  }
+  
+  const nextStatuses = {
+    'approve-membership': 'approved',
+    'reject-payment': 'rejected',
+    'approve-cancellation': 'cancelled',
+    'decline-cancellation': 'pending-verification',
+  }
+  
+  const nextStatus = nextStatuses[this.reviewAction]
+  
+  if (!nextStatus) {
+    this.reviewError = 'Select a valid review action.'
+    return
+  }
+  
+  const applicationIndex = this.applications.findIndex(
+    (application) =>
+      application.id === this.selectedApplicationId,
+  )
+  
+  if (applicationIndex === -1) {
+    this.reviewError = 'Application could not be found.'
+    return
+  }
+  
+  const reviewedAt =
+  new Date().toISOString()
+  
+  const isMembershipApproval =
+  this.reviewAction ===
+  'approve-membership'
+  
+  this.applications[applicationIndex] = {
+    ...this.applications[applicationIndex],
+    
+    status: nextStatus,
+    
+    admin_note: normalizedNote,
+    
+    reviewed_at: reviewedAt,
+    updated_at: reviewedAt,
+    
+    approved_at:
+    isMembershipApproval
+    ? reviewedAt
+    : this.applications[
+      applicationIndex
+    ].approved_at,
+    
+    membership_activated_at:
+    isMembershipApproval
+    ? reviewedAt
+    : this.applications[
+      applicationIndex
+    ].membership_activated_at,
+    
+    fulfillment_status:
+    isMembershipApproval
+    ? 'pending-allocation'
+    : this.applications[
+      applicationIndex
+    ].fulfillment_status,
+  }
+  
+  this.closeReviewPanel()
+},
+
+applicationStatusBadgeClass(status) {
+  const statusClasses = {
+    'awaiting-payment':
+    'border-amber-500/40 bg-amber-500/10 text-amber-300',
+    
+    'pending-verification':
+    'border-amber-500/40 bg-amber-500/10 text-amber-300',
+    
+    'cancellation-requested':
+    'border-red-400/30 bg-red-400/10 text-red-300',
+    
+    approved:
+    'border-emerald-500/30 bg-emerald-500/10 text-emerald-300',
+    
+    rejected:
+    'border-red-500/30 bg-red-500/10 text-red-300',
+    
+    cancelled:
+    'border-brand-border bg-brand-panel text-brand-muted',
+  }
+  
+  return (
+    statusClasses[status] ||
+    'border-brand-border bg-brand-panel text-brand-muted'
+  )
+},
+
+applicationStatusDotClass(status) {
+  const statusClasses = {
+    'awaiting-payment': 'bg-amber-400',
+    'pending-verification': 'bg-amber-400',
+    'cancellation-requested': 'bg-red-400',
+    approved: 'bg-emerald-400',
+    rejected: 'bg-red-400',
+    cancelled: 'bg-brand-muted',
+  }
+  
+  return statusClasses[status] || 'bg-brand-muted'
+},
+
+initializePackageAllocation() {
+  const initialQuantities = {}
+  
+  this.inventoryProducts.forEach(
+    (product) => {
+      initialQuantities[product.id] = 0
+    },
+  )
+  
+  const savedAllocation =
+  this.selectedApplication
+  ?.package_allocation || []
+  
+  savedAllocation.forEach((item) => {
+    if (
+      Object.hasOwn(
+        initialQuantities,
+        item.product_id,
+      )
+    ) {
+      initialQuantities[item.product_id] =
+      Number(item.quantity || 0)
+    }
+  })
+  
+  this.packageAllocationQuantities =
+  initialQuantities
+  
+  this.packageAllocationError = ''
+},
+
+membershipFulfillmentStatusLabel(status) {
+  return (
+    this.membershipFulfillmentStatusLabels[
+      status
+    ] ||
+    status ||
+    'Not Ready'
+  )
+},
+
+packageSupplyStock(supplyId) {
+  const supply = this.packageSupplies.find(
+    (packageSupply) =>
+      packageSupply.id === supplyId,
+  )
+  
+  return Number(
+    supply?.stockQuantity || 0,
+  )
+},
+
+updatePackageAllocationQuantity(
+  productId,
+  rawValue,
+) {
+  const product =
+  this.inventoryProducts.find(
+    (inventoryProduct) =>
+      inventoryProduct.id === productId,
+  )
+  
+  if (!product) {
+    this.packageAllocationError =
+    'The selected product is unavailable.'
+    
+    return
+  }
+  
+  const availableStock = Number(
+    product.stockQuantity || 0,
+  )
+  
+  const requestedQuantity =
+  rawValue === ''
+  ? 0
+  : Number.parseInt(rawValue, 10)
+  
+  if (
+    !Number.isInteger(requestedQuantity) ||
+    requestedQuantity < 0
+  ) {
+    this.packageAllocationQuantities = {
+      ...this.packageAllocationQuantities,
+      [productId]: 0,
+    }
+    
+    this.packageAllocationError =
+    `Enter a valid quantity for ${product.name}.`
+    
+    return
+  }
+  
+  const safeQuantity = Math.min(
+    requestedQuantity,
+    availableStock,
+  )
+  
+  this.packageAllocationQuantities = {
+    ...this.packageAllocationQuantities,
+    [productId]: safeQuantity,
+  }
+  
+  if (requestedQuantity > availableStock) {
+    this.packageAllocationError =
+    `${product.name} only has ` +
+    `${availableStock} available stock.`
+    
+    return
+  }
+  
+  this.validatePackageAllocation()
+},
+
+validatePackageAllocation() {
+  const application =
+  this.selectedApplication
+  
+  const selectedPackage =
+  application?.package
+  
+  if (!application || !selectedPackage) {
+    this.packageAllocationError =
+    'Package information is unavailable.'
+    
+    return false
+  }
+  
+  if (application.status !== 'approved') {
+    this.packageAllocationError =
+    'The membership payment must be approved before package allocation.'
+    
+    return false
+  }
+  
+  if (
+    application.package_inventory_deducted
+  ) {
+    this.packageAllocationError =
+    'This package has already been confirmed.'
+    
+    return false
+  }
+  
+  for (const product of this.inventoryProducts) {
+    const rawQuantity =
+    this.packageAllocationQuantities[
+      product.id
+    ]
+    
+    const quantity =
+    rawQuantity === '' ||
+    rawQuantity === undefined
+    ? 0
+    : Number(rawQuantity)
+    
+    if (
+      !Number.isInteger(quantity) ||
+      quantity < 0
+    ) {
       this.packageAllocationError =
       `Enter a valid quantity for ${product.name}.`
       
-      return
+      return false
     }
     
-    const safeQuantity = Math.min(
-      requestedQuantity,
-      availableStock,
+    const availableStock = Number(
+      product.stockQuantity || 0,
     )
     
-    this.packageAllocationQuantities = {
-      ...this.packageAllocationQuantities,
-      [productId]: safeQuantity,
-    }
-    
-    if (requestedQuantity > availableStock) {
+    if (quantity > availableStock) {
       this.packageAllocationError =
       `${product.name} only has ` +
       `${availableStock} available stock.`
       
-      return
+      return false
     }
-    
-    this.validatePackageAllocation()
-  },
+  }
   
-  validatePackageAllocation() {
-    const application =
-    this.selectedApplication
-    
-    const selectedPackage =
-    application?.package
-    
-    if (!application || !selectedPackage) {
-      this.packageAllocationError =
-      'Package information is unavailable.'
-      
-      return false
-    }
-    
-    if (application.status !== 'approved') {
-      this.packageAllocationError =
-      'The membership payment must be approved before package allocation.'
-      
-      return false
-    }
-    
-    if (
-      application.package_inventory_deducted
-    ) {
-      this.packageAllocationError =
-      'This package has already been confirmed.'
-      
-      return false
-    }
-    
-    for (const product of this.inventoryProducts) {
-      const rawQuantity =
-      this.packageAllocationQuantities[
-        product.id
-      ]
-      
-      const quantity =
-      rawQuantity === '' ||
-      rawQuantity === undefined
-      ? 0
-      : Number(rawQuantity)
-      
-      if (
-        !Number.isInteger(quantity) ||
-        quantity < 0
-      ) {
-        this.packageAllocationError =
-        `Enter a valid quantity for ${product.name}.`
-        
-        return false
-      }
-      
-      const availableStock = Number(
-        product.stockQuantity || 0,
-      )
-      
-      if (quantity > availableStock) {
-        this.packageAllocationError =
-        `${product.name} only has ` +
-        `${availableStock} available stock.`
-        
-        return false
-      }
-    }
-    
-    const requiredQuantity = Number(
-      selectedPackage.productQuantity || 0,
-    )
-    
-    if (
-      this.packageAllocationTotal <
-      requiredQuantity
-    ) {
-      const remainingQuantity =
-      requiredQuantity -
-      this.packageAllocationTotal
-      
-      this.packageAllocationError =
-      `Add ${remainingQuantity} more bottle` +
-      `${remainingQuantity === 1 ? '' : 's'} ` +
-      `to complete this package.`
-      
-      return false
-    }
-    
-    if (
-      this.packageAllocationTotal >
-      requiredQuantity
-    ) {
-      const excessQuantity =
-      this.packageAllocationTotal -
-      requiredQuantity
-      
-      this.packageAllocationError =
-      `Remove ${excessQuantity} bottle` +
-      `${excessQuantity === 1 ? '' : 's'}. ` +
-      `The package limit cannot be exceeded.`
-      
-      return false
-    }
-    
-    for (
-      const inclusion of
-      selectedPackage.fixedInventoryItems
-    ) {
-      const availableStock =
-      this.packageSupplyStock(
-        inclusion.inventoryItemId,
-      )
-      
-      const requiredStock = Number(
-        inclusion.quantity || 0,
-      )
-      
-      if (availableStock < requiredStock) {
-        this.packageAllocationError =
-        `${inclusion.name} only has ` +
-        `${availableStock} available. ` +
-        `${requiredStock} required.`
-        
-        return false
-      }
-    }
-    
-    this.packageAllocationError = ''
-    
-    return true
-  },
+  const requiredQuantity = Number(
+    selectedPackage.productQuantity || 0,
+  )
   
-  formatMoney(amount) {
-    return adminPesoFormatter.format(amount || 0)
-  },
-  
-  formatOptionalMoney(
-    amount,
-    fallback = 'Pending confirmation',
+  if (
+    this.packageAllocationTotal <
+    requiredQuantity
   ) {
-    if (
-      amount === null ||
-      amount === undefined ||
-      amount === ''
-    ) {
-      return fallback
-    }
+    const remainingQuantity =
+    requiredQuantity -
+    this.packageAllocationTotal
+    
+    this.packageAllocationError =
+    `Add ${remainingQuantity} more bottle` +
+    `${remainingQuantity === 1 ? '' : 's'} ` +
+    `to complete this package.`
+    
+    return false
+  }
   
-    const numericAmount = Number(amount)
+  if (
+    this.packageAllocationTotal >
+    requiredQuantity
+  ) {
+    const excessQuantity =
+    this.packageAllocationTotal -
+    requiredQuantity
+    
+    this.packageAllocationError =
+    `Remove ${excessQuantity} bottle` +
+    `${excessQuantity === 1 ? '' : 's'}. ` +
+    `The package limit cannot be exceeded.`
+    
+    return false
+  }
   
-    if (!Number.isFinite(numericAmount)) {
-      return fallback
-    }
-  
-    return adminPesoFormatter.format(
-      numericAmount,
+  for (
+    const inclusion of
+    selectedPackage.fixedInventoryItems
+  ) {
+    const availableStock =
+    this.packageSupplyStock(
+      inclusion.inventoryItemId,
     )
-  },
-  
-  formatDate(dateValue) {
-    if (!dateValue) {
-      return 'Not available'
-    }
     
-    return adminDateFormatter.format(new Date(dateValue))
-  },
-  
-  openApplicationDetails(applicationId) {
-    this.selectedApplicationId =
-    applicationId
-    
-    this.initializePackageAllocation()
-    
-    this.applicationDetailsOpen = true
-    
-    document.body.classList.add(
-      'overflow-hidden',
+    const requiredStock = Number(
+      inclusion.quantity || 0,
     )
-  },
-  
-  closeApplicationDetails() {
-    this.closeReviewPanel()
-    this.closePackageFulfillmentAction()
-    this.applicationDetailsOpen = false
     
-    if (
-      !this.mobileMenuOpen &&
-      !this.orderDetailsOpen
-    ) {
-      document.body.classList.remove('overflow-hidden')
+    if (availableStock < requiredStock) {
+      this.packageAllocationError =
+      `${inclusion.name} only has ` +
+      `${availableStock} available. ` +
+      `${requiredStock} required.`
+      
+      return false
     }
-    
-    window.setTimeout(() => {
-      if (!this.applicationDetailsOpen) {
-        this.selectedApplicationId = null
-        
-        this.packageAllocationQuantities = {}
-        this.packageAllocationError = ''
-      }
-    }, 250)
-  },
+  }
   
-  get activePageTitle() {
-    return adminPageTitles[this.activePage] || 'Overview'
-  },
+  this.packageAllocationError = ''
   
-  openPage(pageName) {
-    if (!adminPageTitles[pageName]) {
-      return
-    }
-    
-    this.closeApplicationDetails()
-    this.closeOrderDetails()
-    this.closeInventoryAdjustment()
-    this.activePage = pageName
-    this.closeMobileMenu()
-    
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth',
-    })
-  },
+  return true
+},
+
+formatMoney(amount) {
+  return adminPesoFormatter.format(amount || 0)
+},
+
+formatOptionalMoney(
+  amount,
+  fallback = 'Pending confirmation',
+) {
+  if (
+    amount === null ||
+    amount === undefined ||
+    amount === ''
+  ) {
+    return fallback
+  }
   
-  openMobileMenu() {
-    this.closeApplicationDetails()
-    this.closeOrderDetails()
-    this.mobileMenuOpen = true
-    document.body.classList.add('overflow-hidden')
-  },
+  const numericAmount = Number(amount)
   
-  closeMobileMenu() {
-    this.mobileMenuOpen = false
-    
-    if (!this.applicationDetailsOpen) {
-      document.body.classList.remove('overflow-hidden')
-    }
-  },
+  if (!Number.isFinite(numericAmount)) {
+    return fallback
+  }
   
-  destroy() {
+  return adminPesoFormatter.format(
+    numericAmount,
+  )
+},
+
+formatDate(dateValue) {
+  if (!dateValue) {
+    return 'Not available'
+  }
+  
+  return adminDateFormatter.format(new Date(dateValue))
+},
+
+openApplicationDetails(applicationId) {
+  this.selectedApplicationId =
+  applicationId
+  
+  this.initializePackageAllocation()
+  
+  this.applicationDetailsOpen = true
+  
+  document.body.classList.add(
+    'overflow-hidden',
+  )
+},
+
+closeApplicationDetails() {
+  this.closeReviewPanel()
+  this.closePackageFulfillmentAction()
+  this.applicationDetailsOpen = false
+  
+  if (
+    !this.mobileMenuOpen &&
+    !this.orderDetailsOpen
+  ) {
     document.body.classList.remove('overflow-hidden')
-  },
+  }
+  
+  window.setTimeout(() => {
+    if (!this.applicationDetailsOpen) {
+      this.selectedApplicationId = null
+      
+      this.packageAllocationQuantities = {}
+      this.packageAllocationError = ''
+    }
+  }, 250)
+},
+
+get activePageTitle() {
+  return adminPageTitles[this.activePage] || 'Overview'
+},
+
+openPage(pageName) {
+  if (!adminPageTitles[pageName]) {
+    return
+  }
+  
+  this.closeApplicationDetails()
+  this.closeOrderDetails()
+  this.closeInventoryAdjustment()
+  this.activePage = pageName
+  this.closeMobileMenu()
+  
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth',
+  })
+},
+
+openMobileMenu() {
+  this.closeApplicationDetails()
+  this.closeOrderDetails()
+  this.mobileMenuOpen = true
+  document.body.classList.add('overflow-hidden')
+},
+
+closeMobileMenu() {
+  this.mobileMenuOpen = false
+  
+  if (!this.applicationDetailsOpen) {
+    document.body.classList.remove('overflow-hidden')
+  }
+},
+
+destroy() {
+  document.body.classList.remove('overflow-hidden')
+},
 }))
 
 document.title = `Admin Dashboard | ${siteConfig.brand.name}`
@@ -4973,14 +4985,17 @@ ${renderAdminInventoryMovementHistory()}
 
 ${renderAdminReferralsPayoutsPage()}
 
+${renderAdminPointsAuditPage()}
+
 ${adminNavigationItems
   .filter(
     (item) =>
       item.id !== 'overview' &&
-      item.id !== 'memberships' &&
-      item.id !== 'orders' &&
-      item.id !== 'sales-inventory' &&
-      item.id !== 'referrals-payouts',
+    item.id !== 'memberships' &&
+    item.id !== 'orders' &&
+    item.id !== 'sales-inventory' &&
+    item.id !== 'referrals-payouts' &&
+    item.id !== 'points-audit',
   )
   .map(
     (item) => `
