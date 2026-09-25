@@ -4,21 +4,46 @@ import Alpine from 'alpinejs'
 
 import logoImage from './assets/logoyourproduct.png'
 
-import {
-  siteConfig,
-} from './config/site-config.js'
+import { siteConfig } from './config/site-config.js'
+import { supabase } from './lib/supabase.js'
 
 window.Alpine = Alpine
 
 Alpine.data('loginPage', () => ({
   emailAddress: '',
   password: '',
-  rememberMe: false,
   showPassword: false,
-  formTested: false,
+  isSubmitting: false,
+  loginError: '',
 
-  testLoginForm() {
-    this.formTested = true
+  resetMessage() {
+    this.loginError = ''
+  },
+
+  async signIn() {
+    this.isSubmitting = true
+    this.loginError = ''
+
+    try {
+      const { error } =
+        await supabase.auth.signInWithPassword({
+          email: this.emailAddress.trim().toLowerCase(),
+          password: this.password,
+        })
+
+      if (error) {
+        throw error
+      }
+
+      window.location.assign('/dashboard/')
+    } catch (error) {
+      console.error('Unable to sign in:', error)
+      this.loginError =
+        error?.message ||
+        'Unable to sign in. Check your email and password.'
+    } finally {
+      this.isSubmitting = false
+    }
   },
 }))
 
@@ -138,13 +163,13 @@ document.querySelector('#login-app').innerHTML = `
             </h2>
 
             <p class="mt-3 text-sm leading-6 text-brand-muted">
-              Enter your member account details to continue.
+              Enter your account details to continue.
             </p>
 
             <form
               class="mt-8"
-              @submit.prevent="testLoginForm"
-              @input="formTested = false"
+              @submit.prevent="signIn"
+              @input="resetMessage"
             >
               <div>
                 <label
@@ -194,56 +219,41 @@ document.querySelector('#login-app').innerHTML = `
                 </div>
               </div>
 
-              <label
-                class="mt-5 flex cursor-pointer items-center gap-3 text-sm text-brand-muted"
-              >
-                <input
-                  type="checkbox"
-                  x-model="rememberMe"
-                  class="size-4 accent-brand-gold"
-                >
-
-                <span>Keep me signed in on this device</span>
-              </label>
-
-              <div
-                x-show="formTested"
-                x-transition
-                class="mt-6 rounded-xl border border-[#2f6b59] bg-[#234f42] px-4 py-3 text-sm font-medium leading-6 text-[#fff8e9] shadow-sm"
-                role="status"
-              >
-                Login form validation is working. Account authentication
-                will be connected during the backend phase.
-              </div>
+              <p
+                x-show="loginError"
+                x-text="loginError"
+                class="mt-5 rounded-xl border border-red-400/40 bg-red-400/10 px-4 py-3 text-sm font-medium leading-6 text-red-200"
+                role="alert"
+              ></p>
 
               <button
                 type="submit"
-                class="mt-6 inline-flex h-12 w-full items-center justify-center rounded-full bg-brand-gold px-7 text-sm font-semibold text-brand-black transition hover:bg-brand-gold-light"
-              >
-                Sign in
-              </button>
+                class="mt-6 inline-flex h-12 w-full items-center justify-center rounded-full bg-brand-gold px-7 text-sm font-semibold text-brand-black transition hover:bg-brand-gold-light disabled:cursor-not-allowed disabled:opacity-60"
+                :disabled="isSubmitting"
+                x-text="isSubmitting ? 'Signing in...' : 'Sign in'"
+              ></button>
             </form>
 
             <div
               class="mt-7 border-t border-brand-border pt-6 text-center"
             >
               <p class="text-sm text-brand-muted">
-                Not a member yet?
+                Do not have an account yet?
               </p>
 
               <a
-               href="/register/"
+                href="/register/"
                 class="mt-2 inline-flex text-sm font-semibold text-brand-gold transition hover:text-brand-gold-light"
-               >
-               Create a member account
-            </a>
+              >
+                Create a free customer account
+              </a>
             </div>
 
             <p
               class="mt-8 text-center text-xs leading-5 text-brand-muted"
             >
-              Secure authentication is not yet active during this
-              frontend development stage.
+              Account credentials are securely handled by Supabase
+              Authentication.
             </p>
           </div>
         </section>

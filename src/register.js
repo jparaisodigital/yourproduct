@@ -2,6 +2,8 @@ import './style.css'
 
 import Alpine from 'alpinejs'
 
+import { supabase } from './lib/supabase.js'
+
 import logoImage from './assets/logoyourproduct.png'
 
 import { packages } from './config/packages-config.js'
@@ -316,15 +318,18 @@ Alpine.data('registerPage', () => ({
 
   selectedPackageId: selectedPackage?.id || '',
   showPassword: false,
+  isSubmitting: false,
   registrationError: '',
+  registrationSuccess: '',
   registrationTested: false,
 
   resetMessages() {
     this.registrationError = ''
+    this.registrationSuccess = ''
     this.registrationTested = false
   },
 
-  testRegistrationForm() {
+  async registerAccount() {
     if (hasInvalidReferralCode) {
       this.registrationError =
         'Please use a valid referral link or continue without a referral.'
@@ -344,8 +349,48 @@ Alpine.data('registerPage', () => ({
       return
     }
 
+    this.isSubmitting = true
     this.registrationError = ''
-    this.registrationTested = true
+    this.registrationSuccess = ''
+    this.registrationTested = false
+
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: this.account.emailAddress.trim().toLowerCase(),
+        password: this.account.password,
+        options: {
+          data: {
+            first_name: this.account.firstName.trim(),
+            last_name: this.account.lastName.trim(),
+            mobile_number: this.account.mobileNumber.trim(),
+            account_type: 'free_customer',
+            selected_package_id: this.selectedPackageId || null,
+            referral_code: this.account.referralCode || null,
+          },
+        },
+      })
+
+      if (error) {
+        throw error
+      }
+
+      this.registrationTested = true
+
+      if (!data.session) {
+        this.registrationSuccess =
+          'Account submitted. Check your email and open the confirmation link before signing in.'
+        return
+      }
+
+      window.location.assign(dashboardPreviewUrl)
+    } catch (error) {
+      console.error('Unable to create account:', error)
+      this.registrationError =
+        error?.message ||
+        'Unable to create your account. Please try again.'
+    } finally {
+      this.isSubmitting = false
+    }
   },
 }))
 
@@ -533,7 +578,7 @@ document.querySelector('#register-app').innerHTML = `
 
             <form
               class="mt-8"
-              @submit.prevent="testRegistrationForm"
+              @submit.prevent="registerAccount"
               @input="resetMessages"
             >
               <div class="grid gap-5 sm:grid-cols-2">
@@ -713,40 +758,29 @@ document.querySelector('#register-app').innerHTML = `
                 class="mt-5 rounded-xl border border-[#2f6b59] bg-[#234f42] px-4 py-4 text-sm font-medium leading-6 text-[#fff8e9] shadow-sm"
                 role="status"
               >
-                <p>
-                  ${
-                    selectedPackage
-                      ? `
-                          Registration validation is working. Continue
-                          to preview your pending
-                          ${selectedPackage.shortLabel} application.
-                        `
-                      : `
-                          Registration validation is working. Continue
-                          to preview your free customer dashboard.
-                        `
-                  }
-                </p>
+                <p x-text="registrationSuccess"></p>
 
                 <a
-                  href="${dashboardPreviewUrl}"
+                  x-show="registrationSuccess"
+                  href="/login/"
                   class="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-brand-gold px-6 text-sm font-semibold text-[#17130d] transition hover:bg-brand-gold-light"
                 >
-                  Continue to dashboard preview
+                  Go to sign in
                 </a>
               </div>
 
               <button
-                x-show="!registrationTested"
+                x-show="!registrationSuccess"
                 x-transition
                 type="submit"
-                class="mt-6 inline-flex h-12 w-full items-center justify-center rounded-full bg-brand-gold px-7 text-sm font-semibold text-brand-black transition hover:bg-brand-gold-light"
-              >
-                ${
+                class="mt-6 inline-flex h-12 w-full items-center justify-center rounded-full bg-brand-gold px-7 text-sm font-semibold text-brand-black transition hover:bg-brand-gold-light disabled:cursor-not-allowed disabled:opacity-60"
+                :disabled="isSubmitting"
+                x-text="isSubmitting ? 'Creating account...' : '${
                   selectedPackage
                     ? 'Create account and continue'
                     : 'Create free account'
-                }
+                }'"
+              >
               </button>
             </form>
 
@@ -768,8 +802,8 @@ document.querySelector('#register-app').innerHTML = `
             <p
               class="mt-8 text-center text-xs leading-5 text-brand-muted"
             >
-              Account creation and secure authentication will be
-              activated during the backend phase.
+              Account credentials are securely handled by Supabase
+              Authentication.
             </p>
           </div>
         </section>
