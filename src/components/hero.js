@@ -1,5 +1,4 @@
-import mobileHeroImage from '../assets/herosection.png'
-import heroImage from '../assets/hero-client.jpg'
+import heroBackgroundImage from '../assets/herosection.png'
 
 function escapeHtml(value = '') {
   const characters = {
@@ -12,113 +11,134 @@ function escapeHtml(value = '') {
 
   return String(value).replace(
     /[&<>"']/g,
-    (character) => characters[character],
+    (character) =>
+      characters[character],
   )
 }
 
-export function renderHero(homeConfig, siteConfig) {
-  const { hero, trustPoints } = homeConfig
+export function renderHero(
+  homeConfig,
+  siteConfig,
+) {
+  const { hero, trustPoints } =
+    homeConfig
 
   const heroSlides =
-    Array.isArray(hero.slides) && hero.slides.length > 0
+    Array.isArray(hero.slides) &&
+    hero.slides.length > 0
       ? hero.slides
       : [
           {
             eyebrow: hero.eyebrow,
             title: hero.title,
-            highlightedText: hero.highlightedText,
-            description: hero.description,
+            highlightedText:
+              hero.highlightedText,
+            description:
+              hero.description,
           },
         ]
 
   const slideInterval =
-    Number(hero.slideInterval) || 5000
+    Number(hero.slideInterval) ||
+    5000
 
-  const trustPointItems = trustPoints
-    .map(
-      (item) => `
-        <li
-          class="flex shrink-0 items-center gap-3 whitespace-nowrap text-xs uppercase tracking-[0.14em] text-brand-muted"
-        >
-          <span
-            class="size-1.5 shrink-0 rounded-full bg-brand-gold"
-            aria-hidden="true"
-          ></span>
-
-          ${escapeHtml(item)}
-        </li>
-      `,
-    )
-    .join('')
-
-    const heroSlideItems = heroSlides
-    .map(
-      (slide, index) => `
-        <div
-          x-cloak
-          x-show="activeSlide === ${index}"
-          x-transition:enter="transition duration-700 ease-out"
-          x-transition:enter-start="translate-x-12 opacity-0"
-          x-transition:enter-end="translate-x-0 opacity-100"
-          x-transition:leave="transition duration-500 ease-in"
-          x-transition:leave-start="translate-x-0 opacity-100"
-          x-transition:leave-end="-translate-x-12 opacity-0"
-          :aria-hidden="activeSlide !== ${index}"
-          class="absolute inset-0 flex flex-col items-center"
-        >
-          <h1
-            class="mx-auto max-w-3xl font-display text-5xl font-semibold leading-[0.92] tracking-[-0.035em] text-brand-cream sm:text-6xl lg:text-[4.4rem] xl:text-[4.8rem]"
+  const trustPointItems =
+    trustPoints
+      .map(
+        (item) => `
+          <li
+            class="flex shrink-0 items-center gap-3 whitespace-nowrap text-xs uppercase tracking-[0.14em] text-brand-muted"
           >
-            ${escapeHtml(slide.title)}
+            <span
+              class="size-1.5 shrink-0 rounded-full bg-brand-gold"
+              aria-hidden="true"
+            ></span>
 
-            <span class="block italic text-brand-gold">
-              ${escapeHtml(slide.highlightedText)}
-            </span>
-          </h1>
+            ${escapeHtml(item)}
+          </li>
+        `,
+      )
+      .join('')
 
-          <p
-            class="mx-auto mt-6 max-w-xl text-base leading-7 text-brand-muted lg:text-[1.05rem]"
+  const heroSlideItems =
+    heroSlides
+      .map(
+        (slide, index) => `
+          <div
+            x-cloak
+            x-show="activeSlide === ${index}"
+            x-transition:enter="transition duration-700 ease-out"
+            x-transition:enter-start="translate-x-8 opacity-0"
+            x-transition:enter-end="translate-x-0 opacity-100"
+            x-transition:leave="transition duration-500 ease-in"
+            x-transition:leave-start="translate-x-0 opacity-100"
+            x-transition:leave-end="-translate-x-8 opacity-0"
+            :aria-hidden="
+              activeSlide !== ${index}
+            "
+            class="absolute inset-0 flex flex-col items-start justify-center text-left"
           >
-            ${escapeHtml(slide.description)}
-          </p>
-        </div>
-      `,
-    )
-    .join('')
+            <h1
+              class="max-w-2xl font-display text-5xl font-semibold leading-[0.92] tracking-[-0.035em] text-brand-cream sm:text-6xl lg:text-[4rem] xl:text-[4.5rem]"
+            >
+              ${escapeHtml(
+                slide.title,
+              )}
 
-  const heroSlideIndicators = heroSlides
-    .map(
-      (_, index) => `
-        <button
-          type="button"
-          class="h-1.5 rounded-full transition-all duration-300"
-          :class="
-            activeSlide === ${index}
-              ? 'w-8 bg-brand-gold'
-              : 'w-2 bg-brand-border hover:bg-brand-gold/60'
-          "
-          aria-label="Show hero slide ${index + 1}"
-          :aria-current="
-            activeSlide === ${index}
-              ? 'true'
-              : 'false'
-          "
-          @click="goToSlide(${index})"
-        ></button>
-      `,
-    )
-    .join('')
+              <span
+                class="block italic text-brand-gold"
+              >
+                ${escapeHtml(
+                  slide.highlightedText,
+                )}
+              </span>
+            </h1>
+
+            <p
+              class="mt-5 max-w-xl text-sm leading-7 text-brand-muted sm:text-base lg:text-[1.02rem]"
+            >
+              ${escapeHtml(
+                slide.description,
+              )}
+            </p>
+          </div>
+        `,
+      )
+      .join('')
+
+  const heroSlideIndicators =
+    heroSlides
+      .map(
+        (_, index) => `
+          <button
+            type="button"
+            class="h-1.5 rounded-full transition-all duration-300"
+            :class="
+              activeSlide === ${index}
+                ? 'w-8 bg-brand-gold'
+                : 'w-2 bg-brand-border hover:bg-brand-gold/60'
+            "
+            aria-label="Show hero slide ${index + 1}"
+            :aria-current="
+              activeSlide === ${index}
+                ? 'true'
+                : 'false'
+            "
+            @click="goToSlide(${index})"
+          ></button>
+        `,
+      )
+      .join('')
 
   return `
     <section
       id="home"
-      class="relative isolate overflow-hidden bg-brand-black"
+      class="relative isolate min-h-[680px] overflow-hidden bg-brand-black lg:min-h-[calc(100svh-5.75rem)]"
       x-data="{
         activeSlide: 0,
         slideCount: ${heroSlides.length},
         slideInterval: ${slideInterval},
         timer: null,
-        isPaused: false,
 
         init() {
           this.startAutoplay()
@@ -127,26 +147,44 @@ export function renderHero(homeConfig, siteConfig) {
         startAutoplay() {
           this.stopAutoplay()
 
-          this.timer = window.setInterval(() => {
-            if (!this.isPaused) {
+          if (this.slideCount <= 1) {
+            return
+          }
+
+          this.timer =
+            window.setInterval(() => {
               this.nextSlide()
-            }
-          }, this.slideInterval)
+            }, this.slideInterval)
         },
 
         stopAutoplay() {
-          if (this.timer) {
-            window.clearInterval(this.timer)
-            this.timer = null
+          if (!this.timer) {
+            return
           }
+
+          window.clearInterval(
+            this.timer,
+          )
+
+          this.timer = null
         },
 
         nextSlide() {
+          if (this.slideCount <= 1) {
+            return
+          }
+
           this.activeSlide =
-            (this.activeSlide + 1) % this.slideCount
+            (
+              this.activeSlide + 1
+            ) % this.slideCount
         },
 
         previousSlide() {
+          if (this.slideCount <= 1) {
+            return
+          }
+
           this.activeSlide =
             (
               this.activeSlide -
@@ -176,32 +214,40 @@ export function renderHero(homeConfig, siteConfig) {
       }"
     >
       <img
-        src="${mobileHeroImage}"
+        src="${heroBackgroundImage}"
         alt=""
         aria-hidden="true"
-        class="pointer-events-none absolute -right-12 top-12 z-0 h-[440px] w-[340px] max-w-none select-none object-contain opacity-[0.07] sm:hidden"
+        class="pointer-events-none absolute inset-0 z-0 size-full max-w-none select-none object-cover object-[86%_center] opacity-45 sm:object-[84%_center] sm:opacity-60 lg:object-center lg:opacity-100"
+        fetchpriority="high"
       >
 
       <div
-        class="pointer-events-none absolute -left-40 top-10 size-96 rounded-full bg-brand-gold/10 blur-3xl"
+        class="pointer-events-none absolute inset-0 z-[1] bg-black/50 sm:bg-black/40 lg:hidden"
         aria-hidden="true"
       ></div>
 
       <div
-        class="pointer-events-none absolute -right-40 bottom-0 size-96 rounded-full bg-brand-bronze/10 blur-3xl"
+        class="pointer-events-none absolute inset-0 z-[1] hidden bg-gradient-to-r from-[#080603] via-[#080603]/90 via-45% to-transparent lg:block"
         aria-hidden="true"
       ></div>
 
       <div
-        class="relative mx-auto w-[min(1120px,90%)] py-12 lg:py-12 xl:py-14"
+        class="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-b from-black/10 via-transparent to-black/45"
+        aria-hidden="true"
+      ></div>
+
+      <div
+        class="relative z-10 mx-auto flex min-h-[680px] w-[min(1120px,90%)] items-center py-10 sm:py-12 lg:min-h-[calc(100svh-5.75rem)] lg:py-8"
       >
-        <div class="relative z-10 mx-auto w-full max-w-4xl text-center">
+        <div
+          class="w-full max-w-[650px]"
+        >
           <div
-            class="flex flex-wrap items-center justify-center gap-3"
+            class="flex flex-wrap items-center justify-start gap-3"
             aria-label="Hero categories"
           >
             <p
-              class="text-[0.68rem] font-semibold uppercase tracking-[0.25em] text-brand-gold sm:text-xs"
+              class="text-[0.65rem] font-semibold uppercase tracking-[0.24em] text-brand-gold sm:text-xs"
             >
               Premium Fragrance Collection
             </p>
@@ -212,14 +258,14 @@ export function renderHero(homeConfig, siteConfig) {
             ></span>
 
             <p
-              class="text-[0.68rem] font-semibold uppercase tracking-[0.25em] text-brand-gold sm:text-xs"
+              class="text-[0.65rem] font-semibold uppercase tracking-[0.24em] text-brand-gold sm:text-xs"
             >
               6 Ways to Earn
             </p>
           </div>
 
           <div
-            class="relative mt-6 min-h-[235px] sm:min-h-[230px] lg:min-h-[260px] xl:min-h-[275px]"
+            class="relative mt-5 min-h-[240px] sm:min-h-[250px] lg:min-h-[235px] xl:min-h-[250px]"
             aria-roledescription="carousel"
             aria-label="Your Product highlights"
           >
@@ -227,12 +273,12 @@ export function renderHero(homeConfig, siteConfig) {
           </div>
 
           <div
-            class="mt-3 flex flex-wrap items-center justify-center gap-3"
+            class="mt-2 flex flex-wrap items-center justify-start gap-3"
             aria-label="Hero carousel controls"
           >
             <button
               type="button"
-              class="grid size-9 place-items-center rounded-full border border-brand-border text-brand-muted transition hover:border-brand-gold hover:text-brand-gold"
+              class="grid size-9 place-items-center rounded-full border border-brand-border bg-brand-black/30 text-brand-muted backdrop-blur-sm transition hover:border-brand-gold hover:text-brand-gold"
               aria-label="Previous hero slide"
               @click="previousManually()"
             >
@@ -261,7 +307,7 @@ export function renderHero(homeConfig, siteConfig) {
 
             <button
               type="button"
-              class="grid size-9 place-items-center rounded-full border border-brand-border text-brand-muted transition hover:border-brand-gold hover:text-brand-gold"
+              class="grid size-9 place-items-center rounded-full border border-brand-border bg-brand-black/30 text-brand-muted backdrop-blur-sm transition hover:border-brand-gold hover:text-brand-gold"
               aria-label="Next hero slide"
               @click="nextManually()"
             >
@@ -284,35 +330,51 @@ export function renderHero(homeConfig, siteConfig) {
             <span
               class="ml-1 text-[0.65rem] font-semibold tracking-[0.15em] text-brand-muted"
               x-text="
-                String(activeSlide + 1).padStart(2, '0') +
+                String(
+                  activeSlide + 1
+                ).padStart(2, '0') +
                 ' / ' +
-                String(slideCount).padStart(2, '0')
+                String(
+                  slideCount
+                ).padStart(2, '0')
               "
             ></span>
           </div>
 
-          <div class="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <div
+            class="mt-6 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center"
+          >
             <a
-              href="${escapeHtml(hero.primaryAction.href)}"
-              class="inline-flex items-center justify-center rounded-full bg-brand-gold px-6 py-3 text-sm font-semibold text-brand-black transition duration-300 hover:-translate-y-1 hover:bg-brand-gold-light"
+              href="${escapeHtml(
+                hero.primaryAction.href,
+              )}"
+              class="inline-flex min-h-12 items-center justify-center rounded-full bg-brand-gold px-6 py-3 text-sm font-semibold text-brand-black shadow-[0_12px_32px_rgb(183_138_50_/_0.22)] transition duration-300 hover:-translate-y-1 hover:bg-brand-gold-light"
             >
-              ${escapeHtml(hero.primaryAction.label)}
+              ${escapeHtml(
+                hero.primaryAction.label,
+              )}
             </a>
 
             <a
-              href="${escapeHtml(hero.secondaryAction.href)}"
-              class="inline-flex items-center justify-center rounded-full border border-brand-border px-6 py-3 text-sm font-semibold text-brand-cream transition duration-300 hover:border-brand-gold hover:text-brand-gold"
+              href="#packages"
+              class="inline-flex min-h-12 items-center justify-center rounded-full border border-brand-border bg-brand-black/25 px-6 py-3 text-sm font-semibold text-brand-cream backdrop-blur-sm transition duration-300 hover:border-brand-gold hover:text-brand-gold"
             >
-              ${escapeHtml(hero.secondaryAction.label)}
+              View Membership Packages
             </a>
           </div>
 
           <div
-            class="hero-trust-marquee mt-9 overflow-hidden border-t border-brand-border pt-6"
-            aria-label="${escapeHtml(trustPoints.join(', '))}"
+            class="hero-trust-marquee mt-6 max-w-2xl overflow-hidden border-t border-brand-border pt-5"
+            aria-label="${escapeHtml(
+              trustPoints.join(', '),
+            )}"
           >
-            <div class="hero-trust-marquee-track">
-              <ul class="hero-trust-marquee-group">
+            <div
+              class="hero-trust-marquee-track"
+            >
+              <ul
+                class="hero-trust-marquee-group"
+              >
                 ${trustPointItems}
               </ul>
 
@@ -320,39 +382,11 @@ export function renderHero(homeConfig, siteConfig) {
                 class="hero-trust-marquee-group"
                 aria-hidden="true"
               >
-                        ${trustPointItems}
+                ${trustPointItems}
               </ul>
             </div>
           </div>
         </div>
-
-        <!--
-        <figure
-          class="relative mx-auto w-full max-w-[430px] lg:mr-0 lg:max-w-[390px] xl:max-w-[420px]"
-        >
-          <div
-            class="absolute -inset-3 border border-brand-gold/20"
-            aria-hidden="true"
-          ></div>
-
-          <div
-            class="relative overflow-hidden border border-brand-border bg-brand-charcoal shadow-panel"
-          >
-            <span
-              class="hero-product-shadow absolute bottom-[8%] left-1/2 h-8 w-[45%] rounded-full bg-brand-gold/20 blur-xl"
-              aria-hidden="true"
-            ></span>
-
-            <img
-              src="${heroImage}"
-              alt="${escapeHtml(siteConfig.brand.name)} campaign"
-              class="hero-floating-product relative z-10 block h-auto max-h-[610px] w-full object-contain"
-              fetchpriority="high"
-            >
-          </div>
-        </figure>
-        -->
-
       </div>
     </section>
   `
