@@ -44,6 +44,16 @@ import {
 } from './components/member-referrals-page.js'
 
 import {
+  registerMemberEarningsPage,
+  renderMemberEarningsPage,
+} from './components/member-earnings-page.js'
+
+import {
+  registerMemberPayoutPage,
+  renderMemberPayoutPage,
+} from './components/member-payout-page.js'
+
+import {
   registerCartStore,
 } from './stores/cart-store.js'
 
@@ -1374,10 +1384,17 @@ function renderSidebar() {
           >
             <button
               type="button"
-              class="block w-full rounded-lg px-3 py-2.5 text-left text-sm text-brand-muted transition hover:bg-brand-charcoal hover:text-brand-gold"
-              @click="
-                showPreviewNotice('Earnings')
-                closeMobileMenu()
+              class="block w-full rounded-lg px-3 py-2.5 text-left text-sm transition"
+              :class="
+                activePage === 'earnings'
+                  ? 'bg-brand-gold/10 font-semibold text-brand-gold'
+                  : 'text-brand-muted hover:bg-brand-charcoal hover:text-brand-gold'
+              "
+              @click="openPage('earnings')"
+              :aria-current="
+                activePage === 'earnings'
+                  ? 'page'
+                  : false
               "
             >
               Earnings
@@ -1385,10 +1402,17 @@ function renderSidebar() {
     
             <button
               type="button"
-              class="block w-full rounded-lg px-3 py-2.5 text-left text-sm text-brand-muted transition hover:bg-brand-charcoal hover:text-brand-gold"
-              @click="
-                showPreviewNotice('Payout Request')
-                closeMobileMenu()
+              class="block w-full rounded-lg px-3 py-2.5 text-left text-sm transition"
+              :class="
+                activePage === 'payoutRequest'
+                  ? 'bg-brand-gold/10 font-semibold text-brand-gold'
+                  : 'text-brand-muted hover:bg-brand-charcoal hover:text-brand-gold'
+              "
+              @click="openPage('payoutRequest')"
+              :aria-current="
+                activePage === 'payoutRequest'
+                  ? 'page'
+                  : false
               "
             >
               Payout Request
@@ -1509,6 +1533,16 @@ registerMemberReferralCard(Alpine, {
   referralCode: previewAccount.referralCode,
   memberName:
     `${previewAccount.firstName} ${previewAccount.lastName}`,
+})
+
+registerMemberEarningsPage(Alpine, {
+  availableIncome: previewAccount.availableIncome,
+  transactions: [],
+})
+
+registerMemberPayoutPage(Alpine, {
+  availableIncome: previewAccount.availableIncome,
+  payoutRequests: [],
 })
 
 Alpine.magic('addToCartWithAnimation', () => {
@@ -1944,13 +1978,17 @@ document.querySelector('#dashboard-app').innerHTML = `
         ? 'Membership Payment'
         : activePage === 'referrals'
           ? 'My Referrals'
-          : activePage === 'account'
-            ? 'Account Settings'
-            : activePage === 'createOrder'
-              ? 'Create Order'
-              : activePage === 'orderHistory'
-                ? 'Order History'
-                : 'General Dashboard'
+          : activePage === 'earnings'
+            ? 'Earnings'
+            : activePage === 'payoutRequest'
+              ? 'Payout Request'
+              : activePage === 'account'
+                ? 'Account Settings'
+                : activePage === 'createOrder'
+                  ? 'Create Order'
+                  : activePage === 'orderHistory'
+                    ? 'Order History'
+                    : 'General Dashboard'
   "
 ></p>
             </div>
@@ -2605,6 +2643,10 @@ document.querySelector('#dashboard-app').innerHTML = `
                 </div>
 
         ${renderMemberReferralsPage()}
+
+        ${renderMemberEarningsPage()}
+
+        ${renderMemberPayoutPage()}
 
         ${membershipApplicationPageMarkup}
 
