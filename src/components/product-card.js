@@ -91,11 +91,11 @@ export function renderProductCard(product) {
         @click="$store.productView.open('${product.id}')"
       >
         <img
-          src="${product.image}"
-          alt="${product.name}"
-          class="size-full object-cover object-center transition duration-500 ease-out group-hover/image:scale-[1.025]"
-          loading="lazy"
-        >
+  src="${product.image}"
+  alt="${product.name}"
+  class="size-full object-contain object-center p-2 sm:p-3"
+  loading="lazy"
+>
       </button>
 
       <div class="p-4 sm:p-6">

@@ -10,7 +10,7 @@ import { supabase } from './lib/supabase.js'
 window.Alpine = Alpine
 
 Alpine.data('loginPage', () => ({
-  emailAddress: '',
+  identifier: '',
   password: '',
   showPassword: false,
   isSubmitting: false,
@@ -25,22 +25,57 @@ Alpine.data('loginPage', () => ({
     this.loginError = ''
 
     try {
-      const { error } =
-        await supabase.auth.signInWithPassword({
-          email: this.emailAddress.trim().toLowerCase(),
-          password: this.password,
-        })
+      const normalizedIdentifier =
+        this.identifier.trim().toLowerCase()
 
-      if (error) {
-        throw error
+      let signInError = null
+
+      if (normalizedIdentifier.includes('@')) {
+        const { error } =
+          await supabase.auth.signInWithPassword({
+            email: normalizedIdentifier,
+            password: this.password,
+          })
+
+        signInError = error
+      } else {
+        const { data, error } =
+          await supabase.functions.invoke(
+            'username-login',
+            {
+              body: {
+                username: normalizedIdentifier,
+                password: this.password,
+              },
+            },
+          )
+
+        if (error) {
+          signInError = error
+        } else if (!data?.access_token || !data?.refresh_token) {
+          signInError = new Error(
+            data?.error || 'Invalid username or password.',
+          )
+        } else {
+          const { error: sessionError } =
+            await supabase.auth.setSession({
+              access_token: data.access_token,
+              refresh_token: data.refresh_token,
+            })
+
+          signInError = sessionError
+        }
+      }
+
+      if (signInError) {
+        throw signInError
       }
 
       window.location.assign('/dashboard/')
     } catch (error) {
       console.error('Unable to sign in:', error)
       this.loginError =
-        error?.message ||
-        'Unable to sign in. Check your email and password.'
+        'Unable to sign in. Check your username or email and password.'
     } finally {
       this.isSubmitting = false
     }
@@ -173,30 +208,39 @@ document.querySelector('#login-app').innerHTML = `
             >
               <div>
                 <label
-                  for="login-email"
+                  for="login-identifier"
                   class="text-sm font-semibold text-brand-cream"
                 >
-                  Email address
+                  Username or email
                 </label>
 
                 <input
-                  id="login-email"
-                  type="email"
-                  x-model.trim="emailAddress"
-                  autocomplete="email"
-                  placeholder="name@example.com"
+                  id="login-identifier"
+                  type="text"
+                  x-model.trim="identifier"
+                  autocomplete="username"
+                  placeholder="username or name@example.com"
                   class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
                   required
                 >
               </div>
 
               <div class="mt-5">
-                <label
-                  for="login-password"
-                  class="text-sm font-semibold text-brand-cream"
-                >
-                  Password
-                </label>
+                <div class="flex items-center justify-between gap-4">
+                  <label
+                    for="login-password"
+                    class="text-sm font-semibold text-brand-cream"
+                  >
+                    Password
+                  </label>
+
+                  <a
+                    href="/forgot-password/"
+                    class="text-xs font-semibold text-brand-gold transition hover:text-brand-gold-light"
+                  >
+                    Forgot password?
+                  </a>
+                </div>
 
                 <div class="relative mt-2">
                   <input

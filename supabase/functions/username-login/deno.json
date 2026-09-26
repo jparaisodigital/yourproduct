@@ -1,0 +1,6 @@
+{
+    "nodeModulesDir": "none",
+    "imports": {
+      "supabase": "npm:@supabase/supabase-js@2"
+    }
+  }

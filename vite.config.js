@@ -30,6 +30,16 @@ export default defineConfig({
           'register/index.html',
         ),
 
+        forgotPassword: resolve(
+          import.meta.dirname,
+          'forgot-password/index.html',
+        ),
+
+        resetPassword: resolve(
+          import.meta.dirname,
+          'reset-password/index.html',
+        ),
+
         dashboard: resolve(
           import.meta.dirname,
           'dashboard/index.html',

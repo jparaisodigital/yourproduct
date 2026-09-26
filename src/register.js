@@ -306,6 +306,7 @@ window.Alpine = Alpine
 
 Alpine.data('registerPage', () => ({
   account: {
+    username: '',
     firstName: '',
     lastName: '',
     mobileNumber: '',
@@ -349,17 +350,44 @@ Alpine.data('registerPage', () => ({
       return
     }
 
+    const normalizedUsername =
+      this.account.username.trim().toLowerCase()
+
+    if (!/^[a-z0-9_]{3,30}$/.test(normalizedUsername)) {
+      this.registrationError =
+        'Username must use 3 to 30 lowercase letters, numbers, or underscores.'
+      return
+    }
+
     this.isSubmitting = true
     this.registrationError = ''
     this.registrationSuccess = ''
     this.registrationTested = false
 
     try {
+      const {
+        data: usernameAvailable,
+        error: usernameCheckError,
+      } = await supabase.rpc('is_username_available', {
+        candidate_username: normalizedUsername,
+      })
+
+      if (usernameCheckError) {
+        throw usernameCheckError
+      }
+
+      if (!usernameAvailable) {
+        this.registrationError =
+          'That username is already taken. Please choose another one.'
+        return
+      }
+
       const { data, error } = await supabase.auth.signUp({
         email: this.account.emailAddress.trim().toLowerCase(),
         password: this.account.password,
         options: {
           data: {
+            username: normalizedUsername,
             first_name: this.account.firstName.trim(),
             last_name: this.account.lastName.trim(),
             mobile_number: this.account.mobileNumber.trim(),
@@ -581,6 +609,34 @@ document.querySelector('#register-app').innerHTML = `
               @submit.prevent="registerAccount"
               @input="resetMessages"
             >
+              <div class="mb-5">
+                <label
+                  for="register-username"
+                  class="text-sm font-semibold text-brand-cream"
+                >
+                  Username
+                </label>
+
+                <input
+                  id="register-username"
+                  type="text"
+                  x-model.trim="account.username"
+                  @input="account.username = account.username.toLowerCase().replace(/[^a-z0-9_]/g, '')"
+                  autocomplete="username"
+                  minlength="3"
+                  maxlength="30"
+                  pattern="[a-z0-9_]{3,30}"
+                  title="Use 3 to 30 lowercase letters, numbers, or underscores."
+                  placeholder="juan_delacruz"
+                  class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
+                  required
+                >
+
+                <p class="mt-2 text-xs leading-5 text-brand-muted">
+                  Use 3–30 lowercase letters, numbers, or underscores.
+                </p>
+              </div>
+
               <div class="grid gap-5 sm:grid-cols-2">
                 <div>
                   <label
