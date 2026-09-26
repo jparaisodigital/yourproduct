@@ -2,6 +2,8 @@ import './style.css'
 
 import Alpine from 'alpinejs'
 
+import { supabase } from './lib/supabase.js'
+
 import logoImage from './assets/logoyourproduct.png'
 
 import {
@@ -1541,23 +1543,26 @@ function renderSidebar() {
           class="flex items-center gap-3 rounded-xl bg-brand-charcoal p-3"
         >
           <div
-            class="grid size-10 shrink-0 place-items-center rounded-full bg-brand-gold text-sm font-bold text-[#17130d]"
-          >
-            SC
-          </div>
+  class="grid size-10 shrink-0 place-items-center rounded-full bg-brand-gold text-sm font-bold text-[#17130d]"
+  x-text="((profile.first_name || '').charAt(0) + (profile.last_name || '').charAt(0)).toUpperCase() || 'C'"
+></div>
     
           <div class="min-w-0 flex-1">
-            <p
-              class="truncate text-sm font-semibold text-brand-cream"
-            >
-              ${previewAccount.firstName}
-              ${previewAccount.lastName}
-            </p>
-    
-            <p class="truncate text-xs text-brand-muted">
-  ${previewAccount.accountType}
-</p>
-          </div>
+  <p
+    class="truncate text-sm font-semibold text-brand-cream"
+    x-text="[profile.first_name, profile.last_name].filter(Boolean).join(' ') || 'Customer'"
+  ></p>
+
+  <p
+  class="truncate text-xs text-brand-muted"
+  x-text="profile.customer_type === 'member' ? 'Member' : 'Free Customer'"
+></p>
+
+  <p
+    class="truncate text-xs text-brand-muted"
+    x-text="profile.email || ''"
+  ></p>
+</div>
         </div>
       </div>
     </div>
@@ -1607,9 +1612,12 @@ Alpine.magic('addToCartWithAnimation', () => {
   }
 })
 
+
+let signedInProfile = null
 Alpine.data('customerPortal', () => ({
   activePage: 'general',
-  isMember: previewAccount.isMember,
+  profile: signedInProfile,
+  isMember: signedInProfile.membership_status === 'active',
   hasPendingMembership,
   selectedPackage: selectedDashboardPackage,
   activeCategory: 'all',
@@ -1635,28 +1643,31 @@ Alpine.data('customerPortal', () => ({
   cancellationError: '',
   
   mobileMenuOpen: false,
+  isLoggingOut: false,
+  logoutError: '',
   ordersOpen: true,
   walletOpen: true,
   
   profileForm: {
-    firstName: previewAccount.firstName,
-    lastName: previewAccount.lastName,
-    emailAddress: previewAccount.emailAddress,
-    mobileNumber: previewAccount.mobileNumber,
+    firstName: signedInProfile.first_name ?? '',
+    lastName: signedInProfile.last_name ?? '',
+    emailAddress: signedInProfile.email ?? '',
+    mobileNumber: signedInProfile.mobile_number ?? '',
     
     address: {
-      province: previewAccount.address.province,
-      cityMunicipality:
-      previewAccount.address.cityMunicipality,
-      barangay: previewAccount.address.barangay,
-      houseStreet: previewAccount.address.houseStreet,
-      landmark: previewAccount.address.landmark,
+      province: '',
+      cityMunicipality: '',
+      barangay: '',
+      houseStreet: '',
+      landmark: '',
     },
   },
   
   profileFormTested: false,
-  previewNotice: '',
-  previewTimer: null,
+profileFormError: '',
+isSavingProfile: false,
+previewNotice: '',
+previewTimer: null,
   
   get filteredProductCount() {
     const normalizedSearch =
@@ -1695,6 +1706,27 @@ Alpine.data('customerPortal', () => ({
       )
     })
   },
+
+  async logOut() {
+    if (this.isLoggingOut) return
+  
+    this.isLoggingOut = true
+    this.logoutError = ''
+  
+    try {
+      const { error } = await supabase.auth.signOut({
+        scope: 'local',
+      })
+  
+      if (error) throw error
+  
+      window.location.replace('/login/')
+    } catch (error) {
+      console.error('Unable to log out:', error)
+      this.logoutError = 'Unable to log out. Please try again.'
+      this.isLoggingOut = false
+    }
+  },
   
   openMobileMenu() {
     this.mobileMenuOpen = true
@@ -1715,8 +1747,55 @@ Alpine.data('customerPortal', () => ({
     })
   },
   
-  testProfileForm() {
-    this.profileFormTested = true
+  async savePersonalInfo() {
+    if (this.isSavingProfile) return
+  
+    this.profileFormTested = false
+    this.profileFormError = ''
+  
+    const firstName = this.profileForm.firstName.trim()
+    const lastName = this.profileForm.lastName.trim()
+    const mobileNumber = this.profileForm.mobileNumber.trim()
+  
+    if (!firstName || !lastName || !mobileNumber) {
+      this.profileFormError =
+        'Enter your first name, last name, and mobile number.'
+      return
+    }
+  
+    this.isSavingProfile = true
+  
+    try {
+      const { data: { user }, error: authError } =
+        await supabase.auth.getUser()
+  
+      if (authError || !user) {
+        window.location.replace('/login/')
+        return
+      }
+  
+      const { data, error } = await supabase
+        .from('profiles')
+        .update({
+          first_name: firstName,
+          last_name: lastName,
+          mobile_number: mobileNumber,
+        })
+        .eq('id', user.id)
+        .select('first_name, last_name, mobile_number')
+        .single()
+  
+      if (error) throw error
+  
+      this.profile = { ...this.profile, ...data }
+      this.profileFormTested = true
+    } catch (error) {
+      console.error('Unable to save personal information:', error)
+      this.profileFormError =
+        'Unable to save your information. Please try again.'
+    } finally {
+      this.isSavingProfile = false
+    }
   },
   
   handleMembershipProof(event) {
@@ -1937,7 +2016,30 @@ Alpine.data('customerPortal', () => ({
 document.title =
 `Customer Portal | ${siteConfig.brand.name}`
 
-document.querySelector('#dashboard-app').innerHTML = `
+async function startDashboard() {
+  const { data: { user }, error } = await supabase.auth.getUser()
+
+  if (error || !user) {
+    window.location.replace('/login/')
+    return
+  }
+
+  const { data: profile, error: profileError } = await supabase
+  .from('profiles')
+  .select('first_name, last_name, email, mobile_number, customer_type, membership_status')
+  .eq('id', user.id)
+  .single()
+
+if (profileError || !profile) {
+  console.error('Unable to load profile:', profileError)
+  document.querySelector('#dashboard-app').textContent =
+    'Unable to load your profile. Please refresh.'
+  return
+}
+
+signedInProfile = profile
+
+  document.querySelector('#dashboard-app').innerHTML = `
   <div
     x-data="customerPortal"
     x-cloak
@@ -2091,6 +2193,16 @@ document.querySelector('#dashboard-app').innerHTML = `
             >
               View Store
             </a>
+
+            <button
+  type="button"
+  class="text-xs font-semibold text-brand-muted transition hover:text-brand-gold disabled:opacity-50 sm:text-sm"
+  :disabled="isLoggingOut"
+  @click="logOut()"
+>
+  <span x-text="isLoggingOut ? 'Logging out…' : 'Log out'"></span>
+</button>
+
           </div>
         </div>
       </header>
@@ -2124,9 +2236,10 @@ document.querySelector('#dashboard-app').innerHTML = `
                 class="mt-3 font-display text-4xl leading-none text-brand-cream sm:text-5xl"
               >
                 Welcome,
-                <span class="italic text-brand-gold">
-                  ${previewAccount.firstName}.
-                </span>
+                <span
+  class="italic text-brand-gold"
+  x-text="(profile.first_name || 'Customer') + '.'"
+></span>
               </h1>
 
               <p
@@ -2152,10 +2265,9 @@ document.querySelector('#dashboard-app').innerHTML = `
                 ></span>
 
                 <strong
-                  class="text-sm text-brand-cream"
-                >
-                  ${previewAccount.accountType}
-                </strong>
+  class="text-sm text-brand-cream"
+  x-text="profile.customer_type === 'member' ? 'Member' : 'Free Customer'"
+></strong>
               </div>
             </div>
           </div>
@@ -2179,10 +2291,9 @@ document.querySelector('#dashboard-app').innerHTML = `
             </p>
 
             <strong
-              class="mt-3 block font-display text-2xl text-brand-cream"
-            >
-              Free Customer
-            </strong>
+  class="mt-3 block font-display text-2xl text-brand-cream"
+  x-text="profile.customer_type === 'member' ? 'Member' : 'Free Customer'"
+></strong>
 
             <p
               class="mt-3 text-xs leading-5 text-brand-muted"
@@ -2203,13 +2314,13 @@ document.querySelector('#dashboard-app').innerHTML = `
             <strong
               class="mt-3 block font-display text-4xl text-brand-cream"
             >
-              0
+              —
             </strong>
 
             <p
               class="mt-3 text-xs leading-5 text-brand-muted"
             >
-              No submitted orders yet
+              Order totals will appear here once connected
             </p>
           </article>
 
@@ -2222,35 +2333,25 @@ document.querySelector('#dashboard-app').innerHTML = `
               Membership
             </p>
 
-            <strong
+           <strong
   class="mt-3 block font-display text-2xl text-brand-cream"
-  x-text="
-    membershipApplicationStatus ===
-    'cancellation-requested'
-      ? 'Cancellation Requested'
-      : membershipApplicationStatus ===
-          'pending-verification'
-        ? 'Pending Verification'
-        : membershipApplicationStatus ===
-            'awaiting-payment'
-          ? 'Awaiting Payment'
-          : 'Not Active'
-  "
+  x-text="({ none: 'Not Active', pending: 'Pending', active: 'Active', rejected: 'Rejected', suspended: 'Suspended' })[profile.membership_status] || 'Unknown'"
 ></strong>
 
 <p
   class="mt-3 text-xs leading-5 text-brand-muted"
   x-text="
-    membershipApplicationStatus ===
-    'cancellation-requested'
-      ? 'Waiting for admin review'
-      : membershipApplicationStatus ===
-          'pending-verification'
-        ? 'Payment proof is waiting for admin review'
-        : membershipApplicationStatus ===
-            'awaiting-payment'
-          ? 'Payment proof has not been submitted'
-          : 'Upgrade remains optional'
+    profile.membership_status === 'none'
+      ? 'Upgrade remains optional'
+      : profile.membership_status === 'pending'
+        ? 'Membership application is pending'
+        : profile.membership_status === 'active'
+          ? 'Membership is active'
+          : profile.membership_status === 'rejected'
+            ? 'Membership application was declined'
+            : profile.membership_status === 'suspended'
+              ? 'Contact support about your membership'
+              : 'Status unavailable'
   "
 ></p>
           </article>
@@ -2539,11 +2640,9 @@ document.querySelector('#dashboard-app').innerHTML = `
                 </dt>
 
                 <dd
-                  class="text-right text-sm font-semibold text-brand-cream"
-                >
-                  ${previewAccount.firstName}
-                  ${previewAccount.lastName}
-                </dd>
+  class="text-right text-sm font-semibold text-brand-cream"
+  x-text="[profile.first_name, profile.last_name].filter(Boolean).join(' ') || 'Customer'"
+></dd>
               </div>
 
               <div
@@ -2554,10 +2653,9 @@ document.querySelector('#dashboard-app').innerHTML = `
                 </dt>
 
                 <dd
-                  class="max-w-44 truncate text-right text-sm font-semibold text-brand-cream"
-                >
-                  ${previewAccount.emailAddress}
-                </dd>
+  class="max-w-44 truncate text-right text-sm font-semibold text-brand-cream"
+  x-text="profile.email || ''"
+></dd>
               </div>
 
               <div
@@ -2568,10 +2666,9 @@ document.querySelector('#dashboard-app').innerHTML = `
                 </dt>
 
                 <dd
-                  class="text-right text-sm font-semibold text-brand-cream"
-                >
-                  ${previewAccount.membershipStatus}
-                </dd>
+  class="text-right text-sm font-semibold text-brand-cream"
+  x-text="({ none: 'Not active', pending: 'Pending', active: 'Active', rejected: 'Rejected', suspended: 'Suspended' })[profile.membership_status] || 'Unknown'"
+></dd>
               </div>
 
               <div
@@ -2582,10 +2679,9 @@ document.querySelector('#dashboard-app').innerHTML = `
                 </dt>
 
                 <dd
-                  class="text-right text-sm font-semibold text-brand-cream"
-                >
-                  ${previewAccount.accountType}
-                </dd>
+  class="text-right text-sm font-semibold text-brand-cream"
+  x-text="profile.customer_type === 'member' ? 'Member' : 'Free Customer'"
+></dd>
               </div>
             </dl>
 
@@ -2740,18 +2836,18 @@ document.querySelector('#dashboard-app').innerHTML = `
                 </p>
 
                 <p
-                  class="mt-2 text-sm font-semibold text-brand-cream"
-                >
-                  ${previewAccount.membershipStatus}
-                </p>
+  class="mt-2 text-sm font-semibold text-brand-cream"
+  x-text="({ none: 'Not active', pending: 'Pending', active: 'Active', rejected: 'Rejected', suspended: 'Suspended' })[profile.membership_status] || 'Unknown'"
+></p>
               </div>
             </div>
           </div>
 
           <form
-            class="mt-6 grid gap-6 xl:grid-cols-[1fr_0.85fr]"
-            @submit.prevent="testProfileForm()"
-          >
+  class="mt-6 grid gap-6 xl:grid-cols-[1fr_0.85fr]"
+  @submit.prevent="savePersonalInfo()"
+  novalidate
+>
             <section
               class="rounded-[1.5rem] border border-brand-border bg-brand-panel p-5 shadow-panel sm:p-6"
               aria-labelledby="personal-information-title"
@@ -2978,36 +3074,42 @@ document.querySelector('#dashboard-app').innerHTML = `
                   <p
                     class="mt-2 max-w-2xl text-sm leading-6 text-brand-muted"
                   >
-                    This preview validates the required fields only.
-                    It does not update or store account information yet.
+                    Saves your first name, last name, and mobile number.
+                    Email and delivery address are not changed.
                   </p>
                 </div>
 
                 <button
-                  type="submit"
-                  class="premium-cta inline-flex min-h-12 w-full items-center justify-center rounded-full bg-brand-gold px-6 text-sm font-semibold text-[#17130d] sm:w-auto"
-                >
-                  Test Profile Form
-                </button>
+  type="submit"
+  :disabled="isSavingProfile"
+  class="premium-cta inline-flex min-h-12 w-full items-center justify-center rounded-full bg-brand-gold px-6 text-sm font-semibold text-[#17130d] sm:w-auto"
+>
+  <span x-text="isSavingProfile ? 'Saving…' : 'Save Personal Information'"></span>
+</button>
               </div>
 
               <div
-                x-show="profileFormTested"
-                x-transition
-                class="mt-5 rounded-xl border border-brand-gold/35 bg-brand-gold/10 px-4 py-3 text-sm leading-6 text-brand-cream"
-                role="status"
-              >
-                Profile form validation passed. No information
-                was saved because the database is not connected yet.
-              </div>
+  x-show="profileFormTested"
+  x-transition
+  class="mt-5 rounded-xl border border-brand-gold/35 bg-brand-gold/10 px-4 py-3 text-sm leading-6 text-brand-cream"
+  role="status"
+>
+  Personal information saved.
+</div>
+
+<p
+  x-show="profileFormError"
+  x-text="profileFormError"
+  class="mt-3 text-sm text-red-400"
+  role="alert"
+></p>
             </section>
           </form>
 
           <p
             class="mt-6 text-center text-xs leading-5 text-brand-muted"
           >
-            Account interface preview — secure profile updates
-            will be enabled during the Supabase integration stage.
+            Account interface preview — Delivery address saving is not available yet.
           </p>
         </section>
 
@@ -3259,7 +3361,7 @@ document.querySelector('#dashboard-app').innerHTML = `
               <strong
                 class="mt-3 block font-display text-4xl text-brand-cream"
               >
-                0
+                —
               </strong>
             </article>
 
@@ -3275,7 +3377,7 @@ document.querySelector('#dashboard-app').innerHTML = `
               <strong
                 class="mt-3 block font-display text-4xl text-brand-cream"
               >
-                0
+                —
               </strong>
             </article>
 
@@ -3291,7 +3393,7 @@ document.querySelector('#dashboard-app').innerHTML = `
               <strong
                 class="mt-3 block font-display text-4xl text-brand-cream"
               >
-                0
+                —
               </strong>
             </article>
           </section>
@@ -3358,7 +3460,7 @@ document.querySelector('#dashboard-app').innerHTML = `
               <h3
                 class="mt-4 font-display text-2xl text-brand-cream"
               >
-                No orders submitted yet
+                Order records are not connected yet
               </h3>
 
               <p
@@ -3405,3 +3507,6 @@ document.querySelector('#dashboard-app').innerHTML = `
 `
 
 Alpine.start()
+}
+
+void startDashboard()

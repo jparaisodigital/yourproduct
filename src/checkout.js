@@ -2,6 +2,8 @@ import './style.css'
 
 import Alpine from 'alpinejs'
 
+import { supabase } from './lib/supabase.js'
+
 import logoImage from './assets/logoyourproduct.png'
 
 import {
@@ -26,12 +28,16 @@ window.Alpine = Alpine
 
 registerCartStore(Alpine, products)
 
+
+
+let checkoutProfile = null
+
 Alpine.data('checkoutPage', () => ({
   customer: {
-    firstName: '',
-    lastName: '',
-    mobileNumber: '',
-    emailAddress: '',
+    firstName: checkoutProfile?.first_name ?? '',
+    lastName: checkoutProfile?.last_name ?? '',
+    mobileNumber: checkoutProfile?.mobile_number ?? '',
+    emailAddress: checkoutProfile?.email ?? '',
   },
   
   delivery: {
@@ -179,7 +185,30 @@ Alpine.data('checkoutPage', () => ({
   
 }))
 
-document.title = `Checkout | ${siteConfig.brand.name}`
+async function startCheckout() {
+  const { data: { user }, error } = await supabase.auth.getUser()
+
+  if (error || !user) {
+    window.location.replace('/login/')
+    return
+  }
+
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('first_name, last_name, mobile_number, email')
+    .eq('id', user.id)
+    .single()
+
+  if (profileError || !profile) {
+    console.error('Unable to load checkout profile:', profileError)
+    document.querySelector('#checkout-app').textContent =
+      'Unable to load your details. Please refresh.'
+    return
+  }
+
+  checkoutProfile = profile
+
+  document.title = `Checkout | ${siteConfig.brand.name}`
 
 document.querySelector('#checkout-app').innerHTML = `
   <div
@@ -1335,3 +1364,6 @@ document.querySelector('#checkout-app').innerHTML = `
 `
 
 Alpine.start()
+}
+
+startCheckout()
