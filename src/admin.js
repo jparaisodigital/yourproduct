@@ -2,6 +2,8 @@ import './style.css'
 
 import Alpine from 'alpinejs'
 
+import { supabase } from './lib/supabase.js'
+
 import logoImage from './assets/logoyourproduct.png'
 
 import {
@@ -48,7 +50,6 @@ import {
 } from './config/admin-preview-data.js'
 
 import {
-  customerOrders,
   orderStatusLabels,
   fulfillmentTypeLabels,
   orderPaymentMethodLabels,
@@ -65,28 +66,18 @@ import {
 } from './components/admin-points-audit-page.js'
 
 const adminMembershipApplications =
-membershipApplications.map((application) => {
-  const selectedPackage =
-  packages.find(
-    (packageItem) =>
-      packageItem.id === application.package_id,
-  ) || null
-  
-  return {
-    ...application,
-    package: selectedPackage,
-  }
-})
+  membershipApplications.map((application) => {
+    const selectedPackage =
+      packages.find(
+        (packageItem) =>
+          packageItem.id === application.package_id,
+      ) || null
 
-const adminCustomerOrders = customerOrders.map(
-  (order) => ({
-    ...order,
-    
-    items: order.items.map((item) => ({
-      ...item,
-    })),
-  }),
-)
+    return {
+      ...application,
+      package: selectedPackage,
+    }
+  })
 
 const adminInventoryProducts = products.map(
   (product) => ({
@@ -637,7 +628,7 @@ function renderMembershipApplicationsPage() {
             <p
               class="mt-2 text-sm leading-6 text-brand-muted"
             >
-              Try a different search term or status filter.
+              Orders will appear here after customers submit them.
             </p>
           </div>
         </div>
@@ -664,22 +655,22 @@ function renderOrdersPage() {
               >
                 Order Management
               </p>
-  
+
               <h1
                 id="orders-page-title"
                 class="mt-2 font-display text-4xl text-brand-cream sm:text-5xl"
               >
                 Customer orders
               </h1>
-  
+
               <p
                 class="mt-3 max-w-2xl text-sm leading-7 text-brand-muted"
               >
-                Review regular perfume orders, payment details,
-                delivery information, and fulfillment status.
+                Live order records from Supabase. Review status
+                and amounts here; approval actions come later.
               </p>
             </div>
-  
+
             <div
               class="grid w-full grid-cols-2 gap-3 sm:w-auto"
             >
@@ -691,13 +682,21 @@ function renderOrdersPage() {
                 >
                   Pending Review
                 </p>
-  
+
                 <strong
                   class="mt-1 block font-display text-2xl text-brand-cream"
-                  x-text="pendingOrderCount"
+                  x-text="
+                    liveOrdersLoading || liveOrdersError
+                      ? '—'
+                      : liveOrders.filter(
+                          (order) =>
+                            order.status ===
+                            'pending_verification',
+                        ).length
+                  "
                 ></strong>
               </div>
-  
+
               <div
                 class="rounded-2xl border border-brand-border bg-brand-black px-4 py-3"
               >
@@ -706,265 +705,95 @@ function renderOrdersPage() {
                 >
                   Total Orders
                 </p>
-  
+
                 <strong
                   class="mt-1 block font-display text-2xl text-brand-cream"
-                  x-text="orders.length"
+                  x-text="
+                    liveOrdersLoading || liveOrdersError
+                      ? '—'
+                      : liveOrders.length
+                  "
                 ></strong>
               </div>
             </div>
           </div>
         </div>
-  
+
         <div
-          class="mt-6 rounded-[1.5rem] border border-brand-border bg-brand-panel p-4 shadow-panel sm:p-5"
+          x-show="liveOrdersLoading"
+          class="mt-6 rounded-[1.5rem] border border-brand-border bg-brand-panel px-6 py-14 text-center"
         >
-          <div
-            class="grid gap-3 md:grid-cols-[minmax(0,1fr)_14rem]"
-          >
-            <label class="relative block">
-              <span class="sr-only">
-                Search customer orders
-              </span>
-  
-              <svg
-                class="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-brand-muted"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.8"
-                aria-hidden="true"
-              >
-                <circle cx="11" cy="11" r="6"></circle>
-  
-                <path
-                  d="m16 16 4 4"
-                  stroke-linecap="round"
-                ></path>
-              </svg>
-  
-              <input
-                type="search"
-                x-model.debounce.250ms="orderSearch"
-                placeholder="Search order, customer, reference, or product"
-                class="min-h-12 w-full rounded-xl border border-brand-border bg-brand-black pl-11 pr-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
-              >
-            </label>
-  
-            <label class="block">
-              <span class="sr-only">
-                Filter orders by status
-              </span>
-  
-              <select
-                x-model="orderStatusFilter"
-                class="min-h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition focus:border-brand-gold"
-              >
-                <option value="all">
-                  All statuses
-                </option>
-  
-                <option value="pending-verification">
-                  Pending Verification
-                </option>
-  
-                <option value="processing">
-                  Processing
-                </option>
-  
-                <option value="shipped">
-                  Shipped
-                </option>
-  
-                <option value="delivered">
-                  Delivered
-                </option>
-  
-                <option value="rejected">
-                  Rejected
-                </option>
-  
-                <option value="cancelled">
-                  Cancelled
-                </option>
-              </select>
-            </label>
-          </div>
-  
-          <div
-            class="mt-4 flex items-center justify-between gap-4 border-t border-brand-border pt-4"
-          >
-            <p class="text-xs text-brand-muted">
-              Showing
-  
-              <strong
-                class="text-brand-cream"
-                x-text="filteredOrders.length"
-              ></strong>
-  
-              order<span
-                x-show="filteredOrders.length !== 1"
-              >s</span>
-            </p>
-  
-            <button
-              x-show="
-                orderSearch ||
-                orderStatusFilter !== 'all'
-              "
-              type="button"
-              class="text-xs font-semibold text-brand-gold transition hover:text-brand-gold-light"
-              @click="
-                orderSearch = '';
-                orderStatusFilter = 'all'
-              "
-            >
-              Clear filters
-            </button>
-          </div>
+          <p class="text-sm text-brand-muted">
+            Loading orders…
+          </p>
         </div>
-  
-        <div class="mt-6 space-y-4">
-          <template
-            x-for="order in filteredOrders"
-            :key="order.id"
-          >
+
+        <div
+          x-show="!liveOrdersLoading && liveOrdersError"
+          class="mt-6 rounded-[1.5rem] border border-red-400/30 bg-brand-panel p-5 text-sm text-red-300"
+          role="alert"
+          x-text="liveOrdersError"
+        ></div>
+
+        <div
+          x-show="
+            !liveOrdersLoading &&
+            !liveOrdersError &&
+            liveOrders.length === 0
+          "
+          class="mt-6 rounded-[1.5rem] border border-dashed border-brand-border bg-brand-panel px-6 py-14 text-center"
+        >
+          <h2 class="font-display text-2xl text-brand-cream">
+            No orders submitted yet
+          </h2>
+
+          <p class="mt-2 text-sm leading-6 text-brand-muted">
+            No orders submitted yet.
+          </p>
+        </div>
+
+        <div
+          x-show="
+            !liveOrdersLoading &&
+            !liveOrdersError &&
+            liveOrders.length > 0
+          "
+          class="mt-6 space-y-4"
+        >
+          <template x-for="order in liveOrders" :key="order.id">
             <article
-              class="rounded-[1.5rem] border border-brand-border bg-brand-panel p-5 shadow-panel transition hover:border-brand-gold/50 sm:p-6"
+              class="rounded-[1.5rem] border border-brand-border bg-brand-panel p-5 shadow-panel sm:p-6"
             >
-              <div
-                class="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(17rem,0.8fr)_auto] lg:items-center"
+              <p
+                class="font-semibold text-brand-cream"
+                x-text="
+                  'Order ' + order.id.slice(0, 8).toUpperCase()
+                "
+              ></p>
+
+              <p
+                class="mt-2 text-sm capitalize text-brand-gold"
+                x-text="order.status.replaceAll('_', ' ')"
+              ></p>
+
+              <p
+                class="mt-2 text-xs text-brand-muted"
+                x-text="formatDate(order.created_at)"
+              ></p>
+
+              <p
+                class="mt-3 text-sm text-brand-cream"
+                x-text="'Subtotal: ' + formatMoney(order.subtotal)"
+              ></p>
+
+              <p
+                x-show="order.delivery_fee === null"
+                class="mt-1 text-xs text-brand-muted"
               >
-                <div class="min-w-0">
-                  <div
-                    class="flex flex-wrap items-center gap-3"
-                  >
-                    <span
-                      class="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[0.62rem] font-semibold uppercase tracking-[0.08em]"
-                      :class="
-                        orderStatusBadgeClass(order.status)
-                      "
-                    >
-                      <span
-                        class="size-1.5 rounded-full"
-                        :class="
-                          orderStatusDotClass(order.status)
-                        "
-                        aria-hidden="true"
-                      ></span>
-  
-                      <span
-                        x-text="
-                          orderStatusLabels[order.status] ||
-                          order.status
-                        "
-                      ></span>
-                    </span>
-  
-                    <span
-                      class="text-[0.65rem] uppercase tracking-[0.12em] text-brand-muted"
-                      x-text="order.order_number"
-                    ></span>
-                  </div>
-  
-                  <h2
-                    class="mt-3 truncate font-display text-2xl text-brand-cream sm:text-3xl"
-                    x-text="order.customer_name"
-                  ></h2>
-  
-                  <p
-                    class="mt-1 truncate text-sm text-brand-muted"
-                    x-text="order.customer_email"
-                  ></p>
-                </div>
-  
-                <div
-                  class="grid grid-cols-2 gap-4 border-y border-brand-border py-4 lg:border-y-0 lg:border-l lg:py-0 lg:pl-6"
-                >
-                  <div>
-                    <p
-                      class="text-[0.62rem] uppercase tracking-[0.12em] text-brand-muted"
-                    >
-                      Items
-                    </p>
-  
-                    <strong
-                      class="mt-1 block text-sm text-brand-cream"
-                      x-text="order.item_count"
-                    ></strong>
-                  </div>
-  
-                  <div>
-                    <p
-                      class="text-[0.62rem] uppercase tracking-[0.12em] text-brand-muted"
-                    >
-                      Total
-                    </p>
-  
-                    <strong
-                      class="mt-1 block text-sm text-brand-gold"
-                      x-text="
-                        formatMoney(order.total_amount)
-                      "
-                    ></strong>
-                  </div>
-  
-                  <div>
-                    <p
-                      class="text-[0.62rem] uppercase tracking-[0.12em] text-brand-muted"
-                    >
-                      Region
-                    </p>
-  
-                    <p
-                      class="mt-1 text-xs font-semibold text-brand-cream"
-                      x-text="order.delivery_region"
-                    ></p>
-                  </div>
-  
-                  <div>
-                    <p
-                      class="text-[0.62rem] uppercase tracking-[0.12em] text-brand-muted"
-                    >
-                      Submitted
-                    </p>
-  
-                    <p
-                      class="mt-1 text-xs text-brand-muted"
-                      x-text="
-                        formatDate(order.submitted_at)
-                      "
-                    ></p>
-                  </div>
-                </div>
-  
-                <button
-                  type="button"
-                  class="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-brand-border px-5 text-sm font-semibold text-brand-cream transition hover:border-brand-gold hover:text-brand-gold lg:w-auto"
-                  @click="openOrderDetails(order.id)"
-                >
-                  Review Order
-                </button>
-              </div>
+                Delivery fee to be confirmed
+              </p>
             </article>
           </template>
-  
-          <div
-            x-show="filteredOrders.length === 0"
-            class="rounded-[1.5rem] border border-dashed border-brand-border bg-brand-panel px-6 py-14 text-center"
-          >
-            <h2
-              class="font-display text-2xl text-brand-cream"
-            >
-              No customer orders found
-            </h2>
-  
-            <p
-              class="mt-2 text-sm leading-6 text-brand-muted"
-            >
-              Try a different search term or status filter.
-            </p>
-          </div>
         </div>
       </section>
     `
@@ -2269,7 +2098,13 @@ Alpine.data('adminDashboard', () => ({
   
   paymentMethodLabels,
   
-  orders: adminCustomerOrders,
+  orders: [],
+
+  liveOrders: [],
+
+  liveOrdersLoading: false,
+
+  liveOrdersError: '',
   
   inventoryProducts: adminInventoryProducts,
   
@@ -4633,10 +4468,61 @@ closeMobileMenu() {
   }
 },
 
+async init() {
+  await this.loadLiveOrders()
+},
+
+async loadLiveOrders() {
+  this.liveOrdersLoading = true
+  this.liveOrdersError = ''
+
+  const { data, error } = await supabase
+    .from('orders')
+    .select('id, status, subtotal, delivery_fee, created_at')
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    console.error('Unable to load live orders:', error)
+    this.liveOrders = []
+    this.liveOrdersError =
+      'Unable to load orders. Please refresh this page.'
+  } else {
+    this.liveOrders = data ?? []
+  }
+
+  this.liveOrdersLoading = false
+},
+
 destroy() {
   document.body.classList.remove('overflow-hidden')
 },
 }))
+
+async function startAdminDashboard() {
+  const { data: { user }, error } = await supabase.auth.getUser()
+
+  if (error || !user) {
+    window.location.replace('/login/')
+    return
+  }
+
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('role, account_status')
+    .eq('id', user.id)
+    .single()
+
+  if (profileError || !profile) {
+    console.error('Unable to check admin access:', profileError)
+    document.querySelector('#admin-app').textContent =
+      'Unable to check access. Please refresh.'
+    return
+  }
+
+  if (profile.role !== 'admin' || profile.account_status !== 'active') {
+    window.location.replace('/dashboard/')
+    return
+  }
 
 document.title = `Admin Dashboard | ${siteConfig.brand.name}`
 
@@ -5041,4 +4927,7 @@ ${adminNavigationItems
   </div>
 `
   
-  Alpine.start()
+Alpine.start()
+}
+
+startAdminDashboard()
