@@ -2100,6 +2100,10 @@ Alpine.data('adminDashboard', () => ({
   
   orders: [],
 
+  liveProducts: [],
+  liveProductsLoading: true,
+  liveProductsError: '',
+
   liveOrders: [],
 
   liveOrdersLoading: false,
@@ -2395,6 +2399,31 @@ Alpine.data('adminDashboard', () => ({
       ) || null
     )
   },
+
+  async loadLiveProducts() {
+    this.liveProductsLoading = true
+    this.liveProductsError = ''
+
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select(
+          'id, sku, name, regular_price, member_price, stock_quantity, is_active',
+        )
+        .order('sku', { ascending: true })
+
+      if (error) throw error
+
+      this.liveProducts = data ?? []
+    } catch (error) {
+      console.error('Unable to load admin products:', error)
+      this.liveProductsError = 'Unable to load products. Please refresh.'
+      this.liveProducts = []
+    } finally {
+      this.liveProductsLoading = false
+    }
+  },
+
   
   get pendingOrderCount() {
     return this.orders.filter(
@@ -4527,8 +4556,9 @@ async function startAdminDashboard() {
 document.title = `Admin Dashboard | ${siteConfig.brand.name}`
 
 document.querySelector('#admin-app').innerHTML = `
-  <div
+   <div
     x-data="adminDashboard"
+    x-init="loadLiveProducts()"
     x-cloak
     class="min-h-screen bg-brand-black text-brand-cream"
     @keydown.escape.window="closeMobileMenu(); closeApplicationDetails(); closeOrderDetails(); closeInventoryAdjustment()"
