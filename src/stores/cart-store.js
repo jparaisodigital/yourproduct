@@ -45,6 +45,7 @@ export function registerCartStore(
 
             if (
               !product ||
+              !product.isActive ||
               product.stockQuantity <= 0 ||
               !Number.isInteger(item.quantity) ||
               item.quantity <= 0
