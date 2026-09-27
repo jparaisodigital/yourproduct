@@ -244,11 +244,11 @@ function renderAdminSidebar() {
           </p>
 
           <p class="mt-2 text-sm font-semibold text-brand-cream">
-            Admin Preview
+            Admin Workspace
           </p>
 
           <p class="mt-1 text-xs text-brand-muted">
-            Orders and inventory are live; other sections are previews.
+            Orders, customers, products, and inventory are connected. Other sections are in progress.
           </p>
         </div>
       </div>
@@ -4779,7 +4779,7 @@ document.querySelector('#admin-app').innerHTML = `
             <span
               class="hidden rounded-full border border-brand-gold/30 bg-brand-gold/10 px-3 py-1.5 text-[0.62rem] font-semibold uppercase tracking-[0.12em] text-brand-gold sm:inline-flex"
             >
-              UI Preview
+              In Development
             </span>
 
             <a
