@@ -27,6 +27,14 @@ import {
 } from './components/admin-sales-inventory-page.js'
 
 import {
+  renderAdminCustomersPage,
+} from './components/admin-customers-page.js'
+
+import {
+  renderAdminProductsPage,
+} from './components/admin-products-page.js'
+
+import {
   renderAdminInventoryAdjustmentDrawer,
 } from './components/admin-inventory-adjustment-drawer.js'
 
@@ -166,7 +174,7 @@ const navigationMarkup = adminNavigationItems
         @click="openPage('${item.id}')"
       >
         <span>${item.label}</span>
-    
+
         <span
           x-show="activePage === '${item.id}'"
           class="size-1.5 rounded-full bg-[#17130d]"
@@ -193,14 +201,14 @@ function renderAdminSidebar() {
             alt="${siteConfig.brand.name}"
             class="size-12 shrink-0 object-contain"
           >
-    
+
           <span class="min-w-0">
             <strong
               class="block truncate text-sm uppercase tracking-[0.14em] text-brand-cream"
             >
               ${siteConfig.brand.name}
             </strong>
-    
+
             <span
               class="mt-1 block text-[0.6rem] uppercase tracking-[0.16em] text-brand-gold"
             >
@@ -209,7 +217,7 @@ function renderAdminSidebar() {
           </span>
         </a>
       </div>
-    
+
       <nav
         class="flex-1 overflow-y-auto px-4 py-7"
         aria-label="Admin dashboard navigation"
@@ -219,12 +227,12 @@ function renderAdminSidebar() {
         >
           Management
         </p>
-    
+
         <div class="space-y-2">
           ${navigationMarkup}
         </div>
       </nav>
-    
+
       <div class="border-t border-brand-border p-4">
         <div
           class="rounded-2xl border border-brand-border bg-brand-black px-4 py-4"
@@ -234,11 +242,11 @@ function renderAdminSidebar() {
           >
             Administrator
           </p>
-    
+
           <p class="mt-2 text-sm font-semibold text-brand-cream">
             Admin Preview
           </p>
-    
+
           <p class="mt-1 text-xs text-brand-muted">
             Orders and inventory are live; other sections are previews.
           </p>
@@ -267,14 +275,14 @@ function renderMembershipApplicationsPage() {
               >
                 Membership Management
               </p>
-  
+
               <h1
                 id="memberships-page-title"
                 class="mt-2 font-display text-4xl text-brand-cream sm:text-5xl"
               >
                 Membership applications
               </h1>
-  
+
               <p
                 class="mt-3 max-w-2xl text-sm leading-7 text-brand-muted"
               >
@@ -283,7 +291,7 @@ function renderMembershipApplicationsPage() {
                 organized queue.
               </p>
             </div>
-  
+
             <div
               class="grid w-full grid-cols-2 gap-3 sm:w-auto"
             >
@@ -295,13 +303,13 @@ function renderMembershipApplicationsPage() {
                 >
                   For Review
                 </p>
-  
+
                 <strong
                   class="mt-1 block font-display text-2xl text-brand-cream"
                   x-text="pendingVerificationCount"
                 ></strong>
               </div>
-  
+
               <div
                 class="rounded-2xl border border-brand-border bg-brand-black px-4 py-3"
               >
@@ -310,7 +318,7 @@ function renderMembershipApplicationsPage() {
                 >
                   Cancellations
                 </p>
-  
+
                 <strong
                   class="mt-1 block font-display text-2xl text-brand-cream"
                   x-text="cancellationRequestCount"
@@ -319,7 +327,7 @@ function renderMembershipApplicationsPage() {
             </div>
           </div>
         </div>
-  
+
         <div
           class="mt-6 rounded-[1.5rem] border border-brand-border bg-brand-panel p-4 shadow-panel sm:p-5"
         >
@@ -330,7 +338,7 @@ function renderMembershipApplicationsPage() {
               <span class="sr-only">
                 Search applications
               </span>
-  
+
               <svg
                 class="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-brand-muted"
                 viewBox="0 0 24 24"
@@ -340,13 +348,13 @@ function renderMembershipApplicationsPage() {
                 aria-hidden="true"
               >
                 <circle cx="11" cy="11" r="6"></circle>
-  
+
                 <path
                   d="m16 16 4 4"
                   stroke-linecap="round"
                 ></path>
               </svg>
-  
+
               <input
                 type="search"
                 x-model.debounce.250ms="applicationSearch"
@@ -354,12 +362,12 @@ function renderMembershipApplicationsPage() {
                 class="min-h-12 w-full rounded-xl border border-brand-border bg-brand-black pl-11 pr-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
               >
             </label>
-  
+
             <label class="block">
               <span class="sr-only">
                 Filter by status
               </span>
-  
+
               <select
                 x-model="applicationStatusFilter"
                 class="min-h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition focus:border-brand-gold"
@@ -367,50 +375,50 @@ function renderMembershipApplicationsPage() {
                 <option value="all">
                   All statuses
                 </option>
-  
+
                 <option value="pending-verification">
                   Pending Verification
                 </option>
-  
+
                 <option value="cancellation-requested">
                   Cancellation Requested
                 </option>
-  
+
                 <option value="awaiting-payment">
   Awaiting Payment
 </option>
-    
+
 <option value="approved">
   Approved
 </option>
-    
+
 <option value="rejected">
   Rejected
 </option>
-    
+
 <option value="cancelled">
   Cancelled
 </option>
               </select>
             </label>
           </div>
-  
+
           <div
             class="mt-4 flex items-center justify-between gap-4 border-t border-brand-border pt-4"
           >
             <p class="text-xs text-brand-muted">
               Showing
-  
+
               <strong
                 class="text-brand-cream"
                 x-text="filteredApplications.length"
               ></strong>
-  
+
               application<span
                 x-show="filteredApplications.length !== 1"
               >s</span>
             </p>
-  
+
             <button
               x-show="
                 applicationSearch ||
@@ -427,7 +435,7 @@ function renderMembershipApplicationsPage() {
             </button>
           </div>
         </div>
-  
+
         <div class="mt-6 space-y-4">
           <template
             x-for="application in filteredApplications"
@@ -440,8 +448,8 @@ function renderMembershipApplicationsPage() {
                 class="grid gap-5 lg:grid-cols-[minmax(0,1.1fr)_minmax(15rem,0.65fr)_auto] lg:items-center"
               >
                 <div class="min-w-0">
-                  
-  
+
+
                 <div
   class="flex flex-wrap items-center gap-3"
 >
@@ -463,7 +471,7 @@ function renderMembershipApplicationsPage() {
       "
       aria-hidden="true"
     ></span>
-  
+
     <span
       x-text="
         applicationStatusLabels[
@@ -472,7 +480,7 @@ function renderMembershipApplicationsPage() {
       "
     ></span>
   </span>
-  
+
   <!-- Package fulfillment status -->
   <span
     x-show="
@@ -517,7 +525,7 @@ function renderMembershipApplicationsPage() {
       "
       aria-hidden="true"
     ></span>
-  
+
     <span
       x-text="
         'Package · ' +
@@ -527,25 +535,25 @@ function renderMembershipApplicationsPage() {
       "
     ></span>
   </span>
-  
+
   <!-- Application reference -->
   <span
     class="text-[0.65rem] uppercase tracking-[0.12em] text-brand-muted"
     x-text="application.id"
   ></span>
 </div>
-  
+
                   <h2
                     class="mt-3 truncate font-display text-2xl text-brand-cream sm:text-3xl"
                     x-text="application.customer_name"
                   ></h2>
-  
+
                   <p
                     class="mt-1 truncate text-sm text-brand-muted"
                     x-text="application.customer_email"
                   ></p>
                 </div>
-  
+
                 <div
                   class="grid grid-cols-2 gap-4 border-y border-brand-border py-4 lg:border-y-0 lg:border-l lg:py-0 lg:pl-6"
                 >
@@ -555,7 +563,7 @@ function renderMembershipApplicationsPage() {
                     >
                       Package
                     </p>
-  
+
                     <strong
                       class="mt-1 block text-sm text-brand-cream"
                       x-text="
@@ -564,27 +572,27 @@ function renderMembershipApplicationsPage() {
                       "
                     ></strong>
                   </div>
-  
+
                   <div>
                     <p
                       class="text-[0.62rem] uppercase tracking-[0.12em] text-brand-muted"
                     >
                       Amount
                     </p>
-  
+
                     <strong
                       class="mt-1 block text-sm text-brand-gold"
                       x-text="formatMoney(application.amount)"
                     ></strong>
                   </div>
-  
+
                   <div class="col-span-2">
                     <p
                       class="text-[0.62rem] uppercase tracking-[0.12em] text-brand-muted"
                     >
                       Submitted
                     </p>
-  
+
                     <p
                       class="mt-1 text-xs text-brand-muted"
                       x-text="
@@ -593,7 +601,7 @@ function renderMembershipApplicationsPage() {
                     ></p>
                   </div>
                 </div>
-  
+
                 <button
                   type="button"
                   class="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-brand-border px-5 text-sm font-semibold text-brand-cream transition hover:border-brand-gold hover:text-brand-gold lg:w-auto"
@@ -606,7 +614,7 @@ function renderMembershipApplicationsPage() {
               </div>
             </article>
           </template>
-  
+
           <div
             x-show="filteredApplications.length === 0"
             class="rounded-[1.5rem] border border-dashed border-brand-border bg-brand-panel px-6 py-14 text-center"
@@ -616,7 +624,7 @@ function renderMembershipApplicationsPage() {
             >
               No applications found
             </h2>
-  
+
             <p
               class="mt-2 text-sm leading-6 text-brand-muted"
             >
@@ -800,7 +808,7 @@ function renderOrderDetailsDrawer() {
         aria-hidden="true"
         @click="closeOrderDetails()"
       ></div>
-  
+
       <aside
         x-show="orderDetailsOpen"
         x-transition:enter="transition duration-300 ease-out"
@@ -825,14 +833,14 @@ function renderOrderDetailsDrawer() {
                 >
                   Order Review
                 </p>
-  
+
                 <h2
                   id="order-drawer-title"
                   class="mt-1 truncate font-display text-2xl text-brand-cream"
                   x-text="selectedOrder.order_number"
                 ></h2>
               </div>
-  
+
               <button
                 type="button"
                 class="grid size-10 shrink-0 place-items-center rounded-full border border-brand-border text-brand-cream transition hover:border-brand-gold hover:text-brand-gold"
@@ -854,7 +862,7 @@ function renderOrderDetailsDrawer() {
                 </svg>
               </button>
             </div>
-  
+
             <div class="space-y-5 p-5 sm:p-7">
               <section
                 class="rounded-2xl border border-brand-border bg-brand-black p-5"
@@ -868,7 +876,7 @@ function renderOrderDetailsDrawer() {
                     >
                       Order Status
                     </p>
-  
+
                     <span
                       class="mt-3 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.08em]"
                       :class="
@@ -886,7 +894,7 @@ function renderOrderDetailsDrawer() {
                         "
                         aria-hidden="true"
                       ></span>
-  
+
                       <span
                         x-text="
                           orderStatusLabels[
@@ -896,14 +904,14 @@ function renderOrderDetailsDrawer() {
                       ></span>
                     </span>
                   </div>
-  
+
                   <div class="text-right">
                     <p
                       class="text-[0.62rem] uppercase tracking-[0.14em] text-brand-muted"
                     >
                       Order Total
                     </p>
-  
+
                     <strong
                       class="mt-2 block font-display text-3xl text-brand-gold"
                       x-text="
@@ -914,7 +922,7 @@ function renderOrderDetailsDrawer() {
                     ></strong>
                   </div>
                 </div>
-  
+
                 <p
                   class="mt-5 border-t border-brand-border pt-4 text-xs text-brand-muted"
                   x-text="
@@ -923,7 +931,7 @@ function renderOrderDetailsDrawer() {
                   "
                 ></p>
               </section>
-  
+
               <section
                 class="rounded-2xl border border-brand-border bg-brand-black p-5"
               >
@@ -932,7 +940,7 @@ function renderOrderDetailsDrawer() {
                 >
                   Customer Information
                 </p>
-  
+
                 <dl
                   class="mt-4 grid gap-4 sm:grid-cols-2"
                 >
@@ -940,29 +948,29 @@ function renderOrderDetailsDrawer() {
                     <dt class="text-xs text-brand-muted">
                       Full name
                     </dt>
-  
+
                     <dd
                       class="mt-1 text-sm font-semibold text-brand-cream"
                       x-text="selectedOrder.customer_name"
                     ></dd>
                   </div>
-  
+
                   <div>
                     <dt class="text-xs text-brand-muted">
                       Mobile number
                     </dt>
-  
+
                     <dd
                       class="mt-1 text-sm font-semibold text-brand-cream"
                       x-text="selectedOrder.customer_mobile"
                     ></dd>
                   </div>
-  
+
                   <div class="sm:col-span-2">
                     <dt class="text-xs text-brand-muted">
                       Email address
                     </dt>
-  
+
                     <dd
                       class="mt-1 break-all text-sm font-semibold text-brand-cream"
                       x-text="selectedOrder.customer_email"
@@ -970,7 +978,7 @@ function renderOrderDetailsDrawer() {
                   </div>
                 </dl>
               </section>
-  
+
               <section
                 class="rounded-2xl border border-brand-border bg-brand-black p-5"
               >
@@ -979,7 +987,7 @@ function renderOrderDetailsDrawer() {
                 >
                   Order Items
                 </p>
-  
+
                 <div class="mt-4 space-y-3">
                   <template
                     x-for="item in selectedOrder.items"
@@ -996,12 +1004,12 @@ function renderOrderDetailsDrawer() {
                             class="truncate text-sm font-semibold text-brand-cream"
                             x-text="item.product_name"
                           ></p>
-  
+
                           <p
                             class="mt-1 text-xs text-brand-muted"
                             x-text="item.product_category"
                           ></p>
-  
+
                           <p
                             class="mt-2 text-xs text-brand-muted"
                             x-text="
@@ -1011,7 +1019,7 @@ function renderOrderDetailsDrawer() {
                             "
                           ></p>
                         </div>
-  
+
                         <strong
                           class="shrink-0 text-sm text-brand-gold"
                           x-text="
@@ -1022,7 +1030,7 @@ function renderOrderDetailsDrawer() {
                     </article>
                   </template>
                 </div>
-  
+
                 <dl
                   class="mt-5 space-y-3 border-t border-brand-border pt-5"
                 >
@@ -1032,7 +1040,7 @@ function renderOrderDetailsDrawer() {
                     <dt class="text-sm text-brand-muted">
                       Subtotal
                     </dt>
-  
+
                     <dd
                       class="text-sm font-semibold text-brand-cream"
                       x-text="
@@ -1040,14 +1048,14 @@ function renderOrderDetailsDrawer() {
                       "
                     ></dd>
                   </div>
-  
+
                   <div
                     class="flex items-center justify-between gap-4"
                   >
                     <dt class="text-sm text-brand-muted">
                       Delivery
                     </dt>
-  
+
                     <dd
                       class="text-sm font-semibold text-brand-cream"
                       x-text="
@@ -1059,7 +1067,7 @@ function renderOrderDetailsDrawer() {
                       "
                     ></dd>
                   </div>
-  
+
                   <div
                     class="flex items-center justify-between gap-4 border-t border-brand-border pt-3"
                   >
@@ -1068,7 +1076,7 @@ function renderOrderDetailsDrawer() {
                     >
                       Total
                     </dt>
-  
+
                     <dd
                       class="font-display text-2xl text-brand-gold"
                       x-text="
@@ -1080,7 +1088,7 @@ function renderOrderDetailsDrawer() {
                   </div>
                 </dl>
               </section>
-  
+
               <section
                 class="rounded-2xl border border-brand-border bg-brand-black p-5"
               >
@@ -1089,7 +1097,7 @@ function renderOrderDetailsDrawer() {
                 >
                   Delivery Information
                 </p>
-  
+
                 <dl
                   class="mt-4 grid gap-4 sm:grid-cols-2"
                 >
@@ -1097,7 +1105,7 @@ function renderOrderDetailsDrawer() {
                     <dt class="text-xs text-brand-muted">
                       Fulfillment
                     </dt>
-  
+
                     <dd
                       class="mt-1 text-sm font-semibold text-brand-cream"
                       x-text="
@@ -1108,45 +1116,45 @@ function renderOrderDetailsDrawer() {
                       "
                     ></dd>
                   </div>
-  
+
                   <div>
                     <dt class="text-xs text-brand-muted">
                       Region
                     </dt>
-  
+
                     <dd
                       class="mt-1 text-sm font-semibold text-brand-cream"
                       x-text="selectedOrder.delivery_region"
                     ></dd>
                   </div>
-  
+
                   <div class="sm:col-span-2">
                     <dt class="text-xs text-brand-muted">
                       Recipient
                     </dt>
-  
+
                     <dd
                       class="mt-1 text-sm font-semibold text-brand-cream"
                       x-text="selectedOrder.recipient_name"
                     ></dd>
                   </div>
-  
+
                   <div class="sm:col-span-2">
                     <dt class="text-xs text-brand-muted">
                       Delivery address
                     </dt>
-  
+
                     <dd
                       class="mt-1 text-sm leading-6 text-brand-cream"
                       x-text="selectedOrder.delivery_address"
                     ></dd>
                   </div>
-  
+
                   <div class="sm:col-span-2">
                     <dt class="text-xs text-brand-muted">
                       Delivery note
                     </dt>
-  
+
                     <dd
                       class="mt-1 text-sm leading-6 text-brand-cream"
                       x-text="
@@ -1157,7 +1165,7 @@ function renderOrderDetailsDrawer() {
                   </div>
                 </dl>
               </section>
-  
+
               <section
                 class="rounded-2xl border border-brand-border bg-brand-black p-5"
               >
@@ -1166,7 +1174,7 @@ function renderOrderDetailsDrawer() {
                 >
                   Payment Information
                 </p>
-  
+
                 <dl
                   class="mt-4 grid gap-4 sm:grid-cols-2"
                 >
@@ -1174,7 +1182,7 @@ function renderOrderDetailsDrawer() {
                     <dt class="text-xs text-brand-muted">
                       Payment method
                     </dt>
-  
+
                     <dd
                       class="mt-1 text-sm font-semibold text-brand-cream"
                       x-text="
@@ -1185,12 +1193,12 @@ function renderOrderDetailsDrawer() {
                       "
                     ></dd>
                   </div>
-  
+
                   <div>
                     <dt class="text-xs text-brand-muted">
                       Provider
                     </dt>
-  
+
                     <dd
                       class="mt-1 text-sm font-semibold text-brand-cream"
                       x-text="
@@ -1199,23 +1207,23 @@ function renderOrderDetailsDrawer() {
                       "
                     ></dd>
                   </div>
-  
+
                   <div>
                     <dt class="text-xs text-brand-muted">
                       Sender name
                     </dt>
-  
+
                     <dd
                       class="mt-1 text-sm font-semibold text-brand-cream"
                       x-text="selectedOrder.sender_name"
                     ></dd>
                   </div>
-  
+
                   <div>
                     <dt class="text-xs text-brand-muted">
                       Reference number
                     </dt>
-  
+
                     <dd
                       class="mt-1 break-all text-sm font-semibold text-brand-cream"
                       x-text="
@@ -1225,7 +1233,7 @@ function renderOrderDetailsDrawer() {
                   </div>
                 </dl>
               </section>
-  
+
               <section
                 class="rounded-2xl border border-brand-border bg-brand-black p-5"
               >
@@ -1234,7 +1242,7 @@ function renderOrderDetailsDrawer() {
                 >
                   Payment Proof
                 </p>
-  
+
                 <div
                   x-show="selectedOrder.payment_proof_url"
                   class="mt-4 overflow-hidden rounded-xl border border-brand-border bg-brand-panel"
@@ -1245,7 +1253,7 @@ function renderOrderDetailsDrawer() {
                     class="max-h-80 w-full object-contain"
                   >
                 </div>
-  
+
                 <div
                   x-show="!selectedOrder.payment_proof_url"
                   class="mt-4 rounded-xl border border-dashed border-brand-border bg-brand-panel px-5 py-8 text-center"
@@ -1255,7 +1263,7 @@ function renderOrderDetailsDrawer() {
                   >
                     Preview image not connected yet
                   </p>
-  
+
                   <p
                     class="mt-2 break-all text-xs leading-5 text-brand-muted"
                     x-text="
@@ -1266,7 +1274,7 @@ function renderOrderDetailsDrawer() {
                   ></p>
                 </div>
               </section>
-  
+
               <section
   class="rounded-2xl border border-brand-border bg-brand-black p-5"
   aria-labelledby="order-review-actions-title"
@@ -1276,21 +1284,21 @@ function renderOrderDetailsDrawer() {
   >
     Admin Review
   </p>
-  
+
   <h3
     id="order-review-actions-title"
     class="mt-2 font-display text-2xl text-brand-cream"
   >
     Update order status
   </h3>
-  
+
   <p
     class="mt-2 text-xs leading-5 text-brand-muted"
   >
     Review the order and payment details before
     choosing the next valid status.
   </p>
-  
+
   <div
     x-show="!orderReviewPanelOpen"
     x-transition.opacity
@@ -1307,7 +1315,7 @@ function renderOrderDetailsDrawer() {
       >
         Approve Payment
       </button>
-  
+
       <button
         type="button"
         class="inline-flex min-h-11 items-center justify-center rounded-full border border-red-400/40 px-5 text-sm font-semibold text-red-300 transition hover:border-red-300 hover:bg-red-400/10 hover:text-red-200"
@@ -1316,7 +1324,7 @@ function renderOrderDetailsDrawer() {
         Reject Order
       </button>
     </div>
-  
+
     <div
   x-show="selectedOrder.status === 'processing'"
   class="grid gap-3 sm:grid-cols-2"
@@ -1328,7 +1336,7 @@ function renderOrderDetailsDrawer() {
   >
     Mark as Shipped
   </button>
-  
+
   <button
     type="button"
     class="inline-flex min-h-11 items-center justify-center rounded-full border border-red-400/40 px-5 text-sm font-semibold text-red-300 transition hover:bg-red-400/10"
@@ -1337,7 +1345,7 @@ function renderOrderDetailsDrawer() {
     Cancel & Return Stock
   </button>
 </div>
-  
+
     <div
   x-show="selectedOrder.status === 'shipped'"
   class="grid gap-3 sm:grid-cols-2"
@@ -1349,7 +1357,7 @@ function renderOrderDetailsDrawer() {
   >
     Mark as Unshipped
   </button>
-  
+
   <button
     type="button"
     class="inline-flex min-h-11 items-center justify-center rounded-full bg-emerald-600 px-5 text-sm font-semibold text-white transition hover:bg-emerald-500"
@@ -1358,7 +1366,7 @@ function renderOrderDetailsDrawer() {
     Mark as Delivered
   </button>
 </div>
-  
+
     <div
       x-show="selectedOrder.status === 'delivered'"
       class="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3"
@@ -1366,11 +1374,11 @@ function renderOrderDetailsDrawer() {
       <p class="text-sm font-semibold text-emerald-200">
         Order completed
       </p>
-  
+
       <p class="mt-1 text-xs leading-5 text-emerald-100/80">
         This order has been marked as delivered.
       </p>
-  
+
       <button
   type="button"
   class="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-full border border-violet-400/40 px-5 text-sm font-semibold text-violet-300 transition hover:bg-violet-400/10"
@@ -1379,7 +1387,7 @@ function renderOrderDetailsDrawer() {
   Refund & Return Stock
 </button>
     </div>
-  
+
     <div
   x-show="selectedOrder.status === 'rejected'"
   class="rounded-xl border border-red-400/30 bg-red-400/10 px-4 py-3"
@@ -1387,12 +1395,12 @@ function renderOrderDetailsDrawer() {
   <p class="text-sm font-semibold text-red-200">
     Order rejected
   </p>
-  
+
   <p class="mt-1 text-xs leading-5 text-red-100/80">
     No additional order action is available.
   </p>
 </div>
-  
+
 <div
   x-show="selectedOrder.status === 'cancelled'"
   class="rounded-xl border border-brand-border bg-brand-black/40 px-4 py-3"
@@ -1400,12 +1408,12 @@ function renderOrderDetailsDrawer() {
   <p class="text-sm font-semibold text-brand-cream">
     Order cancelled
   </p>
-  
+
   <p class="mt-1 text-xs leading-5 text-brand-muted">
     The deducted inventory has been returned.
   </p>
 </div>
-  
+
 <div
   x-show="selectedOrder.status === 'refunded'"
   class="rounded-xl border border-violet-400/30 bg-violet-400/10 px-4 py-3"
@@ -1413,13 +1421,13 @@ function renderOrderDetailsDrawer() {
   <p class="text-sm font-semibold text-violet-200">
     Order refunded
   </p>
-  
+
   <p class="mt-1 text-xs leading-5 text-violet-100/80">
     The refunded items have been returned to inventory.
   </p>
 </div>
 </div>
-  
+
   <div
   x-show="orderReviewPanelOpen"
   x-transition
@@ -1444,7 +1452,7 @@ function renderOrderDetailsDrawer() {
                   : 'Update order'
     "
   ></p>
-  
+
   <p
     class="mt-2 text-xs leading-5 text-brand-muted"
     x-text="
@@ -1465,14 +1473,14 @@ function renderOrderDetailsDrawer() {
                   : 'Confirm this order update.'
     "
   ></p>
-  
+
   <label
     for="order-review-note"
     class="mt-4 block text-xs font-semibold uppercase tracking-[0.12em] text-brand-muted"
   >
     Admin note
   </label>
-  
+
   <textarea
     id="order-review-note"
     x-model.trim="orderReviewNote"
@@ -1481,14 +1489,14 @@ function renderOrderDetailsDrawer() {
     placeholder="Add a short note for this status update"
     class="mt-2 w-full resize-none rounded-xl border border-brand-border bg-brand-black px-4 py-3 text-sm leading-6 text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
   ></textarea>
-  
+
   <p
     x-show="orderReviewError"
     x-text="orderReviewError"
     class="mt-2 text-xs leading-5 text-red-300"
     role="alert"
   ></p>
-  
+
   <div class="mt-4 grid gap-3 sm:grid-cols-2">
     <button
       type="button"
@@ -1497,7 +1505,7 @@ function renderOrderDetailsDrawer() {
     >
       Keep Current Status
     </button>
-  
+
     <button
       type="button"
       class="inline-flex min-h-11 items-center justify-center rounded-full px-4 text-sm font-semibold transition"
@@ -1531,7 +1539,7 @@ orderReviewAction === 'unship'
     ></button>
   </div>
 </div>
-  
+
   <div
     x-show="selectedOrder.admin_note"
     class="mt-5 border-t border-brand-border pt-5"
@@ -1541,12 +1549,12 @@ orderReviewAction === 'unship'
     >
       Latest Admin Note
     </p>
-  
+
     <p
       class="mt-2 text-sm leading-6 text-brand-cream"
       x-text="selectedOrder.admin_note"
     ></p>
-  
+
     <p
       x-show="selectedOrder.reviewed_at"
       class="mt-2 text-xs text-brand-muted"
@@ -1573,7 +1581,7 @@ function renderApplicationDetailsDrawer() {
         aria-hidden="true"
         @click="closeApplicationDetails()"
       ></div>
-  
+
       <aside
         x-show="applicationDetailsOpen"
         x-transition:enter="transition duration-300 ease-out"
@@ -1598,14 +1606,14 @@ function renderApplicationDetailsDrawer() {
                 >
                   Application Review
                 </p>
-  
+
                 <h2
                   id="application-drawer-title"
                   class="mt-1 truncate font-display text-2xl text-brand-cream"
                   x-text="selectedApplication.customer_name"
                 ></h2>
               </div>
-  
+
               <button
                 type="button"
                 class="grid size-10 shrink-0 place-items-center rounded-full border border-brand-border text-brand-cream transition hover:border-brand-gold hover:text-brand-gold"
@@ -1627,7 +1635,7 @@ function renderApplicationDetailsDrawer() {
                 </svg>
               </button>
             </div>
-  
+
             <div class="space-y-5 p-5 sm:p-7">
               <section
                 class="rounded-2xl border border-brand-border bg-brand-black p-5"
@@ -1641,7 +1649,7 @@ function renderApplicationDetailsDrawer() {
                     >
                       Selected Package
                     </p>
-  
+
                     <h3
                       class="mt-2 font-display text-3xl text-brand-cream"
                       x-text="
@@ -1650,7 +1658,7 @@ function renderApplicationDetailsDrawer() {
                       "
                     ></h3>
                   </div>
-  
+
                   <strong
                     class="font-display text-3xl text-brand-gold"
                     x-text="
@@ -1660,7 +1668,7 @@ function renderApplicationDetailsDrawer() {
                     "
                   ></strong>
                 </div>
-  
+
                 <div
                   class="mt-5 border-t border-brand-border pt-5"
                 >
@@ -1681,7 +1689,7 @@ function renderApplicationDetailsDrawer() {
     "
     aria-hidden="true"
   ></span>
-  
+
                     <span
                       x-text="
                         applicationStatusLabels[
@@ -1692,7 +1700,7 @@ function renderApplicationDetailsDrawer() {
                   </span>
                 </div>
               </section>
-  
+
               <section
                 class="rounded-2xl border border-brand-border bg-brand-black p-5"
               >
@@ -1701,7 +1709,7 @@ function renderApplicationDetailsDrawer() {
                 >
                   Customer Information
                 </p>
-  
+
                 <dl
                   class="mt-4 grid gap-4 sm:grid-cols-2"
                 >
@@ -1709,7 +1717,7 @@ function renderApplicationDetailsDrawer() {
                     <dt class="text-xs text-brand-muted">
                       Full name
                     </dt>
-  
+
                     <dd
                       class="mt-1 text-sm font-semibold text-brand-cream"
                       x-text="
@@ -1717,12 +1725,12 @@ function renderApplicationDetailsDrawer() {
                       "
                     ></dd>
                   </div>
-  
+
                   <div>
                     <dt class="text-xs text-brand-muted">
                       Mobile number
                     </dt>
-  
+
                     <dd
                       class="mt-1 text-sm font-semibold text-brand-cream"
                       x-text="
@@ -1730,12 +1738,12 @@ function renderApplicationDetailsDrawer() {
                       "
                     ></dd>
                   </div>
-  
+
                   <div class="sm:col-span-2">
                     <dt class="text-xs text-brand-muted">
                       Email address
                     </dt>
-  
+
                     <dd
                       class="mt-1 break-all text-sm font-semibold text-brand-cream"
                       x-text="
@@ -1745,7 +1753,7 @@ function renderApplicationDetailsDrawer() {
                   </div>
                 </dl>
               </section>
-  
+
               <section
                 class="rounded-2xl border border-brand-border bg-brand-black p-5"
               >
@@ -1754,7 +1762,7 @@ function renderApplicationDetailsDrawer() {
                 >
                   Payment Information
                 </p>
-  
+
                 <dl
                   class="mt-4 grid gap-4 sm:grid-cols-2"
                 >
@@ -1762,7 +1770,7 @@ function renderApplicationDetailsDrawer() {
                     <dt class="text-xs text-brand-muted">
                       Payment method
                     </dt>
-  
+
                     <dd
                       class="mt-1 text-sm font-semibold text-brand-cream"
                       x-text="
@@ -1773,12 +1781,12 @@ function renderApplicationDetailsDrawer() {
                       "
                     ></dd>
                   </div>
-  
+
                   <div>
                     <dt class="text-xs text-brand-muted">
                       Provider
                     </dt>
-  
+
                     <dd
                       class="mt-1 text-sm font-semibold text-brand-cream"
                       x-text="
@@ -1787,12 +1795,12 @@ function renderApplicationDetailsDrawer() {
                       "
                     ></dd>
                   </div>
-  
+
                   <div>
                     <dt class="text-xs text-brand-muted">
                       Sender name
                     </dt>
-  
+
                     <dd
                       class="mt-1 text-sm font-semibold text-brand-cream"
                       x-text="
@@ -1800,12 +1808,12 @@ function renderApplicationDetailsDrawer() {
                       "
                     ></dd>
                   </div>
-  
+
                   <div>
                     <dt class="text-xs text-brand-muted">
                       Reference number
                     </dt>
-  
+
                     <dd
                       class="mt-1 break-all text-sm font-semibold text-brand-cream"
                       x-text="
@@ -1815,7 +1823,7 @@ function renderApplicationDetailsDrawer() {
                   </div>
                 </dl>
               </section>
-  
+
               <section
                 class="rounded-2xl border border-brand-border bg-brand-black p-5"
               >
@@ -1824,7 +1832,7 @@ function renderApplicationDetailsDrawer() {
                 >
                   Payment Proof
                 </p>
-  
+
                 <div
                   x-show="
                     selectedApplication.payment_proof_url
@@ -1839,7 +1847,7 @@ function renderApplicationDetailsDrawer() {
                     class="max-h-80 w-full object-contain"
                   >
                 </div>
-  
+
                 <div
                   x-show="
                     !selectedApplication.payment_proof_url
@@ -1851,7 +1859,7 @@ function renderApplicationDetailsDrawer() {
                   >
                     Preview image not connected yet
                   </p>
-  
+
                   <p
                     class="mt-2 break-all text-xs leading-5 text-brand-muted"
                     x-text="
@@ -1862,7 +1870,7 @@ function renderApplicationDetailsDrawer() {
                   ></p>
                 </div>
               </section>
-  
+
               <section
                 x-show="
                   selectedApplication.status ===
@@ -1875,7 +1883,7 @@ function renderApplicationDetailsDrawer() {
                 >
                   Cancellation Request
                 </p>
-  
+
                 <p
                   class="mt-3 text-sm leading-6 text-brand-cream"
                   x-text="
@@ -1883,7 +1891,7 @@ function renderApplicationDetailsDrawer() {
                     'No reason provided.'
                   "
                 ></p>
-  
+
                 <p
                   class="mt-3 text-xs leading-5 text-brand-muted"
                 >
@@ -1891,7 +1899,7 @@ function renderApplicationDetailsDrawer() {
                   processed manually by the administrator.
                 </p>
               </section>
-  
+
               <section
   class="rounded-2xl border border-brand-border bg-brand-black p-5"
 >
@@ -1900,7 +1908,7 @@ function renderApplicationDetailsDrawer() {
   >
     Admin Review
   </p>
-    
+
   <div
     x-show="
       selectedApplication.status ===
@@ -1915,7 +1923,7 @@ function renderApplicationDetailsDrawer() {
     >
       Reject Payment
     </button>
-    
+
     <button
       type="button"
       class="inline-flex min-h-11 items-center justify-center rounded-full bg-emerald-600 px-5 text-sm font-semibold text-white transition hover:bg-emerald-500"
@@ -1924,7 +1932,7 @@ function renderApplicationDetailsDrawer() {
       Approve Membership
     </button>
   </div>
-    
+
   <div
     x-show="
       selectedApplication.status ===
@@ -1941,7 +1949,7 @@ function renderApplicationDetailsDrawer() {
     >
       Decline Cancellation
     </button>
-    
+
     <button
       type="button"
       class="inline-flex min-h-11 items-center justify-center rounded-full bg-red-700 px-5 text-sm font-semibold text-white transition hover:bg-red-600"
@@ -1952,7 +1960,7 @@ function renderApplicationDetailsDrawer() {
       Approve Cancellation
     </button>
   </div>
-    
+
   <div
     x-show="
       selectedApplication.status === 'approved' ||
@@ -1969,14 +1977,14 @@ function renderApplicationDetailsDrawer() {
         ] || selectedApplication.status
       "
     ></p>
-    
+
     <p
       class="mt-2 text-xs leading-5 text-brand-muted"
     >
       This application has already been reviewed in the
       current frontend preview session.
     </p>
-    
+
     <div
       x-show="selectedApplication.admin_note"
       class="mt-4 border-t border-brand-border pt-4"
@@ -1986,12 +1994,12 @@ function renderApplicationDetailsDrawer() {
       >
         Admin Note
       </p>
-    
+
       <p
         class="mt-2 text-sm leading-6 text-brand-cream"
         x-text="selectedApplication.admin_note"
       ></p>
-    
+
       <p
         class="mt-3 text-xs text-brand-muted"
         x-text="
@@ -2004,7 +2012,7 @@ function renderApplicationDetailsDrawer() {
       ></p>
     </div>
   </div>
-    
+
   <form
     x-show="reviewPanelOpen"
     x-transition
@@ -2015,19 +2023,19 @@ function renderApplicationDetailsDrawer() {
       class="font-display text-2xl text-brand-cream"
       x-text="reviewActionTitle"
     ></h3>
-    
+
     <p
       class="mt-2 text-xs leading-5 text-brand-muted"
       x-text="reviewActionDescription"
     ></p>
-    
+
     <label
       for="admin-review-note"
       class="mt-4 block text-[0.62rem] font-semibold uppercase tracking-[0.14em] text-brand-muted"
     >
       Admin Note
     </label>
-    
+
     <textarea
       id="admin-review-note"
       x-model="reviewNote"
@@ -2036,14 +2044,14 @@ function renderApplicationDetailsDrawer() {
       placeholder="Enter the reason or review note"
       class="mt-2 w-full resize-none rounded-xl border border-brand-border bg-brand-black px-4 py-3 text-sm leading-6 text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
     ></textarea>
-    
+
     <p
       x-show="reviewError"
       x-text="reviewError"
       class="mt-2 text-xs leading-5 text-red-300"
       role="alert"
     ></p>
-    
+
     <div class="mt-4 grid gap-3 sm:grid-cols-2">
       <button
         type="button"
@@ -2052,7 +2060,7 @@ function renderApplicationDetailsDrawer() {
       >
         Go Back
       </button>
-    
+
       <button
         type="submit"
         class="inline-flex min-h-11 items-center justify-center rounded-full px-4 text-sm font-semibold text-white transition"
@@ -2070,9 +2078,9 @@ function renderApplicationDetailsDrawer() {
     </div>
   </form>
 </section>
-  
+
   ${renderAdminPackageFulfillmentPanel()}
-  
+
             </div>
           </div>
         </template>
@@ -2082,16 +2090,22 @@ function renderApplicationDetailsDrawer() {
 
 Alpine.data('adminDashboard', () => ({
   applications: adminMembershipApplications,
-  
+
   applicationStatusLabels:
   membershipStatusLabels,
-  
+
   membershipFulfillmentStatusLabels,
-  
+
   paymentMethodLabels,
-  
+
   orders: [],
 
+  adminCustomers: [],
+  adminCustomersLoading: true,
+  adminCustomersError: '',
+  savingAvailabilityProductId: null,
+  availabilitySaveError: '',
+  availabilitySaveMessage: '',
   liveProducts: [],
   liveProductsLoading: true,
   liveProductsError: '',
@@ -2108,99 +2122,99 @@ Alpine.data('adminDashboard', () => ({
   liveOrdersLoading: false,
 
   liveOrdersError: '',
-  
+
   inventoryProducts: adminInventoryProducts,
-  
+
   packageSupplies: adminPackageSupplies,
-  
+
   inventorySearch: '',
-  
+
   inventoryStatusFilter: 'all',
-  
+
   selectedInventoryProductId: null,
-  
+
   inventoryAdjustmentOpen: false,
-  
+
   inventoryAdjustmentType: 'restock',
-  
+
   inventoryAdjustmentQuantity: '',
-  
+
   inventoryAdjustmentReason: '',
-  
+
   inventoryAdjustmentError: '',
-  
+
   inventoryFeedback: '',
-  
+
   inventoryMovements: [],
-  
+
   inventoryMovementFilter: 'all',
-  
+
   salesDateFilter: 'all',
   salesStatusFilter: 'all',
   salesCustomerTypeFilter: 'all',
-  
+
   approvedOrderStatuses: [
     'processing',
     'shipped',
     'delivered',
   ],
-  
+
   orderStatusLabels,
-  
+
   fulfillmentTypeLabels,
-  
+
   orderPaymentMethodLabels,
-  
+
   selectedApplicationId: null,
-  
+
   applicationDetailsOpen: false,
-  
+
   applicationSearch: '',
-  
+
   applicationStatusFilter: 'all',
-  
+
   selectedOrderId: null,
-  
+
   orderDetailsOpen: false,
-  
+
   orderSearch: '',
-  
+
   orderStatusFilter: 'all',
-  
+
   orderReviewPanelOpen: false,
   orderReviewAction: '',
   orderReviewNote: '',
   orderReviewError: '',
-  
+
   reviewPanelOpen: false,
-  
+
   reviewAction: '',
-  
+
   reviewNote: '',
-  
+
   reviewError: '',
-  
+
   packageAllocationQuantities: {},
-  
+
   packageAllocationError: '',
-  
+
   packageFulfillmentAction: '',
-  
+
   packageFulfillmentError: '',
-  
+
   activePage: 'overview',
-  
+
   mobileMenuOpen: false,
-  
+
   get filteredApplications() {
     const normalizedSearch =
     this.applicationSearch.trim().toLowerCase()
-    
+
     return this.applications.filter((application) => {
       const matchesStatus =
       this.applicationStatusFilter === 'all' ||
       application.status === this.applicationStatusFilter
-      
+
       const searchableContent = [
         application.customer_name,
         application.customer_email,
@@ -2212,15 +2226,15 @@ Alpine.data('adminDashboard', () => ({
       .filter(Boolean)
       .join(' ')
       .toLowerCase()
-      
+
       const matchesSearch =
       !normalizedSearch ||
       searchableContent.includes(normalizedSearch)
-      
+
       return matchesStatus && matchesSearch
     })
   },
-  
+
   get selectedApplication() {
     return (
       this.applications.find(
@@ -2229,7 +2243,7 @@ Alpine.data('adminDashboard', () => ({
       ) || null
     )
   },
-  
+
   get packageAllocationTotal() {
     return this.inventoryProducts.reduce(
       (total, product) => {
@@ -2239,31 +2253,31 @@ Alpine.data('adminDashboard', () => ({
           ],
           10,
         )
-        
+
         if (
           !Number.isInteger(quantity) ||
           quantity <= 0
         ) {
           return total
         }
-        
+
         return total + quantity
       },
       0,
     )
   },
-  
+
   get packageAllocationProgress() {
     const requiredQuantity = Number(
       this.selectedApplication
       ?.package
       ?.productQuantity || 0,
     )
-    
+
     if (requiredQuantity <= 0) {
       return 0
     }
-    
+
     return Math.min(
       100,
       Math.round(
@@ -2274,14 +2288,14 @@ Alpine.data('adminDashboard', () => ({
       ),
     )
   },
-  
+
   get canConfirmPackageAllocation() {
     const application =
     this.selectedApplication
-    
+
     const selectedPackage =
     application?.package
-    
+
     if (
       !application ||
       !selectedPackage ||
@@ -2290,11 +2304,11 @@ Alpine.data('adminDashboard', () => ({
     ) {
       return false
     }
-    
+
     const requiredQuantity = Number(
       selectedPackage.productQuantity || 0,
     )
-    
+
     if (
       requiredQuantity <= 0 ||
       this.packageAllocationTotal !==
@@ -2302,7 +2316,7 @@ Alpine.data('adminDashboard', () => ({
     ) {
       return false
     }
-    
+
     const productQuantitiesAreValid =
     this.inventoryProducts.every(
       (product) => {
@@ -2310,13 +2324,13 @@ Alpine.data('adminDashboard', () => ({
         this.packageAllocationQuantities[
           product.id
         ]
-        
+
         const quantity =
         rawQuantity === '' ||
         rawQuantity === undefined
         ? 0
         : Number(rawQuantity)
-        
+
         return (
           Number.isInteger(quantity) &&
           quantity >= 0 &&
@@ -2325,11 +2339,11 @@ Alpine.data('adminDashboard', () => ({
         )
       },
     )
-    
+
     if (!productQuantitiesAreValid) {
       return false
     }
-    
+
     return selectedPackage
     .fixedInventoryItems
     .every((inclusion) => {
@@ -2337,37 +2351,37 @@ Alpine.data('adminDashboard', () => ({
       this.packageSupplyStock(
         inclusion.inventoryItemId,
       )
-      
+
       return (
         availableStock >=
         Number(inclusion.quantity || 0)
       )
     })
   },
-  
+
   get pendingVerificationCount() {
     return this.applications.filter(
       (application) =>
         application.status === 'pending-verification',
     ).length
   },
-  
+
   get cancellationRequestCount() {
     return this.applications.filter(
       (application) =>
         application.status === 'cancellation-requested',
     ).length
   },
-  
+
   get filteredOrders() {
     const normalizedSearch =
     this.orderSearch.trim().toLowerCase()
-    
+
     return this.orders.filter((order) => {
       const matchesStatus =
       this.orderStatusFilter === 'all' ||
       order.status === this.orderStatusFilter
-      
+
       const searchableContent = [
         order.order_number,
         order.customer_name,
@@ -2382,21 +2396,77 @@ Alpine.data('adminDashboard', () => ({
       .filter(Boolean)
       .join(' ')
       .toLowerCase()
-      
+
       const matchesSearch =
       !normalizedSearch ||
       searchableContent.includes(normalizedSearch)
-      
+
       return matchesStatus && matchesSearch
     })
   },
-  
+
   get selectedOrder() {
     return (
       this.orders.find(
         (order) => order.id === this.selectedOrderId,
       ) || null
     )
+  },
+
+  async loadAdminCustomers() {
+    this.adminCustomersLoading = true
+    this.adminCustomersError = ''
+
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select(
+          'id, first_name, last_name, email, mobile_number, customer_type, membership_status, account_status',
+        )
+        .eq('role', 'customer')
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+      this.adminCustomers = data ?? []
+    } catch (error) {
+      console.error('Unable to load admin customers:', error)
+      this.adminCustomersError = 'Unable to load customers. Please refresh.'
+      this.adminCustomers = []
+    } finally {
+      this.adminCustomersLoading = false
+    }
+  },
+
+  async toggleProductAvailability(product) {
+    if (this.savingAvailabilityProductId !== null) return
+
+    this.availabilitySaveError = ''
+    this.availabilitySaveMessage = ''
+
+    const nextActive = !product.is_active
+    this.savingAvailabilityProductId = product.id
+
+    try {
+      const { data, error } = await supabase.rpc(
+        'admin_set_product_active',
+        {
+          p_product_id: product.id,
+          p_is_active: nextActive,
+        },
+      )
+
+      if (error) throw error
+
+      product.is_active = data === true
+      this.availabilitySaveMessage =
+        `${product.name} is now ${product.is_active ? 'active' : 'inactive'}.`
+    } catch (error) {
+      console.error('Unable to change product availability:', error)
+      this.availabilitySaveError =
+        'Unable to change product availability. Please refresh and try again.'
+    } finally {
+      this.savingAvailabilityProductId = null
+    }
   },
 
   async loadLiveProducts() {
@@ -2500,7 +2570,7 @@ Alpine.data('adminDashboard', () => ({
         order.status === 'pending-verification',
     ).length
   },
-  
+
   get approvedOrders() {
     return this.orders.filter(
       (order) =>
@@ -2509,33 +2579,33 @@ Alpine.data('adminDashboard', () => ({
       ),
     )
   },
-  
+
   approvedOrderDate(order) {
     const approvedDateValue =
     order.approved_at ||
     order.reviewed_at ||
     order.updated_at
-    
+
     if (!approvedDateValue) {
       return null
     }
-    
+
     const approvedDate =
     new Date(approvedDateValue)
-    
+
     if (Number.isNaN(approvedDate.getTime())) {
       return null
     }
-    
+
     return approvedDate
   },
-  
+
   approvedSalesBetween(startDate, endDate) {
     return this.approvedOrders.reduce(
       (total, order) => {
         const approvedDate =
         this.approvedOrderDate(order)
-        
+
         if (
           !approvedDate ||
           approvedDate < startDate ||
@@ -2543,7 +2613,7 @@ Alpine.data('adminDashboard', () => ({
         ) {
           return total
         }
-        
+
         return (
           total +
           Number(order.subtotal || 0)
@@ -2552,7 +2622,7 @@ Alpine.data('adminDashboard', () => ({
       0,
     )
   },
-  
+
   get approvedSalesTotal() {
     return this.approvedOrders.reduce(
       (total, order) =>
@@ -2560,56 +2630,56 @@ Alpine.data('adminDashboard', () => ({
       0,
     )
   },
-  
+
   get dailyApprovedSales() {
     const now = new Date()
-    
+
     const startOfToday = new Date(now)
     startOfToday.setHours(0, 0, 0, 0)
-    
+
     return this.approvedSalesBetween(
       startOfToday,
       now,
     )
   },
-  
+
   get weeklyApprovedSales() {
     const now = new Date()
-    
+
     const startOfWeek = new Date(now)
     const daysSinceMonday =
     (startOfWeek.getDay() + 6) % 7
-    
+
     startOfWeek.setDate(
       startOfWeek.getDate() -
       daysSinceMonday,
     )
-    
+
     startOfWeek.setHours(0, 0, 0, 0)
-    
+
     return this.approvedSalesBetween(
       startOfWeek,
       now,
     )
   },
-  
+
   get monthlyApprovedSales() {
     const now = new Date()
-    
+
     const startOfMonth = new Date(
       now.getFullYear(),
       now.getMonth(),
       1,
     )
-    
+
     startOfMonth.setHours(0, 0, 0, 0)
-    
+
     return this.approvedSalesBetween(
       startOfMonth,
       now,
     )
   },
-  
+
   hasConfirmedUnitCost(item) {
     if (
       item.unit_cost === null ||
@@ -2618,20 +2688,20 @@ Alpine.data('adminDashboard', () => ({
     ) {
       return false
     }
-    
+
     const unitCost = Number(item.unit_cost)
-    
+
     return (
       Number.isFinite(unitCost) &&
       unitCost >= 0
     )
   },
-  
+
   get approvedProductCost() {
     if (this.approvedOrders.length === 0) {
       return 0
     }
-    
+
     const hasMissingCost =
     this.approvedOrders.some((order) =>
       order.items.some(
@@ -2639,11 +2709,11 @@ Alpine.data('adminDashboard', () => ({
         !this.hasConfirmedUnitCost(item),
     ),
   )
-  
+
   if (hasMissingCost) {
     return null
   }
-  
+
   return this.approvedOrders.reduce(
     (orderTotal, order) => {
       const itemCost = order.items.reduce(
@@ -2653,7 +2723,7 @@ Alpine.data('adminDashboard', () => ({
         Number(item.quantity || 0),
         0,
       )
-      
+
       return orderTotal + itemCost
     },
     0,
@@ -2664,7 +2734,7 @@ get estimatedGrossProfit() {
   if (this.approvedProductCost === null) {
     return null
   }
-  
+
   return (
     this.approvedSalesTotal -
     this.approvedProductCost
@@ -2681,7 +2751,7 @@ get approvedUnitsSold() {
         Number(item.quantity || 0),
         0,
       )
-      
+
       return orderTotal + itemQuantity
     },
     0,
@@ -2718,18 +2788,18 @@ get filteredInventoryProducts() {
   this.inventorySearch
   .trim()
   .toLowerCase()
-  
+
   return this.inventoryProducts.filter(
     (product) => {
       const productStatus =
       this.inventoryStatus(product)
-      
+
       const matchesStatus =
       this.inventoryStatusFilter ===
       'all' ||
       productStatus ===
       this.inventoryStatusFilter
-      
+
       const searchableContent = [
         product.name,
         product.sku,
@@ -2739,13 +2809,13 @@ get filteredInventoryProducts() {
       .filter(Boolean)
       .join(' ')
       .toLowerCase()
-      
+
       const matchesSearch =
       !normalizedSearch ||
       searchableContent.includes(
         normalizedSearch,
       )
-      
+
       return matchesStatus && matchesSearch
     },
   )
@@ -2754,18 +2824,18 @@ get filteredInventoryProducts() {
 inventoryStatus(product) {
   const stockQuantity =
   Number(product.stockQuantity || 0)
-  
+
   const lowStockThreshold =
   Number(product.lowStockThreshold || 0)
-  
+
   if (stockQuantity <= 0) {
     return 'out-of-stock'
   }
-  
+
   if (stockQuantity <= lowStockThreshold) {
     return 'low-stock'
   }
-  
+
   return 'in-stock'
 },
 
@@ -2775,7 +2845,7 @@ inventoryStatusLabel(status) {
     'low-stock': 'Low Stock',
     'out-of-stock': 'Out of Stock',
   }
-  
+
   return statusLabels[status] || status
 },
 
@@ -2783,14 +2853,14 @@ inventoryStatusBadgeClass(status) {
   const statusClasses = {
     'in-stock':
     'border-emerald-500/30 bg-emerald-500/10 text-emerald-300',
-    
+
     'low-stock':
     'border-amber-500/30 bg-amber-500/10 text-amber-300',
-    
+
     'out-of-stock':
     'border-red-500/30 bg-red-500/10 text-red-300',
   }
-  
+
   return (
     statusClasses[status] ||
     'border-brand-border text-brand-muted'
@@ -2803,7 +2873,7 @@ inventoryStatusDotClass(status) {
     'low-stock': 'bg-amber-400',
     'out-of-stock': 'bg-red-400',
   }
-  
+
   return (
     statusClasses[status] ||
     'bg-brand-muted'
@@ -2814,7 +2884,7 @@ get filteredInventoryMovements() {
   if (this.inventoryMovementFilter === 'all') {
     return this.inventoryMovements
   }
-  
+
   return this.inventoryMovements.filter(
     (movement) =>
       movement.type ===
@@ -2826,7 +2896,7 @@ get filteredSalesOrders() {
   let filteredOrders = [
     ...this.orders,
   ]
-  
+
   if (this.salesStatusFilter !== 'all') {
     filteredOrders =
     filteredOrders.filter(
@@ -2835,7 +2905,7 @@ get filteredSalesOrders() {
       this.salesStatusFilter,
     )
   }
-  
+
   if (
     this.salesCustomerTypeFilter !== 'all'
   ) {
@@ -2846,21 +2916,21 @@ get filteredSalesOrders() {
       this.salesCustomerTypeFilter,
     )
   }
-  
+
   if (this.salesDateFilter !== 'all') {
     const now = new Date()
-    
+
     filteredOrders =
     filteredOrders.filter((order) => {
       const orderDate =
       new Date(order.submitted_at)
-      
+
       if (
         Number.isNaN(orderDate.getTime())
       ) {
         return false
       }
-      
+
       if (
         this.salesDateFilter === 'today'
       ) {
@@ -2869,32 +2939,32 @@ get filteredSalesOrders() {
           now.toDateString()
         )
       }
-      
+
       const dateRangeDays = {
         '7-days': 7,
         '30-days': 30,
       }
-      
+
       const selectedDays =
       dateRangeDays[
         this.salesDateFilter
       ]
-      
+
       if (!selectedDays) {
         return true
       }
-      
+
       const cutoffDate = new Date(now)
-      
+
       cutoffDate.setDate(
         cutoffDate.getDate() -
         selectedDays,
       )
-      
+
       return orderDate >= cutoffDate
     })
   }
-  
+
   return filteredOrders.sort(
     (firstOrder, secondOrder) =>
       new Date(
@@ -2926,11 +2996,11 @@ orderProductCost(order) {
     (item) =>
       !this.hasConfirmedUnitCost(item),
   )
-  
+
   if (hasMissingCost) {
     return null
   }
-  
+
   return order.items.reduce(
     (totalCost, item) =>
       totalCost +
@@ -2944,14 +3014,14 @@ orderEstimatedGrossProfit(order) {
   if (!this.isRecognizedSalesOrder(order)) {
     return null
   }
-  
+
   const productCost =
   this.orderProductCost(order)
-  
+
   if (productCost === null) {
     return null
   }
-  
+
   return (
     this.orderProductSales(order) -
     productCost
@@ -2962,17 +3032,17 @@ salesRecognitionLabel(order) {
   const uncountedLabels = {
     'pending-verification':
     'Waiting for approval',
-    
+
     rejected:
     'Rejected — not counted',
-    
+
     cancelled:
     'Cancelled — reversed',
-    
+
     refunded:
     'Refunded — reversed',
   }
-  
+
   return (
     uncountedLabels[order.status] ||
     'Not counted in sales'
@@ -2984,7 +3054,7 @@ get selectedInventoryProduct() {
     ...this.inventoryProducts,
     ...this.packageSupplies,
   ]
-  
+
   return (
     allInventoryItems.find(
       (inventoryItem) =>
@@ -2998,25 +3068,25 @@ get projectedInventoryStock() {
   if (!this.selectedInventoryProduct) {
     return 0
   }
-  
+
   const currentStock = Number(
     this.selectedInventoryProduct
     .stockQuantity || 0,
   )
-  
+
   const quantity = Number.parseInt(
     this.inventoryAdjustmentQuantity,
     10,
   )
-  
+
   if (!Number.isInteger(quantity) || quantity <= 0) {
     return currentStock
   }
-  
+
   if (this.inventoryAdjustmentType === 'remove') {
     return currentStock - quantity
   }
-  
+
   return currentStock + quantity
 },
 
@@ -3034,7 +3104,7 @@ unitsSoldForProduct(productId) {
         Number(item.quantity || 0),
         0,
       )
-      
+
       return orderTotal + itemQuantity
     },
     0,
@@ -3052,7 +3122,7 @@ inventoryMovementTypeLabel(type) {
     'package-fulfillment':
     'Package Fulfillment',
   }
-  
+
   return typeLabels[type] || type
 },
 
@@ -3060,26 +3130,26 @@ inventoryMovementBadgeClass(type) {
   const typeClasses = {
     restock:
     'border-emerald-500/30 bg-emerald-500/10 text-emerald-300',
-    
+
     add:
     'border-blue-500/30 bg-blue-500/10 text-blue-300',
-    
+
     remove:
     'border-red-500/30 bg-red-500/10 text-red-300',
-    
+
     'order-sale':
     'border-violet-500/30 bg-violet-500/10 text-violet-300',
-    
+
     'cancellation-return':
     'border-amber-500/30 bg-amber-500/10 text-amber-300',
-    
+
     'refund-return':
     'border-emerald-500/30 bg-emerald-500/10 text-emerald-300',
-    
+
     'package-fulfillment':
     'border-brand-gold/40 bg-brand-gold/10 text-brand-gold',
   }
-  
+
   return (
     typeClasses[type] ||
     'border-brand-border text-brand-muted'
@@ -3097,22 +3167,22 @@ openInventoryAdjustment(
     (inventoryItem) =>
       inventoryItem.id === inventoryItemId,
   )
-  
+
   if (!inventoryItemExists) {
     return
   }
-  
+
   this.selectedInventoryProductId =
   inventoryItemId
-  
+
   this.inventoryAdjustmentType =
   adjustmentType
-  
+
   this.inventoryAdjustmentQuantity = ''
   this.inventoryAdjustmentReason = ''
   this.inventoryAdjustmentError = ''
   this.inventoryAdjustmentOpen = true
-  
+
   document.body.classList.add(
     'overflow-hidden',
   )
@@ -3121,7 +3191,7 @@ openInventoryAdjustment(
 closeInventoryAdjustment() {
   this.inventoryAdjustmentOpen = false
   this.inventoryAdjustmentError = ''
-  
+
   if (
     !this.mobileMenuOpen &&
     !this.applicationDetailsOpen &&
@@ -3131,7 +3201,7 @@ closeInventoryAdjustment() {
       'overflow-hidden',
     )
   }
-  
+
   window.setTimeout(() => {
     if (!this.inventoryAdjustmentOpen) {
       this.selectedInventoryProductId = null
@@ -3144,86 +3214,86 @@ closeInventoryAdjustment() {
 saveInventoryAdjustment() {
   const inventoryItem =
   this.selectedInventoryProduct
-  
+
   if (!inventoryItem) {
     this.inventoryAdjustmentError =
     'The selected inventory item is unavailable.'
-    
+
     return
   }
-  
+
   const quantity = Number.parseInt(
     this.inventoryAdjustmentQuantity,
     10,
   )
-  
+
   if (
     !Number.isInteger(quantity) ||
     quantity <= 0
   ) {
     this.inventoryAdjustmentError =
     'Enter a valid quantity greater than zero.'
-    
+
     return
   }
-  
+
   const reason =
   this.inventoryAdjustmentReason.trim()
-  
+
   if (!reason) {
     this.inventoryAdjustmentError =
     'Enter a reason for this stock update.'
-    
+
     return
   }
-  
+
   const previousStock = Number(
     inventoryItem.stockQuantity || 0,
   )
-  
+
   const stockChange =
   this.inventoryAdjustmentType === 'remove'
   ? -quantity
   : quantity
-  
+
   const newStock =
   previousStock + stockChange
-  
+
   if (newStock < 0) {
     this.inventoryAdjustmentError =
     'The quantity to remove is greater than the available stock.'
-    
+
     return
   }
-  
+
   const isPackageSupply =
   this.packageSupplies.some(
     (supply) =>
       supply.id === inventoryItem.id,
   )
-  
+
   const movement = {
     id: `inventory-movement-${Date.now()}`,
-    
+
     product_id: inventoryItem.id,
     product_name: inventoryItem.name,
-    
+
     inventory_item_type:
     isPackageSupply
     ? 'package-supply'
     : 'product',
-    
+
     type: this.inventoryAdjustmentType,
-    
+
     quantity: stockChange,
     previous_stock: previousStock,
     new_stock: newStock,
-    
+
     reason,
-    
+
     created_at: new Date().toISOString(),
   }
-  
+
   if (isPackageSupply) {
     this.packageSupplies =
     this.packageSupplies.map(
@@ -3247,17 +3317,17 @@ saveInventoryAdjustment() {
       : product,
     )
   }
-  
+
   this.inventoryMovements.unshift(
     movement,
   )
-  
+
   this.inventoryFeedback =
   `${inventoryItem.name} stock updated ` +
   `from ${previousStock} to ${newStock}.`
-  
+
   this.closeInventoryAdjustment()
-  
+
   window.setTimeout(() => {
     this.inventoryFeedback = ''
   }, 4000)
@@ -3267,23 +3337,23 @@ orderStatusBadgeClass(status) {
   const statusClasses = {
     'pending-verification':
     'border-amber-500/40 bg-amber-500/10 text-amber-300',
-    
+
     processing:
     'border-blue-500/30 bg-blue-500/10 text-blue-300',
-    
+
     shipped:
     'border-violet-500/30 bg-violet-500/10 text-violet-300',
-    
+
     delivered:
     'border-emerald-500/30 bg-emerald-500/10 text-emerald-300',
-    
+
     rejected:
     'border-red-500/30 bg-red-500/10 text-red-300',
-    
+
     cancelled:
     'border-brand-border bg-brand-panel text-brand-muted',
   }
-  
+
   return (
     statusClasses[status] ||
     'border-brand-border bg-brand-panel text-brand-muted'
@@ -3300,7 +3370,7 @@ orderStatusDotClass(status) {
     cancelled: 'bg-brand-muted',
     refunded: 'bg-violet-400',
   }
-  
+
   return (
     statusClasses[status] ||
     'bg-brand-muted'
@@ -3311,19 +3381,19 @@ deductInventoryForOrder(order) {
   if (order.inventory_deducted) {
     return true
   }
-  
+
   const quantitiesByProduct = new Map()
-  
+
   order.items.forEach((item) => {
     const currentQuantity =
     quantitiesByProduct.get(item.product_id) || 0
-    
+
     quantitiesByProduct.set(
       item.product_id,
       currentQuantity + Number(item.quantity || 0),
     )
   })
-  
+
   for (
     const [productId, requiredQuantity]
     of quantitiesByProduct
@@ -3332,52 +3402,52 @@ deductInventoryForOrder(order) {
       (inventoryProduct) =>
         inventoryProduct.id === productId,
     )
-    
+
     if (!product) {
       this.orderReviewError =
       `Product ${productId} was not found in inventory.`
-      
+
       return false
     }
-    
+
     const availableStock = Number(
       product.stockQuantity || 0,
     )
-    
+
     if (availableStock < requiredQuantity) {
       this.orderReviewError =
       `${product.name} only has ` +
       `${availableStock} available stock. ` +
       `${requiredQuantity} unit(s) are required.`
-      
+
       return false
     }
   }
-  
+
   const movementTime = new Date().toISOString()
   const newMovements = []
-  
+
   this.inventoryProducts =
   this.inventoryProducts.map((product) => {
     const soldQuantity =
     quantitiesByProduct.get(product.id) || 0
-    
+
     if (soldQuantity <= 0) {
       return product
     }
-    
+
     const previousStock = Number(
       product.stockQuantity || 0,
     )
-    
+
     const newStock =
     previousStock - soldQuantity
-    
+
     newMovements.push({
       id:
       `inventory-movement-${order.id}-` +
       `${product.id}-${Date.now()}`,
-      
+
       product_id: product.id,
       product_name: product.name,
       type: 'order-sale',
@@ -3390,25 +3460,25 @@ deductInventoryForOrder(order) {
       order_number: order.order_number,
       created_at: movementTime,
     })
-    
+
     return {
       ...product,
       stockQuantity: newStock,
     }
   })
-  
+
   this.inventoryMovements.unshift(
     ...newMovements,
   )
-  
+
   this.inventoryFeedback =
   `${order.order_number} approved. ` +
   `Inventory was updated automatically.`
-  
+
   window.setTimeout(() => {
     this.inventoryFeedback = ''
   }, 4000)
-  
+
   return true
 },
 
@@ -3419,57 +3489,57 @@ restoreInventoryForOrder(order, movementType) {
   ) {
     return true
   }
-  
+
   const quantitiesByProduct = new Map()
-  
+
   order.items.forEach((item) => {
     const currentQuantity =
     quantitiesByProduct.get(item.product_id) || 0
-    
+
     quantitiesByProduct.set(
       item.product_id,
       currentQuantity + Number(item.quantity || 0),
     )
   })
-  
+
   for (const productId of quantitiesByProduct.keys()) {
     const productExists =
     this.inventoryProducts.some(
       (product) => product.id === productId,
     )
-    
+
     if (!productExists) {
       this.orderReviewError =
       `Product ${productId} was not found in inventory.`
-      
+
       return false
     }
   }
-  
+
   const movementTime = new Date().toISOString()
   const newMovements = []
-  
+
   this.inventoryProducts =
   this.inventoryProducts.map((product) => {
     const returnedQuantity =
     quantitiesByProduct.get(product.id) || 0
-    
+
     if (returnedQuantity <= 0) {
       return product
     }
-    
+
     const previousStock = Number(
       product.stockQuantity || 0,
     )
-    
+
     const newStock =
     previousStock + returnedQuantity
-    
+
     newMovements.push({
       id:
       `inventory-return-${order.id}-` +
       `${product.id}-${Date.now()}`,
-      
+
       product_id: product.id,
       product_name: product.name,
       type: movementType,
@@ -3484,17 +3554,17 @@ restoreInventoryForOrder(order, movementType) {
       order_number: order.order_number,
       created_at: movementTime,
     })
-    
+
     return {
       ...product,
       stockQuantity: newStock,
     }
   })
-  
+
   this.inventoryMovements.unshift(
     ...newMovements,
   )
-  
+
   return true
 },
 
@@ -3502,7 +3572,7 @@ openOrderReview(action) {
   if (!this.selectedOrder) {
     return
   }
-  
+
   this.orderReviewAction = action
   this.orderReviewNote = ''
   this.orderReviewError = ''
@@ -3518,21 +3588,21 @@ closeOrderReview() {
 
 submitOrderReview() {
   const order = this.selectedOrder
-  
+
   if (!order) {
     return
   }
-  
+
   const adminNote =
   this.orderReviewNote.trim()
-  
+
   if (!adminNote) {
     this.orderReviewError =
     'Add an admin note before updating this order.'
-    
+
     return
   }
-  
+
   const nextStatusByAction = {
     approve: 'processing',
     reject: 'rejected',
@@ -3542,7 +3612,7 @@ submitOrderReview() {
     cancel: 'cancelled',
     refund: 'refunded',
   }
-  
+
   const allowedActionByStatus = {
     'pending-verification': [
       'approve',
@@ -3560,10 +3630,10 @@ submitOrderReview() {
       'refund',
     ],
   }
-  
+
   const allowedActions =
   allowedActionByStatus[order.status] || []
-  
+
   if (
     !allowedActions.includes(
       this.orderReviewAction,
@@ -3571,90 +3641,90 @@ submitOrderReview() {
   ) {
     this.orderReviewError =
     'This action is not available for the current order status.'
-    
+
     return
   }
-  
+
   const nextStatus =
   nextStatusByAction[
     this.orderReviewAction
   ]
-  
+
   const orderIndex =
   this.orders.findIndex(
     (orderItem) =>
       orderItem.id === order.id,
   )
-  
+
   if (orderIndex === -1 || !nextStatus) {
     this.orderReviewError =
     'Unable to update this order.'
-    
+
     return
   }
-  
+
   if (
     this.orderReviewAction === 'approve' &&
     !this.deductInventoryForOrder(order)
   ) {
     return
   }
-  
+
   const isInventoryReturnAction =
   this.orderReviewAction === 'cancel' ||
   this.orderReviewAction === 'refund'
-  
+
   if (isInventoryReturnAction) {
     const movementType =
     this.orderReviewAction === 'refund'
     ? 'refund-return'
     : 'cancellation-return'
-    
+
     const stockWasRestored =
     this.restoreInventoryForOrder(
       order,
       movementType,
     )
-    
+
     if (!stockWasRestored) {
       return
     }
   }
-  
+
   const reviewedAt =
   new Date().toISOString()
-  
+
   this.orders[orderIndex] = {
     ...this.orders[orderIndex],
     status: nextStatus,
     admin_note: adminNote,
     reviewed_at: reviewedAt,
-    
+
     inventory_deducted:
     this.orderReviewAction === 'approve'
     ? true
     : this.orders[orderIndex]
     .inventory_deducted,
-    
+
     inventory_deducted_at:
     this.orderReviewAction === 'approve'
     ? reviewedAt
     : this.orders[orderIndex]
     .inventory_deducted_at,
-    
+
     inventory_restored:
     isInventoryReturnAction
     ? true
     : this.orders[orderIndex]
     .inventory_restored,
-    
+
     inventory_restored_at:
     isInventoryReturnAction
     ? reviewedAt
     : this.orders[orderIndex]
     .inventory_restored_at,
   }
-  
+
   this.closeOrderReview()
 },
 
@@ -3668,14 +3738,14 @@ openOrderDetails(orderId) {
 closeOrderDetails() {
   this.closeOrderReview()
   this.orderDetailsOpen = false
-  
+
   if (
     !this.mobileMenuOpen &&
     !this.applicationDetailsOpen
   ) {
     document.body.classList.remove('overflow-hidden')
   }
-  
+
   window.setTimeout(() => {
     if (!this.orderDetailsOpen) {
       this.selectedOrderId = null
@@ -3687,46 +3757,46 @@ confirmPackageAllocation() {
   if (!this.validatePackageAllocation()) {
     return
   }
-  
+
   const application =
   this.selectedApplication
-  
+
   const selectedPackage =
   application?.package
-  
+
   if (!application || !selectedPackage) {
     this.packageAllocationError =
     'Package information is unavailable.'
-    
+
     return
   }
-  
+
   if (
     application.package_inventory_deducted
   ) {
     this.packageAllocationError =
     'This package has already been confirmed.'
-    
+
     return
   }
-  
+
   const applicationIndex =
   this.applications.findIndex(
     (applicationItem) =>
       applicationItem.id ===
     application.id,
   )
-  
+
   if (applicationIndex === -1) {
     this.packageAllocationError =
     'The membership application could not be found.'
-    
+
     return
   }
-  
+
   const confirmedAt =
   new Date().toISOString()
-  
+
   const packageAllocation =
   this.inventoryProducts
   .map((product) => ({
@@ -3743,24 +3813,24 @@ confirmPackageAllocation() {
     (allocation) =>
       allocation.quantity > 0,
   )
-  
+
   const packageSupplyAllocation =
   selectedPackage.fixedInventoryItems.map(
     (inclusion) => ({
       inventory_item_id:
       inclusion.inventoryItemId,
-      
+
       inventory_item_name:
       inclusion.name,
-      
+
       quantity: Number(
         inclusion.quantity || 0,
       ),
     }),
   )
-  
+
   const newMovements = []
-  
+
   this.inventoryProducts =
   this.inventoryProducts.map(
     (product) => {
@@ -3770,53 +3840,53 @@ confirmPackageAllocation() {
           allocationItem.product_id ===
         product.id,
       )
-      
+
       if (!allocation) {
         return product
       }
-      
+
       const previousStock = Number(
         product.stockQuantity || 0,
       )
-      
+
       const newStock =
       previousStock -
       allocation.quantity
-      
+
       newMovements.push({
         id:
         `package-product-${application.id}-` +
         `${product.id}-${Date.now()}`,
-        
+
         product_id: product.id,
         product_name: product.name,
-        
+
         inventory_item_type: 'product',
-        
+
         type: 'package-fulfillment',
-        
+
         quantity: -allocation.quantity,
-        
+
         previous_stock: previousStock,
         new_stock: newStock,
-        
+
         reason:
         `${selectedPackage.name} fulfillment ` +
         `for ${application.customer_name}`,
-        
+
         membership_application_id:
         application.id,
-        
+
         created_at: confirmedAt,
       })
-      
+
       return {
         ...product,
         stockQuantity: newStock,
       }
     },
   )
-  
+
   this.packageSupplies =
   this.packageSupplies.map(
     (supply) => {
@@ -3827,92 +3897,92 @@ confirmPackageAllocation() {
         .inventory_item_id ===
         supply.id,
       )
-      
+
       if (!allocation) {
         return supply
       }
-      
+
       const previousStock = Number(
         supply.stockQuantity || 0,
       )
-      
+
       const newStock =
       previousStock -
       allocation.quantity
-      
+
       newMovements.push({
         id:
         `package-supply-${application.id}-` +
         `${supply.id}-${Date.now()}`,
-        
+
         product_id: supply.id,
         product_name: supply.name,
-        
+
         inventory_item_type:
         'package-supply',
-        
+
         type: 'package-fulfillment',
-        
+
         quantity: -allocation.quantity,
-        
+
         previous_stock: previousStock,
         new_stock: newStock,
-        
+
         reason:
         `${selectedPackage.name} fulfillment ` +
         `for ${application.customer_name}`,
-        
+
         membership_application_id:
         application.id,
-        
+
         created_at: confirmedAt,
       })
-      
+
       return {
         ...supply,
         stockQuantity: newStock,
       }
     },
   )
-  
+
   this.applications[applicationIndex] = {
     ...this.applications[applicationIndex],
-    
+
     fulfillment_status:
     'ready-for-packing',
-    
+
     package_allocation:
     packageAllocation,
-    
+
     package_supply_allocation:
     packageSupplyAllocation,
-    
+
     package_inventory_deducted: true,
-    
+
     package_inventory_deducted_at:
     confirmedAt,
-    
+
     package_inventory_restored: false,
-    
+
     package_inventory_restored_at: null,
-    
+
     fulfillment_confirmed_at:
     confirmedAt,
-    
+
     updated_at: confirmedAt,
   }
-  
+
   this.inventoryMovements.unshift(
     ...newMovements,
   )
-  
+
   this.packageAllocationError = ''
-  
+
   this.inventoryFeedback =
   `${selectedPackage.name} package confirmed. ` +
   `${this.packageAllocationTotal} perfume bottles ` +
   `and fixed supplies were deducted.`
-  
+
   window.setTimeout(() => {
     this.inventoryFeedback = ''
   }, 4000)
@@ -3920,22 +3990,22 @@ confirmPackageAllocation() {
 
 openPackageFulfillmentAction(action) {
   const application = this.selectedApplication
-  
+
   if (!application) {
     this.packageFulfillmentError =
     'Application details are unavailable.'
     return
   }
-  
+
   const requiredStatusByAction = {
     ship: 'ready-for-packing',
     unship: 'shipped',
     complete: 'shipped',
   }
-  
+
   const requiredStatus =
   requiredStatusByAction[action]
-  
+
   if (
     !requiredStatus ||
     application.fulfillment_status !==
@@ -3945,7 +4015,7 @@ openPackageFulfillmentAction(action) {
     'This package action is not available for the current status.'
     return
   }
-  
+
   this.packageFulfillmentAction = action
   this.packageFulfillmentError = ''
 },
@@ -3957,30 +4027,30 @@ closePackageFulfillmentAction() {
 
 confirmPackageFulfillmentAction() {
   const application = this.selectedApplication
-  
+
   if (!application) {
     this.packageFulfillmentError =
     'Application details are unavailable.'
     return
   }
-  
+
   const nextStatusByAction = {
     ship: 'shipped',
     unship: 'ready-for-packing',
     complete: 'completed',
   }
-  
+
   const requiredStatusByAction = {
     ship: 'ready-for-packing',
     unship: 'shipped',
     complete: 'shipped',
   }
-  
+
   const action = this.packageFulfillmentAction
   const nextStatus = nextStatusByAction[action]
   const requiredStatus =
   requiredStatusByAction[action]
-  
+
   if (
     !nextStatus ||
     !requiredStatus ||
@@ -3991,26 +4061,26 @@ confirmPackageFulfillmentAction() {
     'This package action is no longer available.'
     return
   }
-  
+
   const applicationIndex =
   this.applications.findIndex(
     (applicationItem) =>
       applicationItem.id === application.id,
   )
-  
+
   if (applicationIndex === -1) {
     this.packageFulfillmentError =
     'The membership application could not be found.'
     return
   }
-  
+
   const updatedAt = new Date().toISOString()
-  
+
   this.applications[applicationIndex] = {
     ...this.applications[applicationIndex],
-    
+
     fulfillment_status: nextStatus,
-    
+
     package_shipped_at:
     action === 'ship'
     ? updatedAt
@@ -4018,16 +4088,16 @@ confirmPackageFulfillmentAction() {
     ? null
     : this.applications[applicationIndex]
     .package_shipped_at || null,
-    
+
     package_completed_at:
     action === 'complete'
     ? updatedAt
     : this.applications[applicationIndex]
     .package_completed_at || null,
-    
+
     updated_at: updatedAt,
   }
-  
+
   this.closePackageFulfillmentAction()
 },
 
@@ -4038,7 +4108,7 @@ get reviewActionTitle() {
     'approve-cancellation': 'Approve cancellation',
     'decline-cancellation': 'Decline cancellation',
   }
-  
+
   return titles[this.reviewAction] || 'Review application'
 },
 
@@ -4046,17 +4116,17 @@ get reviewActionDescription() {
   const descriptions = {
     'approve-membership':
     'The customer membership will be marked as approved.',
-    
+
     'reject-payment':
     'The submitted payment will be rejected and the membership will remain inactive.',
-    
+
     'approve-cancellation':
     'The application will be cancelled. Any applicable refund must still be processed manually.',
-    
+
     'decline-cancellation':
     'The cancellation request will be declined and the application will return to payment verification.',
   }
-  
+
   return descriptions[this.reviewAction] || ''
 },
 
@@ -4064,26 +4134,26 @@ openReviewPanel(actionName) {
   if (!this.selectedApplication) {
     return
   }
-  
+
   const allowedActions = {
     'pending-verification': [
       'approve-membership',
       'reject-payment',
     ],
-    
+
     'cancellation-requested': [
       'approve-cancellation',
       'decline-cancellation',
     ],
   }
-  
+
   const statusActions =
   allowedActions[this.selectedApplication.status] || []
-  
+
   if (!statusActions.includes(actionName)) {
     return
   }
-  
+
   this.reviewAction = actionName
   this.reviewNote = ''
   this.reviewError = ''
@@ -4099,73 +4169,73 @@ closeReviewPanel() {
 
 confirmReviewAction() {
   const normalizedNote = this.reviewNote.trim()
-  
+
   if (!this.selectedApplication) {
     this.reviewError = 'Application details are unavailable.'
     return
   }
-  
+
   if (normalizedNote.length < 3) {
     this.reviewError =
     'Enter a short admin note before confirming.'
     return
   }
-  
+
   const nextStatuses = {
     'approve-membership': 'approved',
     'reject-payment': 'rejected',
     'approve-cancellation': 'cancelled',
     'decline-cancellation': 'pending-verification',
   }
-  
+
   const nextStatus = nextStatuses[this.reviewAction]
-  
+
   if (!nextStatus) {
     this.reviewError = 'Select a valid review action.'
     return
   }
-  
+
   const applicationIndex = this.applications.findIndex(
     (application) =>
       application.id === this.selectedApplicationId,
   )
-  
+
   if (applicationIndex === -1) {
     this.reviewError = 'Application could not be found.'
     return
   }
-  
+
   const reviewedAt =
   new Date().toISOString()
-  
+
   const isMembershipApproval =
   this.reviewAction ===
   'approve-membership'
-  
+
   this.applications[applicationIndex] = {
     ...this.applications[applicationIndex],
-    
+
     status: nextStatus,
-    
+
     admin_note: normalizedNote,
-    
+
     reviewed_at: reviewedAt,
     updated_at: reviewedAt,
-    
+
     approved_at:
     isMembershipApproval
     ? reviewedAt
     : this.applications[
       applicationIndex
     ].approved_at,
-    
+
     membership_activated_at:
     isMembershipApproval
     ? reviewedAt
     : this.applications[
       applicationIndex
     ].membership_activated_at,
-    
+
     fulfillment_status:
     isMembershipApproval
     ? 'pending-allocation'
@@ -4173,7 +4243,7 @@ confirmReviewAction() {
       applicationIndex
     ].fulfillment_status,
   }
-  
+
   this.closeReviewPanel()
 },
 
@@ -4181,23 +4251,23 @@ applicationStatusBadgeClass(status) {
   const statusClasses = {
     'awaiting-payment':
     'border-amber-500/40 bg-amber-500/10 text-amber-300',
-    
+
     'pending-verification':
     'border-amber-500/40 bg-amber-500/10 text-amber-300',
-    
+
     'cancellation-requested':
     'border-red-400/30 bg-red-400/10 text-red-300',
-    
+
     approved:
     'border-emerald-500/30 bg-emerald-500/10 text-emerald-300',
-    
+
     rejected:
     'border-red-500/30 bg-red-500/10 text-red-300',
-    
+
     cancelled:
     'border-brand-border bg-brand-panel text-brand-muted',
   }
-  
+
   return (
     statusClasses[status] ||
     'border-brand-border bg-brand-panel text-brand-muted'
@@ -4213,23 +4283,23 @@ applicationStatusDotClass(status) {
     rejected: 'bg-red-400',
     cancelled: 'bg-brand-muted',
   }
-  
+
   return statusClasses[status] || 'bg-brand-muted'
 },
 
 initializePackageAllocation() {
   const initialQuantities = {}
-  
+
   this.inventoryProducts.forEach(
     (product) => {
       initialQuantities[product.id] = 0
     },
   )
-  
+
   const savedAllocation =
   this.selectedApplication
   ?.package_allocation || []
-  
+
   savedAllocation.forEach((item) => {
     if (
       Object.hasOwn(
@@ -4241,10 +4311,10 @@ initializePackageAllocation() {
       Number(item.quantity || 0)
     }
   })
-  
+
   this.packageAllocationQuantities =
   initialQuantities
-  
+
   this.packageAllocationError = ''
 },
 
@@ -4263,7 +4333,7 @@ packageSupplyStock(supplyId) {
     (packageSupply) =>
       packageSupply.id === supplyId,
   )
-  
+
   return Number(
     supply?.stockQuantity || 0,
   )
@@ -4278,23 +4348,23 @@ updatePackageAllocationQuantity(
     (inventoryProduct) =>
       inventoryProduct.id === productId,
   )
-  
+
   if (!product) {
     this.packageAllocationError =
     'The selected product is unavailable.'
-    
+
     return
   }
-  
+
   const availableStock = Number(
     product.stockQuantity || 0,
   )
-  
+
   const requestedQuantity =
   rawValue === ''
   ? 0
   : Number.parseInt(rawValue, 10)
-  
+
   if (
     !Number.isInteger(requestedQuantity) ||
     requestedQuantity < 0
@@ -4303,103 +4373,103 @@ updatePackageAllocationQuantity(
       ...this.packageAllocationQuantities,
       [productId]: 0,
     }
-    
+
     this.packageAllocationError =
     `Enter a valid quantity for ${product.name}.`
-    
+
     return
   }
-  
+
   const safeQuantity = Math.min(
     requestedQuantity,
     availableStock,
   )
-  
+
   this.packageAllocationQuantities = {
     ...this.packageAllocationQuantities,
     [productId]: safeQuantity,
   }
-  
+
   if (requestedQuantity > availableStock) {
     this.packageAllocationError =
     `${product.name} only has ` +
     `${availableStock} available stock.`
-    
+
     return
   }
-  
+
   this.validatePackageAllocation()
 },
 
 validatePackageAllocation() {
   const application =
   this.selectedApplication
-  
+
   const selectedPackage =
   application?.package
-  
+
   if (!application || !selectedPackage) {
     this.packageAllocationError =
     'Package information is unavailable.'
-    
+
     return false
   }
-  
+
   if (application.status !== 'approved') {
     this.packageAllocationError =
     'The membership payment must be approved before package allocation.'
-    
+
     return false
   }
-  
+
   if (
     application.package_inventory_deducted
   ) {
     this.packageAllocationError =
     'This package has already been confirmed.'
-    
+
     return false
   }
-  
+
   for (const product of this.inventoryProducts) {
     const rawQuantity =
     this.packageAllocationQuantities[
       product.id
     ]
-    
+
     const quantity =
     rawQuantity === '' ||
     rawQuantity === undefined
     ? 0
     : Number(rawQuantity)
-    
+
     if (
       !Number.isInteger(quantity) ||
       quantity < 0
     ) {
       this.packageAllocationError =
       `Enter a valid quantity for ${product.name}.`
-      
+
       return false
     }
-    
+
     const availableStock = Number(
       product.stockQuantity || 0,
     )
-    
+
     if (quantity > availableStock) {
       this.packageAllocationError =
       `${product.name} only has ` +
       `${availableStock} available stock.`
-      
+
       return false
     }
   }
-  
+
   const requiredQuantity = Number(
     selectedPackage.productQuantity || 0,
   )
-  
+
   if (
     this.packageAllocationTotal <
     requiredQuantity
@@ -4407,15 +4477,15 @@ validatePackageAllocation() {
     const remainingQuantity =
     requiredQuantity -
     this.packageAllocationTotal
-    
+
     this.packageAllocationError =
     `Add ${remainingQuantity} more bottle` +
     `${remainingQuantity === 1 ? '' : 's'} ` +
     `to complete this package.`
-    
+
     return false
   }
-  
+
   if (
     this.packageAllocationTotal >
     requiredQuantity
@@ -4423,15 +4493,15 @@ validatePackageAllocation() {
     const excessQuantity =
     this.packageAllocationTotal -
     requiredQuantity
-    
+
     this.packageAllocationError =
     `Remove ${excessQuantity} bottle` +
     `${excessQuantity === 1 ? '' : 's'}. ` +
     `The package limit cannot be exceeded.`
-    
+
     return false
   }
-  
+
   for (
     const inclusion of
     selectedPackage.fixedInventoryItems
@@ -4440,23 +4510,23 @@ validatePackageAllocation() {
     this.packageSupplyStock(
       inclusion.inventoryItemId,
     )
-    
+
     const requiredStock = Number(
       inclusion.quantity || 0,
     )
-    
+
     if (availableStock < requiredStock) {
       this.packageAllocationError =
       `${inclusion.name} only has ` +
       `${availableStock} available. ` +
       `${requiredStock} required.`
-      
+
       return false
     }
   }
-  
+
   this.packageAllocationError = ''
-  
+
   return true
 },
 
@@ -4475,13 +4545,13 @@ formatOptionalMoney(
   ) {
     return fallback
   }
-  
+
   const numericAmount = Number(amount)
-  
+
   if (!Number.isFinite(numericAmount)) {
     return fallback
   }
-  
+
   return adminPesoFormatter.format(
     numericAmount,
   )
@@ -4491,18 +4561,18 @@ formatDate(dateValue) {
   if (!dateValue) {
     return 'Not available'
   }
-  
+
   return adminDateFormatter.format(new Date(dateValue))
 },
 
 openApplicationDetails(applicationId) {
   this.selectedApplicationId =
   applicationId
-  
+
   this.initializePackageAllocation()
-  
+
   this.applicationDetailsOpen = true
-  
+
   document.body.classList.add(
     'overflow-hidden',
   )
@@ -4512,18 +4582,18 @@ closeApplicationDetails() {
   this.closeReviewPanel()
   this.closePackageFulfillmentAction()
   this.applicationDetailsOpen = false
-  
+
   if (
     !this.mobileMenuOpen &&
     !this.orderDetailsOpen
   ) {
     document.body.classList.remove('overflow-hidden')
   }
-  
+
   window.setTimeout(() => {
     if (!this.applicationDetailsOpen) {
       this.selectedApplicationId = null
-      
+
       this.packageAllocationQuantities = {}
       this.packageAllocationError = ''
     }
@@ -4538,13 +4608,13 @@ openPage(pageName) {
   if (!adminPageTitles[pageName]) {
     return
   }
-  
+
   this.closeApplicationDetails()
   this.closeOrderDetails()
   this.closeInventoryAdjustment()
   this.activePage = pageName
   this.closeMobileMenu()
-  
+
   window.scrollTo({
     top: 0,
     behavior: 'smooth',
@@ -4560,7 +4630,7 @@ openMobileMenu() {
 
 closeMobileMenu() {
   this.mobileMenuOpen = false
-  
+
   if (!this.applicationDetailsOpen) {
     document.body.classList.remove('overflow-hidden')
   }
@@ -4627,7 +4697,7 @@ document.title = `Admin Dashboard | ${siteConfig.brand.name}`
 document.querySelector('#admin-app').innerHTML = `
    <div
     x-data="adminDashboard"
-    x-init="loadLiveProducts(); loadStockHistory()"
+    x-init="loadLiveProducts(); loadStockHistory(); loadAdminCustomers()"
     x-cloak
     class="min-h-screen bg-brand-black text-brand-cream"
     @keydown.escape.window="closeMobileMenu(); closeApplicationDetails(); closeOrderDetails(); closeInventoryAdjustment()"
@@ -4964,6 +5034,10 @@ ${renderOrdersPage()}
 
 ${renderAdminSalesInventoryPage()}
 
+${renderAdminCustomersPage()}
+
+${renderAdminProductsPage()}
+
 ${renderAdminReferralsPayoutsPage()}
 
 ${renderAdminPointsAuditPage()}
@@ -4972,11 +5046,13 @@ ${adminNavigationItems
   .filter(
     (item) =>
       item.id !== 'overview' &&
-    item.id !== 'memberships' &&
-    item.id !== 'orders' &&
-    item.id !== 'sales-inventory' &&
-    item.id !== 'referrals-payouts' &&
-    item.id !== 'points-audit',
+      item.id !== 'memberships' &&
+      item.id !== 'orders' &&
+      item.id !== 'sales-inventory' &&
+      item.id !== 'customers' &&
+      item.id !== 'products' &&
+      item.id !== 'referrals-payouts' &&
+      item.id !== 'points-audit',
   )
   .map(
     (item) => `
@@ -4993,14 +5069,14 @@ ${adminNavigationItems
           >
             Admin Management
           </p>
-        
+
           <h1
             id="${item.id}-page-title"
             class="mt-2 font-display text-4xl text-brand-cream sm:text-5xl"
           >
             ${item.label}
           </h1>
-        
+
           <p
             class="mt-3 max-w-2xl text-sm leading-7 text-brand-muted"
           >
@@ -5014,14 +5090,14 @@ ${adminNavigationItems
   .join('')}
             </main>
     </div>
-    
+
     ${renderApplicationDetailsDrawer()}
-    
+
     ${renderOrderDetailsDrawer()}
     ${renderAdminInventoryAdjustmentDrawer()}
   </div>
 `
-  
+
 Alpine.start()
 }
 
