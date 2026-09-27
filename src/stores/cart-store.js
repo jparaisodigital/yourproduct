@@ -94,6 +94,7 @@ export function registerCartStore(
 
       if (
         !product ||
+        !product.isActive ||
         product.stockQuantity <= 0
       ) {
         return
