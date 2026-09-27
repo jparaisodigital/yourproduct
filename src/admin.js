@@ -932,518 +932,124 @@ function renderOrderDetailsDrawer() {
 
 function renderApplicationDetailsDrawer() {
   return `
-      <div
-        x-show="applicationDetailsOpen"
-        x-transition.opacity
-        class="fixed inset-0 z-40 bg-black/65 backdrop-blur-[2px]"
-        aria-hidden="true"
-        @click="closeApplicationDetails()"
-      ></div>
-
-      <aside
-        x-show="applicationDetailsOpen"
-        x-transition:enter="transition duration-300 ease-out"
-        x-transition:enter-start="translate-x-full"
-        x-transition:enter-end="translate-x-0"
-        x-transition:leave="transition duration-200 ease-in"
-        x-transition:leave-start="translate-x-0"
-        x-transition:leave-end="translate-x-full"
-        class="fixed inset-y-0 right-0 z-50 w-full max-w-xl overflow-y-auto border-l border-brand-border bg-brand-panel shadow-2xl"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="application-drawer-title"
-      >
-        <template x-if="selectedApplication">
-          <div>
-            <div
-              class="sticky top-0 z-10 flex min-h-20 items-center justify-between gap-4 border-b border-brand-border bg-brand-panel/95 px-5 backdrop-blur-xl sm:px-7"
-            >
-              <div class="min-w-0">
-                <p
-                  class="text-[0.62rem] font-semibold uppercase tracking-[0.18em] text-brand-gold"
-                >
-                  Application Review
-                </p>
-
-                <h2
-                  id="application-drawer-title"
-                  class="mt-1 truncate font-display text-2xl text-brand-cream"
-                  x-text="selectedApplication.customer_name"
-                ></h2>
-              </div>
-
-              <button
-                type="button"
-                class="grid size-10 shrink-0 place-items-center rounded-full border border-brand-border text-brand-cream transition hover:border-brand-gold hover:text-brand-gold"
-                aria-label="Close application details"
-                @click="closeApplicationDetails()"
-              >
-                <svg
-                  class="size-4"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="m6 6 12 12M18 6 6 18"
-                    stroke-linecap="round"
-                  ></path>
-                </svg>
-              </button>
-            </div>
-
-            <div class="space-y-5 p-5 sm:p-7">
-              <section
-                class="rounded-2xl border border-brand-border bg-brand-black p-5"
-              >
-                <div
-                  class="flex flex-wrap items-start justify-between gap-4"
-                >
-                  <div>
-                    <p
-                      class="text-[0.62rem] uppercase tracking-[0.14em] text-brand-muted"
-                    >
-                      Selected Package
-                    </p>
-
-                    <h3
-                      class="mt-2 font-display text-3xl text-brand-cream"
-                      x-text="
-                        selectedApplication.package?.name ||
-                        'Unknown package'
-                      "
-                    ></h3>
-                  </div>
-
-                  <strong
-                    class="font-display text-3xl text-brand-gold"
-                    x-text="
-                      formatMoney(
-                        selectedApplication.amount,
-                      )
-                    "
-                  ></strong>
-                </div>
-
-                <div
-                  class="mt-5 border-t border-brand-border pt-5"
-                >
-                  <span
-  class="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.08em]"
-  :class="
-    applicationStatusBadgeClass(
-      selectedApplication.status,
-    )
-  "
->
-  <span
-    class="size-1.5 rounded-full"
-    :class="
-      applicationStatusDotClass(
-        selectedApplication.status,
-      )
-    "
-    aria-hidden="true"
-  ></span>
-
-                    <span
-                      x-text="
-                        applicationStatusLabels[
-                          selectedApplication.status
-                        ] || selectedApplication.status
-                      "
-                    ></span>
-                  </span>
-                </div>
-              </section>
-
-              <section
-                class="rounded-2xl border border-brand-border bg-brand-black p-5"
-              >
-                <p
-                  class="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-brand-gold"
-                >
-                  Customer Information
-                </p>
-
-                <dl
-                  class="mt-4 grid gap-4 sm:grid-cols-2"
-                >
-                  <div>
-                    <dt class="text-xs text-brand-muted">
-                      Full name
-                    </dt>
-
-                    <dd
-                      class="mt-1 text-sm font-semibold text-brand-cream"
-                      x-text="
-                        selectedApplication.customer_name
-                      "
-                    ></dd>
-                  </div>
-
-                  <div>
-                    <dt class="text-xs text-brand-muted">
-                      Mobile number
-                    </dt>
-
-                    <dd
-                      class="mt-1 text-sm font-semibold text-brand-cream"
-                      x-text="
-                        selectedApplication.customer_mobile
-                      "
-                    ></dd>
-                  </div>
-
-                  <div class="sm:col-span-2">
-                    <dt class="text-xs text-brand-muted">
-                      Email address
-                    </dt>
-
-                    <dd
-                      class="mt-1 break-all text-sm font-semibold text-brand-cream"
-                      x-text="
-                        selectedApplication.customer_email
-                      "
-                    ></dd>
-                  </div>
-                </dl>
-              </section>
-
-              <section
-                class="rounded-2xl border border-brand-border bg-brand-black p-5"
-              >
-                <p
-                  class="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-brand-gold"
-                >
-                  Payment Information
-                </p>
-
-                <dl
-                  class="mt-4 grid gap-4 sm:grid-cols-2"
-                >
-                  <div>
-                    <dt class="text-xs text-brand-muted">
-                      Payment method
-                    </dt>
-
-                    <dd
-                      class="mt-1 text-sm font-semibold text-brand-cream"
-                      x-text="
-                        paymentMethodLabels[
-                          selectedApplication.payment_method
-                        ] ||
-                        selectedApplication.payment_method
-                      "
-                    ></dd>
-                  </div>
-
-                  <div>
-                    <dt class="text-xs text-brand-muted">
-                      Provider
-                    </dt>
-
-                    <dd
-                      class="mt-1 text-sm font-semibold text-brand-cream"
-                      x-text="
-                        selectedApplication.payment_provider ||
-                        'Not provided'
-                      "
-                    ></dd>
-                  </div>
-
-                  <div>
-                    <dt class="text-xs text-brand-muted">
-                      Sender name
-                    </dt>
-
-                    <dd
-                      class="mt-1 text-sm font-semibold text-brand-cream"
-                      x-text="
-                        selectedApplication.sender_name
-                      "
-                    ></dd>
-                  </div>
-
-                  <div>
-                    <dt class="text-xs text-brand-muted">
-                      Reference number
-                    </dt>
-
-                    <dd
-                      class="mt-1 break-all text-sm font-semibold text-brand-cream"
-                      x-text="
-                        selectedApplication.reference_number
-                      "
-                    ></dd>
-                  </div>
-                </dl>
-              </section>
-
-              <section
-                class="rounded-2xl border border-brand-border bg-brand-black p-5"
-              >
-                <p
-                  class="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-brand-gold"
-                >
-                  Payment Proof
-                </p>
-
-                <div
-                  x-show="
-                    selectedApplication.payment_proof_url
-                  "
-                  class="mt-4 overflow-hidden rounded-xl border border-brand-border bg-brand-panel"
-                >
-                  <img
-                    :src="
-                      selectedApplication.payment_proof_url
-                    "
-                    alt="Submitted payment proof"
-                    class="max-h-80 w-full object-contain"
-                  >
-                </div>
-
-                <div
-                  x-show="
-                    !selectedApplication.payment_proof_url
-                  "
-                  class="mt-4 rounded-xl border border-dashed border-brand-border bg-brand-panel px-5 py-8 text-center"
-                >
-                  <p
-                    class="text-sm font-semibold text-brand-cream"
-                  >
-                    Preview image not connected yet
-                  </p>
-
-                  <p
-                    class="mt-2 break-all text-xs leading-5 text-brand-muted"
-                    x-text="
-                      selectedApplication
-                        .payment_proof_file_name ||
-                      'No file name available'
-                    "
-                  ></p>
-                </div>
-              </section>
-
-              <section
-                x-show="
-                  selectedApplication.status ===
-                  'cancellation-requested'
-                "
-                class="rounded-2xl border border-red-400/30 bg-red-400/5 p-5"
-              >
-                <p
-                  class="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-red-300"
-                >
-                  Cancellation Request
-                </p>
-
-                <p
-                  class="mt-3 text-sm leading-6 text-brand-cream"
-                  x-text="
-                    selectedApplication.cancellation_reason ||
-                    'No reason provided.'
-                  "
-                ></p>
-
-                <p
-                  class="mt-3 text-xs leading-5 text-brand-muted"
-                >
-                  Any applicable refund must be reviewed and
-                  processed manually by the administrator.
-                </p>
-              </section>
-
-              <section
-  class="rounded-2xl border border-brand-border bg-brand-black p-5"
->
-  <p
-    class="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-brand-gold"
-  >
-    Admin Review
-  </p>
-
-  <div
-    x-show="
-      selectedApplication.status ===
-      'pending-verification'
-    "
-    class="mt-4 grid gap-3 sm:grid-cols-2"
-  >
-    <button
-      type="button"
-      class="inline-flex min-h-11 items-center justify-center rounded-full border border-red-400/40 px-5 text-sm font-semibold text-red-300 transition hover:border-red-300 hover:bg-red-400/10"
-      @click="openReviewPanel('reject-payment')"
-    >
-      Reject Payment
-    </button>
-
-    <button
-      type="button"
-      class="inline-flex min-h-11 items-center justify-center rounded-full bg-emerald-600 px-5 text-sm font-semibold text-white transition hover:bg-emerald-500"
-      @click="openReviewPanel('approve-membership')"
-    >
-      Approve Membership
-    </button>
-  </div>
-
-  <div
-    x-show="
-      selectedApplication.status ===
-      'cancellation-requested'
-    "
-    class="mt-4 grid gap-3 sm:grid-cols-2"
-  >
-    <button
-      type="button"
-      class="inline-flex min-h-11 items-center justify-center rounded-full border border-brand-border px-5 text-sm font-semibold text-brand-cream transition hover:border-brand-gold hover:text-brand-gold"
-      @click="
-        openReviewPanel('decline-cancellation')
-      "
-    >
-      Decline Cancellation
-    </button>
-
-    <button
-      type="button"
-      class="inline-flex min-h-11 items-center justify-center rounded-full bg-red-700 px-5 text-sm font-semibold text-white transition hover:bg-red-600"
-      @click="
-        openReviewPanel('approve-cancellation')
-      "
-    >
-      Approve Cancellation
-    </button>
-  </div>
-
-  <div
-    x-show="
-      selectedApplication.status === 'approved' ||
-      selectedApplication.status === 'rejected' ||
-      selectedApplication.status === 'cancelled'
-    "
-    class="mt-4 rounded-xl border border-brand-border bg-brand-panel p-4"
-  >
-    <p
-      class="text-sm font-semibold text-brand-cream"
-      x-text="
-        applicationStatusLabels[
-          selectedApplication.status
-        ] || selectedApplication.status
-      "
-    ></p>
-
-    <p
-      class="mt-2 text-xs leading-5 text-brand-muted"
-    >
-      This application has already been reviewed in the
-      current frontend preview session.
-    </p>
-
     <div
-      x-show="selectedApplication.admin_note"
-      class="mt-4 border-t border-brand-border pt-4"
+      x-show="applicationDetailsOpen"
+      x-transition.opacity
+      class="fixed inset-0 z-40 bg-black/65"
+      @click="closeApplicationDetails()"
+    ></div>
+
+    <aside
+      x-show="applicationDetailsOpen"
+      x-transition
+      class="fixed inset-y-0 right-0 z-50 w-full max-w-xl overflow-y-auto border-l border-brand-border bg-brand-panel p-6 shadow-2xl"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="application-drawer-title"
     >
-      <p
-        class="text-[0.62rem] uppercase tracking-[0.12em] text-brand-muted"
-      >
-        Admin Note
-      </p>
-
-      <p
-        class="mt-2 text-sm leading-6 text-brand-cream"
-        x-text="selectedApplication.admin_note"
-      ></p>
-
-      <p
-        class="mt-3 text-xs text-brand-muted"
-        x-text="
-          selectedApplication.reviewed_at
-            ? formatDate(
-                selectedApplication.reviewed_at,
-              )
-            : ''
-        "
-      ></p>
-    </div>
-  </div>
-
-  <form
-    x-show="reviewPanelOpen"
-    x-transition
-    class="mt-5 rounded-2xl border border-brand-gold/30 bg-brand-panel p-4"
-    @submit.prevent="confirmReviewAction()"
-  >
-    <h3
-      class="font-display text-2xl text-brand-cream"
-      x-text="reviewActionTitle"
-    ></h3>
-
-    <p
-      class="mt-2 text-xs leading-5 text-brand-muted"
-      x-text="reviewActionDescription"
-    ></p>
-
-    <label
-      for="admin-review-note"
-      class="mt-4 block text-[0.62rem] font-semibold uppercase tracking-[0.14em] text-brand-muted"
-    >
-      Admin Note
-    </label>
-
-    <textarea
-      id="admin-review-note"
-      x-model="reviewNote"
-      rows="4"
-      maxlength="500"
-      placeholder="Enter the reason or review note"
-      class="mt-2 w-full resize-none rounded-xl border border-brand-border bg-brand-black px-4 py-3 text-sm leading-6 text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
-    ></textarea>
-
-    <p
-      x-show="reviewError"
-      x-text="reviewError"
-      class="mt-2 text-xs leading-5 text-red-300"
-      role="alert"
-    ></p>
-
-    <div class="mt-4 grid gap-3 sm:grid-cols-2">
-      <button
-        type="button"
-        class="inline-flex min-h-11 items-center justify-center rounded-full border border-brand-border px-4 text-sm font-semibold text-brand-cream transition hover:border-brand-gold hover:text-brand-gold"
-        @click="closeReviewPanel()"
-      >
-        Go Back
-      </button>
-
-      <button
-        type="submit"
-        class="inline-flex min-h-11 items-center justify-center rounded-full px-4 text-sm font-semibold text-white transition"
-        :class="
-          reviewAction === 'approve-membership'
-            ? 'bg-emerald-600 hover:bg-emerald-500'
-            : reviewAction ===
-                'decline-cancellation'
-              ? 'bg-brand-gold text-[#17130d] hover:bg-brand-gold-light'
-              : 'bg-red-700 hover:bg-red-600'
-        "
-      >
-        Confirm Action
-      </button>
-    </div>
-  </form>
-</section>
-
-  ${renderAdminPackageFulfillmentPanel()}
-
+      <template x-if="selectedApplication">
+        <div class="space-y-6">
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <p class="text-xs uppercase tracking-widest text-brand-gold">
+                Membership application
+              </p>
+              <h2
+                id="application-drawer-title"
+                class="mt-2 font-display text-2xl text-brand-cream"
+                x-text="selectedApplication.customer_name"
+              ></h2>
+              <p
+                class="mt-2 text-sm text-brand-gold"
+                x-text="applicationStatusLabels[selectedApplication.status] || selectedApplication.status"
+              ></p>
             </div>
+            <button
+              type="button"
+              @click="closeApplicationDetails()"
+              class="rounded-full border border-brand-border px-4 py-2 text-sm text-brand-cream"
+            >
+              Close
+            </button>
           </div>
-        </template>
-      </aside>
-    `
+
+          <section class="rounded-xl border border-brand-border bg-brand-black p-5">
+            <h3 class="font-semibold text-brand-cream">Application</h3>
+            <p
+              class="mt-3 text-sm text-brand-cream"
+              x-text="'Package: ' + (selectedApplication.package?.name || selectedApplication.package_id)"
+            ></p>
+            <p
+              class="mt-1 text-sm text-brand-cream"
+              x-text="'Amount: ' + formatOptionalMoney(selectedApplication.amount)"
+            ></p>
+            <p
+              class="mt-1 text-xs text-brand-muted"
+              x-text="'Submitted: ' + formatDate(selectedApplication.submitted_at)"
+            ></p>
+          </section>
+
+          <section class="rounded-xl border border-brand-border bg-brand-black p-5">
+            <h3 class="font-semibold text-brand-cream">Customer</h3>
+            <p
+              class="mt-3 text-sm text-brand-cream"
+              x-text="selectedApplication.customer_name"
+            ></p>
+            <p
+              class="mt-1 text-sm text-brand-muted"
+              x-text="selectedApplication.customer_email || 'No email available'"
+            ></p>
+            <p
+              class="mt-1 text-sm text-brand-muted"
+              x-text="selectedApplication.customer_mobile || 'No mobile number available'"
+            ></p>
+          </section>
+
+          <section class="rounded-xl border border-brand-border bg-brand-black p-5">
+            <h3 class="font-semibold text-brand-cream">Payment details</h3>
+            <p
+              class="mt-3 text-sm text-brand-muted"
+              x-text="'Method: ' + (selectedApplication.payment_method || 'Not submitted')"
+            ></p>
+            <p
+              class="mt-1 text-sm text-brand-muted"
+              x-text="'Provider: ' + (selectedApplication.payment_provider || 'Not provided')"
+            ></p>
+            <p
+              class="mt-1 text-sm text-brand-muted"
+              x-text="'Sender: ' + (selectedApplication.sender_name || 'Not provided')"
+            ></p>
+            <p
+              class="mt-1 break-all text-sm text-brand-muted"
+              x-text="'Reference: ' + (selectedApplication.reference_number || 'Not provided')"
+            ></p>
+            <p
+              class="mt-3 break-all text-xs text-brand-muted"
+              x-text="'Proof file: ' + (selectedApplication.payment_proof_file_name || 'Not submitted')"
+            ></p>
+          </section>
+
+          <section
+            x-show="selectedApplication.cancellation_reason"
+            class="rounded-xl border border-brand-border bg-brand-black p-5"
+          >
+            <h3 class="font-semibold text-brand-cream">
+              Cancellation request
+            </h3>
+            <p
+              class="mt-2 text-sm text-brand-muted"
+              x-text="selectedApplication.cancellation_reason"
+            ></p>
+          </section>
+
+          <p class="text-xs leading-5 text-brand-muted">
+            Membership approval and payment-proof preview are being connected.
+            No status can be changed from this panel yet.
+          </p>
+        </div>
+      </template>
+    </aside>
+  `
 }
 
 Alpine.data('adminDashboard', () => ({
