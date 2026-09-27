@@ -1,37 +1,25 @@
 import './style.css'
-
 import Alpine from 'alpinejs'
-
 import { supabase } from './lib/supabase.js'
-
 import logoImage from './assets/logoyourproduct.png'
-
 import {
   products,
 } from './config/products-config.js'
-
 import {
   registerCartStore,
 } from './stores/cart-store.js'
-
 import {
   siteConfig,
 } from './config/site-config.js'
-
 const pesoFormatter = new Intl.NumberFormat('en-PH', {
   style: 'currency',
   currency: 'PHP',
   minimumFractionDigits: 0,
 })
-
 window.Alpine = Alpine
-
-registerCartStore(Alpine, products)
-
-
-
 let checkoutProfile = null
-
+// Keep final submission closed until the client confirms payment details.
+const checkoutPaymentsReady = false
 Alpine.data('checkoutPage', () => ({
   customer: {
     firstName: checkoutProfile?.first_name ?? '',
@@ -39,7 +27,6 @@ Alpine.data('checkoutPage', () => ({
     mobileNumber: checkoutProfile?.mobile_number ?? '',
     emailAddress: checkoutProfile?.email ?? '',
   },
-  
   delivery: {
     fulfillmentType: 'dropship',
     region: '',
@@ -54,21 +41,23 @@ Alpine.data('checkoutPage', () => ({
     landmark: '',
     notes: '',
   },
-  
   payment: {
     method: '',
     proofFile: null,
     proofFileName: '',
     proofPreviewUrl: '',
   },
-  
   paymentError: '',
+  orderCheckError: '',
+  isCheckingCart: false,
   checkoutPreviewComplete: false,
-  
+  checkoutPaymentsReady,
+  isSubmittingOrder: false,
+  submittedOrderId: '',
+  orderSubmissionUncertain: false,
   formatMoney(value) {
     return pesoFormatter.format(value)
   },
-  
   recipientName() {
     if (
       this.delivery.fulfillmentType === 'dropship' &&
@@ -81,7 +70,6 @@ Alpine.data('checkoutPage', () => ({
       .filter(Boolean)
       .join(' ')
     }
-    
     return [
       this.delivery.recipientFirstName,
       this.delivery.recipientLastName,
@@ -89,68 +77,53 @@ Alpine.data('checkoutPage', () => ({
     .filter(Boolean)
     .join(' ')
   },
-  
   handleProofFile(event) {
     const file = event.target.files?.[0]
-    
     this.paymentError = ''
     this.checkoutPreviewComplete = false
-    
     if (this.payment.proofPreviewUrl) {
       URL.revokeObjectURL(
         this.payment.proofPreviewUrl,
       )
-      
       this.payment.proofPreviewUrl = ''
     }
-    
     this.payment.proofFile = null
     this.payment.proofFileName = ''
-    
     if (!file) {
       return
     }
-    
     const allowedTypes = [
       'image/jpeg',
       'image/png',
       'image/webp',
     ]
-    
     const maximumFileSize = 5 * 1024 * 1024
-    
     if (!allowedTypes.includes(file.type)) {
       this.paymentError =
       'Please select a JPG, PNG, or WEBP image.'
-      
       event.target.value = ''
       return
     }
-    
     if (file.size > maximumFileSize) {
       this.paymentError =
       'The selected image must not exceed 5 MB.'
-      
       event.target.value = ''
       return
     }
-    
     this.payment.proofFile = file
     this.payment.proofFileName = file.name
     this.payment.proofPreviewUrl =
     URL.createObjectURL(file)
   },
-  
-  completeCheckoutPreview() {
-    if (!this.payment.proofFile) {
+  async completeCheckoutPreview() {
+    if (this.isCheckingCart) return
+    this.orderCheckError = ''
+    if (this.checkoutPaymentsReady && !this.payment.proofFile) {
       this.paymentError =
       'Please select your proof of payment.'
-      
       document.querySelector('#payment-proof')?.focus()
-      
       return
     }
-    
     if (this.delivery.sameAsCustomer) {
       this.delivery.recipientFirstName =
       this.customer.firstName
@@ -159,10 +132,48 @@ Alpine.data('checkoutPage', () => ({
       this.delivery.recipientMobile =
       this.customer.mobileNumber
     }
-    
+    const cart = Alpine.store('cart')
+    this.isCheckingCart = true
+    try {
+      const { data: quote, error } = await supabase.rpc(
+        'quote_order_cart',
+        {
+          cart_items: cart.items.map(({ productId, quantity }) => ({
+            productId,
+            quantity,
+          })),
+        },
+      )
+      if (error) {
+        if (error.message?.includes('A product is unavailable.')) {
+          this.orderCheckError =
+            'Products are not available for checkout yet.'
+        } else {
+          console.error('Unable to check cart:', error)
+          this.orderCheckError =
+            'Unable to check the cart. Please try again.'
+        }
+        return
+      }
+      if (
+        !quote ||
+        quote.pricingType !== cart.pricingType ||
+        Number(quote.subtotal) !== cart.subtotal
+      ) {
+        this.orderCheckError =
+          'Cart pricing has changed. Please refresh and review your cart.'
+        return
+      }
+    } catch (error) {
+      console.error('Unable to check cart:', error)
+      this.orderCheckError =
+        'Unable to check the cart. Please try again.'
+      return
+    } finally {
+      this.isCheckingCart = false
+    }
     this.paymentError = ''
     this.checkoutPreviewComplete = true
-    
     requestAnimationFrame(() => {
       document
       .querySelector('#checkout-preview-status')
@@ -172,45 +183,160 @@ Alpine.data('checkoutPage', () => ({
       })
     })
   },
-  
+  async submitOrder() {
+    if (
+      !this.checkoutPaymentsReady ||
+      !this.checkoutPreviewComplete ||
+      this.isSubmittingOrder ||
+      this.submittedOrderId ||
+      this.orderSubmissionUncertain
+    ) return
+
+    const cart = Alpine.store('cart')
+    const proofFile = this.payment.proofFile
+    this.orderCheckError = ''
+    this.paymentError = ''
+    if (!proofFile || cart.items.length === 0) {
+      this.orderCheckError = 'Please review your cart and payment proof.'
+      return
+    }
+
+    this.isSubmittingOrder = true
+    try {
+      const { data: { user }, error: userError } =
+        await supabase.auth.getUser()
+      if (userError || !user) {
+        this.orderCheckError = 'Please sign in again before submitting.'
+        return
+      }
+
+      const cartItems = cart.items.map(({ productId, quantity }) => ({
+        productId,
+        quantity,
+      }))
+      const { data: quote, error: quoteError } = await supabase.rpc(
+        'quote_order_cart',
+        { cart_items: cartItems },
+      )
+      if (
+        quoteError ||
+        !quote ||
+        quote.pricingType !== cart.pricingType ||
+        Number(quote.subtotal) !== cart.subtotal
+      ) {
+        if (quoteError) console.error('Unable to confirm order:', quoteError)
+        this.checkoutPreviewComplete = false
+        this.orderCheckError =
+          'Product availability or price changed. Refresh and review your cart.'
+        return
+      }
+
+      const extension = {
+        'image/jpeg': 'jpg',
+        'image/png': 'png',
+        'image/webp': 'webp',
+      }[proofFile.type]
+      if (!extension || proofFile.size > 5 * 1024 * 1024) {
+        this.paymentError = 'Please select a JPG, PNG, or WebP under 5 MB.'
+        return
+      }
+
+      const proofPath = user.id + '/' + crypto.randomUUID() + '.' + extension
+      const { error: uploadError } = await supabase.storage
+        .from('payment-proofs')
+        .upload(proofPath, proofFile, {
+          contentType: proofFile.type,
+          upsert: false,
+        })
+      if (uploadError) {
+        console.error('Unable to upload payment proof:', uploadError)
+        this.paymentError = 'Unable to upload proof. Please try again.'
+        return
+      }
+
+      // A timeout can happen after the database has already created the order.
+      const { data: orderId, error: submitError } = await supabase.rpc(
+        'submit_order',
+        {
+          cart_items: cartItems,
+          delivery_details: {
+            fulfillmentType: this.delivery.fulfillmentType,
+            region: this.delivery.region.trim(),
+            recipientFirstName: this.delivery.recipientFirstName.trim(),
+            recipientLastName: this.delivery.recipientLastName.trim(),
+            recipientMobile: this.delivery.recipientMobile.trim(),
+            province: this.delivery.province.trim(),
+            city: this.delivery.city.trim(),
+            barangay: this.delivery.barangay.trim(),
+            houseStreet: this.delivery.houseStreet.trim(),
+            landmark: this.delivery.landmark.trim(),
+            notes: this.delivery.notes.trim(),
+          },
+          payment_method: this.payment.method,
+          payment_proof_path: proofPath,
+        },
+      )
+      if (submitError || !orderId) {
+        console.error('Unable to confirm order submission:', submitError)
+        this.orderSubmissionUncertain = true
+        this.orderCheckError =
+          'Could not confirm your order. Check Order History before retrying.'
+        return
+      }
+
+      this.submittedOrderId = orderId
+      cart.clear()
+      requestAnimationFrame(() => {
+        document.querySelector('#checkout-order-status')?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center',
+        })
+      })
+    } catch (error) {
+      console.error('Unable to submit order:', error)
+      this.orderSubmissionUncertain = true
+      this.orderCheckError =
+        'Could not confirm your order. Check Order History before retrying.'
+    } finally {
+      this.isSubmittingOrder = false
+    }
+  },
   destroy() {
     if (this.payment.proofPreviewUrl) {
       URL.revokeObjectURL(
         this.payment.proofPreviewUrl,
       )
-      
       this.payment.proofPreviewUrl = ''
     }
   },
-  
 }))
-
 async function startCheckout() {
   const { data: { user }, error } = await supabase.auth.getUser()
-
   if (error || !user) {
     window.location.replace('/login/')
     return
   }
-
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
-    .select('first_name, last_name, mobile_number, email')
+    .select('first_name, last_name, mobile_number, email, customer_type, membership_status')
     .eq('id', user.id)
     .single()
-
   if (profileError || !profile) {
     console.error('Unable to load checkout profile:', profileError)
     document.querySelector('#checkout-app').textContent =
       'Unable to load your details. Please refresh.'
     return
   }
-
   checkoutProfile = profile
-
+  registerCartStore(Alpine, products, {
+    pricingType:
+      profile.customer_type === 'member' &&
+      profile.membership_status === 'active'
+        ? 'member'
+        : 'regular',
+  })
   document.title = `Checkout | ${siteConfig.brand.name}`
-
-document.querySelector('#checkout-app').innerHTML = `
+  document.querySelector('#checkout-app').innerHTML = `
   <div
     x-data="checkoutPage"
     x-cloak
@@ -232,14 +358,12 @@ document.querySelector('#checkout-app').innerHTML = `
             alt="${siteConfig.brand.name} logo"
             class="size-12 shrink-0 object-contain sm:size-14"
           >
-
           <span class="min-w-0">
             <span
               class="block truncate text-sm font-semibold uppercase tracking-[0.18em] text-brand-cream sm:text-base"
             >
               ${siteConfig.brand.name}
             </span>
-
             <span
               class="mt-0.5 hidden text-[0.6rem] uppercase tracking-[0.12em] text-brand-muted sm:block"
             >
@@ -247,7 +371,6 @@ document.querySelector('#checkout-app').innerHTML = `
             </span>
           </span>
         </a>
-
         <div
           class="inline-flex shrink-0 items-center gap-2 text-xs font-semibold text-brand-muted"
         >
@@ -266,7 +389,6 @@ document.querySelector('#checkout-app').innerHTML = `
               stroke="currentColor"
               stroke-width="1.6"
             />
-
             <path
               d="M8 10V7a4 4 0 0 1 8 0v3"
               stroke="currentColor"
@@ -274,12 +396,10 @@ document.querySelector('#checkout-app').innerHTML = `
               stroke-linecap="round"
             />
           </svg>
-
           Manual payment
         </div>
       </div>
     </header>
-
     <main class="px-5 py-10 sm:py-14">
       <div class="mx-auto w-full max-w-6xl">
         <a
@@ -289,20 +409,17 @@ document.querySelector('#checkout-app').innerHTML = `
           <span aria-hidden="true">←</span>
           Continue shopping
         </a>
-
         <div class="mt-8">
           <p
             class="text-xs font-semibold uppercase tracking-[0.3em] text-brand-gold"
           >
             Your order
           </p>
-
           <h1
             class="mt-3 font-display text-4xl leading-tight text-brand-cream sm:text-5xl"
           >
             Review your cart.
           </h1>
-
           <p
             class="mt-3 max-w-2xl text-sm leading-6 text-brand-muted sm:text-base"
           >
@@ -310,9 +427,19 @@ document.querySelector('#checkout-app').innerHTML = `
             entering your checkout information.
           </p>
         </div>
-
         <section
-          x-show="$store.cart.itemCount === 0"
+          id="checkout-order-status"
+          x-show="submittedOrderId"
+          class="mt-8 rounded-[1.5rem] border border-[#2f6b59] bg-[#234f42] px-6 py-8 text-[#fff8e9]"
+          role="status"
+        >
+          <h2 class="font-display text-3xl">Order submitted</h2>
+          <p class="mt-2">Waiting for payment verification.</p>
+          <p class="mt-2 font-semibold" x-text="'Order ID: ' + submittedOrderId"></p>
+          <a href="/dashboard/" class="mt-4 inline-block underline">View Order History</a>
+        </section>
+        <section
+          x-show="!submittedOrderId && $store.cart.itemCount === 0"
           class="mt-8 rounded-[1.5rem] border border-brand-border bg-brand-panel px-6 py-14 text-center shadow-panel"
         >
           <div
@@ -331,14 +458,12 @@ document.querySelector('#checkout-app').innerHTML = `
                 stroke-linecap="round"
                 stroke-linejoin="round"
               />
-
               <circle
                 cx="9.25"
                 cy="19"
                 r="1.25"
                 fill="currentColor"
               />
-
               <circle
                 cx="17.25"
                 cy="19"
@@ -347,20 +472,17 @@ document.querySelector('#checkout-app').innerHTML = `
               />
             </svg>
           </div>
-
           <h2
             class="mt-5 font-display text-3xl text-brand-cream"
           >
             Your cart is empty
           </h2>
-
           <p
             class="mx-auto mt-2 max-w-md text-sm leading-6 text-brand-muted"
           >
             Add a fragrance from the storefront before continuing to
             checkout.
           </p>
-
           <a
             href="/#shop"
             class="mt-6 inline-flex h-11 items-center justify-center rounded-full bg-brand-gold px-6 text-sm font-semibold text-brand-black transition hover:bg-brand-gold-light"
@@ -368,7 +490,6 @@ document.querySelector('#checkout-app').innerHTML = `
             Browse fragrances
           </a>
         </section>
-
         <div
   x-show="$store.cart.itemCount > 0"
   class="mt-8 grid gap-6 lg:grid-cols-[0.78fr_1.22fr] lg:items-start"
@@ -389,14 +510,12 @@ document.querySelector('#checkout-app').innerHTML = `
                 >
                   Selected fragrances
                 </p>
-
                 <h2
                   class="mt-1 font-display text-2xl text-brand-cream"
                 >
                   Order items
                 </h2>
               </div>
-
               <span
                 class="text-sm font-semibold text-brand-muted"
                 x-text="
@@ -406,7 +525,6 @@ document.querySelector('#checkout-app').innerHTML = `
                 "
               ></span>
             </header>
-
             <div class="divide-y divide-brand-border">
               <template
                 x-for="item in $store.cart.detailedItems"
@@ -424,7 +542,6 @@ document.querySelector('#checkout-app').innerHTML = `
                       class="size-full object-cover object-center"
                     >
                   </div>
-
                   <div class="min-w-0">
                     <div
                       class="flex items-start justify-between gap-3"
@@ -434,19 +551,16 @@ document.querySelector('#checkout-app').innerHTML = `
     class="text-[0.58rem] font-semibold uppercase tracking-[0.12em] text-brand-gold sm:text-[0.65rem]"
     x-text="item.product.collectionLabel"
   ></p>
-
   <h3
     class="mt-1 truncate font-display text-xl text-brand-cream sm:text-2xl"
     x-text="item.product.name"
   ></h3>
 </div>
-
 <strong
   class="shrink-0 text-sm text-brand-cream sm:text-base"
   x-text="formatMoney(item.lineTotal)"
 ></strong>
 </div>
-
 <p
   class="mt-1 text-xs text-brand-muted"
   x-text="
@@ -456,7 +570,6 @@ document.querySelector('#checkout-app').innerHTML = `
     ' each'
   "
 ></p>
-
 <div
   class="mt-4 flex flex-wrap items-center justify-between gap-3"
 >
@@ -474,12 +587,10 @@ document.querySelector('#checkout-app').innerHTML = `
     >
       −
     </button>
-
                         <span
                           class="min-w-8 text-center text-sm font-semibold text-brand-cream"
                           x-text="item.quantity"
                         ></span>
-
                         <button
                           type="button"
                           class="grid size-9 place-items-center text-brand-cream transition hover:text-brand-gold disabled:cursor-not-allowed disabled:opacity-40"
@@ -496,7 +607,6 @@ document.querySelector('#checkout-app').innerHTML = `
                           +
                         </button>
                       </div>
-
                       <button
                         type="button"
                         class="text-[0.65rem] font-semibold uppercase tracking-[0.1em] text-brand-muted transition hover:text-red-700"
@@ -513,7 +623,6 @@ document.querySelector('#checkout-app').innerHTML = `
               </template>
             </div>
           </section>
-
           <section
   class="rounded-[1.5rem] border border-brand-gold/30 bg-brand-panel p-5 shadow-gold-soft sm:p-6"
 >
@@ -522,47 +631,40 @@ document.querySelector('#checkout-app').innerHTML = `
             >
               Order summary
             </p>
-
             <div
               class="mt-5 flex items-center justify-between gap-4"
             >
               <span class="text-sm text-brand-muted">
                 Items
               </span>
-
               <span
                 class="font-semibold text-brand-cream"
                 x-text="$store.cart.itemCount"
               ></span>
             </div>
-
             <div
               class="mt-3 flex items-center justify-between gap-4"
             >
               <span class="text-sm text-brand-muted">
                 Subtotal
               </span>
-
               <span
                 class="font-semibold text-brand-cream"
                 x-text="formatMoney($store.cart.subtotal)"
               ></span>
             </div>
-
             <div
               class="mt-3 flex items-center justify-between gap-4"
             >
               <span class="text-sm text-brand-muted">
                 Delivery
               </span>
-
               <span
                 class="text-xs font-semibold text-brand-muted"
               >
                 To be confirmed
               </span>
             </div>
-
             <div
               class="mt-5 flex items-end justify-between gap-4 border-t border-brand-border pt-5"
             >
@@ -571,19 +673,16 @@ document.querySelector('#checkout-app').innerHTML = `
               >
                 Estimated total
               </span>
-
               <strong
                 class="font-display text-3xl text-brand-gold"
                 x-text="formatMoney($store.cart.subtotal)"
               ></strong>
             </div>
-
             <p class="mt-4 text-xs leading-5 text-brand-muted">
               Estimated delivery is 1–3 days via J&amp;T after
               dispatch. The delivery fee will be confirmed during
               order review.
             </p>
-
             <div
               class="mt-6 flex items-center justify-center gap-2 border-t border-brand-border pt-5 text-xs text-brand-muted"
             >
@@ -602,7 +701,6 @@ document.querySelector('#checkout-app').innerHTML = `
                   stroke="currentColor"
                   stroke-width="1.6"
                 />
-
                 <path
                   d="M8 10V7a4 4 0 0 1 8 0v3"
                   stroke="currentColor"
@@ -610,12 +708,10 @@ document.querySelector('#checkout-app').innerHTML = `
                   stroke-linecap="round"
                 />
               </svg>
-
               Manual payment verification
                         </div>
           </section>
         </aside>
-
         <form
           class="space-y-6"
           @submit.prevent="completeCheckoutPreview"
@@ -633,19 +729,16 @@ document.querySelector('#checkout-app').innerHTML = `
               >
                 Customer
               </p>
-
               <h2
                 class="mt-1 font-display text-3xl text-brand-cream"
               >
                 Account information
               </h2>
-
               <p class="mt-2 text-sm leading-6 text-brand-muted">
                 These details will come from the signed-in customer
                 account once authentication is connected.
               </p>
             </header>
-
             <div class="p-5 sm:p-6">
               <div class="grid gap-5 sm:grid-cols-2">
                 <div>
@@ -655,7 +748,6 @@ document.querySelector('#checkout-app').innerHTML = `
                   >
                     First name
                   </label>
-
                   <input
                     id="first-name"
                     type="text"
@@ -666,7 +758,6 @@ document.querySelector('#checkout-app').innerHTML = `
                     required
                   >
                 </div>
-
                 <div>
                   <label
                     for="last-name"
@@ -674,7 +765,6 @@ document.querySelector('#checkout-app').innerHTML = `
                   >
                     Last name
                   </label>
-
                   <input
                     id="last-name"
                     type="text"
@@ -686,7 +776,6 @@ document.querySelector('#checkout-app').innerHTML = `
                   >
                 </div>
               </div>
-
               <div class="mt-5 grid gap-5 sm:grid-cols-2">
                 <div>
                   <label
@@ -695,7 +784,6 @@ document.querySelector('#checkout-app').innerHTML = `
                   >
                     Mobile number
                   </label>
-
                   <input
                     id="mobile-number"
                     type="tel"
@@ -709,7 +797,6 @@ document.querySelector('#checkout-app').innerHTML = `
                     required
                   >
                 </div>
-
                 <div>
                   <label
                     for="email-address"
@@ -717,7 +804,6 @@ document.querySelector('#checkout-app').innerHTML = `
                   >
                     Email address
                   </label>
-
                   <input
                     id="email-address"
                     type="email"
@@ -731,7 +817,6 @@ document.querySelector('#checkout-app').innerHTML = `
               </div>
             </div>
           </section>
-
           <section
             class="overflow-hidden rounded-[1.5rem] border border-brand-border bg-brand-panel shadow-panel"
           >
@@ -743,25 +828,21 @@ document.querySelector('#checkout-app').innerHTML = `
               >
                 Order fulfillment
               </p>
-
               <h2
   class="mt-1 font-display text-3xl text-brand-cream"
 >
   Delivery details
 </h2>
-
 <p class="mt-2 text-sm leading-6 text-brand-muted">
   Confirm the recipient and address where the order should
   be delivered.
 </p>
             </header>
-
             <div class="p-5 sm:p-6">
               <fieldset>
                 <legend class="text-sm font-semibold text-brand-cream">
                   Fulfillment method
                 </legend>
-
                 <div class="mt-3 grid gap-3 sm:grid-cols-2">
                   <label
                     class="flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition"
@@ -778,18 +859,15 @@ document.querySelector('#checkout-app').innerHTML = `
                       x-model="delivery.fulfillmentType"
                       class="mt-0.5 size-4 accent-[#b78a32]"
                     >
-
                     <span>
                       <span class="block text-sm font-semibold text-brand-cream">
                         Dropship
                       </span>
-
                       <span class="mt-1 block text-xs leading-5 text-brand-muted">
                         Send the order to the recipient's address.
                       </span>
                     </span>
                   </label>
-
                   <label
   class="flex cursor-not-allowed items-start justify-between gap-3 rounded-xl border border-brand-border bg-brand-black p-4 opacity-60"
   aria-disabled="true"
@@ -802,14 +880,12 @@ document.querySelector('#checkout-app').innerHTML = `
       class="mt-0.5 size-4 accent-[#b78a32]"
       disabled
     >
-
     <span>
       <span
         class="block text-sm font-semibold text-brand-cream"
       >
         Pickup
       </span>
-
       <span
         class="mt-1 block text-xs leading-5 text-brand-muted"
       >
@@ -817,7 +893,6 @@ document.querySelector('#checkout-app').innerHTML = `
       </span>
     </span>
   </span>
-
   <span
     class="shrink-0 rounded-full border border-brand-gold/30 bg-brand-gold/10 px-2.5 py-1 text-[0.58rem] font-semibold uppercase tracking-[0.1em] text-brand-gold"
   >
@@ -826,13 +901,10 @@ document.querySelector('#checkout-app').innerHTML = `
 </label>
                 </div>
               </fieldset>
-
-
               <div
                 x-show="delivery.fulfillmentType === 'dropship'"
                 x-transition
               >
-
               <div class="mt-5">
   <label
     for="delivery-region"
@@ -840,7 +912,6 @@ document.querySelector('#checkout-app').innerHTML = `
   >
     Delivery region
   </label>
-
   <select
     id="delivery-region"
     x-model="delivery.region"
@@ -850,24 +921,19 @@ document.querySelector('#checkout-app').innerHTML = `
     <option value="" disabled>
       Select delivery region
     </option>
-
     <option value="ncr">
       NCR
     </option>
-
     <option value="luzon">
       Luzon
     </option>
-
     <option value="visayas">
       Visayas
     </option>
-
     <option value="mindanao">
       Mindanao
     </option>
   </select>
-
   <p class="mt-2 text-xs leading-5 text-brand-muted">
     Estimated delivery is 1–3 days via J&amp;T after dispatch.
     The final delivery fee will be confirmed during order review.
@@ -881,14 +947,12 @@ document.querySelector('#checkout-app').innerHTML = `
                   x-model="delivery.sameAsCustomer"
                   class="mt-0.5 size-4 accent-[#b78a32]"
                 >
-
                 <span>
                   <span
                     class="block text-sm font-semibold text-brand-cream"
                   >
                     Use my customer details
                   </span>
-
                   <span
                     class="mt-1 block text-xs leading-5 text-brand-muted"
                   >
@@ -897,7 +961,6 @@ document.querySelector('#checkout-app').innerHTML = `
                   </span>
                 </span>
               </label>
-
               <div
                 x-show="delivery.sameAsCustomer"
                 x-transition
@@ -906,18 +969,15 @@ document.querySelector('#checkout-app').innerHTML = `
                 <p class="text-xs uppercase tracking-[0.12em] text-brand-muted">
                   Recipient
                 </p>
-
                 <p
                   class="mt-1 text-sm font-semibold text-brand-cream"
                   x-text="recipientName() || 'Complete your name above'"
                 ></p>
-
                 <p
                   class="mt-1 text-xs text-brand-muted"
                   x-text="customer.mobileNumber || 'Complete your mobile number above'"
                 ></p>
               </div>
-
               <div
                 x-show="!delivery.sameAsCustomer"
                 x-transition
@@ -930,7 +990,6 @@ document.querySelector('#checkout-app').innerHTML = `
                   >
                     Recipient first name
                   </label>
-
                   <input
                     id="recipient-first-name"
                     type="text"
@@ -944,7 +1003,6 @@ document.querySelector('#checkout-app').innerHTML = `
                     class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
                   >
                 </div>
-
                 <div>
                   <label
                     for="recipient-last-name"
@@ -952,7 +1010,6 @@ document.querySelector('#checkout-app').innerHTML = `
                   >
                     Recipient last name
                   </label>
-
                   <input
                     id="recipient-last-name"
                     type="text"
@@ -966,7 +1023,6 @@ document.querySelector('#checkout-app').innerHTML = `
                     class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
                   >
                 </div>
-
                 <div class="sm:col-span-2">
                   <label
                     for="recipient-mobile"
@@ -974,7 +1030,6 @@ document.querySelector('#checkout-app').innerHTML = `
                   >
                     Recipient mobile number
                   </label>
-
                   <input
                     id="recipient-mobile"
                     type="tel"
@@ -992,7 +1047,6 @@ document.querySelector('#checkout-app').innerHTML = `
                   >
                 </div>
               </div>
-
               <div class="mt-5 grid gap-5 sm:grid-cols-2">
                 <div>
                   <label
@@ -1001,7 +1055,6 @@ document.querySelector('#checkout-app').innerHTML = `
                   >
                     Province
                   </label>
-
                   <input
                     id="province"
                     type="text"
@@ -1012,7 +1065,6 @@ document.querySelector('#checkout-app').innerHTML = `
                     :required="delivery.fulfillmentType === 'dropship'"
                   >
                 </div>
-
                 <div>
                   <label
                     for="city"
@@ -1020,7 +1072,6 @@ document.querySelector('#checkout-app').innerHTML = `
                   >
                     City or municipality
                   </label>
-
                   <input
                     id="city"
                     type="text"
@@ -1032,7 +1083,6 @@ document.querySelector('#checkout-app').innerHTML = `
                   >
                 </div>
               </div>
-
               <div class="mt-5 grid gap-5 sm:grid-cols-2">
                 <div>
                   <label
@@ -1041,7 +1091,6 @@ document.querySelector('#checkout-app').innerHTML = `
                   >
                     Barangay
                   </label>
-
                   <input
                     id="barangay"
                     type="text"
@@ -1052,7 +1101,6 @@ document.querySelector('#checkout-app').innerHTML = `
                     :required="delivery.fulfillmentType === 'dropship'"
                   >
                 </div>
-
                 <div>
                   <label
                     for="house-street"
@@ -1060,7 +1108,6 @@ document.querySelector('#checkout-app').innerHTML = `
                   >
                     House number and street
                   </label>
-
                   <input
                     id="house-street"
                     type="text"
@@ -1072,7 +1119,6 @@ document.querySelector('#checkout-app').innerHTML = `
                   >
                 </div>
               </div>
-
               <div class="mt-5 grid gap-5 sm:grid-cols-2">
                 <div>
                   <label
@@ -1084,7 +1130,6 @@ document.querySelector('#checkout-app').innerHTML = `
                       (Optional)
                     </span>
                   </label>
-
                   <input
                     id="landmark"
                     type="text"
@@ -1093,7 +1138,6 @@ document.querySelector('#checkout-app').innerHTML = `
                     class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
                   >
                 </div>
-
                 <div>
                   <label
                     for="order-notes"
@@ -1104,7 +1148,6 @@ document.querySelector('#checkout-app').innerHTML = `
                       (Optional)
                     </span>
                   </label>
-
                   <input
                     id="order-notes"
                     type="text"
@@ -1118,7 +1161,6 @@ document.querySelector('#checkout-app').innerHTML = `
               </div>
             </div>
           </section>
-
           <section
             class="overflow-hidden rounded-[1.5rem] border border-brand-border bg-brand-panel shadow-panel"
           >
@@ -1130,19 +1172,16 @@ document.querySelector('#checkout-app').innerHTML = `
               >
                 Manual payment
               </p>
-
               <h2
                 class="mt-1 font-display text-3xl text-brand-cream"
               >
                 Payment details
               </h2>
-
               <p class="mt-2 text-sm leading-6 text-brand-muted">
                 Select a payment method and attach a clear receipt or
                 payment screenshot.
               </p>
             </header>
-
             <div class="p-5 sm:p-6">
               <label
                 for="payment-method"
@@ -1150,7 +1189,6 @@ document.querySelector('#checkout-app').innerHTML = `
               >
                 Payment method
               </label>
-
               <select
   id="payment-method"
   x-model="payment.method"
@@ -1160,16 +1198,13 @@ document.querySelector('#checkout-app').innerHTML = `
   <option value="" disabled>
     Select payment method
   </option>
-
   <option value="e-wallet">
     E-wallet transfer
   </option>
-
   <option value="bank-transfer">
     Bank transfer
   </option>
 </select>
-
               <div
                 class="mt-5 rounded-xl border border-brand-gold/30 bg-brand-black p-4"
               >
@@ -1178,17 +1213,14 @@ document.querySelector('#checkout-app').innerHTML = `
                 >
                   Payment instructions
                 </p>
-
                 <p class="mt-2 text-sm leading-6 text-brand-muted">
                   Official account details and final instructions will
                   appear here after confirmation from the client.
                 </p>
-
                 <p class="mt-3 text-xs font-semibold text-brand-cream">
                   Do not send payment using unverified account details.
                 </p>
               </div>
-
               <div class="mt-5">
                 <label
                   for="payment-proof"
@@ -1196,7 +1228,6 @@ document.querySelector('#checkout-app').innerHTML = `
                 >
                   Proof of payment
                 </label>
-
                 <label
   for="payment-proof"
   class="mt-2 flex cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-brand-border bg-brand-black px-5 py-7 text-center transition hover:border-brand-gold"
@@ -1215,29 +1246,25 @@ document.querySelector('#checkout-app').innerHTML = `
       stroke-linejoin="round"
     />
   </svg>
-
   <span
     class="mt-3 text-sm font-semibold text-brand-cream"
   >
     Select payment screenshot
   </span>
-
   <span
     class="mt-1 text-xs leading-5 text-brand-muted"
   >
     JPG, PNG, or WebP — maximum 5 MB
   </span>
-
   <input
-    id="payment-proof"
-    type="file"
-    accept="image/jpeg,image/png,image/webp"
-    class="sr-only"
-    @change="handleProofFile"
-    required
-  >
+  id="payment-proof"
+  type="file"
+  accept="image/jpeg,image/png,image/webp"
+  class="sr-only"
+  @change="handleProofFile"
+  :disabled="!checkoutPaymentsReady"
+>
 </label>
-
 <div
   x-show="payment.proofPreviewUrl"
   x-transition
@@ -1248,13 +1275,11 @@ document.querySelector('#checkout-app').innerHTML = `
     alt="Selected payment proof preview"
     class="mx-auto max-h-64 w-full rounded-lg object-contain"
   >
-
   <p
     class="mt-3 break-all text-center text-xs font-semibold text-brand-cream"
     x-text="payment.proofFileName"
   ></p>
 </div>
-
                 <p
                   x-show="paymentError"
                   x-text="paymentError"
@@ -1264,7 +1289,6 @@ document.querySelector('#checkout-app').innerHTML = `
               </div>
             </div>
           </section>
-
           <section
             class="overflow-hidden rounded-[1.5rem] border border-brand-gold/30 bg-brand-panel p-5 shadow-gold-soft sm:p-6"
           >
@@ -1277,29 +1301,25 @@ document.querySelector('#checkout-app').innerHTML = `
                 >
                   Final confirmation
                 </p>
-
-                <h2 class="mt-1 font-display text-3xl text-brand-cream">
-                  Submit for verification
-                </h2>
-
+                <h2
+  class="mt-1 font-display text-3xl text-brand-cream"
+  x-text="checkoutPaymentsReady ? 'Submit for verification' : 'Review checkout details'"
+></h2>
                 <p class="mt-2 text-sm leading-6 text-brand-muted">
   Review the customer, delivery, and payment information
   before submitting the order.
 </p>
               </div>
-
               <div class="shrink-0 sm:text-right">
                 <p class="text-xs uppercase tracking-[0.12em] text-brand-muted">
                   Estimated total
                 </p>
-
                 <strong
                   class="mt-1 block font-display text-3xl text-brand-gold"
                   x-text="formatMoney($store.cart.subtotal)"
                 ></strong>
               </div>
             </div>
-
             <label
               class="mt-5 flex cursor-pointer items-start gap-3 rounded-xl border border-brand-border bg-brand-black p-4"
             >
@@ -1308,27 +1328,23 @@ document.querySelector('#checkout-app').innerHTML = `
                 class="mt-0.5 size-4 accent-[#b78a32]"
                 required
               >
-
               <span class="text-sm leading-6 text-brand-muted">
                 I confirm that the order, fulfillment, recipient (when
                 applicable), and payment information provided above is
                 correct.
               </span>
             </label>
-
             <div
               class="mt-5 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3"
             >
               <p class="text-sm font-semibold text-amber-950">
-                Frontend preview only
+                Ordering is not open yet
               </p>
-
               <p class="mt-1 text-xs font-medium leading-5 text-amber-900">
-                This button currently validates the form only. It does
-                not save the order or upload the payment proof yet.
+                We are waiting for official payment instructions. You can
+                check your cart and details, but cannot submit an order yet.
               </p>
             </div>
-
             <div
               id="checkout-preview-status"
               x-show="checkoutPreviewComplete"
@@ -1336,23 +1352,38 @@ document.querySelector('#checkout-app').innerHTML = `
               class="mt-4 rounded-xl border border-[#2f6b59] bg-[#234f42] px-4 py-3 text-sm font-medium leading-6 text-[#fff8e9] shadow-sm"
               role="status"
             >
-              Checkout information is complete. The secure database and
-              admin approval connection will be added in the backend phase.
+              Details checked. No order or payment proof has been submitted yet.
             </div>
-
             <button
-              type="submit"
-              class="mt-5 inline-flex h-12 w-full items-center justify-center rounded-full bg-brand-gold px-7 text-sm font-semibold text-brand-black transition hover:bg-brand-gold-light disabled:cursor-not-allowed disabled:opacity-60"
-              :disabled="checkoutPreviewComplete"
-              x-text="
-                checkoutPreviewComplete
-                  ? 'Checkout preview complete'
-                  : 'Submit order for verification'
-              "
+  type="submit"
+  class="mt-5 inline-flex h-12 w-full items-center justify-center rounded-full bg-brand-gold px-7 text-sm font-semibold text-brand-black transition hover:bg-brand-gold-light disabled:cursor-not-allowed disabled:opacity-60"
+  :disabled="!checkoutPaymentsReady || checkoutPreviewComplete || isCheckingCart"
+  x-text="
+    !checkoutPaymentsReady
+      ? 'Ordering not open yet'
+      : isCheckingCart
+        ? 'Checking stock and price...'
+        : checkoutPreviewComplete
+          ? 'Checkout details checked'
+          : 'Check checkout details'
+  "
+></button>
+            <button
+              type="button"
+              x-show="checkoutPreviewComplete && !submittedOrderId"
+              @click="submitOrder()"
+              :disabled="!checkoutPaymentsReady || isSubmittingOrder || orderSubmissionUncertain"
+              class="mt-3 inline-flex h-12 w-full items-center justify-center rounded-full border border-brand-gold px-7 text-sm font-semibold text-brand-gold disabled:cursor-not-allowed disabled:opacity-50"
+              x-text="isSubmittingOrder ? 'Submitting order...' : 'Submit order for verification'"
             ></button>
-
+            <p
+              x-show="orderCheckError"
+              x-text="orderCheckError"
+              class="mt-3 text-center text-sm text-red-400"
+              role="alert"
+            ></p>
             <p class="mt-3 text-center text-xs leading-5 text-brand-muted">
-              Your order will remain pending until the company verifies
+              Once ordering opens, submitted orders remain pending until the company verifies
               the payment and order details.
             </p>
           </section>
@@ -1362,8 +1393,6 @@ document.querySelector('#checkout-app').innerHTML = `
     </main>
   </div>
 `
-
 Alpine.start()
 }
-
 startCheckout()
