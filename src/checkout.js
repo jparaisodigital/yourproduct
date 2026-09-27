@@ -312,30 +312,70 @@ Alpine.data('checkoutPage', () => ({
 }))
 async function startCheckout() {
   const { data: { user }, error } = await supabase.auth.getUser()
+
   if (error || !user) {
     window.location.replace('/login/')
     return
   }
+
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
     .select('first_name, last_name, mobile_number, email, customer_type, membership_status')
     .eq('id', user.id)
     .single()
+
   if (profileError || !profile) {
     console.error('Unable to load checkout profile:', profileError)
     document.querySelector('#checkout-app').textContent =
       'Unable to load your details. Please refresh.'
     return
   }
+
   checkoutProfile = profile
-  registerCartStore(Alpine, products, {
+
+  const { data: liveProducts, error: productsError } = await supabase
+    .from('products')
+    .select('id, is_active, stock_quantity, regular_price, member_price')
+    .eq('is_active', true)
+
+  if (productsError) {
+    console.error('Unable to load checkout products:', productsError)
+    document.querySelector('#checkout-app').textContent =
+      'Unable to load product availability. Please refresh.'
+    return
+  }
+
+  const liveProductById = new Map(
+    (liveProducts ?? []).map((product) => [product.id, product]),
+  )
+
+  const checkoutProducts = products.map((product) => {
+    const liveProduct = liveProductById.get(product.id)
+    const regularPrice = Number(liveProduct?.regular_price ?? 0)
+    const memberPrice = Number(liveProduct?.member_price ?? 0)
+
+    return {
+      ...product,
+      isActive:
+        liveProduct?.is_active === true &&
+        regularPrice > 0 &&
+        memberPrice > 0,
+      stockQuantity: Number(liveProduct?.stock_quantity ?? 0),
+      regularPrice,
+      memberPrice,
+    }
+  })
+
+  registerCartStore(Alpine, checkoutProducts, {
     pricingType:
       profile.customer_type === 'member' &&
       profile.membership_status === 'active'
         ? 'member'
         : 'regular',
   })
+
   document.title = `Checkout | ${siteConfig.brand.name}`
+
   document.querySelector('#checkout-app').innerHTML = `
   <div
     x-data="checkoutPage"
