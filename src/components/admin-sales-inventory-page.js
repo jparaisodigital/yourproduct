@@ -149,7 +149,61 @@ export function renderAdminSalesInventoryPage() {
               ></button>
             </div>
           </article>
-        </template>
+                </template>
+      </div>
+
+      <div class="mt-8 rounded-2xl border border-brand-border bg-brand-panel p-5 sm:p-6">
+        <h2 class="font-display text-2xl text-brand-cream">
+          Recent stock changes
+        </h2>
+        <p class="mt-1 text-xs text-brand-muted">
+          Latest 20 changes, newest first.
+        </p>
+
+        <p
+          x-show="stockHistoryLoading"
+          class="mt-5 text-sm text-brand-muted"
+        >
+          Loading history...
+        </p>
+
+        <p
+          x-show="stockHistoryError"
+          x-text="stockHistoryError"
+          class="mt-5 text-sm text-red-300"
+          role="alert"
+        ></p>
+
+        <p
+          x-show="!stockHistoryLoading && !stockHistoryError && stockHistory.length === 0"
+          class="mt-5 text-sm text-brand-muted"
+        >
+          No stock changes yet.
+        </p>
+
+        <div
+          x-show="!stockHistoryLoading && !stockHistoryError && stockHistory.length > 0"
+          class="mt-5 space-y-3"
+        >
+          <template x-for="movement in stockHistory" :key="movement.id">
+            <div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-brand-border bg-brand-black p-4">
+              <div>
+                <p
+                  class="font-semibold text-brand-cream"
+                  x-text="(liveProducts.find(product => product.id === movement.product_id) || {}).sku || movement.product_id"
+                ></p>
+                <p
+                  class="mt-1 text-xs text-brand-muted"
+                  x-text="new Date(movement.created_at).toLocaleString('en-PH', { timeZone: 'Asia/Manila' })"
+                ></p>
+              </div>
+              <p
+                class="text-sm font-semibold text-brand-gold"
+                x-text="movement.previous_quantity + ' → ' + movement.new_quantity"
+              ></p>
+            </div>
+          </template>
+        </div>
       </div>
     </section>
   `

@@ -31,14 +31,6 @@ import {
 } from './components/admin-inventory-adjustment-drawer.js'
 
 import {
-  renderAdminInventoryMovementHistory,
-} from './components/admin-inventory-movement-history.js'
-
-import {
-  renderAdminSalesRecords,
-} from './components/admin-sales-records.js'
-
-import {
   renderAdminPackageFulfillmentPanel,
 } from './components/admin-package-fulfillment-panel.js'
 
@@ -248,7 +240,7 @@ function renderAdminSidebar() {
           </p>
     
           <p class="mt-1 text-xs text-brand-muted">
-            Frontend interface only
+            Orders and inventory are live; other sections are previews.
           </p>
         </div>
       </div>
@@ -2107,6 +2099,9 @@ Alpine.data('adminDashboard', () => ({
   savingProductId: null,
   stockSaveMessage: '',
   stockSaveError: '',
+  stockHistory: [],
+  stockHistoryLoading: true,
+  stockHistoryError: '',
 
   liveOrders: [],
 
@@ -2434,14 +2429,39 @@ Alpine.data('adminDashboard', () => ({
     }
   },
 
+  async loadStockHistory() {
+    this.stockHistoryLoading = true
+    this.stockHistoryError = ''
+
+    try {
+      const { data, error } = await supabase
+        .from('inventory_movements')
+        .select('id, product_id, previous_quantity, new_quantity, created_at')
+        .order('created_at', { ascending: false })
+        .limit(20)
+
+      if (error) throw error
+
+      this.stockHistory = data ?? []
+    } catch (error) {
+      console.error('Unable to load stock history:', error)
+      this.stockHistoryError = 'Unable to load stock history.'
+      this.stockHistory = []
+    } finally {
+      this.stockHistoryLoading = false
+    }
+  },
+
+
   async saveProductStock(product) {
     const rawStock = this.stockDrafts[product.id]
-const newStock =
-  rawStock === '' ||
-  rawStock === null ||
-  rawStock === undefined
-    ? NaN
-    : Number(rawStock)
+    const newStock =
+      rawStock === '' ||
+      rawStock === null ||
+      rawStock === undefined
+        ? NaN
+        : Number(rawStock)
+
     this.stockSaveMessage = ''
     this.stockSaveError = ''
 
@@ -2465,6 +2485,7 @@ const newStock =
 
       product.stock_quantity = Number(data)
       this.stockSaveMessage = `Stock saved for ${product.name}.`
+      await this.loadStockHistory()
     } catch (error) {
       console.error('Unable to save product stock:', error)
       this.stockSaveError = 'Unable to save stock. Please try again.'
@@ -4606,7 +4627,7 @@ document.title = `Admin Dashboard | ${siteConfig.brand.name}`
 document.querySelector('#admin-app').innerHTML = `
    <div
     x-data="adminDashboard"
-    x-init="loadLiveProducts()"
+    x-init="loadLiveProducts(); loadStockHistory()"
     x-cloak
     class="min-h-screen bg-brand-black text-brand-cream"
     @keydown.escape.window="closeMobileMenu(); closeApplicationDetails(); closeOrderDetails(); closeInventoryAdjustment()"
@@ -4942,10 +4963,6 @@ document.querySelector('#admin-app').innerHTML = `
 ${renderOrdersPage()}
 
 ${renderAdminSalesInventoryPage()}
-
-${renderAdminSalesRecords()}
-
-${renderAdminInventoryMovementHistory()}
 
 ${renderAdminReferralsPayoutsPage()}
 
