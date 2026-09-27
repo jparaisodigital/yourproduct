@@ -66,6 +66,20 @@ export function renderAdminSalesInventoryPage() {
         No products found.
       </p>
 
+      <p
+        x-show="stockSaveError"
+        x-text="stockSaveError"
+        class="mt-4 text-sm text-red-300"
+        role="alert"
+      ></p>
+
+      <p
+        x-show="stockSaveMessage"
+        x-text="stockSaveMessage"
+        class="mt-4 text-sm text-brand-gold"
+        role="status"
+      ></p>
+
       <div
         x-show="!liveProductsLoading && !liveProductsError && liveProducts.length > 0"
         class="mt-6 grid gap-4 md:grid-cols-2"
@@ -111,6 +125,28 @@ export function renderAdminSalesInventoryPage() {
                   x-text="product.stock_quantity"
                 ></p>
               </div>
+            </div>
+
+            <div class="mt-5 flex flex-wrap items-end gap-3 border-t border-brand-border pt-4">
+              <label class="text-xs text-brand-muted">
+                Set stock
+                <input
+                  type="number"
+                  min="0"
+                  step="1"
+                  x-model.number="stockDrafts[product.id]"
+                  :disabled="savingProductId === product.id"
+                  class="mt-1 block w-28 rounded-lg border border-brand-border bg-brand-black px-3 py-2 text-sm text-brand-cream"
+                >
+              </label>
+
+              <button
+                type="button"
+                @click="saveProductStock(product)"
+                :disabled="savingProductId === product.id"
+                class="min-h-10 rounded-full bg-brand-gold px-5 text-sm font-semibold text-[#17130d] disabled:opacity-50"
+                x-text="savingProductId === product.id ? 'Saving...' : 'Save Stock'"
+              ></button>
             </div>
           </article>
         </template>

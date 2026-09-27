@@ -2103,6 +2103,10 @@ Alpine.data('adminDashboard', () => ({
   liveProducts: [],
   liveProductsLoading: true,
   liveProductsError: '',
+  stockDrafts: {},
+  savingProductId: null,
+  stockSaveMessage: '',
+  stockSaveError: '',
 
   liveOrders: [],
 
@@ -2415,6 +2419,12 @@ Alpine.data('adminDashboard', () => ({
       if (error) throw error
 
       this.liveProducts = data ?? []
+      this.stockDrafts = Object.fromEntries(
+        this.liveProducts.map((product) => [
+          product.id,
+          product.stock_quantity,
+        ]),
+      )
     } catch (error) {
       console.error('Unable to load admin products:', error)
       this.liveProductsError = 'Unable to load products. Please refresh.'
@@ -2424,7 +2434,45 @@ Alpine.data('adminDashboard', () => ({
     }
   },
 
-  
+  async saveProductStock(product) {
+    const rawStock = this.stockDrafts[product.id]
+const newStock =
+  rawStock === '' ||
+  rawStock === null ||
+  rawStock === undefined
+    ? NaN
+    : Number(rawStock)
+    this.stockSaveMessage = ''
+    this.stockSaveError = ''
+
+    if (!Number.isSafeInteger(newStock) || newStock < 0) {
+      this.stockSaveError = 'Enter a whole number of 0 or more.'
+      return
+    }
+
+    this.savingProductId = product.id
+
+    try {
+      const { data, error } = await supabase.rpc(
+        'admin_set_product_stock',
+        {
+          p_product_id: product.id,
+          p_new_stock: newStock,
+        },
+      )
+
+      if (error) throw error
+
+      product.stock_quantity = Number(data)
+      this.stockSaveMessage = `Stock saved for ${product.name}.`
+    } catch (error) {
+      console.error('Unable to save product stock:', error)
+      this.stockSaveError = 'Unable to save stock. Please try again.'
+    } finally {
+      this.savingProductId = null
+    }
+  },
+
   get pendingOrderCount() {
     return this.orders.filter(
       (order) =>
