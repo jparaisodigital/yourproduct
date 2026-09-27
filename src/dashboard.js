@@ -1044,9 +1044,13 @@ const previewRewards = [
   },
 ]
 
-const activeProducts = products.filter(
-  (product) => product.isActive,
-)
+const dashboardProducts = products.map((product) => ({
+  ...product,
+  isActive: false,
+  stockQuantity: 0,
+}))
+
+const activeProducts = dashboardProducts
 
 const dashboardCategoryButtons = productCategories
 .map(
@@ -1070,7 +1074,7 @@ const dashboardCategoryButtons = productCategories
 )
 .join('')
 
-const dashboardProductCards = activeProducts
+const dashboardProductCards = () => activeProducts
 .map((product) => {
   const searchText = [
     product.name,
@@ -1571,7 +1575,7 @@ function renderSidebar() {
 
 window.Alpine = Alpine
 
-registerProductViewStore(Alpine, products)
+registerProductViewStore(Alpine, dashboardProducts)
 registerCustomerSupportChat(Alpine)
 registerMemberPointsPage(Alpine)
 registerMemberReferralCard(Alpine, {
@@ -1592,19 +1596,23 @@ registerMemberPayoutPage(Alpine, {
 
 Alpine.magic('addToCartWithAnimation', () => {
   return (productId, sourceButton) => {
-    const product = products.find(
+    const product = dashboardProducts.find(
       (item) => item.id === productId,
     )
-    
-    if (!product) {
+
+    if (
+      !product ||
+      !product.isActive ||
+      product.stockQuantity <= 0
+    ) {
       return
     }
-    
+
     const cart = Alpine.store('cart')
     const previousQuantity = cart.quantityFor(productId)
-    
+
     cart.add(productId)
-    
+
     if (cart.quantityFor(productId) > previousQuantity) {
       flyToCart(sourceButton, product.image)
     }
@@ -2100,7 +2108,49 @@ if (
   return
 }
 
-registerCartStore(Alpine, products, {
+let productsLoadError = false
+
+try {
+  const { data, error: productsError } = await supabase
+    .from('products')
+    .select(
+      'id, is_active, stock_quantity, regular_price, member_price',
+    )
+
+  if (productsError) throw productsError
+
+  const liveProductsById = new Map(
+    (data ?? []).map((product) => [product.id, product]),
+  )
+
+  for (const product of dashboardProducts) {
+    const liveProduct = liveProductsById.get(product.id)
+    const hasValidPrices =
+      Number(liveProduct?.regular_price) > 0 &&
+      Number(liveProduct?.member_price) > 0
+
+    product.isActive =
+      liveProduct?.is_active === true &&
+      hasValidPrices
+
+    product.stockQuantity = product.isActive
+      ? Math.max(0, Number(liveProduct.stock_quantity) || 0)
+      : 0
+
+    if (liveProduct?.regular_price != null) {
+      product.regularPrice = Number(liveProduct.regular_price)
+    }
+
+    if (liveProduct?.member_price != null) {
+      product.memberPrice = Number(liveProduct.member_price)
+    }
+  }
+} catch (error) {
+  console.error('Unable to load dashboard products:', error)
+  productsLoadError = true
+}
+
+registerCartStore(Alpine, dashboardProducts, {
   pricingType:
     profile.customer_type === 'member' &&
     profile.membership_status === 'active'
@@ -3324,7 +3374,7 @@ registerCartStore(Alpine, products, {
                   class="font-semibold text-brand-cream"
                   x-text="filteredProductCount"
                 ></span>
-                available
+                catalog
                 <span
                   x-text="filteredProductCount === 1 ? 'product' : 'products'"
                 ></span>
@@ -3338,11 +3388,15 @@ registerCartStore(Alpine, products, {
             </div>
           </section>
 
+          ${productsLoadError
+            ? '<p class="mt-5 rounded-xl border border-red-400/30 bg-brand-panel p-4 text-sm text-red-300" role="alert">Product availability is temporarily unavailable. Please refresh.</p>'
+            : ''}
+
           <div
             class="mt-6 grid grid-cols-2 gap-3 sm:gap-5 xl:grid-cols-3"
             aria-live="polite"
           >
-            ${dashboardProductCards}
+            ${dashboardProductCards()}
           </div>
 
           <div
