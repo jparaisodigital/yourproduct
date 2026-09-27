@@ -2407,14 +2407,14 @@ Alpine.data('adminDashboard', () => ({
     this.overviewPendingOrders = null
     this.overviewActiveMembers = null
     this.overviewMetricsError = ''
-  
+
     try {
       const [ordersResult, membersResult] = await Promise.all([
         supabase
           .from('orders')
           .select('id', { count: 'exact', head: true })
           .eq('status', 'pending_verification'),
-  
+
         supabase
           .from('profiles')
           .select('id', { count: 'exact', head: true })
@@ -2423,13 +2423,13 @@ Alpine.data('adminDashboard', () => ({
           .eq('membership_status', 'active')
           .eq('account_status', 'active'),
       ])
-  
+
       if (ordersResult.error) throw ordersResult.error
       if (membersResult.error) throw membersResult.error
       if (ordersResult.count === null || membersResult.count === null) {
         throw new Error('Overview counts are unavailable.')
       }
-  
+
       this.overviewPendingOrders = ordersResult.count
       this.overviewActiveMembers = membersResult.count
     } catch (error) {
@@ -2442,7 +2442,7 @@ Alpine.data('adminDashboard', () => ({
   async loadMembershipApplications() {
     this.applicationsLoading = true
     this.applicationsError = ''
-  
+
     try {
       const { data, error } = await supabase
         .from('membership_applications')
@@ -2458,9 +2458,9 @@ Alpine.data('adminDashboard', () => ({
           )
         `)
         .order('submitted_at', { ascending: false })
-  
+
       if (error) throw error
-  
+
       this.applications = (data ?? []).map((application) => ({
         ...application,
         customer_name: [
