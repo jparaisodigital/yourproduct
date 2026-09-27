@@ -1571,7 +1571,6 @@ function renderSidebar() {
 
 window.Alpine = Alpine
 
-registerCartStore(Alpine, products)
 registerProductViewStore(Alpine, products)
 registerCustomerSupportChat(Alpine)
 registerMemberPointsPage(Alpine)
@@ -1614,9 +1613,14 @@ Alpine.magic('addToCartWithAnimation', () => {
 
 
 let signedInProfile = null
+let signedInOrders = []
+let signedInOrdersError = false
+
 Alpine.data('customerPortal', () => ({
   activePage: 'general',
   profile: signedInProfile,
+  orders: signedInOrders,
+  ordersError: signedInOrdersError,
   isMember: signedInProfile.membership_status === 'active',
   hasPendingMembership,
   selectedPackage: selectedDashboardPackage,
@@ -2039,6 +2043,84 @@ if (profileError || !profile) {
 
 signedInProfile = profile
 
+const { data: membershipApplication, error: membershipError } =
+  await supabase
+    .from('membership_applications')
+    .select('package_id, status')
+    .eq('customer_id', user.id)
+    .order('submitted_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+if (membershipError) {
+  console.error('Unable to load membership application:', membershipError)
+  document.querySelector('#dashboard-app').textContent =
+    'Unable to load your membership details. Please refresh.'
+  return
+}
+
+const openApplicationStatuses = [
+  'awaiting-payment',
+  'pending-verification',
+  'cancellation-requested',
+]
+
+const hasOpenApplication =
+  membershipApplication &&
+  openApplicationStatuses.includes(membershipApplication.status)
+
+const expectedStatus = hasOpenApplication
+  ? membershipApplication.status
+  : requestedMembershipStatus === 'awaiting-payment' &&
+      selectedDashboardPackage
+    ? 'awaiting-payment'
+    : ''
+
+const expectedPackageId = hasOpenApplication
+  ? membershipApplication.package_id
+  : expectedStatus === 'awaiting-payment'
+    ? selectedDashboardPackage.id
+    : ''
+
+if (
+  requestedMembershipStatus !== expectedStatus ||
+  requestedPackageId !== expectedPackageId
+) {
+  const dashboardUrl = new URL(window.location.href)
+
+  if (expectedStatus) {
+    dashboardUrl.searchParams.set('membership', expectedStatus)
+    dashboardUrl.searchParams.set('package', expectedPackageId)
+  } else {
+    dashboardUrl.searchParams.delete('membership')
+    dashboardUrl.searchParams.delete('package')
+  }
+
+  window.location.replace(dashboardUrl.toString())
+  return
+}
+
+registerCartStore(Alpine, products, {
+  pricingType:
+    profile.customer_type === 'member' &&
+    profile.membership_status === 'active'
+      ? 'member'
+      : 'regular',
+})
+
+  const { data: orderRows, error: ordersError } = await supabase
+    .from('orders')
+    .select('id, status, subtotal, delivery_fee, created_at')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false })
+
+  signedInOrders = orderRows ?? []
+  signedInOrdersError = Boolean(ordersError)
+
+  if (ordersError) {
+    console.error('Unable to load orders:', ordersError)
+  }
+
   document.querySelector('#dashboard-app').innerHTML = `
   <div
     x-data="customerPortal"
@@ -2312,10 +2394,9 @@ signedInProfile = profile
             </p>
 
             <strong
-              class="mt-3 block font-display text-4xl text-brand-cream"
-            >
-              —
-            </strong>
+  class="mt-3 block font-display text-4xl text-brand-cream"
+  x-text="ordersError ? '—' : orders.length"
+></strong>
 
             <p
               class="mt-3 text-xs leading-5 text-brand-muted"
@@ -3359,10 +3440,9 @@ signedInProfile = profile
               </p>
 
               <strong
-                class="mt-3 block font-display text-4xl text-brand-cream"
-              >
-                —
-              </strong>
+  class="mt-3 block font-display text-4xl text-brand-cream"
+  x-text="ordersError ? '—' : orders.length"
+></strong>
             </article>
 
             <article
@@ -3375,10 +3455,9 @@ signedInProfile = profile
               </p>
 
               <strong
-                class="mt-3 block font-display text-4xl text-brand-cream"
-              >
-                —
-              </strong>
+  class="mt-3 block font-display text-4xl text-brand-cream"
+  x-text="ordersError ? '—' : orders.filter(order => order.status === 'pending_verification').length"
+></strong>
             </article>
 
             <article
@@ -3391,10 +3470,9 @@ signedInProfile = profile
               </p>
 
               <strong
-                class="mt-3 block font-display text-4xl text-brand-cream"
-              >
-                —
-              </strong>
+  class="mt-3 block font-display text-4xl text-brand-cream"
+  x-text="ordersError ? '—' : orders.filter(order => order.status === 'completed').length"
+></strong>
             </article>
           </section>
 
@@ -3428,8 +3506,9 @@ signedInProfile = profile
             </div>
 
             <div
-              class="mt-6 rounded-2xl border border-dashed border-brand-border bg-brand-black px-5 py-12 text-center"
-            >
+  x-show="!ordersError && orders.length === 0"
+  class="mt-6 rounded-2xl border border-dashed border-brand-border bg-brand-black px-5 py-12 text-center"
+>
               <span
                 class="mx-auto grid size-12 place-items-center rounded-full bg-brand-charcoal text-brand-gold"
                 aria-hidden="true"
@@ -3460,7 +3539,7 @@ signedInProfile = profile
               <h3
                 class="mt-4 font-display text-2xl text-brand-cream"
               >
-                Order records are not connected yet
+                No orders submitted yet
               </h3>
 
               <p
@@ -3480,12 +3559,45 @@ signedInProfile = profile
             </div>
           </section>
 
-          <p
-            class="mt-6 text-center text-xs leading-5 text-brand-muted"
+                    <div
+            x-show="ordersError"
+            class="mt-6 rounded-2xl border border-red-400/30 bg-brand-panel p-5 text-sm text-red-300"
+            role="alert"
           >
-            Order history preview — real records will be loaded
-            after authenticated Supabase access is connected.
-          </p>
+            Unable to load orders. Please refresh this page.
+          </div>
+
+          <div
+            x-show="!ordersError && orders.length > 0"
+            class="mt-6 space-y-3"
+          >
+            <template x-for="order in orders" :key="order.id">
+              <article class="rounded-2xl border border-brand-border bg-brand-panel p-5">
+                <p
+                  class="font-semibold text-brand-cream"
+                  x-text="'Order ' + order.id.slice(0, 8).toUpperCase()"
+                ></p>
+                <p
+                  class="mt-2 text-sm capitalize text-brand-gold"
+                  x-text="order.status.replaceAll('_', ' ')"
+                ></p>
+                <p
+                  class="mt-2 text-xs text-brand-muted"
+                  x-text="new Date(order.created_at).toLocaleDateString('en-PH')"
+                ></p>
+                <p
+                  class="mt-3 text-sm text-brand-cream"
+                  x-text="'Items: ₱' + Number(order.subtotal).toLocaleString('en-PH', { minimumFractionDigits: 2 })"
+                ></p>
+                <p
+                  x-show="order.delivery_fee === null"
+                  class="mt-1 text-xs text-brand-muted"
+                >
+                  Delivery fee to be confirmed
+                </p>
+              </article>
+            </template>
+          </div>
         </section>
       </main>
     </div>

@@ -71,7 +71,31 @@ Alpine.data('loginPage', () => ({
         throw signInError
       }
 
-      window.location.assign('/dashboard/')
+      const { data: { user }, error: userError } =
+        await supabase.auth.getUser()
+
+      if (userError || !user) {
+        throw userError || new Error('Unable to verify account.')
+      }
+
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('role, account_status')
+        .eq('id', user.id)
+        .single()
+
+      if (profileError || !profile) {
+        throw profileError || new Error('Unable to load account.')
+      }
+
+      if (profile.account_status !== 'active') {
+        await supabase.auth.signOut()
+        throw new Error('Account unavailable.')
+      }
+
+      window.location.assign(
+        profile.role === 'admin' ? '/admin/' : '/dashboard/',
+      )
     } catch (error) {
       console.error('Unable to sign in:', error)
       this.loginError =
