@@ -2,6 +2,8 @@ import './style.css'
 
 import Alpine from 'alpinejs'
 
+import { supabase } from './lib/supabase.js'
+
 import {
   renderSiteLoader,
   dismissSiteLoader,
@@ -98,90 +100,129 @@ import {
   renderCustomerSupportChat,
 } from './components/customer-support-chat.js'
 
-window.Alpine = Alpine
+async function startStorefront() {
+  let liveProducts = []
+  let productsLoadError = false
 
-registerCartStore(Alpine, products)
-registerProductViewStore(Alpine, products)
-registerMembershipModal(Alpine)
-registerCustomerSupportChat(Alpine)
-
-Alpine.magic(
-  'addToCartWithAnimation',
-  () => {
-    return (productId, sourceButton) => {
-      const product = products.find(
-        (item) => item.id === productId,
+  try {
+    const { data, error } = await supabase
+      .from('products')
+      .select(
+        'id, is_active, stock_quantity, regular_price, member_price',
       )
 
-      if (!product) {
-        return
-      }
+    if (error) throw error
+    liveProducts = data ?? []
+  } catch (error) {
+    console.error('Unable to load storefront products:', error)
+    productsLoadError = true
+  }
 
-      const cart = Alpine.store('cart')
+  const liveProductsById = new Map(
+    liveProducts.map((product) => [product.id, product]),
+  )
 
-      const previousQuantity =
-        cart.quantityFor(productId)
+  const storefrontProducts = products.map((product) => {
+    const liveProduct = liveProductsById.get(product.id)
+    const isActive = liveProduct?.is_active === true
 
-      cart.add(productId)
-
-      if (
-        cart.quantityFor(productId) >
-        previousQuantity
-      ) {
-        flyToCart(
-          sourceButton,
-          product.image,
-        )
-      }
+    return {
+      ...product,
+      isActive,
+      stockQuantity: isActive
+        ? Math.max(0, Number(liveProduct.stock_quantity) || 0)
+        : 0,
+      regularPrice: liveProduct?.regular_price == null
+        ? product.regularPrice
+        : Number(liveProduct.regular_price),
+      memberPrice: liveProduct?.member_price == null
+        ? product.memberPrice
+        : Number(liveProduct.member_price),
     }
-  },
-)
+  })
 
-document.title =
-  `${siteConfig.brand.name} | Premium Fragrances`
+  window.Alpine = Alpine
 
-document.querySelector('#app').innerHTML = `
-  ${renderSiteLoader()}
+  registerCartStore(Alpine, storefrontProducts)
+  registerProductViewStore(Alpine, storefrontProducts)
+  registerMembershipModal(Alpine)
+  registerCustomerSupportChat(Alpine)
 
-  ${renderHeader(siteConfig)}
+  Alpine.magic(
+    'addToCartWithAnimation',
+    () => {
+      return (productId, sourceButton) => {
+        const product = storefrontProducts.find(
+          (item) => item.id === productId,
+        )
 
-  <main>
-    ${renderHero(homeConfig, siteConfig)}
+        if (
+          !product ||
+          !product.isActive ||
+          product.stockQuantity <= 0
+        ) {
+          return
+        }
 
-    ${renderProductsSection(
-      products,
-      productCategories,
-    )}
+        const cart = Alpine.store('cart')
+        const previousQuantity = cart.quantityFor(productId)
 
-    ${renderPackagesSection(packages)}
+        cart.add(productId)
 
-    ${renderAccountCtaSection()}
+        if (cart.quantityFor(productId) > previousQuantity) {
+          flyToCart(sourceButton, product.image)
+        }
+      }
+    },
+  )
 
-    ${renderWaysToEarnSection()}
+  document.title =
+    `${siteConfig.brand.name} | Premium Fragrances`
 
-    ${renderDiscoverSection()}
+  document.querySelector('#app').innerHTML = `
+    ${renderSiteLoader()}
 
-    ${renderVisionMissionSection()}
+    ${renderHeader(siteConfig)}
 
-    ${renderBossSection()}
-  </main>
+    <main>
+      ${renderHero(homeConfig, siteConfig)}
 
-  ${renderFooter(siteConfig)}
+      ${renderProductsSection(
+        storefrontProducts,
+        productCategories,
+        productsLoadError,
+      )}
 
-  ${renderCartDrawer()}
+      ${renderPackagesSection(packages)}
 
-  ${renderProductDrawer()}
+      ${renderAccountCtaSection()}
 
-  ${renderMembershipModal()}
+      ${renderWaysToEarnSection()}
 
-  ${renderCustomerSupportChat()}
+      ${renderDiscoverSection()}
 
-`
+      ${renderVisionMissionSection()}
 
-Alpine.start()
+      ${renderBossSection()}
+    </main>
 
-initScrollReveal()
+    ${renderFooter(siteConfig)}
 
-requestAnimationFrame(() => {
-  dismissSiteLoader()
-})
+    ${renderCartDrawer()}
+
+    ${renderProductDrawer()}
+
+    ${renderMembershipModal()}
+
+    ${renderCustomerSupportChat()}
+  `
+
+  Alpine.start()
+  initScrollReveal()
+
+  requestAnimationFrame(() => {
+    dismissSiteLoader()
+  })
+}
+
+startStorefront()

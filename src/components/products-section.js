@@ -3,11 +3,8 @@ import { renderProductCard } from './product-card.js'
 export function renderProductsSection(
   products,
   categories,
+  productsLoadError = false,
 ) {
-  const activeProducts = products.filter(
-    (product) => product.isActive,
-  )
-
   const categoryButtons = categories
     .map(
       (category) => `
@@ -20,9 +17,7 @@ export function renderProductsSection(
               : 'border-brand-border text-brand-muted hover:border-brand-gold hover:text-brand-gold'
           "
           @click="activeCategory = '${category.id}'"
-          :aria-pressed="
-            activeCategory === '${category.id}'
-          "
+          :aria-pressed="activeCategory === '${category.id}'"
         >
           ${category.label}
         </button>
@@ -30,7 +25,7 @@ export function renderProductsSection(
     )
     .join('')
 
-  const productCards = activeProducts
+  const productCards = products
     .map((product) => renderProductCard(product))
     .join('')
 
@@ -67,26 +62,40 @@ export function renderProductsSection(
         </div>
 
         <div
-  class="mt-8 flex flex-wrap gap-2 sm:mt-10 sm:gap-3"
-  aria-label="Filter products or view packages"
->
-  ${categoryButtons}
+          class="mt-8 flex flex-wrap gap-2 sm:mt-10 sm:gap-3"
+          aria-label="Filter products or view packages"
+        >
+          ${categoryButtons}
 
-  <button
-    type="button"
-    class="rounded-full border border-brand-gold/60 px-4 py-2 text-xs font-semibold text-brand-gold transition duration-300 hover:border-brand-gold hover:bg-brand-gold hover:text-brand-black sm:px-5 sm:py-2.5 sm:text-sm"
-    @click="
-      document
-        .querySelector('#packages')
-        ?.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start'
-        })
-    "
-  >
-    Packages
-  </button>
-</div>
+          <button
+            type="button"
+            class="rounded-full border border-brand-gold/60 px-4 py-2 text-xs font-semibold text-brand-gold transition duration-300 hover:border-brand-gold hover:bg-brand-gold hover:text-brand-black sm:px-5 sm:py-2.5 sm:text-sm"
+            @click="
+              document
+                .querySelector('#packages')
+                ?.scrollIntoView({
+                  behavior: 'smooth',
+                  block: 'start'
+                })
+            "
+          >
+            Packages
+          </button>
+        </div>
+
+        ${
+          productsLoadError
+            ? `
+              <p
+                class="mt-6 rounded-xl border border-red-400/30 bg-brand-panel p-4 text-sm text-red-300"
+                role="alert"
+              >
+                Product availability is temporarily unavailable.
+                Please refresh the page.
+              </p>
+            `
+            : ''
+        }
 
         <div
           class="mt-8 grid grid-cols-2 gap-3 sm:mt-10 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4"
@@ -95,12 +104,9 @@ export function renderProductsSection(
           ${productCards}
         </div>
 
-        <p
-          class="mt-8 text-xs leading-6 text-brand-muted"
-        >
-          Product names, prices, stock, and descriptions are
-          temporary placeholders pending final client
-          confirmation.
+        <p class="mt-8 text-xs leading-6 text-brand-muted">
+          Product details are being finalized. Ordering becomes
+          available only when a product is active and in stock.
         </p>
       </div>
     </section>

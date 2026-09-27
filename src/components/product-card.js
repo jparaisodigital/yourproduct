@@ -9,9 +9,12 @@ const pesoFormatter = new Intl.NumberFormat(
 
 export function renderProductCard(product) {
   const isAvailable =
-    Number(product.stockQuantity || 0) > 0
+  product.isActive &&
+  Number(product.stockQuantity || 0) > 0
 
-  const stockLabel = isAvailable
+const stockLabel = !product.isActive
+  ? 'Coming soon'
+  : isAvailable
     ? 'In stock'
     : 'Out of stock'
 
@@ -89,6 +92,7 @@ export function renderProductCard(product) {
         data-product-id="${product.id}"
         aria-label="View details for ${product.name}"
         @click="$store.productView.open('${product.id}')"
+        ${product.isActive ? '' : 'disabled'}
       >
         <img
   src="${product.image}"
@@ -172,6 +176,7 @@ export function renderProductCard(product) {
             aria-label="Quick view ${product.name}"
             title="Quick view"
             @click.prevent="$store.productView.open('${product.id}')"
+            ${product.isActive ? '' : 'disabled'}
           >
             <svg
               viewBox="0 0 24 24"
