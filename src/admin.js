@@ -43,7 +43,6 @@ import {
 } from './components/admin-package-fulfillment-panel.js'
 
 import {
-  membershipApplications,
   membershipStatusLabels,
   membershipFulfillmentStatusLabels,
   paymentMethodLabels,
@@ -64,20 +63,6 @@ import {
   registerAdminPointsAuditPage,
   renderAdminPointsAuditPage,
 } from './components/admin-points-audit-page.js'
-
-const adminMembershipApplications =
-  membershipApplications.map((application) => {
-    const selectedPackage =
-      packages.find(
-        (packageItem) =>
-          packageItem.id === application.package_id,
-      ) || null
-
-    return {
-      ...application,
-      package: selectedPackage,
-    }
-  })
 
 const adminInventoryProducts = products.map(
   (product) => ({
@@ -616,13 +601,13 @@ function renderMembershipApplicationsPage() {
           </template>
 
           <div
-            x-show="filteredApplications.length === 0"
+            x-show="!applicationsLoading && !applicationsError && filteredApplications.length === 0"
             class="rounded-[1.5rem] border border-dashed border-brand-border bg-brand-panel px-6 py-14 text-center"
           >
             <h2
               class="font-display text-2xl text-brand-cream"
             >
-              No applications found
+              Applications will appear here after customers submit payment details.
             </h2>
 
             <p
@@ -744,12 +729,12 @@ function renderOrdersPage() {
           class="mt-6 rounded-[1.5rem] border border-dashed border-brand-border bg-brand-panel px-6 py-14 text-center"
         >
           <h2 class="font-display text-2xl text-brand-cream">
-            No orders submitted yet
-          </h2>
+  No applications found
+</h2>
 
-          <p class="mt-2 text-sm leading-6 text-brand-muted">
-            No orders submitted yet.
-          </p>
+<p class="mt-2 text-sm leading-6 text-brand-muted">
+  Applications will appear here after customers submit payment details.
+</p>
         </div>
 
         <div
@@ -2089,10 +2074,15 @@ function renderApplicationDetailsDrawer() {
 }
 
 Alpine.data('adminDashboard', () => ({
-  applications: adminMembershipApplications,
+  applications: [],
+  applicationsLoading: true,
+  applicationsError: '',
+  overviewPendingOrders: null,
+  overviewActiveMembers: null,
+  overviewMetricsError: '',
 
   applicationStatusLabels:
-  membershipStatusLabels,
+    membershipStatusLabels,
 
   membershipFulfillmentStatusLabels,
 
@@ -2411,6 +2401,87 @@ Alpine.data('adminDashboard', () => ({
         (order) => order.id === this.selectedOrderId,
       ) || null
     )
+  },
+
+  async loadOverviewMetrics() {
+    this.overviewPendingOrders = null
+    this.overviewActiveMembers = null
+    this.overviewMetricsError = ''
+  
+    try {
+      const [ordersResult, membersResult] = await Promise.all([
+        supabase
+          .from('orders')
+          .select('id', { count: 'exact', head: true })
+          .eq('status', 'pending_verification'),
+  
+        supabase
+          .from('profiles')
+          .select('id', { count: 'exact', head: true })
+          .eq('role', 'customer')
+          .eq('customer_type', 'member')
+          .eq('membership_status', 'active')
+          .eq('account_status', 'active'),
+      ])
+  
+      if (ordersResult.error) throw ordersResult.error
+      if (membersResult.error) throw membersResult.error
+      if (ordersResult.count === null || membersResult.count === null) {
+        throw new Error('Overview counts are unavailable.')
+      }
+  
+      this.overviewPendingOrders = ordersResult.count
+      this.overviewActiveMembers = membersResult.count
+    } catch (error) {
+      console.error('Unable to load admin overview counts:', error)
+      this.overviewMetricsError =
+        'Unable to load overview counts. Please refresh.'
+    }
+  },
+
+  async loadMembershipApplications() {
+    this.applicationsLoading = true
+    this.applicationsError = ''
+  
+    try {
+      const { data, error } = await supabase
+        .from('membership_applications')
+        .select(`
+          id, customer_id, package_id, amount, status,
+          payment_method, payment_provider, sender_name,
+          reference_number, payment_proof_file_name,
+          cancellation_reason, refund_status, admin_note,
+          approved_at, membership_activated_at,
+          fulfillment_status, submitted_at, updated_at,
+          customer:profiles!membership_applications_customer_id_fkey(
+            first_name, last_name, email, mobile_number
+          )
+        `)
+        .order('submitted_at', { ascending: false })
+  
+      if (error) throw error
+  
+      this.applications = (data ?? []).map((application) => ({
+        ...application,
+        customer_name: [
+          application.customer?.first_name,
+          application.customer?.last_name,
+        ].filter(Boolean).join(' ') || 'Customer',
+        customer_email: application.customer?.email ?? '',
+        customer_mobile: application.customer?.mobile_number ?? '',
+        payment_proof_url: null,
+        package: packages.find(
+          (item) => item.id === application.package_id,
+        ) ?? null,
+      }))
+    } catch (error) {
+      console.error('Unable to load membership applications:', error)
+      this.applicationsError =
+        'Unable to load membership applications. Please refresh.'
+      this.applications = []
+    } finally {
+      this.applicationsLoading = false
+    }
   },
 
   async loadAdminCustomers() {
@@ -4697,7 +4768,7 @@ document.title = `Admin Dashboard | ${siteConfig.brand.name}`
 document.querySelector('#admin-app').innerHTML = `
    <div
     x-data="adminDashboard"
-    x-init="loadLiveProducts(); loadStockHistory(); loadAdminCustomers()"
+    x-init="loadLiveProducts(); loadStockHistory(); loadAdminCustomers(); loadMembershipApplications(); loadOverviewMetrics()"
     x-cloak
     class="min-h-screen bg-brand-black text-brand-cream"
     @keydown.escape.window="closeMobileMenu(); closeApplicationDetails(); closeOrderDetails(); closeInventoryAdjustment()"
@@ -4831,101 +4902,73 @@ document.querySelector('#admin-app').innerHTML = `
             </div>
           </div>
 
-          <div
-            class="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4"
-          >
-            <article
-              class="rounded-[1.4rem] border border-brand-border bg-brand-panel p-5 shadow-panel"
-            >
-              <p
-                class="text-xs uppercase tracking-[0.13em] text-brand-muted"
-              >
-                Pending Applications
-              </p>
+          <div class="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+  <article class="rounded-[1.4rem] border border-brand-border bg-brand-panel p-5 shadow-panel">
+    <p class="text-xs uppercase tracking-[0.13em] text-brand-muted">
+      Pending Applications
+    </p>
 
-              <strong
-                class="mt-4 block font-display text-4xl text-brand-cream"
-                x-text="pendingVerificationCount"
-              >
-              </strong>
+    <strong
+      class="mt-4 block font-display text-4xl text-brand-cream"
+      x-text="pendingVerificationCount"
+    ></strong>
 
-              <p class="mt-2 text-xs leading-5 text-brand-muted">
-                Waiting for payment review
-              </p>
-            </article>
+    <p class="mt-2 text-xs leading-5 text-brand-muted">
+      Waiting for payment review
+    </p>
+  </article>
 
-            <article
-              class="rounded-[1.4rem] border border-brand-border bg-brand-panel p-5 shadow-panel"
-            >
-              <p
-                class="text-xs uppercase tracking-[0.13em] text-brand-muted"
-              >
-                Cancellation Requests
-              </p>
+  <article class="rounded-[1.4rem] border border-brand-border bg-brand-panel p-5 shadow-panel">
+    <p class="text-xs uppercase tracking-[0.13em] text-brand-muted">
+      Cancellation Requests
+    </p>
 
-              <strong
-                class="mt-4 block font-display text-4xl text-brand-cream"
-                x-text="cancellationRequestCount"
-              >
-              </strong>
+    <strong
+      class="mt-4 block font-display text-4xl text-brand-cream"
+      x-text="cancellationRequestCount"
+    ></strong>
 
-              <p class="mt-2 text-xs leading-5 text-brand-muted">
-                Waiting for manual review
-              </p>
-            </article>
+    <p class="mt-2 text-xs leading-5 text-brand-muted">
+      Waiting for manual review
+    </p>
+  </article>
 
-            <article
-              class="rounded-[1.4rem] border border-brand-border bg-brand-panel p-5 shadow-panel"
-            >
-              <p
-                class="text-xs uppercase tracking-[0.13em] text-brand-muted"
-              >
-                Pending Orders
-              </p>
+  <article class="rounded-[1.4rem] border border-brand-border bg-brand-panel p-5 shadow-panel">
+    <p class="text-xs uppercase tracking-[0.13em] text-brand-muted">
+      Pending Orders
+    </p>
 
-              <strong
-                class="mt-4 block font-display text-4xl text-brand-cream"
-              >
-                3
-              </strong>
+    <strong
+      class="mt-4 block font-display text-4xl text-brand-cream"
+      x-text="overviewPendingOrders === null ? '—' : overviewPendingOrders"
+    ></strong>
 
-              <p class="mt-2 text-xs leading-5 text-brand-muted">
-                Regular product orders
-              </p>
-            </article>
+    <p class="mt-2 text-xs leading-5 text-brand-muted">
+      Regular product orders
+    </p>
+  </article>
 
-            <article
-              class="rounded-[1.4rem] border border-brand-gold/40 bg-brand-panel p-5 shadow-gold-soft"
-            >
-              <p
-                class="text-xs uppercase tracking-[0.13em] text-brand-muted"
-              >
-                Active Members
-              </p>
+  <article class="rounded-[1.4rem] border border-brand-gold/40 bg-brand-panel p-5 shadow-gold-soft">
+    <p class="text-xs uppercase tracking-[0.13em] text-brand-muted">
+      Active Members
+    </p>
 
-              <strong
-                class="mt-4 block font-display text-4xl text-brand-gold"
-              >
-                24
-              </strong>
+    <strong
+      class="mt-4 block font-display text-4xl text-brand-gold"
+      x-text="overviewActiveMembers === null ? '—' : overviewActiveMembers"
+    ></strong>
 
-              <p class="mt-2 text-xs leading-5 text-brand-muted">
-                Approved memberships
-              </p>
-            </article>
-          </div>
+    <p class="mt-2 text-xs leading-5 text-brand-muted">
+      Approved memberships
+    </p>
+  </article>
+</div>
 
-          <div
-            class="mt-6 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]"
-          >
-            <section
-              class="rounded-[1.5rem] border border-brand-border bg-brand-panel p-5 shadow-panel sm:p-6"
-            >
-              <p
-                class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
-              >
-                Priority Queue
-              </p>
+<div class="mt-6 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+  <section class="rounded-[1.5rem] border border-brand-border bg-brand-panel p-5 shadow-panel sm:p-6">
+    <p class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold">
+      Priority Queue
+    </p>
 
               <h2
                 class="mt-2 font-display text-3xl text-brand-cream"
@@ -4980,10 +5023,9 @@ document.querySelector('#admin-app').innerHTML = `
                   </span>
 
                   <span
-                    class="rounded-full bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-300"
-                  >
-                    3
-                  </span>
+  class="rounded-full bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-300"
+  x-text="overviewPendingOrders === null ? '—' : overviewPendingOrders"
+></span>
                 </button>
               </div>
             </section>
@@ -5000,7 +5042,7 @@ document.querySelector('#admin-app').innerHTML = `
               <h2
                 class="mt-2 font-display text-3xl text-brand-cream"
               >
-                Frontend preview
+                Integration in progress
               </h2>
 
               <div
@@ -5013,15 +5055,14 @@ document.querySelector('#admin-app').innerHTML = `
                   ></span>
 
                   <strong class="text-sm text-emerald-200">
-                    Interface ready
+                   Live data connected
                   </strong>
                 </div>
 
                 <p
                   class="mt-2 text-xs leading-5 text-emerald-100/80"
                 >
-                  Supabase authentication and database actions are not
-                  connected yet.
+                  Authentication, orders, customers, products, and inventory are connected. Membership submission and review are in progress.
                 </p>
               </div>
             </aside>
