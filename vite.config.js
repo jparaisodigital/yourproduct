@@ -15,6 +15,16 @@ export default defineConfig({
           'index.html',
         ),
 
+        faq: resolve(
+          import.meta.dirname,
+          'faq/index.html',
+        ),
+
+        terms: resolve(
+          import.meta.dirname,
+          'terms/index.html',
+        ),
+
         checkout: resolve(
           import.meta.dirname,
           'checkout/index.html',

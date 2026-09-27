@@ -782,24 +782,45 @@ document.querySelector('#register-app').innerHTML = `
 
               ${referralStatusMarkup}
 
-              <label
-                class="mt-6 flex cursor-pointer items-start gap-3"
-              >
-                <input
-                  type="checkbox"
-                  x-model="account.acceptedTerms"
-                  class="mt-1 size-4 shrink-0 accent-brand-gold"
-                  required
-                >
+              <div class="mt-6 flex items-start gap-3">
+  <input
+    id="accept-terms"
+    type="checkbox"
+    x-model="account.acceptedTerms"
+    class="mt-1 size-4 shrink-0 accent-brand-gold"
+    required
+  >
 
-                <span
-                  class="text-xs leading-5 text-brand-muted"
-                >
-                  I confirm that the information provided is correct and
-                  I agree to the account, purchase, privacy, and
-                  applicable membership terms.
-                </span>
-              </label>
+  <span class="text-xs leading-5 text-brand-muted">
+    <label for="accept-terms" class="cursor-pointer">
+      I confirm that the information provided is correct and I agree to the
+    </label>
+    <button
+  type="button"
+  @click="$refs.termsDialog.showModal()"
+  class="font-semibold text-brand-gold underline underline-offset-2"
+>Terms &amp; Conditions</button>
+  </span>
+</div>
+
+<dialog
+  x-ref="termsDialog"
+  class="m-auto h-[85vh] w-[min(900px,95vw)] max-w-none rounded-2xl border border-brand-border bg-brand-panel p-0 text-brand-cream backdrop:bg-black/75"
+>
+  <div class="flex items-center justify-between gap-4 border-b border-brand-border p-4">
+    <strong>Terms &amp; Conditions</strong>
+    <button
+      type="button"
+      @click="$refs.termsDialog.close()"
+      class="rounded-full bg-brand-gold px-4 py-2 text-sm font-semibold text-brand-black"
+    >Back to registration</button>
+  </div>
+  <iframe
+    src="/terms/?embed=1"
+    title="Terms and Conditions"
+    class="h-[calc(85vh-73px)] w-full border-0"
+  ></iframe>
+</dialog>
 
               <p
                 x-show="registrationError"

@@ -1,173 +1,130 @@
 export const faqCategories = [
-    {
-      id: 'all',
-      label: 'All Questions',
-    },
-    {
-      id: 'products',
-      label: 'Products',
-    },
-    {
-      id: 'pricing',
-      label: 'Pricing',
-    },
-    {
-      id: 'orders',
-      label: 'Orders & Delivery',
-    },
-    {
-      id: 'reseller',
-      label: 'Reseller Program',
-    },
-  ]
-  
-  export const faqItems = [
-    {
-      id: 'what-is-your-product',
-      category: 'products',
-      question: 'What is YOUR PRODUCT?',
-      answer:
-        'YOUR PRODUCT is an in-house fragrance brand offering a curated collection of premium-inspired scents for men and women, designed for everyday wear, special occasions, and different personal styles.',
-    },
-    {
-      id: 'original-designer-brands',
-      category: 'products',
-      question:
-        'Are YOUR PRODUCT fragrances original designer brands?',
-      answer:
-        'No. YOUR PRODUCT fragrances are in-house products with their own product names, branding, and presentation. Some scents may be developed around familiar fragrance profiles, but YOUR PRODUCT is not affiliated with, sponsored by, or endorsed by any third-party designer brand.',
-    },
-    {
-      id: 'available-fragrances',
-      category: 'products',
-      question: 'How many fragrances are available?',
-      answer:
-        'The collection currently features 20 scents: 10 for Women, numbered W01 to W10, and 10 for Men, numbered M01 to M10.',
-    },
-    {
-      id: 'choose-a-scent',
-      category: 'products',
-      question: 'How do I choose a scent?',
-      answer:
-        'Each product listing includes its scent profile, fragrance character, and recommended occasions to help you choose the fragrance that best matches your preference.',
-    },
-    {
-      id: 'bottle-price',
-      category: 'pricing',
-      question: 'How much is a bottle?',
-      answer:
-        'The suggested consumer selling price is ₱350 per bottle. Qualified members and resellers may purchase at the ₱180 reseller price, subject to the applicable program rules.',
-    },
-    {
-      id: 'reseller-gross-spread',
-      category: 'pricing',
-      question:
-        'What is the potential gross spread per bottle?',
-      answer:
-        'A bottle purchased at the ₱180 reseller price and sold at the suggested ₱350 consumer price provides a potential gross spread of ₱170. Actual take-home income may be lower after delivery fees, discounts, taxes, marketing, and other operating expenses.',
-    },
-    {
-      id: 'company-assorted-packages',
-      category: 'reseller',
-      question:
-        'Can customers choose the scents included in a membership package?',
-      answer:
-        'No. Perfume products included in membership packages are assorted by the company based on available inventory. Customers may choose individual scents when placing regular product orders.',
-    },
-    {
-      id: 'become-a-reseller',
-      category: 'reseller',
-      question:
-        'Who can become a YOUR PRODUCT reseller?',
-      answer:
-        'Individuals who want to sell YOUR PRODUCT fragrances may apply through the membership and reseller registration process. Applications remain subject to payment verification, eligibility requirements, and company approval.',
-    },
-    {
-      id: 'sell-products-online',
-      category: 'reseller',
-      question: 'Can I sell YOUR PRODUCT online?',
-      answer:
-        'Yes. Approved resellers may market the products through permitted online and offline channels, provided that official branding, pricing, advertising, and company policies are followed.',
-    },
-    {
-      id: 'place-an-order',
-      category: 'orders',
-      question: 'How can I place an order?',
-      answer:
-        'Customers and approved members may place orders through the official YOUR PRODUCT website. Available products, pricing, and payment instructions are shown during the ordering process.',
-    },
-    {
-      id: 'accepted-payment-methods',
-      category: 'orders',
-      question: 'What payment methods are accepted?',
-      answer:
-        'Available payment methods and payment instructions are displayed during checkout. Customers must submit the required payment details and proof of payment for verification.',
-    },
-    {
-      id: 'payment-verification',
-      category: 'orders',
-      question:
-        'When will my order or membership be processed?',
-      answer:
-        'Orders and membership applications are processed after the submitted payment and payment proof have been reviewed and approved by the company.',
-    },
-    {
-      id: 'delivery-time',
-      category: 'orders',
-      question: 'How long does delivery take?',
-      answer:
-        'Delivery time depends on the customer’s location, courier availability, order volume, weather conditions, and other logistics factors. Available shipping information will be provided during order confirmation.',
-    },
-    {
-      id: 'cancel-an-order',
-      category: 'orders',
-      question: 'Can I cancel my order?',
-      answer:
-        'Non-member customers may cancel an order directly while it is still awaiting payment verification and has not entered processing. Once an order has been processed or dispatched, cancellation may no longer be available.',
-    },
-    {
-      id: 'damaged-or-incorrect-item',
-      category: 'orders',
-      question:
-        'What should I do if I receive a damaged or incorrect item?',
-      answer:
-        'Contact YOUR PRODUCT customer support as soon as possible. Provide your order details and clear photos or videos of the package and item so the concern can be reviewed.',
-    },
-    {
-      id: 'returns-and-exchanges',
-      category: 'orders',
-      question:
-        'Can I return or exchange a perfume?',
-      answer:
-        'Returns and exchanges are subject to the official Return and Exchange Policy. Eligibility may depend on the product condition, supporting evidence, and the reason for the request.',
-    },
-    {
-      id: 'fragrance-longevity',
-      category: 'products',
-      question: 'Is the perfume long-lasting?',
-      answer:
-        'Fragrance longevity varies depending on skin type, application, activity, weather, and storage conditions. Performance may differ from person to person.',
-    },
-    {
-      id: 'perfume-storage',
-      category: 'products',
-      question: 'How should I store my perfume?',
-      answer:
-        'Store perfume in a cool, dry place away from direct sunlight, excessive heat, and extreme temperature changes. Keep the bottle properly closed when not in use.',
-    },
-    {
-      id: 'product-safety',
-      category: 'products',
-      question: 'How should I use the perfume safely?',
-      answer:
-        'Review the product label and ingredient information before use. Avoid contact with the eyes and discontinue use if irritation occurs. Customers with known allergies or sensitivities should consult a qualified professional before use.',
-    },
-    {
-      id: 'official-information',
-      category: 'orders',
-      question:
-        'Where can I get official information about YOUR PRODUCT?',
-      answer:
-        'For official product information, pricing, promotions, reseller policies, and announcements, refer only to the official YOUR PRODUCT website and authorized company channels.',
-    },
-  ]
+  { id: 'all', label: 'All Questions' },
+  { id: 'products', label: 'Products' },
+  { id: 'pricing', label: 'Pricing' },
+  { id: 'orders', label: 'Orders & Delivery' },
+  { id: 'reseller', label: 'Reseller Program' },
+]
+
+export const faqItems = [
+  {
+    id: 'question-1',
+    category: 'products',
+    question: 'What is YOUR PRODUCT?',
+    answer: 'YOUR PRODUCT is an in-house fragrance brand offering a curated collection of premium-inspired scents for men and women, designed for everyday wear, special occasions, and different personal styles.',
+  },
+  {
+    id: 'question-2',
+    category: 'products',
+    question: 'Are YOUR PRODUCT fragrances original designer brands?',
+    answer: 'No. YOUR PRODUCT fragrances are in-house products with their own product names, branding, and presentation. Some scents may be developed around familiar fragrance profiles, but YOUR PRODUCT is not affiliated with, sponsored by, or endorsed by any third-party designer brand.',
+  },
+  {
+    id: 'question-3',
+    category: 'products',
+    question: 'How many fragrances are available?',
+    answer: 'The collection currently features 20 scents: 10 for Women (W01-W10) and 10 for Men (M01-M10).',
+  },
+  {
+    id: 'question-4',
+    category: 'products',
+    question: 'How do I choose a scent?',
+    answer: 'Each product listing can include the fragrance character, scent notes, and recommended occasions such as everyday use, office, date night, parties, and special events.',
+  },
+  {
+    id: 'question-5',
+    category: 'pricing',
+    question: 'How much is a bottle?',
+    answer: 'The regular customer price is ₱350 per bottle. Eligible members may purchase at ₱180 per bottle, subject to applicable order requirements.',
+  },
+  {
+    id: 'question-6',
+    category: 'reseller',
+    question: 'Who can become a YOUR PRODUCT reseller?',
+    answer: "Individuals who want to sell YOUR PRODUCT products may apply as resellers, subject to the company's registration requirements, policies, and available reseller terms.",
+  },
+  {
+    id: 'question-7',
+    category: 'reseller',
+    question: 'Is there a minimum order for resellers?',
+    answer: 'Yes. Reseller orders are subject to the applicable minimum order requirement and package options provided by YOUR PRODUCT.',
+  },
+  {
+    id: 'question-8',
+    category: 'reseller',
+    question: 'Can I sell YOUR PRODUCT online?',
+    answer: 'Yes. Resellers may market their products through permitted online and offline channels, provided that all branding, pricing, advertising, and company policies are followed.',
+  },
+  {
+    id: 'question-9',
+    category: 'reseller',
+    question: 'Can I create my own brand using YOUR PRODUCT?',
+    answer: "Qualified members may have access to YOUR BRAND opportunities, subject to eligibility, approval, and the company's official mechanics.",
+  },
+  {
+    id: 'question-10',
+    category: 'orders',
+    question: 'How can I place an order?',
+    answer: 'Online product ordering is being prepared. For current ordering instructions, please contact YOUR PRODUCT through its official channels.',
+  },
+  {
+    id: 'question-11',
+    category: 'orders',
+    question: 'What payment methods do you accept?',
+    answer: 'Available payment methods will be displayed during the ordering process or provided by the official YOUR PRODUCT sales channel.',
+  },
+  {
+    id: 'question-12',
+    category: 'orders',
+    question: 'How long does delivery take?',
+    answer: "Estimated delivery time depends on the customer's location, courier availability, order volume, and other logistics factors. Applicable shipping information will be provided during order confirmation.",
+  },
+  {
+    id: 'question-13',
+    category: 'orders',
+    question: 'Can I change or cancel my order?',
+    answer: 'Order changes or cancellations may be requested before the order is processed for shipment. Once an order has been dispatched, cancellation may no longer be available.',
+  },
+  {
+    id: 'question-14',
+    category: 'orders',
+    question: 'What if I receive a damaged or incorrect item?',
+    answer: 'Contact YOUR PRODUCT customer support as soon as possible and provide your order details plus clear photos or video of the package and item received so the concern can be reviewed.',
+  },
+  {
+    id: 'question-15',
+    category: 'orders',
+    question: 'Can I return or exchange a perfume?',
+    answer: 'For return or exchange requests, contact YOUR PRODUCT customer support with your order details and clear photos of the item. The company will review your request under its applicable policy.',
+  },
+  {
+    id: 'question-16',
+    category: 'products',
+    question: 'Is the perfume long-lasting?',
+    answer: 'Fragrance longevity can vary depending on skin type, application, weather, activity, and storage conditions. YOUR PRODUCT is designed to provide a pleasant fragrance experience, but longevity may differ from person to person.',
+  },
+  {
+    id: 'question-17',
+    category: 'products',
+    question: 'How should I store my perfume?',
+    answer: 'Store perfume in a cool, dry place away from direct sunlight, excessive heat, and extreme temperature changes. Keep the bottle properly closed when not in use.',
+  },
+  {
+    id: 'question-18',
+    category: 'products',
+    question: 'Is the perfume safe for everyone?',
+    answer: 'Customers should review product and ingredient information provided with the product. Avoid contact with the eyes and discontinue use if irritation occurs. For known allergies or sensitivities, consult a qualified professional before use.',
+  },
+  {
+    id: 'question-19',
+    category: 'products',
+    question: 'Can I use YOUR PRODUCT fragrance for business events or special occasions?',
+    answer: 'Yes. Our collections are designed for different occasions, including everyday wear, office use, dates, parties, weddings, celebrations, and other events.',
+  },
+  {
+    id: 'question-20',
+    category: 'orders',
+    question: 'Where can I get official information about YOUR PRODUCT?',
+    answer: 'For official product information, pricing, promotions, reseller policies, and announcements, refer only to the official YOUR PRODUCT website and authorized company channels.',
+  },
+]

@@ -59,10 +59,24 @@ export function renderFooter(siteConfig) {
   
             <div>
               <h2 class="text-xs font-semibold uppercase tracking-[0.25em] text-brand-gold">
-                Member Access
+                Help & Member Access
               </h2>
   
               <div class="mt-5 flex flex-col items-start gap-3">
+
+              <a
+  href="/faq/"
+  class="text-sm text-brand-muted transition hover:text-brand-gold"
+>
+  Frequently Asked Questions
+</a>
+
+<a
+  href="/terms/"
+  class="text-sm text-brand-muted transition hover:text-brand-gold"
+>
+  Terms &amp; Conditions
+</a>
                 <a
                   href="/login/"
                   class="text-sm text-brand-muted transition hover:text-brand-gold"
