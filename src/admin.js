@@ -729,11 +729,11 @@ function renderOrdersPage() {
           class="mt-6 rounded-[1.5rem] border border-dashed border-brand-border bg-brand-panel px-6 py-14 text-center"
         >
           <h2 class="font-display text-2xl text-brand-cream">
-  No applications found
+  No customer orders found
 </h2>
 
 <p class="mt-2 text-sm leading-6 text-brand-muted">
-  Applications will appear here after customers submit payment details.
+  Orders will appear here after customers submit them.
 </p>
         </div>
 
@@ -777,6 +777,13 @@ function renderOrdersPage() {
               >
                 Delivery fee to be confirmed
               </p>
+                          <button
+                type="button"
+                @click="openOrderDetails(order.id)"
+                class="mt-4 rounded-full border border-brand-gold px-5 py-2 text-sm font-semibold text-brand-gold"
+              >
+                View order details
+              </button>
             </article>
           </template>
         </div>
@@ -786,775 +793,141 @@ function renderOrdersPage() {
 
 function renderOrderDetailsDrawer() {
   return `
-      <div
-        x-show="orderDetailsOpen"
-        x-transition.opacity
-        class="fixed inset-0 z-40 bg-black/65 backdrop-blur-[2px]"
-        aria-hidden="true"
-        @click="closeOrderDetails()"
-      ></div>
+    <div
+      x-show="orderDetailsOpen"
+      x-transition.opacity
+      class="fixed inset-0 z-40 bg-black/65"
+      @click="closeOrderDetails()"
+    ></div>
 
-      <aside
-        x-show="orderDetailsOpen"
-        x-transition:enter="transition duration-300 ease-out"
-        x-transition:enter-start="translate-x-full"
-        x-transition:enter-end="translate-x-0"
-        x-transition:leave="transition duration-200 ease-in"
-        x-transition:leave-start="translate-x-0"
-        x-transition:leave-end="translate-x-full"
-        class="fixed inset-y-0 right-0 z-50 w-full max-w-2xl overflow-y-auto border-l border-brand-border bg-brand-panel shadow-2xl"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="order-drawer-title"
-      >
-        <template x-if="selectedOrder">
-          <div>
-            <div
-              class="sticky top-0 z-10 flex min-h-20 items-center justify-between gap-4 border-b border-brand-border bg-brand-panel/95 px-5 backdrop-blur-xl sm:px-7"
+    <aside
+      x-show="orderDetailsOpen"
+      x-transition
+      class="fixed inset-y-0 right-0 z-50 w-full max-w-2xl overflow-y-auto border-l border-brand-border bg-brand-panel p-6 shadow-2xl"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="order-drawer-title"
+    >
+      <template x-if="selectedOrder">
+        <div class="space-y-6">
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <p class="text-xs uppercase tracking-widest text-brand-gold">
+                Customer order
+              </p>
+              <h2
+                id="order-drawer-title"
+                class="mt-2 font-display text-2xl text-brand-cream"
+                x-text="'Order ' + selectedOrder.id.slice(0, 8).toUpperCase()"
+              ></h2>
+              <p
+                class="mt-2 text-sm capitalize text-brand-gold"
+                x-text="selectedOrder.status.replaceAll('_', ' ')"
+              ></p>
+              <p
+                class="mt-1 text-xs text-brand-muted"
+                x-text="formatDate(selectedOrder.created_at)"
+              ></p>
+            </div>
+            <button
+              type="button"
+              @click="closeOrderDetails()"
+              class="rounded-full border border-brand-border px-4 py-2 text-sm text-brand-cream"
             >
-              <div class="min-w-0">
-                <p
-                  class="text-[0.62rem] font-semibold uppercase tracking-[0.18em] text-brand-gold"
-                >
-                  Order Review
-                </p>
-
-                <h2
-                  id="order-drawer-title"
-                  class="mt-1 truncate font-display text-2xl text-brand-cream"
-                  x-text="selectedOrder.order_number"
-                ></h2>
-              </div>
-
-              <button
-                type="button"
-                class="grid size-10 shrink-0 place-items-center rounded-full border border-brand-border text-brand-cream transition hover:border-brand-gold hover:text-brand-gold"
-                aria-label="Close order details"
-                @click="closeOrderDetails()"
-              >
-                <svg
-                  class="size-4"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="m6 6 12 12M18 6 6 18"
-                    stroke-linecap="round"
-                  ></path>
-                </svg>
-              </button>
-            </div>
-
-            <div class="space-y-5 p-5 sm:p-7">
-              <section
-                class="rounded-2xl border border-brand-border bg-brand-black p-5"
-              >
-                <div
-                  class="flex flex-wrap items-start justify-between gap-4"
-                >
-                  <div>
-                    <p
-                      class="text-[0.62rem] uppercase tracking-[0.14em] text-brand-muted"
-                    >
-                      Order Status
-                    </p>
-
-                    <span
-                      class="mt-3 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.08em]"
-                      :class="
-                        orderStatusBadgeClass(
-                          selectedOrder.status,
-                        )
-                      "
-                    >
-                      <span
-                        class="size-1.5 rounded-full"
-                        :class="
-                          orderStatusDotClass(
-                            selectedOrder.status,
-                          )
-                        "
-                        aria-hidden="true"
-                      ></span>
-
-                      <span
-                        x-text="
-                          orderStatusLabels[
-                            selectedOrder.status
-                          ] || selectedOrder.status
-                        "
-                      ></span>
-                    </span>
-                  </div>
-
-                  <div class="text-right">
-                    <p
-                      class="text-[0.62rem] uppercase tracking-[0.14em] text-brand-muted"
-                    >
-                      Order Total
-                    </p>
-
-                    <strong
-                      class="mt-2 block font-display text-3xl text-brand-gold"
-                      x-text="
-                        formatMoney(
-                          selectedOrder.total_amount,
-                        )
-                      "
-                    ></strong>
-                  </div>
-                </div>
-
-                <p
-                  class="mt-5 border-t border-brand-border pt-4 text-xs text-brand-muted"
-                  x-text="
-                    'Submitted ' +
-                    formatDate(selectedOrder.submitted_at)
-                  "
-                ></p>
-              </section>
-
-              <section
-                class="rounded-2xl border border-brand-border bg-brand-black p-5"
-              >
-                <p
-                  class="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-brand-gold"
-                >
-                  Customer Information
-                </p>
-
-                <dl
-                  class="mt-4 grid gap-4 sm:grid-cols-2"
-                >
-                  <div>
-                    <dt class="text-xs text-brand-muted">
-                      Full name
-                    </dt>
-
-                    <dd
-                      class="mt-1 text-sm font-semibold text-brand-cream"
-                      x-text="selectedOrder.customer_name"
-                    ></dd>
-                  </div>
-
-                  <div>
-                    <dt class="text-xs text-brand-muted">
-                      Mobile number
-                    </dt>
-
-                    <dd
-                      class="mt-1 text-sm font-semibold text-brand-cream"
-                      x-text="selectedOrder.customer_mobile"
-                    ></dd>
-                  </div>
-
-                  <div class="sm:col-span-2">
-                    <dt class="text-xs text-brand-muted">
-                      Email address
-                    </dt>
-
-                    <dd
-                      class="mt-1 break-all text-sm font-semibold text-brand-cream"
-                      x-text="selectedOrder.customer_email"
-                    ></dd>
-                  </div>
-                </dl>
-              </section>
-
-              <section
-                class="rounded-2xl border border-brand-border bg-brand-black p-5"
-              >
-                <p
-                  class="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-brand-gold"
-                >
-                  Order Items
-                </p>
-
-                <div class="mt-4 space-y-3">
-                  <template
-                    x-for="item in selectedOrder.items"
-                    :key="item.id"
-                  >
-                    <article
-                      class="rounded-xl border border-brand-border bg-brand-panel p-4"
-                    >
-                      <div
-                        class="flex items-start justify-between gap-4"
-                      >
-                        <div class="min-w-0">
-                          <p
-                            class="truncate text-sm font-semibold text-brand-cream"
-                            x-text="item.product_name"
-                          ></p>
-
-                          <p
-                            class="mt-1 text-xs text-brand-muted"
-                            x-text="item.product_category"
-                          ></p>
-
-                          <p
-                            class="mt-2 text-xs text-brand-muted"
-                            x-text="
-                              formatMoney(item.unit_price) +
-                              ' × ' +
-                              item.quantity
-                            "
-                          ></p>
-                        </div>
-
-                        <strong
-                          class="shrink-0 text-sm text-brand-gold"
-                          x-text="
-                            formatMoney(item.line_total)
-                          "
-                        ></strong>
-                      </div>
-                    </article>
-                  </template>
-                </div>
-
-                <dl
-                  class="mt-5 space-y-3 border-t border-brand-border pt-5"
-                >
-                  <div
-                    class="flex items-center justify-between gap-4"
-                  >
-                    <dt class="text-sm text-brand-muted">
-                      Subtotal
-                    </dt>
-
-                    <dd
-                      class="text-sm font-semibold text-brand-cream"
-                      x-text="
-                        formatMoney(selectedOrder.subtotal)
-                      "
-                    ></dd>
-                  </div>
-
-                  <div
-                    class="flex items-center justify-between gap-4"
-                  >
-                    <dt class="text-sm text-brand-muted">
-                      Delivery
-                    </dt>
-
-                    <dd
-                      class="text-sm font-semibold text-brand-cream"
-                      x-text="
-                        selectedOrder.delivery_fee === 0
-                          ? 'Free'
-                          : formatMoney(
-                              selectedOrder.delivery_fee,
-                            )
-                      "
-                    ></dd>
-                  </div>
-
-                  <div
-                    class="flex items-center justify-between gap-4 border-t border-brand-border pt-3"
-                  >
-                    <dt
-                      class="text-sm font-semibold text-brand-cream"
-                    >
-                      Total
-                    </dt>
-
-                    <dd
-                      class="font-display text-2xl text-brand-gold"
-                      x-text="
-                        formatMoney(
-                          selectedOrder.total_amount,
-                        )
-                      "
-                    ></dd>
-                  </div>
-                </dl>
-              </section>
-
-              <section
-                class="rounded-2xl border border-brand-border bg-brand-black p-5"
-              >
-                <p
-                  class="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-brand-gold"
-                >
-                  Delivery Information
-                </p>
-
-                <dl
-                  class="mt-4 grid gap-4 sm:grid-cols-2"
-                >
-                  <div>
-                    <dt class="text-xs text-brand-muted">
-                      Fulfillment
-                    </dt>
-
-                    <dd
-                      class="mt-1 text-sm font-semibold text-brand-cream"
-                      x-text="
-                        fulfillmentTypeLabels[
-                          selectedOrder.fulfillment_type
-                        ] ||
-                        selectedOrder.fulfillment_type
-                      "
-                    ></dd>
-                  </div>
-
-                  <div>
-                    <dt class="text-xs text-brand-muted">
-                      Region
-                    </dt>
-
-                    <dd
-                      class="mt-1 text-sm font-semibold text-brand-cream"
-                      x-text="selectedOrder.delivery_region"
-                    ></dd>
-                  </div>
-
-                  <div class="sm:col-span-2">
-                    <dt class="text-xs text-brand-muted">
-                      Recipient
-                    </dt>
-
-                    <dd
-                      class="mt-1 text-sm font-semibold text-brand-cream"
-                      x-text="selectedOrder.recipient_name"
-                    ></dd>
-                  </div>
-
-                  <div class="sm:col-span-2">
-                    <dt class="text-xs text-brand-muted">
-                      Delivery address
-                    </dt>
-
-                    <dd
-                      class="mt-1 text-sm leading-6 text-brand-cream"
-                      x-text="selectedOrder.delivery_address"
-                    ></dd>
-                  </div>
-
-                  <div class="sm:col-span-2">
-                    <dt class="text-xs text-brand-muted">
-                      Delivery note
-                    </dt>
-
-                    <dd
-                      class="mt-1 text-sm leading-6 text-brand-cream"
-                      x-text="
-                        selectedOrder.delivery_note ||
-                        'No delivery note provided.'
-                      "
-                    ></dd>
-                  </div>
-                </dl>
-              </section>
-
-              <section
-                class="rounded-2xl border border-brand-border bg-brand-black p-5"
-              >
-                <p
-                  class="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-brand-gold"
-                >
-                  Payment Information
-                </p>
-
-                <dl
-                  class="mt-4 grid gap-4 sm:grid-cols-2"
-                >
-                  <div>
-                    <dt class="text-xs text-brand-muted">
-                      Payment method
-                    </dt>
-
-                    <dd
-                      class="mt-1 text-sm font-semibold text-brand-cream"
-                      x-text="
-                        orderPaymentMethodLabels[
-                          selectedOrder.payment_method
-                        ] ||
-                        selectedOrder.payment_method
-                      "
-                    ></dd>
-                  </div>
-
-                  <div>
-                    <dt class="text-xs text-brand-muted">
-                      Provider
-                    </dt>
-
-                    <dd
-                      class="mt-1 text-sm font-semibold text-brand-cream"
-                      x-text="
-                        selectedOrder.payment_provider ||
-                        'Not provided'
-                      "
-                    ></dd>
-                  </div>
-
-                  <div>
-                    <dt class="text-xs text-brand-muted">
-                      Sender name
-                    </dt>
-
-                    <dd
-                      class="mt-1 text-sm font-semibold text-brand-cream"
-                      x-text="selectedOrder.sender_name"
-                    ></dd>
-                  </div>
-
-                  <div>
-                    <dt class="text-xs text-brand-muted">
-                      Reference number
-                    </dt>
-
-                    <dd
-                      class="mt-1 break-all text-sm font-semibold text-brand-cream"
-                      x-text="
-                        selectedOrder.reference_number
-                      "
-                    ></dd>
-                  </div>
-                </dl>
-              </section>
-
-              <section
-                class="rounded-2xl border border-brand-border bg-brand-black p-5"
-              >
-                <p
-                  class="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-brand-gold"
-                >
-                  Payment Proof
-                </p>
-
-                <div
-                  x-show="selectedOrder.payment_proof_url"
-                  class="mt-4 overflow-hidden rounded-xl border border-brand-border bg-brand-panel"
-                >
-                  <img
-                    :src="selectedOrder.payment_proof_url"
-                    alt="Submitted order payment proof"
-                    class="max-h-80 w-full object-contain"
-                  >
-                </div>
-
-                <div
-                  x-show="!selectedOrder.payment_proof_url"
-                  class="mt-4 rounded-xl border border-dashed border-brand-border bg-brand-panel px-5 py-8 text-center"
-                >
-                  <p
-                    class="text-sm font-semibold text-brand-cream"
-                  >
-                    Preview image not connected yet
-                  </p>
-
-                  <p
-                    class="mt-2 break-all text-xs leading-5 text-brand-muted"
-                    x-text="
-                      selectedOrder
-                        .payment_proof_file_name ||
-                      'No file name available'
-                    "
-                  ></p>
-                </div>
-              </section>
-
-              <section
-  class="rounded-2xl border border-brand-border bg-brand-black p-5"
-  aria-labelledby="order-review-actions-title"
->
-  <p
-    class="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-brand-gold"
-  >
-    Admin Review
-  </p>
-
-  <h3
-    id="order-review-actions-title"
-    class="mt-2 font-display text-2xl text-brand-cream"
-  >
-    Update order status
-  </h3>
-
-  <p
-    class="mt-2 text-xs leading-5 text-brand-muted"
-  >
-    Review the order and payment details before
-    choosing the next valid status.
-  </p>
-
-  <div
-    x-show="!orderReviewPanelOpen"
-    x-transition.opacity
-    class="mt-5"
-  >
-    <div
-      x-show="selectedOrder.status === 'pending-verification'"
-      class="grid gap-3 sm:grid-cols-2"
-    >
-      <button
-        type="button"
-        class="inline-flex min-h-11 items-center justify-center rounded-full bg-emerald-600 px-5 text-sm font-semibold text-white transition hover:bg-emerald-500"
-        @click="openOrderReview('approve')"
-      >
-        Approve Payment
-      </button>
-
-      <button
-        type="button"
-        class="inline-flex min-h-11 items-center justify-center rounded-full border border-red-400/40 px-5 text-sm font-semibold text-red-300 transition hover:border-red-300 hover:bg-red-400/10 hover:text-red-200"
-        @click="openOrderReview('reject')"
-      >
-        Reject Order
-      </button>
-    </div>
-
-    <div
-  x-show="selectedOrder.status === 'processing'"
-  class="grid gap-3 sm:grid-cols-2"
->
-  <button
-    type="button"
-    class="inline-flex min-h-11 items-center justify-center rounded-full bg-brand-gold px-5 text-sm font-semibold text-[#17130d] transition hover:brightness-110"
-    @click="openOrderReview('ship')"
-  >
-    Mark as Shipped
-  </button>
-
-  <button
-    type="button"
-    class="inline-flex min-h-11 items-center justify-center rounded-full border border-red-400/40 px-5 text-sm font-semibold text-red-300 transition hover:bg-red-400/10"
-    @click="openOrderReview('cancel')"
-  >
-    Cancel & Return Stock
-  </button>
-</div>
-
-    <div
-  x-show="selectedOrder.status === 'shipped'"
-  class="grid gap-3 sm:grid-cols-2"
->
-  <button
-    type="button"
-    class="inline-flex min-h-11 items-center justify-center rounded-full border border-red-400/40 px-5 text-sm font-semibold text-red-300 transition hover:border-red-300 hover:bg-red-400/10 hover:text-red-200"
-    @click="openOrderReview('unship')"
-  >
-    Mark as Unshipped
-  </button>
-
-  <button
-    type="button"
-    class="inline-flex min-h-11 items-center justify-center rounded-full bg-emerald-600 px-5 text-sm font-semibold text-white transition hover:bg-emerald-500"
-    @click="openOrderReview('deliver')"
-  >
-    Mark as Delivered
-  </button>
-</div>
-
-    <div
-      x-show="selectedOrder.status === 'delivered'"
-      class="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3"
-    >
-      <p class="text-sm font-semibold text-emerald-200">
-        Order completed
-      </p>
-
-      <p class="mt-1 text-xs leading-5 text-emerald-100/80">
-        This order has been marked as delivered.
-      </p>
-
-      <button
-  type="button"
-  class="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-full border border-violet-400/40 px-5 text-sm font-semibold text-violet-300 transition hover:bg-violet-400/10"
-  @click="openOrderReview('refund')"
->
-  Refund & Return Stock
-</button>
-    </div>
-
-    <div
-  x-show="selectedOrder.status === 'rejected'"
-  class="rounded-xl border border-red-400/30 bg-red-400/10 px-4 py-3"
->
-  <p class="text-sm font-semibold text-red-200">
-    Order rejected
-  </p>
-
-  <p class="mt-1 text-xs leading-5 text-red-100/80">
-    No additional order action is available.
-  </p>
-</div>
-
-<div
-  x-show="selectedOrder.status === 'cancelled'"
-  class="rounded-xl border border-brand-border bg-brand-black/40 px-4 py-3"
->
-  <p class="text-sm font-semibold text-brand-cream">
-    Order cancelled
-  </p>
-
-  <p class="mt-1 text-xs leading-5 text-brand-muted">
-    The deducted inventory has been returned.
-  </p>
-</div>
-
-<div
-  x-show="selectedOrder.status === 'refunded'"
-  class="rounded-xl border border-violet-400/30 bg-violet-400/10 px-4 py-3"
->
-  <p class="text-sm font-semibold text-violet-200">
-    Order refunded
-  </p>
-
-  <p class="mt-1 text-xs leading-5 text-violet-100/80">
-    The refunded items have been returned to inventory.
-  </p>
-</div>
-</div>
-
-  <div
-  x-show="orderReviewPanelOpen"
-  x-transition
-  class="mt-5 rounded-2xl border border-brand-border bg-brand-panel p-4"
->
-  <p
-    class="text-sm font-semibold text-brand-cream"
-    x-text="
-      orderReviewAction === 'approve'
-        ? 'Approve payment and process order'
-        : orderReviewAction === 'reject'
-          ? 'Reject this order'
-          : orderReviewAction === 'ship'
-  ? 'Mark order as shipped'
-  : orderReviewAction === 'unship'
-    ? 'Return order to processing'
-    : orderReviewAction === 'deliver'
-              : orderReviewAction === 'cancel'
-                ? 'Cancel order and return stock'
-                : orderReviewAction === 'refund'
-                  ? 'Refund order and return stock'
-                  : 'Update order'
-    "
-  ></p>
-
-  <p
-    class="mt-2 text-xs leading-5 text-brand-muted"
-    x-text="
-      orderReviewAction === 'approve'
-        ? 'The payment will be accepted and the order will move to processing.'
-        : orderReviewAction === 'reject'
-          ? 'The order will be rejected after confirmation.'
-          : orderReviewAction === 'ship'
-  ? 'Confirm that the package has been handed over for delivery.'
-  : orderReviewAction === 'unship'
-    ? 'Use this only to correct an accidental shipment update. Payment approval and deducted inventory will remain unchanged.'
-    : orderReviewAction === 'deliver'
-              ? 'Confirm that the customer has received the order.'
-              : orderReviewAction === 'cancel'
-                ? 'The order will be cancelled and its deducted stock will be returned.'
-                : orderReviewAction === 'refund'
-                  ? 'The order will be marked as refunded and its stock will be returned.'
-                  : 'Confirm this order update.'
-    "
-  ></p>
-
-  <label
-    for="order-review-note"
-    class="mt-4 block text-xs font-semibold uppercase tracking-[0.12em] text-brand-muted"
-  >
-    Admin note
-  </label>
-
-  <textarea
-    id="order-review-note"
-    x-model.trim="orderReviewNote"
-    rows="3"
-    maxlength="300"
-    placeholder="Add a short note for this status update"
-    class="mt-2 w-full resize-none rounded-xl border border-brand-border bg-brand-black px-4 py-3 text-sm leading-6 text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
-  ></textarea>
-
-  <p
-    x-show="orderReviewError"
-    x-text="orderReviewError"
-    class="mt-2 text-xs leading-5 text-red-300"
-    role="alert"
-  ></p>
-
-  <div class="mt-4 grid gap-3 sm:grid-cols-2">
-    <button
-      type="button"
-      class="inline-flex min-h-11 items-center justify-center rounded-full border border-brand-border px-4 text-sm font-semibold text-brand-cream transition hover:border-brand-gold hover:text-brand-gold"
-      @click="closeOrderReview()"
-    >
-      Keep Current Status
-    </button>
-
-    <button
-      type="button"
-      class="inline-flex min-h-11 items-center justify-center rounded-full px-4 text-sm font-semibold transition"
-      :class="
-        orderReviewAction === 'reject' ||
-orderReviewAction === 'cancel' ||
-orderReviewAction === 'unship'
-          ? 'bg-red-700 text-white hover:bg-red-600'
-          : orderReviewAction === 'refund'
-            ? 'bg-violet-600 text-white hover:bg-violet-500'
-            : 'bg-brand-gold text-[#17130d] hover:brightness-110'
-      "
-      @click="submitOrderReview()"
-      x-text="
-        orderReviewAction === 'approve'
-          ? 'Confirm Approval'
-          : orderReviewAction === 'reject'
-            ? 'Confirm Rejection'
-            : orderReviewAction === 'ship'
-  ? 'Confirm Shipment'
-  : orderReviewAction === 'unship'
-    ? 'Confirm Unshipped'
-    : orderReviewAction === 'deliver'
-                ? 'Confirm Delivery'
-                : orderReviewAction === 'cancel'
-                  ? 'Confirm Cancellation'
-                  : orderReviewAction === 'refund'
-                    ? 'Confirm Refund'
-                    : 'Confirm Update'
-      "
-    ></button>
-  </div>
-</div>
-
-  <div
-    x-show="selectedOrder.admin_note"
-    class="mt-5 border-t border-brand-border pt-5"
-  >
-    <p
-      class="text-xs font-semibold uppercase tracking-[0.12em] text-brand-muted"
-    >
-      Latest Admin Note
-    </p>
-
-    <p
-      class="mt-2 text-sm leading-6 text-brand-cream"
-      x-text="selectedOrder.admin_note"
-    ></p>
-
-    <p
-      x-show="selectedOrder.reviewed_at"
-      class="mt-2 text-xs text-brand-muted"
-      x-text="
-        'Updated ' +
-        formatDate(selectedOrder.reviewed_at)
-      "
-    ></p>
-  </div>
-</section>
-            </div>
+              Close
+            </button>
           </div>
-        </template>
-      </aside>
-    `
+
+          <section class="rounded-xl border border-brand-border bg-brand-black p-5">
+            <h3 class="font-semibold text-brand-cream">Customer</h3>
+            <p
+              class="mt-3 text-sm text-brand-cream"
+              x-text="[selectedOrder.customer_details.firstName, selectedOrder.customer_details.lastName].filter(Boolean).join(' ')"
+            ></p>
+            <p
+              class="mt-1 text-sm text-brand-muted"
+              x-text="selectedOrder.customer_details.emailAddress"
+            ></p>
+            <p
+              class="mt-1 text-sm text-brand-muted"
+              x-text="selectedOrder.customer_details.mobileNumber"
+            ></p>
+          </section>
+
+          <section class="rounded-xl border border-brand-border bg-brand-black p-5">
+            <h3 class="font-semibold text-brand-cream">Delivery</h3>
+            <p
+              class="mt-3 text-sm text-brand-cream"
+              x-text="[selectedOrder.delivery_details.recipientFirstName, selectedOrder.delivery_details.recipientLastName].filter(Boolean).join(' ')"
+            ></p>
+            <p
+              class="mt-1 text-sm text-brand-muted"
+              x-text="selectedOrder.delivery_details.recipientMobile"
+            ></p>
+            <p
+              class="mt-2 text-sm leading-6 text-brand-cream"
+              x-text="[selectedOrder.delivery_details.houseStreet, selectedOrder.delivery_details.barangay, selectedOrder.delivery_details.city, selectedOrder.delivery_details.province, selectedOrder.delivery_details.region].filter(Boolean).join(', ')"
+            ></p>
+            <p
+              x-show="selectedOrder.delivery_details.notes"
+              class="mt-2 text-sm text-brand-muted"
+              x-text="selectedOrder.delivery_details.notes"
+            ></p>
+          </section>
+
+          <section class="rounded-xl border border-brand-border bg-brand-black p-5">
+            <h3 class="font-semibold text-brand-cream">Items</h3>
+            <template x-for="item in selectedOrder.order_items || []" :key="item.id">
+              <div class="mt-3 flex justify-between gap-4 border-t border-brand-border pt-3 text-sm">
+                <span
+                  class="text-brand-cream"
+                  x-text="item.product_name + ' × ' + item.quantity"
+                ></span>
+                <span
+                  class="shrink-0 text-brand-gold"
+                  x-text="formatMoney(Number(item.unit_price) * item.quantity)"
+                ></span>
+              </div>
+            </template>
+            <p
+              class="mt-4 text-sm text-brand-cream"
+              x-text="'Subtotal: ' + formatMoney(selectedOrder.subtotal)"
+            ></p>
+            <p
+              class="mt-1 text-sm text-brand-muted"
+              x-text="selectedOrder.delivery_fee === null ? 'Delivery fee to be confirmed' : 'Delivery fee: ' + formatMoney(selectedOrder.delivery_fee)"
+            ></p>
+          </section>
+
+          <section class="rounded-xl border border-brand-border bg-brand-black p-5">
+            <h3 class="font-semibold text-brand-cream">Payment</h3>
+            <p
+              class="mt-2 text-sm capitalize text-brand-muted"
+              x-text="'Method: ' + selectedOrder.payment_method.replaceAll('-', ' ')"
+            ></p>
+            <p
+              x-show="orderProofLoading"
+              class="mt-3 text-sm text-brand-muted"
+            >
+              Loading payment proof…
+            </p>
+            <p
+              x-show="orderProofError"
+              x-text="orderProofError"
+              class="mt-3 text-sm text-red-300"
+              role="alert"
+            ></p>
+            <img
+              x-show="orderProofUrl"
+              :src="orderProofUrl"
+              alt="Submitted payment proof"
+              class="mt-3 max-h-96 w-full rounded-lg object-contain"
+            >
+          </section>
+        </div>
+      </template>
+    </aside>
+  `
 }
 
 function renderApplicationDetailsDrawer() {
@@ -2164,8 +1537,10 @@ Alpine.data('adminDashboard', () => ({
   applicationStatusFilter: 'all',
 
   selectedOrderId: null,
-
   orderDetailsOpen: false,
+  orderProofUrl: '',
+  orderProofLoading: false,
+  orderProofError: '',
 
   orderSearch: '',
 
@@ -2397,7 +1772,7 @@ Alpine.data('adminDashboard', () => ({
 
   get selectedOrder() {
     return (
-      this.orders.find(
+      this.liveOrders.find(
         (order) => order.id === this.selectedOrderId,
       ) || null
     )
@@ -3799,11 +3174,42 @@ submitOrderReview() {
   this.closeOrderReview()
 },
 
-openOrderDetails(orderId) {
+async openOrderDetails(orderId) {
+  const order = this.liveOrders.find((item) => item.id === orderId)
+  if (!order) return
+
   this.closeApplicationDetails()
   this.selectedOrderId = orderId
+  this.orderProofUrl = ''
+  this.orderProofError = ''
+  this.orderProofLoading = Boolean(order.payment_proof_path)
   this.orderDetailsOpen = true
   document.body.classList.add('overflow-hidden')
+
+  if (!order.payment_proof_path) return
+
+  try {
+    const { data, error } = await supabase.storage
+      .from('payment-proofs')
+      .createSignedUrl(order.payment_proof_path, 300)
+
+    if (error) throw error
+
+    if (this.selectedOrderId === orderId && this.orderDetailsOpen) {
+      this.orderProofUrl = data.signedUrl
+    }
+  } catch (error) {
+    console.error('Unable to load order payment proof:', error)
+
+    if (this.selectedOrderId === orderId && this.orderDetailsOpen) {
+      this.orderProofError =
+        'Unable to load payment proof. Close and reopen this order.'
+    }
+  } finally {
+    if (this.selectedOrderId === orderId) {
+      this.orderProofLoading = false
+    }
+  }
 },
 
 closeOrderDetails() {
@@ -4715,21 +4121,28 @@ async loadLiveOrders() {
   this.liveOrdersLoading = true
   this.liveOrdersError = ''
 
-  const { data, error } = await supabase
-    .from('orders')
-    .select('id, status, subtotal, delivery_fee, created_at')
-    .order('created_at', { ascending: false })
+  try {
+    const { data, error } = await supabase
+      .from('orders')
+      .select(`
+        id, status, subtotal, delivery_fee, created_at,
+        customer_details, delivery_details,
+        payment_method, payment_proof_path,
+        order_items(id, product_name, quantity, unit_price)
+      `)
+      .order('created_at', { ascending: false })
 
-  if (error) {
+    if (error) throw error
+
+    this.liveOrders = data ?? []
+  } catch (error) {
     console.error('Unable to load live orders:', error)
     this.liveOrders = []
     this.liveOrdersError =
       'Unable to load orders. Please refresh this page.'
-  } else {
-    this.liveOrders = data ?? []
+  } finally {
+    this.liveOrdersLoading = false
   }
-
-  this.liveOrdersLoading = false
 },
 
 destroy() {
