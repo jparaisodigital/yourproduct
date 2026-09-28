@@ -401,81 +401,99 @@ selectedDashboardPackage.price,
             </div>
 
             <div
-              x-show="
-                membershipApplicationStatus ===
-                  'awaiting-payment' ||
-                membershipApplicationStatus ===
-                  'pending-verification'
-              "
-              class="mt-6 border-t border-brand-border pt-5"
-            >
-              <button
-                x-show="!cancellationPanelOpen"
-                x-transition
-                type="button"
-                class="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-red-400/40 px-5 text-sm font-semibold text-red-300 transition hover:border-red-300 hover:bg-red-400/10 hover:text-red-200"
-                @click="openCancellationPanel()"
-              >
-                Request Cancellation
-              </button>
+  x-show="
+    membershipApplicationStatus === 'awaiting-payment' ||
+    membershipApplicationStatus === 'pending-verification'
+  "
+  class="mt-6 border-t border-brand-border pt-5"
+>
+  <button
+    x-show="!cancellationPanelOpen"
+    x-transition
+    type="button"
+    class="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-red-400/40 px-5 text-sm font-semibold text-red-300 transition hover:border-red-300 hover:bg-red-400/10 hover:text-red-200"
+    @click="openCancellationPanel()"
+    x-text="
+      membershipApplicationStatus === 'awaiting-payment'
+        ? 'Cancel Application'
+        : 'Request Cancellation'
+    "
+  ></button>
 
-              <div
-                x-show="cancellationPanelOpen"
-                x-transition
-                class="rounded-2xl border border-red-400/30 bg-red-400/5 p-4"
-              >
-                <p class="text-sm font-semibold text-brand-cream">
-                  Request application cancellation
-                </p>
+  <div
+    x-show="cancellationPanelOpen"
+    x-transition
+    class="rounded-2xl border border-red-400/30 bg-red-400/5 p-4"
+  >
+    <p
+      class="text-sm font-semibold text-brand-cream"
+      x-text="
+        membershipApplicationStatus === 'awaiting-payment'
+          ? 'Cancel unpaid application'
+          : 'Request application cancellation'
+      "
+    ></p>
 
-                <p class="mt-2 text-xs leading-5 text-brand-muted">
-                  The admin will review your request. If payment was
-                  already submitted, any applicable refund will be
-                  processed manually.
-                </p>
+    <p
+      class="mt-2 text-xs leading-5 text-brand-muted"
+      x-text="
+        membershipApplicationStatus === 'awaiting-payment'
+          ? 'No payment proof has been submitted. This application will be cancelled immediately.'
+          : 'The admin will review your request. Any applicable refund will be handled manually.'
+      "
+    ></p>
 
-                <label
-                  for="cancellation-reason"
-                  class="mt-4 block text-xs font-semibold uppercase tracking-[0.12em] text-brand-muted"
-                >
-                  Reason for cancellation
-                </label>
+    <label
+      for="cancellation-reason"
+      class="mt-4 block text-xs font-semibold uppercase tracking-[0.12em] text-brand-muted"
+      x-text="
+        membershipApplicationStatus === 'awaiting-payment'
+          ? 'Reason (optional)'
+          : 'Reason for cancellation'
+      "
+    ></label>
 
-                <textarea
-                  id="cancellation-reason"
-                  x-model.trim="cancellationReason"
-                  rows="3"
-                  maxlength="300"
-                  placeholder="Tell us why you want to cancel this application"
-                  class="mt-2 w-full resize-none rounded-xl border border-brand-border bg-brand-black px-4 py-3 text-sm leading-6 text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-red-400"
-                ></textarea>
+    <textarea
+      id="cancellation-reason"
+      x-model.trim="cancellationReason"
+      rows="3"
+      maxlength="300"
+      placeholder="Tell us why you want to cancel this application"
+      class="mt-2 w-full resize-none rounded-xl border border-brand-border bg-brand-black px-4 py-3 text-sm leading-6 text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-red-400"
+    ></textarea>
 
-                <p
-                  x-show="cancellationError"
-                  x-text="cancellationError"
-                  class="mt-2 text-xs leading-5 text-red-300"
-                  role="alert"
-                ></p>
+    <p
+      x-show="cancellationError"
+      x-text="cancellationError"
+      class="mt-2 text-xs leading-5 text-red-300"
+      role="alert"
+    ></p>
 
-                <div class="mt-4 grid gap-3 sm:grid-cols-2">
-                  <button
-                    type="button"
-                    class="inline-flex min-h-11 items-center justify-center rounded-full border border-brand-border px-4 text-sm font-semibold text-brand-cream transition hover:border-brand-gold hover:text-brand-gold"
-                    @click="closeCancellationPanel()"
-                  >
-                    Keep Application
-                  </button>
+    <div class="mt-4 grid gap-3 sm:grid-cols-2">
+      <button
+        type="button"
+        class="inline-flex min-h-11 items-center justify-center rounded-full border border-brand-border px-4 text-sm font-semibold text-brand-cream transition hover:border-brand-gold hover:text-brand-gold"
+        @click="closeCancellationPanel()"
+      >
+        Keep Application
+      </button>
 
-                  <button
-                    type="button"
-                    class="inline-flex min-h-11 items-center justify-center rounded-full bg-red-700 px-4 text-sm font-semibold text-white transition hover:bg-red-600"
-                    @click="submitCancellationRequest()"
-                  >
-                    Confirm Request
-                  </button>
-                </div>
-              </div>
-            </div>
+      <button
+        type="button"
+        class="inline-flex min-h-11 items-center justify-center rounded-full bg-red-700 px-4 text-sm font-semibold text-white transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-60"
+        @click="submitCancellationRequest()"
+        :disabled="cancellationSubmitting"
+        x-text="
+          cancellationSubmitting
+            ? 'Processing...'
+            : membershipApplicationStatus === 'awaiting-payment'
+              ? 'Cancel Application'
+              : 'Confirm Request'
+        "
+      ></button>
+    </div>
+  </div>
+</div>
 
             <button
               x-show="
@@ -1660,6 +1678,7 @@ Alpine.data('customerPortal', () => ({
   cancellationPanelOpen: false,
   cancellationReason: '',
   cancellationError: '',
+  cancellationSubmitting: false,
 
   mobileMenuOpen: false,
   isLoggingOut: false,
@@ -1896,52 +1915,62 @@ previewTimer: null,
     this.cancellationError = ''
   },
 
-  submitCancellationRequest() {
-    const cancellationReason =
-    this.cancellationReason.trim()
+  async submitCancellationRequest() {
+    if (this.cancellationSubmitting) return
 
-    if (!cancellationReason) {
-      this.cancellationError =
-      'Please enter your reason for cancelling this application.'
-      return
-    }
-
-    const cancellableStatuses = [
-      'awaiting-payment',
-      'pending-verification',
-    ]
+    const cancellationReason = this.cancellationReason.trim()
+    const needsReview =
+      this.membershipApplicationStatus === 'pending-verification'
 
     if (
-      !cancellableStatuses.includes(
-        this.membershipApplicationStatus,
-      )
+      (needsReview && !cancellationReason) ||
+      cancellationReason.length > 300
     ) {
+      this.cancellationError =
+        'Enter a cancellation reason of 1 to 300 characters.'
       return
     }
 
-    this.cancellationReason = cancellationReason
     this.cancellationError = ''
-    this.cancellationPanelOpen = false
-    this.membershipApplicationStatus =
-    'cancellation-requested'
+    this.cancellationSubmitting = true
 
-    const dashboardUrl = new URL(window.location.href)
+    try {
+      const { data: nextStatus, error } = await supabase.rpc(
+        'customer_cancel_membership_application',
+        {
+          p_reason: cancellationReason || null,
+        },
+      )
 
-    dashboardUrl.searchParams.set(
-      'membership',
-      'cancellation-requested',
-    )
+      if (error) throw error
 
-    window.history.replaceState(
-      {},
-      '',
-      dashboardUrl,
-    )
+      if (nextStatus === 'cancelled') {
+        window.location.replace('/dashboard/')
+        return
+      }
 
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth',
-    })
+      if (nextStatus !== 'cancellation-requested') {
+        throw new Error('Unexpected cancellation status.')
+      }
+
+      this.membershipApplicationStatus = nextStatus
+      this.closeCancellationPanel()
+
+      const dashboardUrl = new URL(window.location.href)
+      dashboardUrl.searchParams.set(
+        'membership',
+        'cancellation-requested',
+      )
+      window.history.replaceState({}, '', dashboardUrl)
+
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    } catch (error) {
+      console.error('Unable to cancel membership application:', error)
+      this.cancellationError =
+        'Could not confirm cancellation. Refresh to check the application status.'
+    } finally {
+      this.cancellationSubmitting = false
+    }
   },
 
   showPreviewNotice(pageName) {
@@ -1974,10 +2003,11 @@ previewTimer: null,
 }))
 
 document.title =
-`Customer Portal | ${siteConfig.brand.name}`
+  `Customer Portal | ${siteConfig.brand.name}`
 
 async function startDashboard() {
-  const { data: { user }, error } = await supabase.auth.getUser()
+  const { data: { user }, error } =
+    await supabase.auth.getUser()
 
   if (error || !user) {
     window.location.replace('/login/')
@@ -1985,19 +2015,38 @@ async function startDashboard() {
   }
 
   const { data: profile, error: profileError } = await supabase
-  .from('profiles')
-  .select('first_name, last_name, email, mobile_number, customer_type, membership_status')
-  .eq('id', user.id)
-  .single()
+    .from('profiles')
+    .select(
+      'first_name, last_name, email, mobile_number, customer_type, membership_status, role, account_status',
+    )
+    .eq('id', user.id)
+    .single()
 
-if (profileError || !profile) {
-  console.error('Unable to load profile:', profileError)
-  document.querySelector('#dashboard-app').textContent =
-    'Unable to load your profile. Please refresh.'
-  return
-}
+  if (profileError || !profile) {
+    console.error('Unable to load profile:', profileError)
+    document.querySelector('#dashboard-app').textContent =
+      'Unable to load your profile. Please refresh.'
+    return
+  }
 
-signedInProfile = profile
+  if (profile.account_status !== 'active') {
+    await supabase.auth.signOut()
+    window.location.replace('/login/')
+    return
+  }
+
+  if (profile.role === 'admin') {
+    window.location.replace('/admin/')
+    return
+  }
+
+  if (profile.role !== 'customer') {
+    document.querySelector('#dashboard-app').textContent =
+      'This account cannot access the customer dashboard.'
+    return
+  }
+
+  signedInProfile = profile
 
 const openApplicationStatuses = [
   'awaiting-payment',

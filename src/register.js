@@ -55,6 +55,10 @@ const selectedPackage =
       packageItem.isActive,
   ) || null
 
+  const loginUrl = selectedPackage
+  ? `/login/?package=${encodeURIComponent(selectedPackage.id)}`
+  : '/login/'
+
 const dashboardPreviewUrl = selectedPackage
   ? `/dashboard/?package=${encodeURIComponent(
       selectedPackage.id,
@@ -839,7 +843,7 @@ document.querySelector('#register-app').innerHTML = `
 
                 <a
                   x-show="registrationSuccess"
-                  href="/login/"
+                  href="${loginUrl}"
                   class="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-brand-gold px-6 text-sm font-semibold text-[#17130d] transition hover:bg-brand-gold-light"
                 >
                   Go to sign in
@@ -869,7 +873,7 @@ document.querySelector('#register-app').innerHTML = `
               </p>
 
               <a
-                href="/login/"
+                href="${loginUrl}"
                 class="mt-2 inline-flex text-sm font-semibold text-brand-gold transition hover:text-brand-gold-light"
               >
                 Sign in to your account

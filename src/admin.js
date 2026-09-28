@@ -1067,6 +1067,9 @@ Alpine.data('adminDashboard', () => ({
 
   paymentMethodLabels,
 
+  isLoggingOut: false,
+  logoutError: '',
+
   orders: [],
 
   adminCustomers: [],
@@ -3751,6 +3754,25 @@ async loadLiveOrders() {
   }
 },
 
+async logOut() {
+  if (this.isLoggingOut) return
+
+  this.isLoggingOut = true
+  this.logoutError = ''
+
+  try {
+    const { error } = await supabase.auth.signOut()
+    if (error) throw error
+
+    document.body.classList.remove('overflow-hidden')
+    window.location.replace('/login/')
+  } catch (error) {
+    console.error('Unable to log out of admin dashboard:', error)
+    this.logoutError = 'Unable to log out. Please try again.'
+    this.isLoggingOut = false
+  }
+},
+
 destroy() {
   document.body.classList.remove('overflow-hidden')
 },
@@ -3873,11 +3895,26 @@ document.querySelector('#admin-app').innerHTML = `
             </span>
 
             <a
-              href="/"
-              class="text-xs font-semibold text-brand-muted transition hover:text-brand-gold sm:text-sm"
-            >
-              View Store
-            </a>
+  href="/"
+  class="text-xs font-semibold text-brand-muted transition hover:text-brand-gold sm:text-sm"
+>
+  View Store
+</a>
+
+<button
+  type="button"
+  class="text-xs font-semibold text-brand-muted transition hover:text-brand-gold disabled:opacity-50 sm:text-sm"
+  @click="logOut()"
+  :disabled="isLoggingOut"
+  x-text="isLoggingOut ? 'Logging out...' : 'Log out'"
+></button>
+
+<p
+  x-show="logoutError"
+  x-text="logoutError"
+  class="text-xs text-red-300"
+  role="alert"
+></p>
           </div>
         </div>
       </header>

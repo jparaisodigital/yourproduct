@@ -3,7 +3,7 @@ import './style.css'
 import Alpine from 'alpinejs'
 
 import logoImage from './assets/logoyourproduct.png'
-
+import { packages } from './config/packages-config.js'
 import { siteConfig } from './config/site-config.js'
 import { supabase } from './lib/supabase.js'
 
@@ -93,8 +93,26 @@ Alpine.data('loginPage', () => ({
         throw new Error('Account unavailable.')
       }
 
+      const requestedPackageId = new URLSearchParams(
+        window.location.search,
+      ).get('package')
+
+      const selectedPackage = packages.find(
+        (packageItem) =>
+          packageItem.id === requestedPackageId &&
+          packageItem.isActive,
+      )
+
+      const customerDashboardUrl = selectedPackage
+        ? `/dashboard/?package=${encodeURIComponent(
+            selectedPackage.id,
+          )}&membership=awaiting-payment`
+        : '/dashboard/'
+
       window.location.assign(
-        profile.role === 'admin' ? '/admin/' : '/dashboard/',
+        profile.role === 'admin'
+          ? '/admin/'
+          : customerDashboardUrl,
       )
     } catch (error) {
       console.error('Unable to sign in:', error)
