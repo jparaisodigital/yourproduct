@@ -876,10 +876,6 @@ selectedDashboardPackage.price,
         reviews your payment details.
       </p>
 
-      <p class="mt-2 text-xs leading-5 text-emerald-100/70">
-        Frontend preview only. No information has been saved
-        or uploaded yet.
-      </p>
     </div>
 
     <button
@@ -901,13 +897,19 @@ selectedDashboardPackage.price,
   type="submit"
   :disabled="
     !membershipPaymentsReady ||
-    membershipApplicationStatus !== 'awaiting-payment'
+    membershipApplicationStatus !== 'awaiting-payment' ||
+    membershipPaymentSubmitting ||
+    membershipPaymentSubmissionUncertain
   "
   class="premium-cta mt-6 inline-flex min-h-12 w-full items-center justify-center rounded-full bg-brand-gold px-7 text-sm font-semibold text-[#17130d] disabled:cursor-not-allowed disabled:opacity-60"
   x-text="
-    membershipPaymentsReady
-      ? 'Submit Payment for Verification'
-      : 'Membership payments opening soon'
+    !membershipPaymentsReady
+      ? 'Membership payments opening soon'
+      : membershipPaymentSubmitting
+        ? 'Submitting payment proof...'
+        : membershipPaymentSubmissionUncertain
+          ? 'Check application status'
+          : 'Submit Payment for Verification'
   "
 ></button>
 </form>
@@ -1667,6 +1669,8 @@ Alpine.data('customerPortal', () => ({
   },
 
   membershipPaymentsReady: false,
+  membershipPaymentSubmitting: false,
+  membershipPaymentSubmissionUncertain: false,
 
   membershipPaymentError: '',
   membershipPaymentTested: false,
@@ -1879,11 +1883,162 @@ previewTimer: null,
       URL.createObjectURL(file)
   },
 
-  testMembershipPayment() {
+  async testMembershipPayment() {
+    if (
+      this.membershipPaymentSubmitting ||
+      this.membershipPaymentSubmissionUncertain
+    ) return
+
+    this.membershipPaymentError = ''
     this.membershipPaymentSubmitted = false
     this.membershipPaymentTested = false
-    this.membershipPaymentError =
-      'Membership payment submission is not open yet.'
+
+    if (!this.membershipPaymentsReady) {
+      this.membershipPaymentError =
+        'Membership payment submission is not open yet.'
+      return
+    }
+
+    if (this.membershipApplicationStatus !== 'awaiting-payment') {
+      this.membershipPaymentError =
+        'This application is no longer awaiting payment.'
+      return
+    }
+
+    const payment = this.membershipPaymentForm
+    const senderName = payment.senderName.trim()
+    const referenceNumber = payment.referenceNumber.trim()
+    const proofFile = payment.proofFile
+
+    const allowedTypes = {
+      'image/jpeg': 'jpg',
+      'image/png': 'png',
+      'image/webp': 'webp',
+    }
+
+    if (!['e-wallet', 'bank-transfer'].includes(payment.paymentMethod)) {
+      this.membershipPaymentError = 'Select a payment method.'
+      return
+    }
+
+    if (
+      !senderName ||
+      senderName.length > 120 ||
+      !referenceNumber ||
+      referenceNumber.length > 120
+    ) {
+      this.membershipPaymentError =
+        'Enter a sender name and reference number of up to 120 characters each.'
+      return
+    }
+
+    if (
+      !proofFile ||
+      !allowedTypes[proofFile.type] ||
+      proofFile.size > 5 * 1024 * 1024 ||
+      proofFile.name.length > 255
+    ) {
+      this.membershipPaymentError =
+        'Select a JPG, PNG, or WebP screenshot under 5 MB.'
+      return
+    }
+
+    if (!payment.acceptedConfirmation) {
+      this.membershipPaymentError =
+        'Confirm that your payment information is correct.'
+      return
+    }
+
+    this.membershipPaymentSubmitting = true
+    let submissionStarted = false
+
+    try {
+      const { data: { user }, error: userError } =
+        await supabase.auth.getUser()
+
+      if (userError || !user) {
+        throw userError || new Error('Sign in required.')
+      }
+
+      const { data: application, error: applicationError } =
+        await supabase
+          .from('membership_applications')
+          .select('id, package_id, status')
+          .eq('customer_id', user.id)
+          .in('status', [
+            'awaiting-payment',
+            'pending-verification',
+            'cancellation-requested',
+          ])
+          .order('submitted_at', { ascending: false })
+          .limit(1)
+          .maybeSingle()
+
+      if (
+        applicationError ||
+        !application ||
+        application.status !== 'awaiting-payment' ||
+        application.package_id !== this.selectedPackage?.id
+      ) {
+        throw applicationError ||
+          new Error('Application changed. Refresh this page.')
+      }
+
+      const proofPath = [
+        user.id,
+        application.id,
+        `${crypto.randomUUID()}.${allowedTypes[proofFile.type]}`,
+      ].join('/')
+
+      const { error: uploadError } = await supabase.storage
+        .from('payment-proofs')
+        .upload(proofPath, proofFile, {
+          contentType: proofFile.type,
+          upsert: false,
+        })
+
+      if (uploadError) throw uploadError
+
+      submissionStarted = true
+
+      const { data: nextStatus, error: submitError } =
+        await supabase.rpc(
+          'customer_submit_membership_payment',
+          {
+            p_application_id: application.id,
+            p_payment_method: payment.paymentMethod,
+            p_sender_name: senderName,
+            p_reference_number: referenceNumber,
+            p_proof_path: proofPath,
+            p_proof_file_name: proofFile.name,
+          },
+        )
+
+      if (submitError || nextStatus !== 'pending-verification') {
+        throw submitError ||
+          new Error('Unexpected application status.')
+      }
+
+      this.membershipApplicationStatus = nextStatus
+      this.membershipPaymentSubmitted = true
+      this.membershipPaymentTested = true
+
+      const dashboardUrl = new URL(window.location.href)
+      dashboardUrl.searchParams.set('membership', nextStatus)
+      window.history.replaceState({}, '', dashboardUrl)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    } catch (error) {
+      console.error('Unable to submit membership payment:', error)
+
+      this.membershipPaymentSubmissionUncertain =
+        submissionStarted
+
+      this.membershipPaymentError = submissionStarted
+        ? 'Could not confirm submission. Refresh and check your application status before trying again.'
+        : 'Unable to upload payment proof. Please try again.'
+    } finally {
+      this.membershipPaymentSubmitting = false
+    }
   },
 
   openCancellationPanel() {
