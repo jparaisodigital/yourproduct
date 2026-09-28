@@ -35,7 +35,7 @@ export const faqItems = [
     id: 'question-5',
     category: 'pricing',
     question: 'How much is a bottle?',
-    answer: 'The regular customer price is ₱350 per bottle. Eligible members may purchase at ₱180 per bottle, subject to applicable order requirements.',
+    answer: 'The regular customer price is ₱350 per bottle. Eligible members may purchase at ₱175 per bottle, subject to applicable order requirements.',
   },
   {
     id: 'question-6',

@@ -115,7 +115,7 @@ function createProduct({
     bestFor: '',
     
     regularPrice: 350,
-    memberPrice: 180,
+    memberPrice: 175,
     
     // Product cost is not available yet.
     // Profit reporting stays disabled until confirmed.
