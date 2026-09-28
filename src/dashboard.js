@@ -961,10 +961,13 @@ const previewAccount = {
     ? 'YP-A8K29'
     : '',
 
-  directReferrals: 3,
+  directReferrals: 0,
   pointsBalance: 0,
   availableIncome: 0,
 }
+
+// Enable only after personal codes and referral records are live.
+const memberReferralsReady = false
 
 const previewRewards = [
   {
@@ -1456,16 +1459,16 @@ function renderSidebar() {
         </div>
 
                 <button
-          x-show="isMember"
-          x-transition
-          type="button"
-          class="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold transition"
-          :class="
-            activePage === 'referrals'
-              ? 'bg-brand-gold text-[#17130d]'
-              : 'text-brand-cream hover:bg-brand-charcoal'
-          "
-          @click="openPage('referrals')"
+  x-show="isMember && ${memberReferralsReady}"
+  x-transition
+  type="button"
+  class="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold transition"
+  :class="
+    activePage === 'referrals'
+      ? 'bg-brand-gold text-[#17130d]'
+      : 'text-brand-cream hover:bg-brand-charcoal'
+  "
+  @click="openPage('referrals')"
           :aria-current="
             activePage === 'referrals'
               ? 'page'
@@ -2723,13 +2726,13 @@ registerCartStore(Alpine, dashboardProducts, {
             <strong
               class="mt-3 block font-display text-4xl text-brand-cream"
             >
-              ${previewAccount.directReferrals}
+            ${memberReferralsReady ? previewAccount.directReferrals : '—'}
             </strong>
 
             <p
               class="mt-3 text-xs leading-5 text-brand-muted"
             >
-              Direct referrals only
+              Referral tracking coming soon
             </p>
           </article>
 
@@ -2804,7 +2807,7 @@ registerCartStore(Alpine, dashboardProducts, {
           </article>
                 </section>
 
-        ${renderMemberReferralCard()}
+        ${memberReferralsReady ? renderMemberReferralCard() : ''}
 
         <div
           class="mt-6 grid gap-6 xl:grid-cols-[1.25fr_0.75fr]"
@@ -3105,7 +3108,7 @@ registerCartStore(Alpine, dashboardProducts, {
         </p>
                 </div>
 
-        ${renderMemberReferralsPage()}
+        ${memberReferralsReady ? renderMemberReferralsPage() : ''}
 
         ${renderMemberPointsPage()}
 
