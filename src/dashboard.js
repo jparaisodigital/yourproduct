@@ -123,7 +123,7 @@ selectedDashboardPackage?.inclusions
             class="mt-2 size-1.5 shrink-0 rounded-full bg-brand-gold"
             aria-hidden="true"
           ></span>
-  
+
           <span>${inclusion}</span>
         </li>
       `,
@@ -882,12 +882,16 @@ selectedDashboardPackage.price,
   x-transition
   type="submit"
   :disabled="
+    !membershipPaymentsReady ||
     membershipApplicationStatus !== 'awaiting-payment'
   "
   class="premium-cta mt-6 inline-flex min-h-12 w-full items-center justify-center rounded-full bg-brand-gold px-7 text-sm font-semibold text-[#17130d] disabled:cursor-not-allowed disabled:opacity-60"
->
-  Submit Payment for Verification
-</button>
+  x-text="
+    membershipPaymentsReady
+      ? 'Submit Payment for Verification'
+      : 'Membership payments opening soon'
+  "
+></button>
 </form>
           </section>
         </div>
@@ -961,7 +965,7 @@ const previewRewards = [
                 height="19"
                 rx="2"
               />
-    
+
               <path
                 d="M10 5h4M11 18.5h2"
                 stroke-linecap="round"
@@ -987,7 +991,7 @@ const previewRewards = [
                 height="11"
                 rx="1.5"
               />
-    
+
               <path
                 d="M2.5 19h19M8.5 19l.8-2h5.4l.8 2"
                 stroke-linecap="round"
@@ -1009,7 +1013,7 @@ const previewRewards = [
             >
               <circle cx="6" cy="17" r="3" />
               <circle cx="18" cy="17" r="3" />
-    
+
               <path
                 d="M6 17h5l3-6h3.5M9 10h4l3 7M14 8h3"
                 stroke-linecap="round"
@@ -1034,7 +1038,7 @@ const previewRewards = [
                 stroke-linecap="round"
                 stroke-linejoin="round"
               />
-    
+
               <path
                 d="M5 17v2M19 17v2M6.5 14h1M16.5 14h1"
                 stroke-linecap="round"
@@ -1087,7 +1091,7 @@ const dashboardProductCards = () => activeProducts
   .toLowerCase()
   .replaceAll('\\', '\\\\')
   .replaceAll("'", "\\'")
-  
+
   return `
           <div
             x-show="
@@ -1126,14 +1130,14 @@ function renderSidebar() {
             alt="${siteConfig.brand.name} logo"
             class="size-11 shrink-0 object-contain"
           >
-    
+
           <span class="min-w-0">
             <span
               class="block truncate text-sm font-semibold uppercase tracking-[0.14em] text-brand-cream"
             >
               ${siteConfig.brand.name}
             </span>
-    
+
             <span
               class="mt-0.5 block text-[0.58rem] uppercase tracking-[0.13em] text-brand-muted"
             >
@@ -1141,7 +1145,7 @@ function renderSidebar() {
             </span>
           </span>
         </a>
-    
+
         <button
           type="button"
           class="grid size-10 place-items-center rounded-full border border-brand-border text-brand-muted transition hover:border-brand-gold hover:text-brand-gold lg:hidden"
@@ -1163,7 +1167,7 @@ function renderSidebar() {
           </svg>
         </button>
       </div>
-    
+
       <nav
         class="flex-1 overflow-y-auto px-4 py-6"
         aria-label="Customer portal navigation"
@@ -1173,7 +1177,7 @@ function renderSidebar() {
         >
           Platform
         </p>
-    
+
         <button
   type="button"
   class="mt-3 flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold transition"
@@ -1204,7 +1208,7 @@ function renderSidebar() {
       height="7"
       rx="1"
     />
-    
+
     <rect
       x="14"
       y="3"
@@ -1212,7 +1216,7 @@ function renderSidebar() {
       height="7"
       rx="1"
     />
-    
+
     <rect
       x="3"
       y="14"
@@ -1220,7 +1224,7 @@ function renderSidebar() {
       height="7"
       rx="1"
     />
-    
+
     <rect
       x="14"
       y="14"
@@ -1229,10 +1233,10 @@ function renderSidebar() {
       rx="1"
     />
   </svg>
-    
+
   <span>General</span>
 </button>
-    
+
         <div class="mt-3">
           <button
             type="button"
@@ -1260,23 +1264,23 @@ function renderSidebar() {
                   stroke-linecap="round"
                   stroke-linejoin="round"
                 />
-    
+
                 <circle
                   cx="10"
                   cy="19"
                   r="1"
                 />
-    
+
                 <circle
                   cx="17"
                   cy="19"
                   r="1"
                 />
               </svg>
-    
+
               <span>Orders</span>
             </span>
-    
+
             <svg
               class="size-4 text-brand-muted transition"
               :class="ordersOpen ? 'rotate-180' : ''"
@@ -1293,7 +1297,7 @@ function renderSidebar() {
               />
             </svg>
           </button>
-    
+
           <div
             x-show="ordersOpen"
             x-transition
@@ -1316,7 +1320,7 @@ function renderSidebar() {
             >
               Create Order
             </button>
-    
+
             <button
               type="button"
               class="block w-full rounded-lg px-3 py-2.5 text-left text-sm transition"
@@ -1336,7 +1340,7 @@ function renderSidebar() {
             </button>
           </div>
         </div>
-    
+
         <div
           x-show="isMember"
           x-transition
@@ -1361,16 +1365,16 @@ function renderSidebar() {
                   d="M4 7.5A2.5 2.5 0 0 1 6.5 5H19a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H6.5A2.5 2.5 0 0 1 4 16.5v-9Z"
                   stroke-linejoin="round"
                 />
-    
+
                 <path
                   d="M4 8h16M15 12h5"
                   stroke-linecap="round"
                 />
               </svg>
-    
+
               <span>Wallet</span>
             </span>
-    
+
             <svg
               class="size-4 text-brand-muted transition"
               :class="walletOpen ? 'rotate-180' : ''"
@@ -1387,7 +1391,7 @@ function renderSidebar() {
               />
             </svg>
           </button>
-    
+
           <div
             x-show="walletOpen"
             x-transition
@@ -1410,7 +1414,7 @@ function renderSidebar() {
             >
               Earnings
             </button>
-    
+
             <button
               type="button"
               class="block w-full rounded-lg px-3 py-2.5 text-left text-sm transition"
@@ -1502,7 +1506,7 @@ function renderSidebar() {
 
   <span>My Points</span>
 </button>
-    
+
         <button
   type="button"
   class="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold transition"
@@ -1531,17 +1535,17 @@ function renderSidebar() {
       cy="8"
       r="4"
     />
-  
+
     <path
       d="M4.5 21a7.5 7.5 0 0 1 15 0"
       stroke-linecap="round"
     />
   </svg>
-  
+
   <span>Account</span>
 </button>
       </nav>
-    
+
       <div class="border-t border-brand-border p-4">
         <div
           class="flex items-center gap-3 rounded-xl bg-brand-charcoal p-3"
@@ -1550,7 +1554,7 @@ function renderSidebar() {
   class="grid size-10 shrink-0 place-items-center rounded-full bg-brand-gold text-sm font-bold text-[#17130d]"
   x-text="((profile.first_name || '').charAt(0) + (profile.last_name || '').charAt(0)).toUpperCase() || 'C'"
 ></div>
-    
+
           <div class="min-w-0 flex-1">
   <p
     class="truncate text-sm font-semibold text-brand-cream"
@@ -1638,34 +1642,37 @@ Alpine.data('customerPortal', () => ({
     paymentMethod: '',
     senderName: '',
     referenceNumber: '',
+    proofFile: null,
     proofFileName: '',
     proofPreviewUrl: '',
     acceptedConfirmation: false,
   },
-  
+
+  membershipPaymentsReady: false,
+
   membershipPaymentError: '',
   membershipPaymentTested: false,
   membershipPaymentSubmitted: false,
   membershipApplicationStatus: hasPendingMembership
   ? requestedMembershipStatus
   : 'not-active',
-  
+
   cancellationPanelOpen: false,
   cancellationReason: '',
   cancellationError: '',
-  
+
   mobileMenuOpen: false,
   isLoggingOut: false,
   logoutError: '',
   ordersOpen: true,
   walletOpen: true,
-  
+
   profileForm: {
     firstName: signedInProfile.first_name ?? '',
     lastName: signedInProfile.last_name ?? '',
     emailAddress: signedInProfile.email ?? '',
     mobileNumber: signedInProfile.mobile_number ?? '',
-    
+
     address: {
       province: '',
       cityMunicipality: '',
@@ -1674,22 +1681,22 @@ Alpine.data('customerPortal', () => ({
       landmark: '',
     },
   },
-  
+
   profileFormTested: false,
 profileFormError: '',
 isSavingProfile: false,
 previewNotice: '',
 previewTimer: null,
-  
+
   get filteredProductCount() {
     const normalizedSearch =
     this.productSearch.trim().toLowerCase()
-    
+
     return activeProducts.filter((product) => {
       const matchesCategory =
       this.activeCategory === 'all' ||
       product.category === this.activeCategory
-      
+
       const searchableText = [
         product.name,
         product.sku,
@@ -1699,7 +1706,7 @@ previewTimer: null,
       ]
       .join(' ')
       .toLowerCase()
-      
+
       return (
         matchesCategory &&
         (
@@ -1709,7 +1716,7 @@ previewTimer: null,
       )
     }).length
   },
-  
+
   init() {
     this.$watch('mobileMenuOpen', (isOpen) => {
       document.body.classList.toggle(
@@ -1721,17 +1728,17 @@ previewTimer: null,
 
   async logOut() {
     if (this.isLoggingOut) return
-  
+
     this.isLoggingOut = true
     this.logoutError = ''
-  
+
     try {
       const { error } = await supabase.auth.signOut({
         scope: 'local',
       })
-  
+
       if (error) throw error
-  
+
       window.location.replace('/login/')
     } catch (error) {
       console.error('Unable to log out:', error)
@@ -1739,53 +1746,53 @@ previewTimer: null,
       this.isLoggingOut = false
     }
   },
-  
+
   openMobileMenu() {
     this.mobileMenuOpen = true
   },
-  
+
   closeMobileMenu() {
     this.mobileMenuOpen = false
   },
-  
+
   openPage(pageName) {
     this.activePage = pageName
     this.profileFormTested = false
     this.closeMobileMenu()
-    
+
     window.scrollTo({
       top: 0,
       behavior: 'smooth',
     })
   },
-  
+
   async savePersonalInfo() {
     if (this.isSavingProfile) return
-  
+
     this.profileFormTested = false
     this.profileFormError = ''
-  
+
     const firstName = this.profileForm.firstName.trim()
     const lastName = this.profileForm.lastName.trim()
     const mobileNumber = this.profileForm.mobileNumber.trim()
-  
+
     if (!firstName || !lastName || !mobileNumber) {
       this.profileFormError =
         'Enter your first name, last name, and mobile number.'
       return
     }
-  
+
     this.isSavingProfile = true
-  
+
     try {
       const { data: { user }, error: authError } =
         await supabase.auth.getUser()
-  
+
       if (authError || !user) {
         window.location.replace('/login/')
         return
       }
-  
+
       const { data, error } = await supabase
         .from('profiles')
         .update({
@@ -1796,9 +1803,9 @@ previewTimer: null,
         .eq('id', user.id)
         .select('first_name, last_name, mobile_number')
         .single()
-  
+
       if (error) throw error
-  
+
       this.profile = { ...this.profile, ...data }
       this.profileFormTested = true
     } catch (error) {
@@ -1809,122 +1816,63 @@ previewTimer: null,
       this.isSavingProfile = false
     }
   },
-  
+
   handleMembershipProof(event) {
     const file = event.target.files?.[0]
-    
+
     this.membershipPaymentError = ''
     this.membershipPaymentTested = false
+    this.membershipPaymentForm.proofFile = null
     this.membershipPaymentForm.proofFileName = ''
-    
+
     if (this.membershipPaymentForm.proofPreviewUrl) {
       URL.revokeObjectURL(
         this.membershipPaymentForm.proofPreviewUrl,
       )
-      
       this.membershipPaymentForm.proofPreviewUrl = ''
     }
-    
-    if (!file) {
-      return
-    }
-    
+
+    if (!file) return
+
     const allowedFileTypes = [
       'image/jpeg',
       'image/png',
       'image/webp',
     ]
-    
-    const maximumFileSize = 5 * 1024 * 1024
-    
+
     if (!allowedFileTypes.includes(file.type)) {
       this.membershipPaymentError =
-      'Upload a JPG, PNG, or WebP image only.'
-      
+        'Upload a JPG, PNG, or WebP image only.'
       event.target.value = ''
       return
     }
-    
-    if (file.size > maximumFileSize) {
+
+    if (file.size > 5 * 1024 * 1024) {
       this.membershipPaymentError =
-      'The payment screenshot must not exceed 5 MB.'
-      
+        'The payment screenshot must not exceed 5 MB.'
       event.target.value = ''
       return
     }
-    
+
+    this.membershipPaymentForm.proofFile = file
     this.membershipPaymentForm.proofFileName = file.name
-    
     this.membershipPaymentForm.proofPreviewUrl =
-    URL.createObjectURL(file)
+      URL.createObjectURL(file)
   },
-  
+
   testMembershipPayment() {
-    this.membershipPaymentError = ''
+    this.membershipPaymentSubmitted = false
     this.membershipPaymentTested = false
-    
-    if (!this.membershipPaymentForm.paymentMethod) {
-      this.membershipPaymentError =
-      'Select an e-wallet or bank transfer payment method.'
-      return
-    }
-    
-    if (!this.membershipPaymentForm.senderName.trim()) {
-      this.membershipPaymentError =
-      'Enter the sender or account name.'
-      return
-    }
-    
-    if (!this.membershipPaymentForm.referenceNumber.trim()) {
-      this.membershipPaymentError =
-      'Enter the transaction reference number.'
-      return
-    }
-    
-    if (!this.membershipPaymentForm.proofFileName) {
-      this.membershipPaymentError =
-      'Upload your payment screenshot.'
-      return
-    }
-    
-    if (
-      !this.membershipPaymentForm.acceptedConfirmation
-    ) {
-      this.membershipPaymentError =
-      'Confirm that the payment information is correct.'
-      return
-    }
-    
-    this.membershipPaymentTested = true
-    this.membershipPaymentSubmitted = true
-    this.membershipApplicationStatus =
-    'pending-verification'
-    
-    const dashboardUrl = new URL(window.location.href)
-    
-    dashboardUrl.searchParams.set(
-      'membership',
-      'pending-verification',
-    )
-    
-    window.history.replaceState(
-      {},
-      '',
-      dashboardUrl,
-    )
-    
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth',
-    })
+    this.membershipPaymentError =
+      'Membership payment submission is not open yet.'
   },
-  
+
   openCancellationPanel() {
     const cancellableStatuses = [
       'awaiting-payment',
       'pending-verification',
     ]
-    
+
     if (
       !cancellableStatuses.includes(
         this.membershipApplicationStatus,
@@ -1932,37 +1880,37 @@ previewTimer: null,
     ) {
       return
     }
-    
+
     this.cancellationError = ''
     this.cancellationPanelOpen = true
-    
+
     requestAnimationFrame(() => {
       document
       .querySelector('#cancellation-reason')
       ?.focus()
     })
   },
-  
+
   closeCancellationPanel() {
     this.cancellationPanelOpen = false
     this.cancellationError = ''
   },
-  
+
   submitCancellationRequest() {
     const cancellationReason =
     this.cancellationReason.trim()
-    
+
     if (!cancellationReason) {
       this.cancellationError =
       'Please enter your reason for cancelling this application.'
       return
     }
-    
+
     const cancellableStatuses = [
       'awaiting-payment',
       'pending-verification',
     ]
-    
+
     if (
       !cancellableStatuses.includes(
         this.membershipApplicationStatus,
@@ -1970,56 +1918,56 @@ previewTimer: null,
     ) {
       return
     }
-    
+
     this.cancellationReason = cancellationReason
     this.cancellationError = ''
     this.cancellationPanelOpen = false
     this.membershipApplicationStatus =
     'cancellation-requested'
-    
+
     const dashboardUrl = new URL(window.location.href)
-    
+
     dashboardUrl.searchParams.set(
       'membership',
       'cancellation-requested',
     )
-    
+
     window.history.replaceState(
       {},
       '',
       dashboardUrl,
     )
-    
+
     window.scrollTo({
       top: 0,
       behavior: 'smooth',
     })
   },
-  
+
   showPreviewNotice(pageName) {
     clearTimeout(this.previewTimer)
-    
+
     this.previewNotice =
     `${pageName} will be added in the next dashboard checkpoint.`
-    
+
     this.previewTimer = setTimeout(() => {
       this.previewNotice = ''
     }, 3200)
   },
-  
+
   destroy() {
     document.body.classList.remove('mobile-menu-open')
-    
+
     if (this.previewTimer) {
       window.clearTimeout(this.previewTimer)
       this.previewTimer = null
     }
-    
+
     if (this.membershipPaymentForm.proofPreviewUrl) {
       URL.revokeObjectURL(
         this.membershipPaymentForm.proofPreviewUrl,
       )
-      
+
       this.membershipPaymentForm.proofPreviewUrl = ''
     }
   },
@@ -2051,7 +1999,13 @@ if (profileError || !profile) {
 
 signedInProfile = profile
 
-const { data: membershipApplication, error: membershipError } =
+const openApplicationStatuses = [
+  'awaiting-payment',
+  'pending-verification',
+  'cancellation-requested',
+]
+
+let { data: membershipApplication, error: membershipError } =
   await supabase
     .from('membership_applications')
     .select('package_id, status')
@@ -2060,18 +2014,58 @@ const { data: membershipApplication, error: membershipError } =
     .limit(1)
     .maybeSingle()
 
+const hasExistingOpenApplication =
+  membershipApplication &&
+  openApplicationStatuses.includes(membershipApplication.status)
+
+const shouldCreateApplication =
+  !membershipError &&
+  !hasExistingOpenApplication &&
+  requestedMembershipStatus === 'awaiting-payment' &&
+  Boolean(selectedDashboardPackage) &&
+  profile.customer_type === 'regular' &&
+  profile.membership_status === 'none'
+
+if (shouldCreateApplication) {
+  const { data: newApplication, error: insertError } =
+    await supabase
+      .from('membership_applications')
+      .insert({
+        customer_id: user.id,
+        package_id: selectedDashboardPackage.id,
+        amount: selectedDashboardPackage.price,
+      })
+      .select('package_id, status')
+      .single()
+
+  if (insertError?.code === '23505') {
+    // Another tab may have created an open application first.
+    const { data: existingApplication, error: reloadError } =
+      await supabase
+        .from('membership_applications')
+        .select('package_id, status')
+        .eq('customer_id', user.id)
+        .in('status', openApplicationStatuses)
+        .limit(1)
+        .maybeSingle()
+
+    membershipApplication = existingApplication
+    membershipError = reloadError
+  } else {
+    membershipApplication = newApplication
+    membershipError = insertError
+  }
+}
+
 if (membershipError) {
-  console.error('Unable to load membership application:', membershipError)
+  console.error(
+    'Unable to load or start membership application:',
+    membershipError,
+  )
   document.querySelector('#dashboard-app').textContent =
     'Unable to load your membership details. Please refresh.'
   return
 }
-
-const openApplicationStatuses = [
-  'awaiting-payment',
-  'pending-verification',
-  'cancellation-requested',
-]
 
 const hasOpenApplication =
   membershipApplication &&
@@ -2079,16 +2073,11 @@ const hasOpenApplication =
 
 const expectedStatus = hasOpenApplication
   ? membershipApplication.status
-  : requestedMembershipStatus === 'awaiting-payment' &&
-      selectedDashboardPackage
-    ? 'awaiting-payment'
-    : ''
+  : ''
 
 const expectedPackageId = hasOpenApplication
   ? membershipApplication.package_id
-  : expectedStatus === 'awaiting-payment'
-    ? selectedDashboardPackage.id
-    : ''
+  : ''
 
 if (
   requestedMembershipStatus !== expectedStatus ||
