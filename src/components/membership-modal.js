@@ -149,7 +149,7 @@ export function renderMembershipModal() {
             Become a Member.
 
             <span class="mt-2 block italic text-brand-gold">
-              Enjoy Up to 50% Off.
+              Save ₱150 Per Bottle.
             </span>
           </h2>
 

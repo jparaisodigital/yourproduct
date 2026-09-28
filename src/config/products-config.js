@@ -114,8 +114,8 @@ function createProduct({
     scentCharacter: '',
     bestFor: '',
     
-    regularPrice: 350,
-    memberPrice: 175,
+    regularPrice: 349,
+    memberPrice: 199,
     
     // Product cost is not available yet.
     // Profit reporting stays disabled until confirmed.
