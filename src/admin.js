@@ -1066,10 +1066,146 @@ function renderApplicationDetailsDrawer() {
             ></p>
           </section>
 
-          <p class="text-xs leading-5 text-brand-muted">
-  Verify the actual payment with the company account before approving.
-  Approval controls will open after the database guards pass testing.
-</p>
+          <div class="mt-5 rounded-2xl border border-brand-border bg-brand-black/40 p-4">
+  <p class="text-sm font-semibold text-brand-cream">
+    Admin Review
+  </p>
+
+  <p class="mt-2 text-xs leading-5 text-brand-muted">
+    Review the uploaded payment proof and verify the actual payment
+    in the company account before approving this membership.
+  </p>
+
+  <div
+    x-show="
+      selectedApplication &&
+      selectedApplication.status === 'pending-verification'
+    "
+    x-transition
+    class="mt-4 grid gap-3 sm:grid-cols-2"
+  >
+    <button
+      type="button"
+      class="inline-flex min-h-11 items-center justify-center rounded-full border border-red-400/40 px-5 text-sm font-semibold text-red-300 transition hover:border-red-300 hover:bg-red-400/10 disabled:cursor-not-allowed disabled:opacity-50"
+      @click="openReviewPanel('reject-payment')"
+      :disabled="reviewSubmitting"
+    >
+      Reject Payment
+    </button>
+
+    <button
+      type="button"
+      class="inline-flex min-h-11 items-center justify-center rounded-full bg-emerald-500 px-5 text-sm font-semibold text-[#07130d] transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-50"
+      @click="openReviewPanel('approve-membership')"
+      :disabled="
+        reviewSubmitting ||
+        applicationProofLoading ||
+        !applicationProofUrl
+      "
+    >
+      Approve Membership
+    </button>
+  </div>
+
+  <p
+    x-show="
+      selectedApplication &&
+      selectedApplication.status === 'awaiting-payment'
+    "
+    class="mt-4 rounded-xl border border-amber-400/30 bg-amber-400/10 p-3 text-xs leading-5 text-amber-200"
+  >
+    This application is still awaiting payment. Review controls will
+    appear after the customer uploads payment proof.
+  </p>
+
+  <p
+    x-show="
+      selectedApplication &&
+      selectedApplication.status !== 'awaiting-payment' &&
+      selectedApplication.status !== 'pending-verification'
+    "
+    class="mt-4 rounded-xl border border-brand-border bg-brand-panel p-3 text-xs leading-5 text-brand-muted"
+  >
+    This application has already been reviewed or closed.
+  </p>
+
+  <form
+    x-show="reviewPanelOpen"
+    x-transition
+    class="mt-4 rounded-2xl border border-brand-border bg-brand-panel p-4"
+    @submit.prevent="confirmReviewAction()"
+  >
+    <h3
+      class="text-sm font-semibold text-brand-cream"
+      x-text="reviewActionTitle"
+    ></h3>
+
+    <p
+      class="mt-2 text-xs leading-5 text-brand-muted"
+      x-text="reviewActionDescription"
+    ></p>
+
+    <label
+      x-show="reviewAction === 'approve-membership'"
+      class="mt-4 flex gap-3 rounded-xl border border-emerald-400/30 bg-emerald-400/10 p-3 text-xs leading-5 text-emerald-100"
+    >
+      <input
+        type="checkbox"
+        x-model="reviewPaymentVerified"
+        class="mt-1 size-4 rounded border-emerald-300 bg-brand-black text-emerald-400"
+      >
+
+      <span>
+        I verified the actual payment in the company account.
+      </span>
+    </label>
+
+    <label
+      for="admin-review-note"
+      class="mt-4 block text-xs font-semibold uppercase tracking-[0.12em] text-brand-muted"
+    >
+      Admin Note
+    </label>
+
+    <textarea
+      id="admin-review-note"
+      x-model.trim="reviewNote"
+      rows="3"
+      maxlength="300"
+      :placeholder="
+        reviewAction === 'reject-payment'
+          ? 'Required: explain why this payment is rejected'
+          : 'Optional: add a short approval note'
+      "
+      class="mt-2 w-full resize-none rounded-xl border border-brand-border bg-brand-black px-4 py-3 text-sm leading-6 text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
+    ></textarea>
+
+    <p
+      x-show="reviewError"
+      x-text="reviewError"
+      class="mt-2 text-xs leading-5 text-red-300"
+      role="alert"
+    ></p>
+
+    <div class="mt-4 grid gap-3 sm:grid-cols-2">
+      <button
+        type="button"
+        class="inline-flex min-h-11 items-center justify-center rounded-full border border-brand-border px-4 text-sm font-semibold text-brand-cream transition hover:border-brand-gold hover:text-brand-gold disabled:cursor-not-allowed disabled:opacity-50"
+        @click="closeReviewPanel()"
+        :disabled="reviewSubmitting"
+      >
+        Cancel
+      </button>
+
+      <button
+        type="submit"
+        class="inline-flex min-h-11 items-center justify-center rounded-full bg-brand-gold px-4 text-sm font-semibold text-[#17130d] transition hover:bg-brand-gold-light disabled:cursor-not-allowed disabled:opacity-50"
+        :disabled="reviewSubmitting"
+        x-text="reviewSubmitting ? 'Submitting...' : 'Confirm Review'"
+      ></button>
+    </div>
+  </form>
+</div>
         </div>
       </template>
     </aside>
@@ -1195,6 +1331,9 @@ Alpine.data('adminDashboard', () => ({
   reviewNote: '',
 
   reviewError: '',
+
+  reviewPaymentVerified: false,
+  reviewSubmitting: false,
 
   packageAllocationQuantities: {},
 
@@ -3220,8 +3359,6 @@ get reviewActionTitle() {
   const titles = {
     'approve-membership': 'Approve membership',
     'reject-payment': 'Reject payment',
-    'approve-cancellation': 'Approve cancellation',
-    'decline-cancellation': 'Decline cancellation',
   }
 
   return titles[this.reviewAction] || 'Review application'
@@ -3230,48 +3367,36 @@ get reviewActionTitle() {
 get reviewActionDescription() {
   const descriptions = {
     'approve-membership':
-    'The customer membership will be marked as approved.',
+      'This will activate the customer membership after verified payment.',
 
     'reject-payment':
-    'The submitted payment will be rejected and the membership will remain inactive.',
-
-    'approve-cancellation':
-    'The application will be cancelled. Any applicable refund must still be processed manually.',
-
-    'decline-cancellation':
-    'The cancellation request will be declined and the application will return to payment verification.',
+      'This will reject the submitted payment and keep the customer as a free account.',
   }
 
   return descriptions[this.reviewAction] || ''
 },
 
 openReviewPanel(actionName) {
-  if (!this.selectedApplication) {
+  if (
+    !this.selectedApplication ||
+    this.selectedApplication.status !== 'pending-verification'
+  ) {
     return
   }
 
-  const allowedActions = {
-    'pending-verification': [
-      'approve-membership',
-      'reject-payment',
-    ],
+  const allowedActions = [
+    'approve-membership',
+    'reject-payment',
+  ]
 
-    'cancellation-requested': [
-      'approve-cancellation',
-      'decline-cancellation',
-    ],
-  }
-
-  const statusActions =
-  allowedActions[this.selectedApplication.status] || []
-
-  if (!statusActions.includes(actionName)) {
+  if (!allowedActions.includes(actionName)) {
     return
   }
 
   this.reviewAction = actionName
   this.reviewNote = ''
   this.reviewError = ''
+  this.reviewPaymentVerified = false
   this.reviewPanelOpen = true
 },
 
@@ -3280,89 +3405,152 @@ closeReviewPanel() {
   this.reviewAction = ''
   this.reviewNote = ''
   this.reviewError = ''
+  this.reviewPaymentVerified = false
 },
 
-confirmReviewAction() {
-  const normalizedNote = this.reviewNote.trim()
+async confirmReviewAction() {
+  if (this.reviewSubmitting) return
 
-  if (!this.selectedApplication) {
+  const selectedApplication = this.selectedApplication
+
+  if (!selectedApplication) {
     this.reviewError = 'Application details are unavailable.'
     return
   }
 
-  if (normalizedNote.length < 3) {
+  if (selectedApplication.status !== 'pending-verification') {
     this.reviewError =
-    'Enter a short admin note before confirming.'
+      'Only pending verification applications can be reviewed.'
     return
   }
 
-  const nextStatuses = {
-    'approve-membership': 'approved',
-    'reject-payment': 'rejected',
-    'approve-cancellation': 'cancelled',
-    'decline-cancellation': 'pending-verification',
+  const normalizedNote = this.reviewNote.trim()
+
+  if (
+    this.reviewAction === 'reject-payment' &&
+    normalizedNote.length < 3
+  ) {
+    this.reviewError =
+      'Enter a short admin note before rejecting this payment.'
+    return
   }
 
-  const nextStatus = nextStatuses[this.reviewAction]
+  if (normalizedNote.length > 300) {
+    this.reviewError =
+      'Admin note must not exceed 300 characters.'
+    return
+  }
 
-  if (!nextStatus) {
+  if (
+    this.reviewAction === 'approve-membership' &&
+    !this.reviewPaymentVerified
+  ) {
+    this.reviewError =
+      'Confirm that the actual payment was verified before approval.'
+    return
+  }
+
+  if (
+    this.reviewAction === 'approve-membership' &&
+    !this.applicationProofUrl
+  ) {
+    this.reviewError =
+      'Payment proof must be available before approval.'
+    return
+  }
+
+  const reviewActionMap = {
+    'approve-membership': 'approve',
+    'reject-payment': 'reject',
+  }
+
+  const rpcAction = reviewActionMap[this.reviewAction]
+
+  if (!rpcAction) {
     this.reviewError = 'Select a valid review action.'
     return
   }
 
-  const applicationIndex = this.applications.findIndex(
-    (application) =>
-      application.id === this.selectedApplicationId,
-  )
+  this.reviewSubmitting = true
+  this.reviewError = ''
 
-  if (applicationIndex === -1) {
-    this.reviewError = 'Application could not be found.'
-    return
+  try {
+    const { data: nextStatus, error } = await supabase.rpc(
+      'admin_review_membership_application',
+      {
+        p_application_id: selectedApplication.id,
+        p_action: rpcAction,
+        p_admin_note: normalizedNote || null,
+        p_payment_verified:
+          rpcAction === 'approve' &&
+          this.reviewPaymentVerified,
+      },
+    )
+
+    if (error) throw error
+
+    const expectedStatus =
+      rpcAction === 'approve'
+        ? 'approved'
+        : 'rejected'
+
+    if (nextStatus !== expectedStatus) {
+      throw new Error('Unexpected review status returned.')
+    }
+
+    const reviewedAt = new Date().toISOString()
+
+    this.applications = this.applications.map((application) => {
+      if (application.id !== selectedApplication.id) {
+        return application
+      }
+
+      return {
+        ...application,
+        status: nextStatus,
+        admin_note: normalizedNote || application.admin_note,
+        reviewed_at: reviewedAt,
+        updated_at: reviewedAt,
+        approved_at:
+          nextStatus === 'approved'
+            ? reviewedAt
+            : application.approved_at,
+        membership_activated_at:
+          nextStatus === 'approved'
+            ? reviewedAt
+            : application.membership_activated_at,
+        fulfillment_status:
+          nextStatus === 'approved'
+            ? 'pending-allocation'
+            : application.fulfillment_status,
+      }
+    })
+
+    this.closeReviewPanel()
+
+    if (typeof this.closeApplicationDetails === 'function') {
+      this.closeApplicationDetails()
+    }
+
+    if (typeof this.loadApplications === 'function') {
+      await this.loadApplications()
+    } else if (
+      typeof this.loadMembershipApplications === 'function'
+    ) {
+      await this.loadMembershipApplications()
+    }
+  } catch (error) {
+    console.error('Unable to review membership application:', error)
+
+    this.reviewError =
+      'Could not confirm the review. Refresh and check the application status.'
+  } finally {
+    this.reviewSubmitting = false
   }
-
-  const reviewedAt =
-  new Date().toISOString()
-
-  const isMembershipApproval =
-  this.reviewAction ===
-  'approve-membership'
-
-  this.applications[applicationIndex] = {
-    ...this.applications[applicationIndex],
-
-    status: nextStatus,
-
-    admin_note: normalizedNote,
-
-    reviewed_at: reviewedAt,
-    updated_at: reviewedAt,
-
-    approved_at:
-    isMembershipApproval
-    ? reviewedAt
-    : this.applications[
-      applicationIndex
-    ].approved_at,
-
-    membership_activated_at:
-    isMembershipApproval
-    ? reviewedAt
-    : this.applications[
-      applicationIndex
-    ].membership_activated_at,
-
-    fulfillment_status:
-    isMembershipApproval
-    ? 'pending-allocation'
-    : this.applications[
-      applicationIndex
-    ].fulfillment_status,
-  }
-
-  this.closeReviewPanel()
 },
 
 applicationStatusBadgeClass(status) {
+
   const statusClasses = {
     'awaiting-payment':
     'border-amber-500/40 bg-amber-500/10 text-amber-300',
