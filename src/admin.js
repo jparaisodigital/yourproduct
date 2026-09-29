@@ -1024,9 +1024,33 @@ function renderApplicationDetailsDrawer() {
               x-text="'Reference: ' + (selectedApplication.reference_number || 'Not provided')"
             ></p>
             <p
-              class="mt-3 break-all text-xs text-brand-muted"
-              x-text="'Proof file: ' + (selectedApplication.payment_proof_file_name || 'Not submitted')"
-            ></p>
+  class="mt-3 break-all text-xs text-brand-muted"
+  x-text="'Proof file: ' + (selectedApplication.payment_proof_file_name || 'Not submitted')"
+></p>
+
+<p
+  x-show="applicationProofLoading"
+  class="mt-3 text-sm text-brand-muted"
+>Loading payment proof…</p>
+
+<p
+  x-show="applicationProofError"
+  x-text="applicationProofError"
+  class="mt-3 text-sm text-red-300"
+  role="alert"
+></p>
+
+<img
+  x-show="applicationProofUrl"
+  :src="applicationProofUrl"
+  alt="Submitted membership payment proof"
+  class="mt-3 max-h-96 w-full rounded-lg object-contain"
+>
+
+<p
+  x-show="!applicationProofLoading && !applicationProofUrl && !applicationProofError"
+  class="mt-3 text-xs text-brand-muted"
+>No payment screenshot submitted.</p>
           </section>
 
           <section
@@ -1043,9 +1067,9 @@ function renderApplicationDetailsDrawer() {
           </section>
 
           <p class="text-xs leading-5 text-brand-muted">
-            Membership approval and payment-proof preview are being connected.
-            No status can be changed from this panel yet.
-          </p>
+  Verify the actual payment with the company account before approving.
+  Approval controls will open after the database guards pass testing.
+</p>
         </div>
       </template>
     </aside>
@@ -1140,6 +1164,10 @@ Alpine.data('adminDashboard', () => ({
   selectedApplicationId: null,
 
   applicationDetailsOpen: false,
+  applicationProofUrl: '',
+  applicationProofLoading: false,
+  applicationProofError: '',
+  applicationProofRequestId: 0,
 
   applicationSearch: '',
 
@@ -1434,6 +1462,7 @@ Alpine.data('adminDashboard', () => ({
           id, customer_id, package_id, amount, status,
           payment_method, payment_provider, sender_name,
           reference_number, payment_proof_file_name,
+          payment_proof_path,
           cancellation_reason, refund_status, admin_note,
           approved_at, membership_activated_at,
           fulfillment_status, submitted_at, updated_at,
@@ -3651,20 +3680,59 @@ formatDate(dateValue) {
   return adminDateFormatter.format(new Date(dateValue))
 },
 
-openApplicationDetails(applicationId) {
-  this.selectedApplicationId =
-  applicationId
+async openApplicationDetails(applicationId) {
+  const application = this.applications.find(
+    (item) => item.id === applicationId,
+  )
+  if (!application) return
+
+  const requestId = ++this.applicationProofRequestId
+  this.selectedApplicationId = applicationId
+  this.applicationProofUrl = ''
+  this.applicationProofError = ''
+  this.applicationProofLoading = Boolean(application.payment_proof_path)
 
   this.initializePackageAllocation()
-
   this.applicationDetailsOpen = true
+  document.body.classList.add('overflow-hidden')
 
-  document.body.classList.add(
-    'overflow-hidden',
-  )
+  if (!application.payment_proof_path) return
+
+  try {
+    const { data, error } = await supabase.storage
+      .from('payment-proofs')
+      .createSignedUrl(application.payment_proof_path, 300)
+
+    if (error) throw error
+
+    if (
+      requestId === this.applicationProofRequestId &&
+      this.applicationDetailsOpen
+    ) {
+      this.applicationProofUrl = data.signedUrl
+    }
+  } catch (error) {
+    console.error('Unable to load membership payment proof:', error)
+
+    if (
+      requestId === this.applicationProofRequestId &&
+      this.applicationDetailsOpen
+    ) {
+      this.applicationProofError =
+        'Unable to load payment proof. Close and reopen this application.'
+    }
+  } finally {
+    if (requestId === this.applicationProofRequestId) {
+      this.applicationProofLoading = false
+    }
+  }
 },
 
 closeApplicationDetails() {
+  this.applicationProofRequestId++
+  this.applicationProofUrl = ''
+  this.applicationProofLoading = false
+  this.applicationProofError = ''
   this.closeReviewPanel()
   this.closePackageFulfillmentAction()
   this.applicationDetailsOpen = false
