@@ -711,7 +711,7 @@ async function startCheckout() {
               <span
                 class="text-sm font-semibold uppercase tracking-[0.12em] text-brand-muted"
               >
-                Estimated total
+                Products subtotal
               </span>
               <strong
                 class="font-display text-3xl text-brand-gold"
@@ -719,9 +719,9 @@ async function startCheckout() {
               ></strong>
             </div>
             <p class="mt-4 text-xs leading-5 text-brand-muted">
-              Estimated delivery is 1–3 days via J&amp;T after
-              dispatch. The delivery fee will be confirmed during
-              order review.
+              Metro Manila standard delivery is ₱150 via J&amp;T.
+For addresses outside Metro Manila or same-day delivery,
+contact our Facebook page to arrange the fee and schedule.
             </p>
             <div
               class="mt-6 flex items-center justify-center gap-2 border-t border-brand-border pt-5 text-xs text-brand-muted"
@@ -975,8 +975,9 @@ async function startCheckout() {
     </option>
   </select>
   <p class="mt-2 text-xs leading-5 text-brand-muted">
-    Estimated delivery is 1–3 days via J&amp;T after dispatch.
-    The final delivery fee will be confirmed during order review.
+    Metro Manila standard delivery is ₱150 via J&amp;T.
+For addresses outside Metro Manila or same-day delivery,
+contact our Facebook page to arrange the fee and schedule.
   </p>
 </div>
               <label
@@ -1352,7 +1353,7 @@ async function startCheckout() {
               </div>
               <div class="shrink-0 sm:text-right">
                 <p class="text-xs uppercase tracking-[0.12em] text-brand-muted">
-                  Estimated total
+                  Products subtotal
                 </p>
                 <strong
                   class="mt-1 block font-display text-3xl text-brand-gold"
