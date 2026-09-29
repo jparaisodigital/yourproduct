@@ -173,22 +173,6 @@ export function renderVisionMissionSection() {
                 class="absolute inset-0 bg-gradient-to-r from-black/70 via-black/20 to-transparent"
                 aria-hidden="true"
               ></div>
-
-              <figcaption
-                class="absolute bottom-4 left-5 max-w-sm"
-              >
-                <p
-                  class="text-[0.62rem] font-semibold uppercase tracking-[0.2em] text-[#dfbf7a]"
-                >
-                  Your Product
-                </p>
-
-                <p
-                  class="mt-1 font-display text-xl leading-tight text-white"
-                >
-                  Scents that create opportunities.
-                </p>
-              </figcaption>
             </figure>
           </div>
         </div>

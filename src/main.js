@@ -18,6 +18,10 @@ import {
 } from './lib/scroll-reveal.js'
 
 import {
+  bindFadeLinks,
+} from './lib/page-transition.js'
+
+import {
   products,
   productCategories,
 } from './config/products-config.js'
@@ -199,8 +203,6 @@ async function startStorefront() {
 
       ${renderWaysToEarnSection()}
 
-      ${renderDiscoverSection()}
-
       ${renderVisionMissionSection()}
 
       ${renderBossSection()}
@@ -219,6 +221,7 @@ async function startStorefront() {
 
   Alpine.start()
   initScrollReveal()
+  bindFadeLinks()
 
   requestAnimationFrame(() => {
     dismissSiteLoader()

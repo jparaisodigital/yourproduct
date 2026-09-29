@@ -59,6 +59,12 @@ export default defineConfig({
           import.meta.dirname,
           'admin/index.html',
         ),
+
+        university: resolve(
+          import.meta.dirname,
+          'university/index.html',
+        ),
+        
       },
     },
   },

@@ -24,19 +24,6 @@ export function renderBossSection() {
             aria-hidden="true"
           ></div>
 
-          <div class="absolute inset-x-0 bottom-0 p-6 sm:p-7">
-            <p
-              class="text-[0.65rem] font-semibold uppercase tracking-[0.24em] text-[#dfbf7a]"
-            >
-              Your Product
-            </p>
-
-            <p
-              class="mt-2 max-w-sm font-display text-2xl leading-tight text-white"
-            >
-              Take your next step with confidence.
-            </p>
-          </div>
         </div>
 
         <div

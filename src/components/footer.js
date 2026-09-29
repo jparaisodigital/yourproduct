@@ -54,25 +54,25 @@ export function renderFooter(siteConfig) {
             </h2>
 
             <nav
-              class="mt-5 flex flex-col items-start gap-3"
-              aria-label="Footer navigation"
-            >
-              ${footerLinks}
+  class="mt-5 flex flex-col items-start gap-3"
+  aria-label="Footer navigation"
+>
+  ${footerLinks}
 
-              <span class="text-sm text-brand-muted">
-                YOUR PRODUCT University
-                <small class="ml-1 text-xs text-brand-gold">
-                  Coming soon
-                </small>
-              </span>
+  <a
+  href="/university/"
+  class="text-sm text-brand-muted transition hover:text-brand-gold"
+>
+  YOUR PRODUCT University
+</a>
 
-              <span class="text-sm text-brand-muted">
-                Events
-                <small class="ml-1 text-xs text-brand-gold">
-                  Coming soon
-                </small>
-              </span>
-            </nav>
+  <span class="text-sm text-brand-muted">
+    Events
+    <small class="ml-1 text-xs text-brand-gold">
+      Coming soon
+    </small>
+  </span>
+</nav>
           </div>
 
           <div>
