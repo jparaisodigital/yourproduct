@@ -987,18 +987,66 @@ function renderOrderDetailsDrawer() {
     </div>
 
     <div
-      x-show="selectedOrder.status === 'processing'"
-      class="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3"
-    >
-      <p class="text-sm font-semibold text-emerald-200">
-        Payment approved
-      </p>
+  x-show="selectedOrder.status === 'processing'"
+  class="rounded-xl border border-sky-500/30 bg-sky-500/10 px-4 py-3"
+>
+  <p class="text-sm font-semibold text-sky-200">
+    Payment approved
+  </p>
 
-      <p class="mt-1 text-xs leading-5 text-emerald-100/80">
-        This order is now processing. Fulfillment actions will be
-        connected in the next checkpoint.
-      </p>
-    </div>
+  <p class="mt-1 text-xs leading-5 text-sky-100/80">
+    This order is ready to be marked as shipped.
+  </p>
+
+  <button
+    type="button"
+    class="mt-4 inline-flex min-h-10 w-full items-center justify-center rounded-full bg-sky-600 px-4 text-sm font-semibold text-white transition hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-50"
+    @click="updateOrderFulfillment('shipped')"
+    :disabled="orderFulfillmentSubmitting"
+    x-text="orderFulfillmentSubmitting ? 'Updating...' : 'Mark as Shipped'"
+  ></button>
+</div>
+
+<div
+  x-show="selectedOrder.status === 'shipped'"
+  class="rounded-xl border border-blue-500/30 bg-blue-500/10 px-4 py-3"
+>
+  <p class="text-sm font-semibold text-blue-200">
+    Order shipped
+  </p>
+
+  <p class="mt-1 text-xs leading-5 text-blue-100/80">
+    Mark this order delivered once the customer receives it.
+  </p>
+
+  <button
+    type="button"
+    class="mt-4 inline-flex min-h-10 w-full items-center justify-center rounded-full bg-emerald-600 px-4 text-sm font-semibold text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-50"
+    @click="updateOrderFulfillment('delivered')"
+    :disabled="orderFulfillmentSubmitting"
+    x-text="orderFulfillmentSubmitting ? 'Updating...' : 'Mark as Delivered'"
+  ></button>
+</div>
+
+<div
+  x-show="selectedOrder.status === 'delivered'"
+  class="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3"
+>
+  <p class="text-sm font-semibold text-emerald-200">
+    Order delivered
+  </p>
+
+  <p class="mt-1 text-xs leading-5 text-emerald-100/80">
+    This order is complete. Points can be awarded from this status.
+  </p>
+</div>
+
+<p
+  x-show="orderFulfillmentError"
+  x-text="orderFulfillmentError"
+  class="mt-3 text-xs leading-5 text-red-300"
+  role="alert"
+></p>
 
     <div
       x-show="selectedOrder.status === 'rejected'"
@@ -1544,6 +1592,9 @@ Alpine.data('adminDashboard', () => ({
 
   orderReviewPaymentVerified: false,
   orderReviewSubmitting: false,
+
+  orderFulfillmentSubmitting: false,
+  orderFulfillmentError: '',
 
   reviewPanelOpen: false,
 
@@ -3173,6 +3224,101 @@ async submitOrderReview() {
       'Could not confirm the order review. Refresh and check the order status.'
   } finally {
     this.orderReviewSubmitting = false
+  }
+},
+
+async updateOrderFulfillment(nextStatus) {
+  if (this.orderFulfillmentSubmitting) return
+
+  const order = this.selectedOrder
+
+  if (!order) {
+    this.orderFulfillmentError =
+      'Order details are unavailable.'
+    return
+  }
+
+  if (!['shipped', 'delivered'].includes(nextStatus)) {
+    this.orderFulfillmentError =
+      'This fulfillment action is not available.'
+    return
+  }
+
+  if (
+    nextStatus === 'shipped' &&
+    order.status !== 'processing'
+  ) {
+    this.orderFulfillmentError =
+      'Only processing orders can be marked as shipped.'
+    return
+  }
+
+  if (
+    nextStatus === 'delivered' &&
+    order.status !== 'shipped'
+  ) {
+    this.orderFulfillmentError =
+      'Only shipped orders can be marked as delivered.'
+    return
+  }
+
+  this.orderFulfillmentSubmitting = true
+  this.orderFulfillmentError = ''
+
+  try {
+    const { data: updatedStatus, error } =
+      await supabase.rpc(
+        'admin_update_order_fulfillment',
+        {
+          p_order_id: order.id,
+          p_next_status: nextStatus,
+          p_admin_note: null,
+        },
+      )
+
+    if (error) throw error
+
+    const reviewedAt = new Date().toISOString()
+
+    const updateOrder = (orderItem) => {
+      if (orderItem.id !== order.id) {
+        return orderItem
+      }
+
+      return {
+        ...orderItem,
+        status: updatedStatus,
+        reviewed_at: reviewedAt,
+      }
+    }
+
+    if (Array.isArray(this.orders)) {
+      this.orders = this.orders.map(updateOrder)
+    }
+
+    if (Array.isArray(this.liveOrders)) {
+      this.liveOrders = this.liveOrders.map(updateOrder)
+    }
+
+    this.selectedOrder = {
+      ...order,
+      status: updatedStatus,
+      reviewed_at: reviewedAt,
+    }
+
+    if (typeof this.loadLiveOrders === 'function') {
+      await this.loadLiveOrders()
+    }
+  } catch (error) {
+    console.error(
+      'Unable to update order fulfillment:',
+      error,
+    )
+
+    this.orderFulfillmentError =
+      'Could not update fulfillment status. Refresh and check the order.'
+  } finally {
+    this.orderFulfillmentSubmitting = false
   }
 },
 
