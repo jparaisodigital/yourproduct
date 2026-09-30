@@ -3309,6 +3309,14 @@ async updateOrderFulfillment(nextStatus) {
     if (typeof this.loadLiveOrders === 'function') {
       await this.loadLiveOrders()
     }
+
+    const refreshedOrder = this.liveOrders.find(
+      (item) => item.id === order.id,
+    )
+
+    if (refreshedOrder) {
+      this.selectedOrder = refreshedOrder
+    }
   } catch (error) {
     console.error(
       'Unable to update order fulfillment:',
