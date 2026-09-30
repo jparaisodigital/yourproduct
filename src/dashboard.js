@@ -3827,10 +3827,40 @@ registerCartStore(Alpine, dashboardProducts, {
                   class="font-semibold text-brand-cream"
                   x-text="'Order ' + order.id.slice(0, 8).toUpperCase()"
                 ></p>
-                <p
-                  class="mt-2 text-sm capitalize text-brand-gold"
-                  x-text="order.status.replaceAll('_', ' ')"
-                ></p>
+                <span
+  class="mt-3 inline-flex rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em]"
+  :class="{
+    'border-amber-300/40 bg-amber-400/10 text-amber-200': [
+      'pending_verification',
+      'pending-verification',
+    ].includes(order.status),
+    'border-red-300/40 bg-red-400/10 text-red-200': order.status === 'rejected',
+    'border-sky-300/40 bg-sky-400/10 text-sky-200': order.status === 'processing',
+    'border-blue-300/40 bg-blue-400/10 text-blue-200': order.status === 'shipped',
+    'border-emerald-300/40 bg-emerald-400/10 text-emerald-200': [
+      'delivered',
+      'completed',
+    ].includes(order.status),
+    'border-brand-border bg-brand-black/40 text-brand-muted': ![
+      'pending_verification',
+      'pending-verification',
+      'rejected',
+      'processing',
+      'shipped',
+      'delivered',
+      'completed',
+    ].includes(order.status),
+  }"
+  x-text="{
+    pending_verification: 'Pending Verification',
+    'pending-verification': 'Pending Verification',
+    rejected: 'Payment Rejected',
+    processing: 'Processing',
+    shipped: 'Shipped',
+    delivered: 'Delivered',
+    completed: 'Completed',
+  }[order.status] || order.status.replaceAll('_', ' ')"
+></span>
                 <p
                   class="mt-2 text-xs text-brand-muted"
                   x-text="new Date(order.created_at).toLocaleDateString('en-PH')"

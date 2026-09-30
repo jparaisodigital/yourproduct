@@ -756,10 +756,11 @@ function renderOrdersPage() {
                 "
               ></p>
 
-              <p
-                class="mt-2 text-sm capitalize text-brand-gold"
-                x-text="order.status.replaceAll('_', ' ')"
-              ></p>
+              <span
+  class="mt-3 inline-flex rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em]"
+  :class="orderStatusBadgeClass(order.status)"
+  x-text="orderStatusLabel(order.status)"
+></span>
 
               <p
                 class="mt-2 text-xs text-brand-muted"
@@ -820,10 +821,11 @@ function renderOrderDetailsDrawer() {
                 class="mt-2 font-display text-2xl text-brand-cream"
                 x-text="'Order ' + selectedOrder.id.slice(0, 8).toUpperCase()"
               ></h2>
-              <p
-                class="mt-2 text-sm capitalize text-brand-gold"
-                x-text="selectedOrder.status.replaceAll('_', ' ')"
-              ></p>
+              <span
+  class="mt-3 inline-flex rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em]"
+  :class="orderStatusBadgeClass(selectedOrder.status)"
+  x-text="orderStatusLabel(selectedOrder.status)"
+></span>
               <p
                 class="mt-1 text-xs text-brand-muted"
                 x-text="formatDate(selectedOrder.created_at)"
@@ -4089,6 +4091,49 @@ formatDate(dateValue) {
   }
 
   return adminDateFormatter.format(new Date(dateValue))
+},
+
+orderStatusLabel(status) {
+  const labels = {
+    pending_verification: 'Pending Verification',
+    'pending-verification': 'Pending Verification',
+    rejected: 'Payment Rejected',
+    processing: 'Processing',
+    shipped: 'Shipped',
+    delivered: 'Delivered',
+    completed: 'Completed',
+    cancelled: 'Cancelled',
+    refunded: 'Refunded',
+  }
+
+  return labels[status] || String(status || 'Unknown')
+    .replaceAll('_', ' ')
+},
+
+orderStatusBadgeClass(status) {
+  const classes = {
+    pending_verification:
+      'border-amber-300/40 bg-amber-400/10 text-amber-200',
+    'pending-verification':
+      'border-amber-300/40 bg-amber-400/10 text-amber-200',
+    rejected:
+      'border-red-300/40 bg-red-400/10 text-red-200',
+    processing:
+      'border-sky-300/40 bg-sky-400/10 text-sky-200',
+    shipped:
+      'border-blue-300/40 bg-blue-400/10 text-blue-200',
+    delivered:
+      'border-emerald-300/40 bg-emerald-400/10 text-emerald-200',
+    completed:
+      'border-emerald-300/40 bg-emerald-400/10 text-emerald-200',
+    cancelled:
+      'border-zinc-300/40 bg-zinc-400/10 text-zinc-200',
+    refunded:
+      'border-purple-300/40 bg-purple-400/10 text-purple-200',
+  }
+
+  return classes[status] ||
+    'border-brand-border bg-brand-black/40 text-brand-muted'
 },
 
 async openApplicationDetails(applicationId) {
