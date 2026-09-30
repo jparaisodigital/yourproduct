@@ -19,7 +19,7 @@ const pesoFormatter = new Intl.NumberFormat('en-PH', {
 window.Alpine = Alpine
 let checkoutProfile = null
 // Keep final submission closed until the client confirms payment details.
-const checkoutPaymentsReady = false
+const checkoutPaymentsReady = true
 Alpine.data('checkoutPage', () => ({
   customer: {
     firstName: checkoutProfile?.first_name ?? '',
@@ -1301,9 +1301,9 @@ contact our Facebook page to arrange the fee and schedule.
   id="payment-proof"
   type="file"
   accept="image/jpeg,image/png,image/webp"
-  class="sr-only"
-  @change="handleProofFile"
-  :disabled="!checkoutPaymentsReady"
+  class="mt-4 block w-full cursor-pointer rounded-lg border border-brand-border bg-brand-panel px-3 py-2 text-sm text-brand-cream file:mr-4 file:rounded-full file:border-0 file:bg-brand-gold file:px-4 file:py-2 file:text-sm file:font-semibold file:text-[#17130d]"
+  @change="handleProofFile($event)"
+  required
 >
 </label>
 <div
@@ -1376,16 +1376,15 @@ contact our Facebook page to arrange the fee and schedule.
               </span>
             </label>
             <div
-              class="mt-5 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3"
-            >
-              <p class="text-sm font-semibold text-amber-950">
-                Ordering is not open yet
-              </p>
-              <p class="mt-1 text-xs font-medium leading-5 text-amber-900">
-                We are waiting for official payment instructions. You can
-                check your cart and details, but cannot submit an order yet.
-              </p>
-            </div>
+  class="mt-5 rounded-xl border border-brand-border bg-brand-black px-4 py-3"
+>
+  <p class="text-sm font-semibold text-brand-cream">
+    Manual payment verification
+  </p>
+  <p class="mt-1 text-xs leading-5 text-brand-muted">
+    Submit your order with payment proof. Admin will review the payment before processing.
+  </p>
+</div>
             <div
               id="checkout-preview-status"
               x-show="checkoutPreviewComplete"
