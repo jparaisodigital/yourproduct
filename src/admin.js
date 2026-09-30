@@ -924,6 +924,222 @@ function renderOrderDetailsDrawer() {
               class="mt-3 max-h-96 w-full rounded-lg object-contain"
             >
           </section>
+
+          <section
+  class="rounded-xl border border-brand-border bg-brand-black p-5"
+  aria-labelledby="order-review-actions-title"
+>
+  <p
+    class="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-brand-gold"
+  >
+    Admin Review
+  </p>
+
+  <h3
+    id="order-review-actions-title"
+    class="mt-2 font-display text-2xl text-brand-cream"
+  >
+    Review order payment
+  </h3>
+
+  <p class="mt-2 text-xs leading-5 text-brand-muted">
+    Verify the uploaded proof against the actual company account
+    before approving this order.
+  </p>
+
+  <div
+    x-show="!orderReviewPanelOpen"
+    x-transition.opacity
+    class="mt-5"
+  >
+    <div
+      x-show="
+        [
+          'pending_verification',
+          'pending-verification',
+        ].includes(selectedOrder.status)
+      "
+      class="grid gap-3 sm:grid-cols-2"
+    >
+      <button
+        type="button"
+        class="inline-flex min-h-11 items-center justify-center rounded-full bg-emerald-600 px-5 text-sm font-semibold text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-50"
+        @click="openOrderReview('approve')"
+        :disabled="
+          orderReviewSubmitting ||
+          orderProofLoading ||
+          !orderProofUrl
+        "
+      >
+        Approve Payment
+      </button>
+
+      <button
+        type="button"
+        class="inline-flex min-h-11 items-center justify-center rounded-full border border-red-400/40 px-5 text-sm font-semibold text-red-300 transition hover:border-red-300 hover:bg-red-400/10 hover:text-red-200 disabled:cursor-not-allowed disabled:opacity-50"
+        @click="openOrderReview('reject')"
+        :disabled="orderReviewSubmitting"
+      >
+        Reject Payment
+      </button>
+    </div>
+
+    <div
+      x-show="selectedOrder.status === 'processing'"
+      class="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3"
+    >
+      <p class="text-sm font-semibold text-emerald-200">
+        Payment approved
+      </p>
+
+      <p class="mt-1 text-xs leading-5 text-emerald-100/80">
+        This order is now processing. Fulfillment actions will be
+        connected in the next checkpoint.
+      </p>
+    </div>
+
+    <div
+      x-show="selectedOrder.status === 'rejected'"
+      class="rounded-xl border border-red-400/30 bg-red-400/10 px-4 py-3"
+    >
+      <p class="text-sm font-semibold text-red-200">
+        Payment rejected
+      </p>
+
+      <p class="mt-1 text-xs leading-5 text-red-100/80">
+        No additional payment review action is available.
+      </p>
+    </div>
+  </div>
+
+  <div
+    x-show="orderReviewPanelOpen"
+    x-transition
+    class="mt-5 rounded-2xl border border-brand-border bg-brand-panel p-4"
+  >
+    <p
+      class="text-sm font-semibold text-brand-cream"
+      x-text="
+        orderReviewAction === 'approve'
+          ? 'Approve payment and process order'
+          : orderReviewAction === 'reject'
+            ? 'Reject this payment'
+            : 'Review order payment'
+      "
+    ></p>
+
+    <p
+      class="mt-2 text-xs leading-5 text-brand-muted"
+      x-text="
+        orderReviewAction === 'approve'
+          ? 'The payment will be accepted, stock will be deducted, and the order will move to processing.'
+          : orderReviewAction === 'reject'
+            ? 'The order payment will be rejected after confirmation.'
+            : 'Confirm this payment review.'
+      "
+    ></p>
+
+    <label
+      x-show="orderReviewAction === 'approve'"
+      class="mt-4 flex gap-3 rounded-xl border border-emerald-400/30 bg-emerald-400/10 p-3 text-xs leading-5 text-emerald-100"
+    >
+      <input
+        type="checkbox"
+        x-model="orderReviewPaymentVerified"
+        class="mt-1 size-4 rounded border-emerald-300 bg-brand-black text-emerald-400"
+      >
+
+      <span>
+        I verified the actual payment in the company account.
+      </span>
+    </label>
+
+    <label
+      for="order-review-note"
+      class="mt-4 block text-xs font-semibold uppercase tracking-[0.12em] text-brand-muted"
+    >
+      Admin note
+    </label>
+
+    <textarea
+      id="order-review-note"
+      x-model.trim="orderReviewNote"
+      rows="3"
+      maxlength="300"
+      :placeholder="
+        orderReviewAction === 'reject'
+          ? 'Required: explain why this payment is rejected'
+          : 'Optional: add a short approval note'
+      "
+      class="mt-2 w-full resize-none rounded-xl border border-brand-border bg-brand-black px-4 py-3 text-sm leading-6 text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
+    ></textarea>
+
+    <p
+      x-show="orderReviewError"
+      x-text="orderReviewError"
+      class="mt-2 text-xs leading-5 text-red-300"
+      role="alert"
+    ></p>
+
+    <div class="mt-4 grid gap-3 sm:grid-cols-2">
+      <button
+        type="button"
+        class="inline-flex min-h-11 items-center justify-center rounded-full border border-brand-border px-4 text-sm font-semibold text-brand-cream transition hover:border-brand-gold hover:text-brand-gold disabled:cursor-not-allowed disabled:opacity-50"
+        @click="closeOrderReview()"
+        :disabled="orderReviewSubmitting"
+      >
+        Keep Current Status
+      </button>
+
+      <button
+        type="button"
+        class="inline-flex min-h-11 items-center justify-center rounded-full px-4 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50"
+        :class="
+          orderReviewAction === 'reject'
+            ? 'bg-red-700 text-white hover:bg-red-600'
+            : 'bg-brand-gold text-[#17130d] hover:brightness-110'
+        "
+        @click="submitOrderReview()"
+        :disabled="orderReviewSubmitting"
+        x-text="
+          orderReviewSubmitting
+            ? 'Submitting...'
+            : orderReviewAction === 'approve'
+              ? 'Confirm Approval'
+              : orderReviewAction === 'reject'
+                ? 'Confirm Rejection'
+                : 'Confirm Update'
+        "
+      ></button>
+    </div>
+  </div>
+
+  <div
+    x-show="selectedOrder.admin_note"
+    class="mt-5 border-t border-brand-border pt-5"
+  >
+    <p
+      class="text-xs font-semibold uppercase tracking-[0.12em] text-brand-muted"
+    >
+      Latest Admin Note
+    </p>
+
+    <p
+      class="mt-2 text-sm leading-6 text-brand-cream"
+      x-text="selectedOrder.admin_note"
+    ></p>
+
+    <p
+      x-show="selectedOrder.reviewed_at"
+      class="mt-2 text-xs text-brand-muted"
+      x-text="
+        'Updated ' +
+        formatDate(selectedOrder.reviewed_at)
+      "
+    ></p>
+  </div>
+</section>
+
         </div>
       </template>
     </aside>
@@ -1323,6 +1539,9 @@ Alpine.data('adminDashboard', () => ({
   orderReviewAction: '',
   orderReviewNote: '',
   orderReviewError: '',
+
+  orderReviewPaymentVerified: false,
+  orderReviewSubmitting: false,
 
   reviewPanelOpen: false,
 
@@ -2796,9 +3015,27 @@ openOrderReview(action) {
     return
   }
 
+  const pendingStatuses = [
+    'pending_verification',
+    'pending-verification',
+  ]
+
+  if (!pendingStatuses.includes(this.selectedOrder.status)) {
+    this.orderReviewError =
+      'Only pending verification orders can be reviewed here.'
+    return
+  }
+
+  if (!['approve', 'reject'].includes(action)) {
+    this.orderReviewError =
+      'This order action is not available yet.'
+    return
+  }
+
   this.orderReviewAction = action
   this.orderReviewNote = ''
   this.orderReviewError = ''
+  this.orderReviewPaymentVerified = false
   this.orderReviewPanelOpen = true
 },
 
@@ -2807,148 +3044,134 @@ closeOrderReview() {
   this.orderReviewAction = ''
   this.orderReviewNote = ''
   this.orderReviewError = ''
+  this.orderReviewPaymentVerified = false
 },
 
-submitOrderReview() {
+async submitOrderReview() {
+  if (this.orderReviewSubmitting) return
+
   const order = this.selectedOrder
 
   if (!order) {
-    return
-  }
-
-  const adminNote =
-  this.orderReviewNote.trim()
-
-  if (!adminNote) {
     this.orderReviewError =
-    'Add an admin note before updating this order.'
-
+      'Order details are unavailable.'
     return
   }
 
-  const nextStatusByAction = {
-    approve: 'processing',
-    reject: 'rejected',
-    ship: 'shipped',
-    unship: 'processing',
-    deliver: 'delivered',
-    cancel: 'cancelled',
-    refund: 'refunded',
-  }
-
-  const allowedActionByStatus = {
-    'pending-verification': [
-      'approve',
-      'reject',
-    ],
-    processing: [
-      'ship',
-      'cancel',
-    ],
-    shipped: [
-      'unship',
-      'deliver',
-    ],
-    delivered: [
-      'refund',
-    ],
-  }
-
-  const allowedActions =
-  allowedActionByStatus[order.status] || []
-
-  if (
-    !allowedActions.includes(
-      this.orderReviewAction,
-    )
-  ) {
-    this.orderReviewError =
-    'This action is not available for the current order status.'
-
-    return
-  }
-
-  const nextStatus =
-  nextStatusByAction[
-    this.orderReviewAction
+  const pendingStatuses = [
+    'pending_verification',
+    'pending-verification',
   ]
 
-  const orderIndex =
-  this.orders.findIndex(
-    (orderItem) =>
-      orderItem.id === order.id,
-  )
-
-  if (orderIndex === -1 || !nextStatus) {
+  if (!pendingStatuses.includes(order.status)) {
     this.orderReviewError =
-    'Unable to update this order.'
+      'Only pending verification orders can be reviewed here.'
+    return
+  }
 
+  if (!['approve', 'reject'].includes(this.orderReviewAction)) {
+    this.orderReviewError =
+      'This order action is not available yet.'
+    return
+  }
+
+  const adminNote = this.orderReviewNote.trim()
+
+  if (
+    this.orderReviewAction === 'reject' &&
+    adminNote.length < 3
+  ) {
+    this.orderReviewError =
+      'Add an admin note before rejecting this order.'
+    return
+  }
+
+  if (adminNote.length > 300) {
+    this.orderReviewError =
+      'Admin note must not exceed 300 characters.'
     return
   }
 
   if (
     this.orderReviewAction === 'approve' &&
-    !this.deductInventoryForOrder(order)
+    !this.orderReviewPaymentVerified
   ) {
+    this.orderReviewError =
+      'Confirm that the actual payment was verified before approval.'
     return
   }
 
-  const isInventoryReturnAction =
-  this.orderReviewAction === 'cancel' ||
-  this.orderReviewAction === 'refund'
+  if (
+    this.orderReviewAction === 'approve' &&
+    !order.payment_proof_path
+  ) {
+    this.orderReviewError =
+      'Payment proof must be available before approval.'
+    return
+  }
 
-  if (isInventoryReturnAction) {
-    const movementType =
-    this.orderReviewAction === 'refund'
-    ? 'refund-return'
-    : 'cancellation-return'
+  this.orderReviewSubmitting = true
+  this.orderReviewError = ''
 
-    const stockWasRestored =
-    this.restoreInventoryForOrder(
-      order,
-      movementType,
+  try {
+    const { data: nextStatus, error } = await supabase.rpc(
+      'admin_review_order_payment',
+      {
+        p_order_id: order.id,
+        p_action: this.orderReviewAction,
+        p_admin_note: adminNote || null,
+        p_payment_verified:
+          this.orderReviewAction === 'approve' &&
+          this.orderReviewPaymentVerified,
+      },
     )
 
-    if (!stockWasRestored) {
-      return
+    if (error) throw error
+
+    const reviewedAt = new Date().toISOString()
+
+    const updateOrder = (orderItem) => {
+      if (orderItem.id !== order.id) {
+        return orderItem
+      }
+
+      return {
+        ...orderItem,
+        status: nextStatus,
+        admin_note: adminNote || orderItem.admin_note,
+        reviewed_at: reviewedAt,
+        payment_approved_at:
+          nextStatus === 'processing'
+            ? reviewedAt
+            : orderItem.payment_approved_at,
+        payment_rejected_at:
+          nextStatus === 'rejected'
+            ? reviewedAt
+            : orderItem.payment_rejected_at,
+      }
     }
+
+    if (Array.isArray(this.orders)) {
+      this.orders = this.orders.map(updateOrder)
+    }
+
+    if (Array.isArray(this.liveOrders)) {
+      this.liveOrders = this.liveOrders.map(updateOrder)
+    }
+
+    this.closeOrderReview()
+
+    if (typeof this.loadLiveOrders === 'function') {
+      await this.loadLiveOrders()
+    }
+  } catch (error) {
+    console.error('Unable to review order payment:', error)
+
+    this.orderReviewError =
+      'Could not confirm the order review. Refresh and check the order status.'
+  } finally {
+    this.orderReviewSubmitting = false
   }
-
-  const reviewedAt =
-  new Date().toISOString()
-
-  this.orders[orderIndex] = {
-    ...this.orders[orderIndex],
-    status: nextStatus,
-    admin_note: adminNote,
-    reviewed_at: reviewedAt,
-
-    inventory_deducted:
-    this.orderReviewAction === 'approve'
-    ? true
-    : this.orders[orderIndex]
-    .inventory_deducted,
-
-    inventory_deducted_at:
-    this.orderReviewAction === 'approve'
-    ? reviewedAt
-    : this.orders[orderIndex]
-    .inventory_deducted_at,
-
-    inventory_restored:
-    isInventoryReturnAction
-    ? true
-    : this.orders[orderIndex]
-    .inventory_restored,
-
-    inventory_restored_at:
-    isInventoryReturnAction
-    ? reviewedAt
-    : this.orders[orderIndex]
-    .inventory_restored_at,
-  }
-
-  this.closeOrderReview()
 },
 
 async openOrderDetails(orderId) {
