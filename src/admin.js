@@ -1037,8 +1037,39 @@ function renderOrderDetailsDrawer() {
   </p>
 
   <p class="mt-1 text-xs leading-5 text-emerald-100/80">
-    This order is complete. Points can be awarded from this status.
+    This order is complete. Award points only for qualified
+    active-member perfume orders.
   </p>
+
+  <button
+  x-show="!orderPointsAwarded"
+  type="button"
+  class="mt-4 inline-flex min-h-10 w-full items-center justify-center rounded-full bg-brand-gold px-4 text-sm font-semibold text-[#17130d] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
+  @click="awardOrderPoints()"
+  :disabled="orderPointsSubmitting"
+  x-text="orderPointsSubmitting ? 'Awarding...' : 'Award Points'"
+></button>
+
+<p
+  x-show="orderPointsAwarded"
+  class="mt-4 rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-xs font-semibold uppercase tracking-[0.08em] text-emerald-200"
+>
+  Points already awarded
+</p>
+
+  <p
+    x-show="orderPointsMessage"
+    x-text="orderPointsMessage"
+    class="mt-3 text-xs leading-5 text-emerald-100"
+    role="status"
+  ></p>
+
+  <p
+    x-show="orderPointsError"
+    x-text="orderPointsError"
+    class="mt-3 text-xs leading-5 text-red-200"
+    role="alert"
+  ></p>
 </div>
 
 <p
@@ -1615,6 +1646,10 @@ Alpine.data('adminDashboard', () => ({
 
   orderFulfillmentSubmitting: false,
   orderFulfillmentError: '',
+  orderPointsSubmitting: false,
+  orderPointsMessage: '',
+  orderPointsError: '',
+  orderPointsAwarded: false,
 
   reviewPanelOpen: false,
 
@@ -3466,6 +3501,73 @@ async updateOrderFulfillment(nextStatus) {
   }
 },
 
+async loadOrderPointsStatus(orderId) {
+  this.orderPointsAwarded = false
+  this.orderPointsMessage = ''
+  this.orderPointsError = ''
+
+  if (!orderId) return
+
+  try {
+    const { data, error } = await supabase
+      .from('points_transactions')
+      .select('id')
+      .eq('order_id', orderId)
+      .eq('type', 'order_award')
+      .maybeSingle()
+
+    if (error) throw error
+
+    this.orderPointsAwarded = Boolean(data)
+  } catch (error) {
+    console.error('Unable to load order points status:', error)
+  }
+},
+
+async awardOrderPoints() {
+  if (this.orderPointsSubmitting) return
+
+  const order = this.selectedOrder
+
+  if (!order) {
+    this.orderPointsError = 'Order details are unavailable.'
+    return
+  }
+
+  if (order.status !== 'delivered') {
+    this.orderPointsError =
+      'Only delivered orders can receive points.'
+    return
+  }
+
+  this.orderPointsSubmitting = true
+  this.orderPointsMessage = ''
+  this.orderPointsError = ''
+
+  try {
+    const { data: awardedPoints, error } = await supabase.rpc(
+      'admin_award_order_points',
+      {
+        p_order_id: order.id,
+      },
+    )
+
+    if (error) throw error
+
+    this.orderPointsMessage =
+      `${Number(awardedPoints || 0).toLocaleString('en-PH')} points awarded.`
+      this.orderPointsAwarded = true
+  } catch (error) {
+    console.error('Unable to award order points:', error)
+
+    this.orderPointsError =
+      error?.message ||
+      'Could not award points. Refresh and check the order.'
+  } finally {
+    this.orderPointsSubmitting = false
+  }
+},
+
 async openOrderDetails(orderId) {
   const order = this.liveOrders.find((item) => item.id === orderId)
   if (!order) return
@@ -3476,6 +3578,7 @@ async openOrderDetails(orderId) {
   this.orderProofError = ''
   this.orderProofLoading = Boolean(order.payment_proof_path)
   this.orderDetailsOpen = true
+  await this.loadOrderPointsStatus(orderId)
   document.body.classList.add('overflow-hidden')
 
   if (!order.payment_proof_path) return
