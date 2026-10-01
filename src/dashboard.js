@@ -245,6 +245,56 @@ selectedDashboardPackage.price,
     `
 : ''
 
+const membershipUpgradeMarkup =
+  !hasPendingMembership && !isApprovedMemberPreview
+    ? `
+      <section
+        class="mt-6 overflow-hidden rounded-[1.5rem] border border-brand-gold/30 bg-brand-panel shadow-gold-soft"
+        aria-label="Membership upgrade"
+      >
+        <div
+          class="grid gap-5 px-5 py-5 sm:px-6 lg:grid-cols-[1fr_auto] lg:items-center"
+        >
+          <div>
+            <p
+              class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
+            >
+              Optional Membership
+            </p>
+
+            <h2
+              class="mt-3 font-display text-3xl text-brand-cream"
+            >
+              Upgrade to reseller pricing
+            </h2>
+
+            <p
+              class="mt-2 max-w-2xl text-sm leading-6 text-brand-muted"
+            >
+              Apply for a membership package to unlock reseller pricing,
+              package inclusions, referral tools, and future member rewards.
+            </p>
+          </div>
+
+          <div
+            class="flex flex-col gap-3 sm:flex-row lg:flex-col"
+          >
+            <a
+              href="/#packages"
+              class="premium-cta inline-flex min-h-11 items-center justify-center rounded-full bg-brand-gold px-6 text-sm font-semibold text-[#17130d]"
+            >
+              View Packages
+            </a>
+
+            <p class="text-xs leading-5 text-brand-muted lg:max-w-52">
+              Your account stays free until payment is submitted and approved.
+            </p>
+          </div>
+        </div>
+      </section>
+    `
+    : ''
+
 const membershipApplicationPageMarkup = hasPendingMembership
 ? `
       <section
@@ -2602,6 +2652,7 @@ registerCartStore(Alpine, dashboardProducts, {
         </section>
 
         ${pendingMembershipMarkup}
+        ${membershipUpgradeMarkup}
 
         <section
           x-show="!isMember"

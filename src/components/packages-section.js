@@ -140,6 +140,10 @@ function renderPackageCard(packageItem, index) {
           <a
   href="/login/?package=${encodeURIComponent(packageItem.id)}"
   data-package-cta="${packageItem.id}"
+  data-package-name="${packageItem.name}"
+  data-package-price="${pesoFormatter.format(packageItem.price)}"
+  data-package-description="${packageItem.description}"
+  data-package-inclusions="${packageItem.inclusions.join(' | ')}"
   class="${buttonClass} inline-flex h-10 w-full items-center justify-center rounded-xl px-4 text-[0.68rem] font-semibold uppercase tracking-[0.07em] transition duration-200 active:scale-[0.98] sm:h-11 sm:text-xs sm:tracking-[0.08em] lg:h-10"
 >
             Choose ${packageItem.shortLabel}

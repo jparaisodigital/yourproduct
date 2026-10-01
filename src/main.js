@@ -222,19 +222,141 @@ document.querySelector('#app').innerHTML = `
     ${renderCustomerSupportChat()}
   `
 
-  document
-  .querySelectorAll('[data-package-cta]')
-  .forEach((link) => {
-    const packageId = link.dataset.packageCta
+  let selectedPackageHref = ''
 
-    if (!packageId) return
+  const packageConfirmationModal = document.createElement('div')
+  packageConfirmationModal.className =
+    'fixed inset-0 z-[80] hidden items-center justify-center bg-black/75 px-4 py-6 backdrop-blur-sm'
+  packageConfirmationModal.innerHTML = `
+    <div class="w-full max-w-lg rounded-[1.5rem] border border-brand-gold/30 bg-brand-panel p-6 shadow-gold-soft">
+      <p class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold">
+        Confirm Membership Package
+      </p>
 
-    link.href = isLoggedIn
-      ? `/dashboard/?package=${encodeURIComponent(
-          packageId,
-        )}&membership=awaiting-payment`
-      : `/login/?package=${encodeURIComponent(packageId)}`
+      <h2
+        class="mt-3 font-display text-3xl text-brand-cream"
+        data-package-confirm-name
+      ></h2>
+
+      <p
+        class="mt-2 font-display text-2xl text-brand-gold"
+        data-package-confirm-price
+      ></p>
+
+      <p
+        class="mt-3 text-sm leading-6 text-brand-muted"
+        data-package-confirm-description
+      ></p>
+
+      <ul
+        class="mt-4 space-y-2 text-sm leading-6 text-brand-muted"
+        data-package-confirm-inclusions
+      ></ul>
+
+      <p class="mt-5 rounded-xl border border-brand-border bg-brand-black px-4 py-3 text-xs leading-5 text-brand-muted">
+        Your account stays free until payment proof is submitted and approved by admin.
+      </p>
+
+      <div class="mt-6 grid gap-3 sm:grid-cols-2">
+        <button
+          type="button"
+          class="inline-flex min-h-11 items-center justify-center rounded-full border border-brand-border px-5 text-sm font-semibold text-brand-cream transition hover:border-brand-gold hover:text-brand-gold"
+          data-package-confirm-cancel
+        >
+          Cancel
+        </button>
+
+        <button
+          type="button"
+          class="premium-cta inline-flex min-h-11 items-center justify-center rounded-full bg-brand-gold px-5 text-sm font-semibold text-[#17130d]"
+          data-package-confirm-continue
+        >
+          Continue
+        </button>
+      </div>
+    </div>
+  `
+  document.body.appendChild(packageConfirmationModal)
+
+  const closePackageConfirmation = () => {
+    selectedPackageHref = ''
+    packageConfirmationModal.classList.add('hidden')
+    packageConfirmationModal.classList.remove('flex')
+    document.body.classList.remove('overflow-hidden')
+  }
+
+  packageConfirmationModal
+    .querySelector('[data-package-confirm-cancel]')
+    .addEventListener('click', closePackageConfirmation)
+
+  packageConfirmationModal.addEventListener('click', (event) => {
+    if (event.target === packageConfirmationModal) {
+      closePackageConfirmation()
+    }
   })
+
+  packageConfirmationModal
+    .querySelector('[data-package-confirm-continue]')
+    .addEventListener('click', () => {
+      if (selectedPackageHref) {
+        window.location.assign(selectedPackageHref)
+      }
+    })
+
+  document
+    .querySelectorAll('[data-package-cta]')
+    .forEach((link) => {
+      const packageId = link.dataset.packageCta
+
+      if (!packageId) return
+
+      link.href = isLoggedIn
+        ? `/dashboard/?package=${encodeURIComponent(
+            packageId,
+          )}&membership=awaiting-payment`
+        : `/login/?package=${encodeURIComponent(packageId)}`
+
+      link.addEventListener('click', (event) => {
+        event.preventDefault()
+
+        selectedPackageHref = link.href
+
+        packageConfirmationModal.querySelector(
+          '[data-package-confirm-name]',
+        ).textContent = link.dataset.packageName || 'Membership Package'
+
+        packageConfirmationModal.querySelector(
+          '[data-package-confirm-price]',
+        ).textContent = link.dataset.packagePrice || ''
+
+        packageConfirmationModal.querySelector(
+          '[data-package-confirm-description]',
+        ).textContent = link.dataset.packageDescription || ''
+
+        const inclusionsList = packageConfirmationModal.querySelector(
+          '[data-package-confirm-inclusions]',
+        )
+
+        inclusionsList.innerHTML = (
+          link.dataset.packageInclusions || ''
+        )
+          .split(' | ')
+          .filter(Boolean)
+          .map(
+            (inclusion) => `
+              <li class="flex gap-2">
+                <span class="mt-2 size-1.5 shrink-0 rounded-full bg-brand-gold"></span>
+                <span>${inclusion}</span>
+              </li>
+            `,
+          )
+          .join('')
+
+          packageConfirmationModal.classList.remove('hidden')
+          packageConfirmationModal.classList.add('flex')
+          document.body.classList.add('overflow-hidden')
+      })
+    })
 
   Alpine.start()
   initScrollReveal()
