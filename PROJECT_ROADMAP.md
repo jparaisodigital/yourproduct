@@ -32,19 +32,29 @@ Technology stack:
 
 ### Pricing
 
-- Regular/free customer perfume price: PHP 350 per bottle
-- Approved member/reseller perfume price: PHP 199 per bottle
-- Member savings: PHP 151 per bottle, approximately 43% off SRP
-- Old PHP 175 member price and 50% off claims are deprecated
+- Regular/free customer perfume price: PHP 349 per bottle
+- Regular customers can buy products through the normal checkout flow
+- Approved member/reseller product price depends on approved package tier:
+  - Starter / PHP 1,000 package: PHP 245 per bottle
+  - Builder / PHP 5,000 package: PHP 227 per bottle
+  - Leader / PHP 10,000 package: PHP 210 per bottle
+  - Prestige / PHP 50,000 package: PHP 175 per bottle
+- Universal PHP 199 member price is deprecated
+- Product cards must not advertise PHP 199 as a universal reseller price
+- Public product cards may show: reseller tiers from PHP 245 to PHP 175 per bottle
+- Logged-in member dashboards may show the member's exact approved tier price
 - Existing submitted order snapshots must not be changed retroactively
 
 ### Product Points
 
 - Product points are based on perfume bottles only
 - Points formula: bottles sold x 5 points
-- Retail/member product orders can earn points only after the order is delivered
-- Membership package bottles do not earn points
+- Points apply only to delivered active-member product orders
+- Minimum qualified member product order: 10 perfume bottles
+- Example: 10 bottles x 5 points = 50 points
+- Membership package bottles do not earn ledger points
 - Physical inclusions such as tester kits, tarpaulins, and carts do not count as bottles for points
+- Points must be awarded once only per qualified delivered order
 
 ### Membership Packages
 
@@ -91,8 +101,8 @@ Package fulfillment rules:
 
 ### Delivery
 
-- Metro Manila standard delivery: PHP 150 via J&T
-- Outside Metro Manila: customer must contact the Facebook page for delivery arrangement
+- Metro Manila standard delivery fee: PHP 120
+- Outside Metro Manila: customer can submit the website order and payment proof, then contact the Facebook page to arrange delivery fee and schedule
 - Same-day delivery: settled through Facebook Messenger
 - Same-day delivery is outside fixed system pricing for now
 - Messenger-assisted sales must still be encoded as orders by admin if they need history, stock, and points records
@@ -143,12 +153,18 @@ Package fulfillment rules:
 ### Product and Cart
 
 - 20 product records seeded
-- Product prices updated to PHP 350 / PHP 199
+- Regular product price locked at PHP 349
+- Fixed universal member price PHP 199 is deprecated
+- Tiered reseller pricing is active:
+  - Starter: PHP 245
+  - Builder: PHP 227
+  - Leader: PHP 210
+  - Prestige: PHP 175
 - Cart blocks inactive products
 - Checkout reads live product availability
+- Checkout quote uses server-side tier pricing from `quote_order_cart`
 - Dashboard/storefront use live product status
 - M01 activated for testing with stock
-
 ### Customer Order Flow
 
 Tested September 30 to October 1:
