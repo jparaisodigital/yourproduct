@@ -1721,7 +1721,7 @@ Alpine.data('customerPortal', () => ({
     acceptedConfirmation: false,
   },
 
-  membershipPaymentsReady: false,
+  membershipPaymentsReady: true,
   membershipPaymentSubmitting: false,
   membershipPaymentSubmissionUncertain: false,
 

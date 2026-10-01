@@ -1501,6 +1501,11 @@ Alpine.data('adminDashboard', () => ({
   adminCustomers: [],
   adminCustomersLoading: true,
   adminCustomersError: '',
+  adminCustomerSearch: '',
+  adminCustomerTypeFilter: 'all',
+  adminCustomerMembershipFilter: 'all',
+  adminCustomerAccountFilter: 'all',
+  adminCustomerJoinedFilter: 'all',
   savingAvailabilityProductId: null,
   availabilitySaveError: '',
   availabilitySaveMessage: '',
@@ -1700,6 +1705,78 @@ Alpine.data('adminDashboard', () => ({
         ) * 100,
       ),
     )
+  },
+
+  get filteredAdminCustomers() {
+    const search = this.adminCustomerSearch
+      .trim()
+      .toLowerCase()
+
+    const now = new Date()
+
+    return this.adminCustomers.filter((customer) => {
+      const fullName = [
+        customer.first_name,
+        customer.last_name,
+      ].filter(Boolean).join(' ')
+
+      const matchesSearch =
+        !search ||
+        [
+          fullName,
+          customer.email,
+          customer.mobile_number,
+        ].some((value) =>
+          String(value || '').toLowerCase().includes(search),
+        )
+
+      const matchesType =
+        this.adminCustomerTypeFilter === 'all' ||
+        customer.customer_type === this.adminCustomerTypeFilter
+
+      const matchesMembership =
+        this.adminCustomerMembershipFilter === 'all' ||
+        customer.membership_status ===
+          this.adminCustomerMembershipFilter
+
+      const matchesAccount =
+        this.adminCustomerAccountFilter === 'all' ||
+        customer.account_status === this.adminCustomerAccountFilter
+
+      let matchesJoined = true
+
+      if (
+        this.adminCustomerJoinedFilter !== 'all' &&
+        customer.created_at
+      ) {
+        const createdAt = new Date(customer.created_at)
+
+        if (this.adminCustomerJoinedFilter === 'today') {
+          matchesJoined =
+            createdAt.toDateString() === now.toDateString()
+        }
+
+        if (this.adminCustomerJoinedFilter === 'week') {
+          const sevenDaysAgo = new Date(now)
+          sevenDaysAgo.setDate(now.getDate() - 7)
+          matchesJoined = createdAt >= sevenDaysAgo
+        }
+
+        if (this.adminCustomerJoinedFilter === 'month') {
+          matchesJoined =
+            createdAt.getFullYear() === now.getFullYear() &&
+            createdAt.getMonth() === now.getMonth()
+        }
+      }
+
+      return (
+        matchesSearch &&
+        matchesType &&
+        matchesMembership &&
+        matchesAccount &&
+        matchesJoined
+      )
+    })
   },
 
   get canConfirmPackageAllocation() {
@@ -1916,7 +1993,7 @@ Alpine.data('adminDashboard', () => ({
       const { data, error } = await supabase
         .from('profiles')
         .select(
-          'id, first_name, last_name, email, mobile_number, customer_type, membership_status, account_status',
+          'id, first_name, last_name, email, mobile_number, customer_type, membership_status, account_status, created_at',
         )
         .eq('role', 'customer')
         .order('created_at', { ascending: false })
