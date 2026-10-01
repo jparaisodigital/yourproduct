@@ -1,6 +1,9 @@
 import headerLogo from '../assets/logoyourproduct.png'
 
-export function renderHeader(siteConfig) {
+export function renderHeader(
+  siteConfig,
+  { isLoggedIn = false } = {},
+) {
   const desktopLinks = siteConfig.navigation
     .map(
       (item) => `
@@ -89,6 +92,21 @@ export function renderHeader(siteConfig) {
       ></span>
     </button>
   `
+  const accountHref = isLoggedIn
+    ? '/dashboard/'
+    : '/login/'
+
+  const accountLabel = isLoggedIn
+    ? 'Customer Dashboard'
+    : 'Member Login'
+
+  const accountCtaHref = isLoggedIn
+    ? '/dashboard/'
+    : '/register/'
+
+  const accountCtaLabel = isLoggedIn
+    ? 'Dashboard'
+    : 'Sign Up'
 
   return `
     <header
@@ -203,8 +221,8 @@ export function renderHeader(siteConfig) {
           <a
             href="/login/"
             class="premium-icon group grid size-11 place-items-center rounded-full border border-brand-border text-brand-muted hover:border-brand-gold hover:bg-brand-gold/10 hover:text-brand-gold"
-            aria-label="Member Login"
-            title="Member Login"
+            aria-label="${accountLabel}"
+            title="${accountLabel}"
           >
             <svg
               class="size-5"
@@ -227,16 +245,16 @@ export function renderHeader(siteConfig) {
             </svg>
 
             <span class="sr-only">
-              Member Login
+            ${accountLabel}
             </span>
           </a>
 
           <a
-            href="/register/"
+            href="${accountCtaHref}"
             class="premium-cta group inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-brand-gold px-5 text-sm font-semibold text-[#17130d] hover:bg-brand-gold-light"
           >
             <span>
-              Sign Up
+            ${accountCtaLabel}
             </span>
 
             <span
@@ -410,7 +428,7 @@ export function renderHeader(siteConfig) {
           ${mobileLinks}
 
           <a
-            href="/login/"
+            href="${accountHref}"
             class="premium-outline mt-5 inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-brand-gold px-5 text-sm font-semibold text-brand-gold hover:bg-brand-gold/10"
             @click="menuOpen = false"
           >
@@ -434,16 +452,16 @@ export function renderHeader(siteConfig) {
               />
             </svg>
 
-            Member Login
+            ${accountLabel}
           </a>
 
           <a
-            href="/register/"
+            href="${accountCtaHref}"
             class="premium-cta mt-2.5 inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-brand-gold px-5 text-sm font-semibold text-[#17130d] hover:bg-brand-gold-light"
             @click="menuOpen = false"
           >
             <span>
-              Sign Up
+            ${accountCtaLabel}
             </span>
 
             <span

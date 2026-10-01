@@ -138,9 +138,10 @@ function renderPackageCard(packageItem, index) {
 
         <div class="mt-auto pt-4 sm:pt-5 lg:pt-3">
           <a
-            href="/register/?package=${encodeURIComponent(packageItem.id)}"
-            class="${buttonClass} inline-flex h-10 w-full items-center justify-center rounded-xl px-4 text-[0.68rem] font-semibold uppercase tracking-[0.07em] transition duration-200 active:scale-[0.98] sm:h-11 sm:text-xs sm:tracking-[0.08em] lg:h-10"
-          >
+  href="/login/?package=${encodeURIComponent(packageItem.id)}"
+  data-package-cta="${packageItem.id}"
+  class="${buttonClass} inline-flex h-10 w-full items-center justify-center rounded-xl px-4 text-[0.68rem] font-semibold uppercase tracking-[0.07em] transition duration-200 active:scale-[0.98] sm:h-11 sm:text-xs sm:tracking-[0.08em] lg:h-10"
+>
             Choose ${packageItem.shortLabel}
           </a>
         </div>

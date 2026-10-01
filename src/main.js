@@ -181,12 +181,15 @@ async function startStorefront() {
   )
 
   document.title =
-    `${siteConfig.brand.name} | Premium Fragrances`
+  `${siteConfig.brand.name} | Premium Fragrances`
 
-  document.querySelector('#app').innerHTML = `
-    ${renderSiteLoader()}
+const { data: sessionData } = await supabase.auth.getSession()
+const isLoggedIn = Boolean(sessionData.session?.user)
 
-    ${renderHeader(siteConfig)}
+document.querySelector('#app').innerHTML = `
+  ${renderSiteLoader()}
+
+  ${renderHeader(siteConfig, { isLoggedIn })}
 
     <main>
       ${renderHero(homeConfig, siteConfig)}
@@ -218,6 +221,20 @@ async function startStorefront() {
 
     ${renderCustomerSupportChat()}
   `
+
+  document
+  .querySelectorAll('[data-package-cta]')
+  .forEach((link) => {
+    const packageId = link.dataset.packageCta
+
+    if (!packageId) return
+
+    link.href = isLoggedIn
+      ? `/dashboard/?package=${encodeURIComponent(
+          packageId,
+        )}&membership=awaiting-payment`
+      : `/login/?package=${encodeURIComponent(packageId)}`
+  })
 
   Alpine.start()
   initScrollReveal()
