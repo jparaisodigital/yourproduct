@@ -4,7 +4,7 @@ import {
   registerAdminReferralCard,
   renderAdminReferralCard,
 } from './admin-referral-card.js'
-  
+
   const previewPayoutRequests = [
     {
       id: 'PAYOUT-0001',
@@ -26,8 +26,8 @@ import {
     },
   ]
 
-  
-  
+
+
   const previewReferralRecords = [
     {
       id: 'REF-0001',
@@ -48,12 +48,12 @@ import {
       createdAt: 'Sep 22, 2026',
     },
   ]
-  
+
   export function registerAdminReferralsPayoutsPage(
     Alpine,
   ) {
     registerAdminReferralCard(Alpine)
-  
+
     Alpine.data('adminReferralsPayoutsPage', () => ({
       payoutRequests: previewPayoutRequests.map(
         (request) => ({ ...request }),
@@ -67,12 +67,12 @@ import {
       referralRecords: previewReferralRecords.map(
         (record) => ({ ...record }),
       ),
-  
+
       selectedPayoutId: null,
       payoutAction: '',
       actionError: '',
       actionSuccess: '',
-  
+
       actionForm: {
         referenceNumber: '',
         proofFileName: '',
@@ -210,7 +210,7 @@ import {
 
         return labels[status] || status || 'Recorded'
       },
-  
+
       formatMoney(value) {
         return new Intl.NumberFormat('en-PH', {
           style: 'currency',
@@ -218,24 +218,24 @@ import {
           minimumFractionDigits: 0,
         }).format(Number(value || 0))
       },
-  
+
       formatDate(value) {
         if (!value) {
           return 'Unavailable'
         }
-  
+
         const date = new Date(value)
-  
+
         if (Number.isNaN(date.getTime())) {
           return value
         }
-  
+
         return new Intl.DateTimeFormat('en-PH', {
           dateStyle: 'medium',
           timeStyle: 'short',
         }).format(date)
       },
-  
+
       get selectedPayout() {
         return (
           this.payoutRequests.find(
@@ -244,25 +244,25 @@ import {
           ) || null
         )
       },
-  
+
       get pendingPayoutCount() {
         return this.payoutRequests.filter(
           (request) => request.status === 'pending',
         ).length
       },
-  
+
       get approvedPayoutCount() {
         return this.payoutRequests.filter(
           (request) => request.status === 'approved',
         ).length
       },
-  
+
       get paidPayoutCount() {
         return this.payoutRequests.filter(
           (request) => request.status === 'paid',
         ).length
       },
-  
+
       get paidPayoutTotal() {
         return this.payoutRequests
           .filter(
@@ -274,7 +274,7 @@ import {
             0,
           )
       },
-  
+
       statusLabel(status) {
         const labels = {
           pending: 'Pending Review',
@@ -282,10 +282,10 @@ import {
           paid: 'Paid',
           rejected: 'Rejected',
         }
-  
+
         return labels[status] || status
       },
-  
+
       statusClass(status) {
         const classes = {
           pending:
@@ -297,20 +297,20 @@ import {
           rejected:
             'border-red-400/40 bg-red-400/10 text-red-200',
         }
-  
+
         return (
           classes[status] ||
           'border-brand-border bg-brand-black text-brand-muted'
         )
       },
-  
+
       resetActionForm() {
         if (this.actionForm.proofPreviewUrl) {
           URL.revokeObjectURL(
             this.actionForm.proofPreviewUrl,
           )
         }
-  
+
         this.actionForm = {
           referenceNumber: '',
           proofFileName: '',
@@ -318,18 +318,18 @@ import {
           adminNote: '',
         }
       },
-  
+
       openPayoutAction(requestId, action) {
         const request = this.payoutRequests.find(
           (requestItem) =>
             requestItem.id === requestId,
         )
-  
+
         const allowedActions = {
           pending: ['approve', 'reject'],
           approved: ['mark-paid'],
         }
-  
+
         if (
           !request ||
           !(
@@ -338,58 +338,58 @@ import {
         ) {
           return
         }
-  
+
         this.resetActionForm()
         this.selectedPayoutId = requestId
         this.payoutAction = action
         this.actionError = ''
         this.actionSuccess = ''
       },
-  
+
       closePayoutAction() {
         this.resetActionForm()
         this.selectedPayoutId = null
         this.payoutAction = ''
         this.actionError = ''
       },
-  
+
       handlePayoutProof(event) {
         const file = event.target.files?.[0]
-  
+
         if (this.actionForm.proofPreviewUrl) {
           URL.revokeObjectURL(
             this.actionForm.proofPreviewUrl,
           )
         }
-  
+
         this.actionForm.proofFileName = ''
         this.actionForm.proofPreviewUrl = ''
         this.actionError = ''
-  
+
         if (!file) {
           return
         }
-  
+
         const allowedTypes = [
           'image/jpeg',
           'image/png',
           'image/webp',
         ]
-  
+
         if (!allowedTypes.includes(file.type)) {
           this.actionError =
             'Upload a JPG, PNG, or WEBP payout proof.'
           event.target.value = ''
           return
         }
-  
+
         if (file.size > 5 * 1024 * 1024) {
           this.actionError =
             'The payout proof must be 5 MB or smaller.'
           event.target.value = ''
           return
         }
-  
+
         this.actionForm.proofFileName = file.name
         this.actionForm.proofPreviewUrl =
           URL.createObjectURL(file)
@@ -471,7 +471,7 @@ import {
             'Could not update payout request. Please refresh and try again.'
         }
       },
-  
+
       destroy() {
         if (this.actionForm.proofPreviewUrl) {
           URL.revokeObjectURL(
@@ -481,7 +481,7 @@ import {
       },
     }))
   }
-  
+
   export function renderAdminReferralsPayoutsPage() {
     return `
       <section
@@ -498,14 +498,14 @@ import {
           >
             Referral Operations
           </p>
-  
+
           <h1
             id="admin-referrals-payouts-title"
             class="mt-2 font-display text-4xl text-brand-cream sm:text-5xl"
           >
             Referrals & Payouts
           </h1>
-  
+
           <p
             class="mt-3 max-w-2xl text-sm leading-7 text-brand-muted"
           >
@@ -513,7 +513,7 @@ import {
             approve, reject, and record completed member payouts.
           </p>
         </div>
-  
+
         <div
           class="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4"
         >
@@ -528,7 +528,7 @@ import {
               x-text="pendingPayoutCount"
             ></strong>
           </article>
-  
+
           <article
             class="rounded-[1.35rem] border border-blue-400/30 bg-brand-panel p-5 shadow-panel"
           >
@@ -540,7 +540,7 @@ import {
               x-text="approvedPayoutCount"
             ></strong>
           </article>
-  
+
           <article
             class="rounded-[1.35rem] border border-emerald-400/30 bg-brand-panel p-5 shadow-panel"
           >
@@ -552,7 +552,7 @@ import {
               x-text="paidPayoutCount"
             ></strong>
           </article>
-  
+
           <article
             class="rounded-[1.35rem] border border-brand-gold/35 bg-brand-charcoal p-5 shadow-panel"
           >
@@ -565,11 +565,11 @@ import {
             ></strong>
           </article>
         </div>
-  
+
         <div class="mt-6">
           ${renderAdminReferralCard()}
         </div>
-  
+
         <section
           class="mt-6 rounded-[1.5rem] border border-brand-border bg-brand-panel p-5 shadow-panel sm:p-6"
           aria-labelledby="admin-payout-list-title"
@@ -587,14 +587,14 @@ import {
               Payout Requests
             </h2>
           </div>
-  
+
           <p
             x-show="actionSuccess"
             x-text="actionSuccess"
             class="mt-4 rounded-xl border border-emerald-400/40 bg-emerald-400/10 px-4 py-3 text-xs text-emerald-200"
             role="status"
           ></p>
-  
+
           <div class="mt-5 grid gap-3">
             <template
               x-for="request in payoutRequests"
@@ -627,7 +627,7 @@ import {
                       x-text="'Requested ' + formatDate(request.requestedAt)"
                     ></p>
                   </div>
-  
+
                   <div>
                     <p class="text-[0.6rem] uppercase tracking-[0.12em] text-brand-muted">
                       Amount
@@ -637,7 +637,7 @@ import {
                       x-text="formatMoney(request.amount)"
                     ></strong>
                   </div>
-  
+
                   <div>
                     <p class="text-[0.6rem] uppercase tracking-[0.12em] text-brand-muted">
                       Destination
@@ -661,7 +661,7 @@ import {
                       x-text="'Paid ' + formatDate(request.paidAt)"
                     ></p>
                   </div>
-  
+
                   <div class="flex flex-wrap gap-2 xl:justify-end">
                     <button
                       x-show="request.status === 'pending'"
@@ -698,7 +698,7 @@ import {
                     </a>
                   </div>
                 </div>
-  
+
                 <div
                   x-show="selectedPayoutId === request.id"
                   x-transition
@@ -714,7 +714,7 @@ import {
                           : 'Record completed payout'
                     "
                   ></h4>
-  
+
                   <div
                     x-show="payoutAction === 'mark-paid'"
                     class="mt-4 grid gap-4 sm:grid-cols-2"
@@ -730,7 +730,7 @@ import {
                         class="min-h-12 rounded-xl border border-brand-border bg-brand-panel px-4 text-sm text-brand-cream outline-none focus:border-brand-gold"
                       >
                     </label>
-  
+
                     <label class="grid gap-2">
                       <span class="text-xs font-semibold uppercase tracking-[0.12em] text-brand-muted">
                         Payout Proof
@@ -743,7 +743,7 @@ import {
                       >
                     </label>
                   </div>
-  
+
                   <label class="mt-4 grid gap-2">
                     <span class="text-xs font-semibold uppercase tracking-[0.12em] text-brand-muted">
                       Admin Note
@@ -755,14 +755,14 @@ import {
                       class="w-full resize-none rounded-xl border border-brand-border bg-brand-panel px-4 py-3 text-sm text-brand-cream outline-none focus:border-brand-gold"
                     ></textarea>
                   </label>
-  
+
                   <p
                     x-show="actionError"
                     x-text="actionError"
                     class="mt-3 text-xs text-red-300"
                     role="alert"
                   ></p>
-  
+
                   <div class="mt-4 grid gap-3 sm:grid-cols-2">
                     <button
                       type="button"
@@ -796,7 +796,7 @@ import {
             </template>
           </div>
         </section>
-  
+
         <section
           class="mt-6 rounded-[1.5rem] border border-brand-border bg-brand-panel p-5 shadow-panel sm:p-6"
           aria-labelledby="admin-referral-records-title"
@@ -812,7 +812,7 @@ import {
           >
             Direct Referrals
           </h2>
-  
+
           <div class="mt-5 grid gap-3">
             <template
               x-for="record in referralRecords"
@@ -862,4 +862,4 @@ import {
       </section>
     `
   }
-  
+
