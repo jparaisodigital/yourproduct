@@ -252,7 +252,7 @@ export function renderMemberPointsPage() {
           class="mt-6 rounded-[1.5rem] border border-brand-border bg-brand-panel p-5 shadow-panel sm:p-6"
           aria-labelledby="points-history-title"
         >
-          <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div class="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-start">
             <div>
               <p class="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-brand-gold">
                 Activity
