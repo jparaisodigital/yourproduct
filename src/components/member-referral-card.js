@@ -6,13 +6,32 @@ export function registerMemberReferralCard(
     },
   ) {
     Alpine.data('memberReferralCard', () => ({
-      referralCode,
-      memberName,
-  
-      referralLink:
-        `${window.location.origin}/register/?ref=${encodeURIComponent(
-          referralCode,
-        )}`,
+      currentReferralCode: referralCode || '',
+      currentMemberName: memberName || 'YOUR PRODUCT Member',
+
+      init() {
+        this.currentReferralCode =
+          window.customerReferralCode ||
+          this.currentReferralCode
+
+        this.currentMemberName =
+          window.customerReferralName ||
+          this.currentMemberName
+      },
+
+      get referralCode() {
+        return this.currentReferralCode
+      },
+
+      get memberName() {
+        return this.currentMemberName
+      },
+
+      get referralLink() {
+        return `${window.location.origin}/register/?ref=${encodeURIComponent(
+          this.currentReferralCode,
+        )}`
+      },
   
       feedbackMessage: '',
       feedbackTone: 'success',
@@ -117,8 +136,12 @@ export function registerMemberReferralCard(
   export function renderMemberReferralCard() {
     return `
       <section
-        x-data="memberReferralCard"
-        x-show="isMember"
+  x-data="memberReferralCard"
+  x-init="
+    currentReferralCode = profile?.username || currentReferralCode;
+    currentMemberName = [profile?.first_name, profile?.last_name].filter(Boolean).join(' ') || currentMemberName;
+  "
+  x-show="isMember"
         x-transition.opacity
         class="relative mt-6 overflow-hidden rounded-[1.5rem] border border-brand-gold/35 bg-brand-panel p-5 shadow-gold-soft sm:p-6"
         aria-labelledby="member-referral-title"
@@ -234,8 +257,7 @@ export function registerMemberReferralCard(
               <p
                 class="text-xs leading-5 text-brand-muted"
               >
-                Commission is subject to eligible purchases and
-                admin payment approval.
+                Earn 10% from direct referred membership packages after admin approval.
               </p>
   
               <button

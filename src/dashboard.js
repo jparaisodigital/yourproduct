@@ -250,9 +250,11 @@ const membershipUpgradeMarkup =
   !hasPendingMembership && !isApprovedMemberPreview
     ? `
       <section
-        class="mt-6 overflow-hidden rounded-[1.5rem] border border-brand-gold/30 bg-brand-panel shadow-gold-soft"
-        aria-label="Membership upgrade"
-      >
+  x-show="!isMember"
+  x-transition.opacity
+  class="mt-6 overflow-hidden rounded-[1.5rem] border border-brand-gold/30 bg-brand-panel shadow-gold-soft"
+  aria-label="Membership upgrade"
+>
         <div
           class="grid gap-5 px-5 py-5 sm:px-6 lg:grid-cols-[1fr_auto] lg:items-center"
         >
@@ -1008,7 +1010,7 @@ const previewAccount = {
   pendingPackageId:
     selectedDashboardPackage?.id || '',
 
-  referralCode: isApprovedMemberPreview
+    referralCode: isApprovedMemberPreview
     ? 'YP-A8K29'
     : '',
 
@@ -1018,7 +1020,7 @@ const previewAccount = {
 }
 
 // Enable only after personal codes and referral records are live.
-const memberReferralsReady = false
+const memberReferralsReady = true
 
 const previewRewards = [
   {
@@ -2226,7 +2228,7 @@ async function startDashboard() {
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
     .select(
-      'id, first_name, last_name, email, mobile_number, customer_type, membership_status, role, account_status',
+      'id, first_name, last_name, email, mobile_number, username, customer_type, membership_status, role, account_status',
     )
     .eq('id', user.id)
     .single()
@@ -2256,6 +2258,21 @@ async function startDashboard() {
   }
 
   signedInProfile = profile
+
+  window.customerReferralCode = profile.username || ''
+  window.customerReferralName = [
+    profile.first_name,
+    profile.last_name,
+  ].filter(Boolean).join(' ') || 'YOUR PRODUCT Member'
+
+  previewAccount.firstName =
+  profile.first_name || previewAccount.firstName
+
+previewAccount.lastName =
+  profile.last_name || previewAccount.lastName
+
+previewAccount.referralCode =
+  profile.username || previewAccount.referralCode
 
 const openApplicationStatuses = [
   'awaiting-payment',
@@ -2704,6 +2721,7 @@ registerCartStore(Alpine, dashboardProducts, {
 
         ${pendingMembershipMarkup}
         ${membershipUpgradeMarkup}
+        ${memberReferralsReady ? renderMemberReferralCard() : ''}
 
         <section
           x-show="!isMember"
@@ -2908,8 +2926,6 @@ registerCartStore(Alpine, dashboardProducts, {
             </button>
           </article>
                 </section>
-
-        ${memberReferralsReady ? renderMemberReferralCard() : ''}
 
         <div
           class="mt-6 grid gap-6 xl:grid-cols-[1.25fr_0.75fr]"

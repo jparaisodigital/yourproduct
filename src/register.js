@@ -25,25 +25,38 @@ const requestedPackageId =
 const incomingReferralCode =
   registrationParams.get('ref')?.trim() || ''
 
-const normalizedReferralCode =
-  incomingReferralCode.toUpperCase()
+  const normalizedReferralCode =
+  incomingReferralCode.toLowerCase()
 
-// Frontend preview data only.
-// Supabase will replace this during the backend phase.
-const referralPreviewMembers = {
-  'YP-A8K29': {
-    code: 'YP-A8K29',
-    fullName: 'Juan Dela Cruz',
-  },
+let referringMember = null
 
-  'YP-M4R18': {
-    code: 'YP-M4R18',
-    fullName: 'Maria Santos',
-  },
+if (normalizedReferralCode) {
+  try {
+    const { data, error } = await supabase.rpc(
+      'lookup_referral_member',
+      {
+        referral_code: normalizedReferralCode,
+      },
+    )
+
+    if (error) throw error
+
+    const matchedMember = Array.isArray(data)
+      ? data[0]
+      : data
+
+    if (matchedMember?.username) {
+      referringMember = {
+        code: matchedMember.username,
+        fullName:
+          matchedMember.full_name ||
+          matchedMember.username,
+      }
+    }
+  } catch (error) {
+    console.error('Unable to validate referral code:', error)
+  }
 }
-
-const referringMember =
-  referralPreviewMembers[normalizedReferralCode] || null
 
 const hasInvalidReferralCode =
   Boolean(incomingReferralCode) && !referringMember

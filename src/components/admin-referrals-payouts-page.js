@@ -25,6 +25,8 @@ import {
       adminNote: '',
     },
   ]
+
+  
   
   const previewReferralRecords = [
     {
@@ -56,7 +58,12 @@ import {
       payoutRequests: previewPayoutRequests.map(
         (request) => ({ ...request }),
       ),
-  
+
+      payoutsLoading: true,
+      payoutsError: '',
+
+      referralsLoading: true,
+      referralsError: '',
       referralRecords: previewReferralRecords.map(
         (record) => ({ ...record }),
       ),
@@ -71,6 +78,137 @@ import {
         proofFileName: '',
         proofPreviewUrl: '',
         adminNote: '',
+      },
+
+      async init() {
+        await Promise.all([
+          this.loadReferralRecords(),
+          this.loadPayoutRequests(),
+        ])
+      },
+
+      async loadReferralRecords() {
+        this.referralsLoading = true
+        this.referralsError = ''
+
+        try {
+          const { data, error } = await supabase
+            .from('referral_commissions')
+            .select(`
+              id, referral_code, package_id, package_amount,
+              commission_amount, status, created_at,
+              referrer:profiles!referral_commissions_referrer_customer_id_fkey(
+                first_name, last_name, email
+              ),
+              referred:profiles!referral_commissions_referred_customer_id_fkey(
+                first_name, last_name, email
+              )
+            `)
+            .order('created_at', { ascending: false })
+
+          if (error) throw error
+
+          this.referralRecords = (data ?? []).map((record) => ({
+            id: record.id,
+            referrerName: [
+              record.referrer?.first_name,
+              record.referrer?.last_name,
+            ].filter(Boolean).join(' ') || 'Member',
+            referrerEmail: record.referrer?.email || '',
+            referralCode: record.referral_code || '—',
+            referredName: [
+              record.referred?.first_name,
+              record.referred?.last_name,
+            ].filter(Boolean).join(' ') || 'Referred member',
+            referredEmail: record.referred?.email || '',
+            source:
+              `${this.packageLabel(record.package_id)} · ` +
+              `${this.formatMoney(record.commission_amount)}`,
+            status: this.referralStatusLabel(record.status),
+            createdAt: this.formatDate(record.created_at),
+          }))
+        } catch (error) {
+          console.error('Unable to load referral records:', error)
+          this.referralsError =
+            'Unable to load referral records. Please refresh.'
+          this.referralRecords = []
+        } finally {
+          this.referralsLoading = false
+        }
+      },
+
+      async loadPayoutRequests() {
+        this.payoutsLoading = true
+        this.payoutsError = ''
+
+        try {
+          const { data, error } = await supabase
+            .from('payout_requests')
+            .select(`
+              id, customer_id, amount, payment_method,
+              account_name, account_number, note, status,
+              admin_note, reference_number, proof_file_name,
+              proof_url, requested_at, reviewed_at, paid_at,
+              customer:profiles!payout_requests_customer_id_fkey(
+                first_name, last_name, email
+              )
+            `)
+            .order('requested_at', { ascending: false })
+
+          if (error) throw error
+
+          this.payoutRequests = (data ?? []).map((request) => ({
+            id: request.id,
+            memberId: request.customer_id,
+            memberName: [
+              request.customer?.first_name,
+              request.customer?.last_name,
+            ].filter(Boolean).join(' ') || 'Member',
+            memberEmail: request.customer?.email || 'No email',
+            amount: Number(request.amount || 0),
+            paymentMethod: request.payment_method,
+            accountName: request.account_name,
+            accountNumber: request.account_number,
+            status: request.status || 'pending',
+            requestedAt: request.requested_at,
+            reviewedAt: request.reviewed_at,
+            paidAt: request.paid_at,
+            referenceNumber: request.reference_number || '',
+            proofUrl: request.proof_url || '',
+            proofFileName: request.proof_file_name || '',
+            adminNote: request.admin_note || '',
+          }))
+        } catch (error) {
+          console.error('Unable to load payout requests:', error)
+          this.payoutsError =
+            'Unable to load payout requests. Please refresh.'
+          this.payoutRequests = []
+        } finally {
+          this.payoutsLoading = false
+        }
+      },
+
+      packageLabel(packageId) {
+        const labels = {
+          starter: 'Starter',
+          builder: 'Builder',
+          leader: 'Leader',
+          prestige: 'Prestige',
+        }
+
+        return labels[packageId] || 'Membership'
+      },
+
+      referralStatusLabel(status) {
+        const labels = {
+          earned: 'Earned',
+          requested: 'Requested',
+          approved: 'Approved',
+          paid: 'Paid',
+          cancelled: 'Cancelled',
+        }
+
+        return labels[status] || status || 'Recorded'
       },
   
       formatMoney(value) {
@@ -256,16 +394,16 @@ import {
         this.actionForm.proofPreviewUrl =
           URL.createObjectURL(file)
       },
-  
-      confirmPayoutAction() {
+
+      async confirmPayoutAction() {
         const request = this.selectedPayout
-  
+
         if (!request || !this.payoutAction) {
           this.actionError =
             'The payout request is unavailable.'
           return
         }
-  
+
         if (
           this.payoutAction === 'reject' &&
           !this.actionForm.adminNote.trim()
@@ -274,80 +412,64 @@ import {
             'Add an admin note explaining the rejection.'
           return
         }
-  
+
         if (this.payoutAction === 'mark-paid') {
           if (!this.actionForm.referenceNumber.trim()) {
             this.actionError =
               'Enter the payout payment reference number.'
             return
           }
-  
+
           if (!this.actionForm.proofFileName) {
             this.actionError =
               'Upload payout payment proof.'
             return
           }
         }
-  
-        const requestIndex =
-          this.payoutRequests.findIndex(
-            (requestItem) =>
-              requestItem.id === request.id,
+
+        this.actionError = ''
+        this.actionSuccess = ''
+
+        try {
+          const { data: nextStatus, error } = await supabase.rpc(
+            'admin_update_payout_request',
+            {
+              p_payout_request_id: request.id,
+              p_action: this.payoutAction,
+              p_admin_note:
+                this.actionForm.adminNote.trim() || null,
+              p_reference_number:
+                this.actionForm.referenceNumber.trim() || null,
+              p_proof_file_name:
+                this.actionForm.proofFileName || null,
+              p_proof_url:
+                this.actionForm.proofPreviewUrl || null,
+            },
           )
-  
-        if (requestIndex === -1) {
+
+          if (error) throw error
+
+          this.actionSuccess =
+            nextStatus === 'approved'
+              ? 'Payout request approved.'
+              : nextStatus === 'rejected'
+                ? 'Payout request rejected.'
+                : 'Payout marked as paid.'
+
+          this.selectedPayoutId = null
+          this.payoutAction = ''
+          this.resetActionForm()
+
+          await Promise.all([
+            this.loadPayoutRequests(),
+            this.loadReferralRecords(),
+          ])
+        } catch (error) {
+          console.error('Unable to update payout request:', error)
           this.actionError =
-            'Unable to update the payout request.'
-          return
+            error?.message ||
+            'Could not update payout request. Please refresh and try again.'
         }
-  
-        const updatedAt = new Date().toISOString()
-        const nextStatus =
-          this.payoutAction === 'approve'
-            ? 'approved'
-            : this.payoutAction === 'reject'
-              ? 'rejected'
-              : 'paid'
-  
-        this.payoutRequests[requestIndex] = {
-          ...this.payoutRequests[requestIndex],
-          status: nextStatus,
-          reviewedAt: updatedAt,
-          paidAt:
-            this.payoutAction === 'mark-paid'
-              ? updatedAt
-              : this.payoutRequests[requestIndex]
-                  .paidAt,
-          referenceNumber:
-            this.payoutAction === 'mark-paid'
-              ? this.actionForm.referenceNumber.trim()
-              : this.payoutRequests[requestIndex]
-                  .referenceNumber,
-          proofFileName:
-            this.payoutAction === 'mark-paid'
-              ? this.actionForm.proofFileName
-              : this.payoutRequests[requestIndex]
-                  .proofFileName,
-          proofUrl:
-            this.payoutAction === 'mark-paid'
-              ? this.actionForm.proofPreviewUrl
-              : this.payoutRequests[requestIndex]
-                  .proofUrl,
-          adminNote:
-            this.actionForm.adminNote.trim(),
-        }
-  
-        this.actionForm.proofPreviewUrl = ''
-        this.actionSuccess =
-          this.payoutAction === 'approve'
-            ? 'Payout request approved.'
-            : this.payoutAction === 'reject'
-              ? 'Payout request rejected.'
-              : 'Payout marked as paid with proof.'
-  
-        this.selectedPayoutId = null
-        this.payoutAction = ''
-        this.resetActionForm()
       },
   
       destroy() {
