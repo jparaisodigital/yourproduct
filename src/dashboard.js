@@ -2460,13 +2460,21 @@ const tierLabelByType = {
   prestige: 'Your Prestige price',
 }
 
-window.dashboardProductCardOptions =
-  dashboardPricingType === 'regular'
-    ? {}
-    : {
+const dashboardHasApprovedPricingTier =
+  [
+    'starter',
+    'builder',
+    'leader',
+    'prestige',
+  ].includes(dashboardPricingType)
+
+const dashboardProductCardOptions =
+  dashboardHasApprovedPricingTier
+    ? {
         tierLabel: tierLabelByType[dashboardPricingType],
         tierPrice: tierPriceByType[dashboardPricingType],
       }
+    : {}
 
 registerCartStore(Alpine, dashboardProducts, {
   pricingType: dashboardPricingType,
@@ -3697,7 +3705,7 @@ registerCartStore(Alpine, dashboardProducts, {
               <p
                 class="hidden text-xs text-brand-muted sm:block"
               >
-                Member pricing requires approved membership
+                Approved package tier required for reseller pricing
               </p>
             </div>
           </section>
