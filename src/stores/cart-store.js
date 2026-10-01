@@ -5,10 +5,25 @@ export function registerCartStore(
   products,
   options = {},
 ) {
-  const pricingType =
-    options.pricingType === 'member'
-      ? 'member'
-      : 'regular'
+  const allowedPricingTypes = [
+    'starter',
+    'builder',
+    'leader',
+    'prestige',
+  ]
+
+  const pricingType = allowedPricingTypes.includes(
+    options.pricingType,
+  )
+    ? options.pricingType
+    : 'regular'
+
+  const tierPrices = {
+    starter: 245,
+    builder: 227,
+    leader: 210,
+    prestige: 175,
+  }
 
   Alpine.store('cart', {
     items: [],
@@ -193,24 +208,17 @@ export function registerCartStore(
         product?.regularPrice || 0,
       )
 
-      const resellerPrice = Number(
-        product?.memberPrice || 0,
-      )
-
-      if (
-        this.pricingType === 'member' &&
-        resellerPrice > 0
-      ) {
-        return resellerPrice
+      if (this.pricingType in tierPrices) {
+        return tierPrices[this.pricingType]
       }
 
       return regularPrice
     },
 
     get priceLabel() {
-      return this.pricingType === 'member'
-        ? 'Reseller price'
-        : 'Regular price'
+      return this.pricingType === 'regular'
+        ? 'Regular price'
+        : 'Reseller tier price'
     },
 
     get itemCount() {

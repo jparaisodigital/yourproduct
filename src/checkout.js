@@ -333,6 +333,39 @@ async function startCheckout() {
 
   checkoutProfile = profile
 
+  let checkoutPricingType = 'regular'
+
+  if (
+    profile.customer_type === 'member' &&
+    profile.membership_status === 'active'
+  ) {
+    const { data: approvedApplication, error: tierError } =
+      await supabase
+        .from('membership_applications')
+        .select('package_id')
+        .eq('customer_id', user.id)
+        .eq('status', 'approved')
+        .not('membership_activated_at', 'is', null)
+        .order('membership_activated_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+
+    if (tierError) {
+      console.error('Unable to load member pricing tier:', tierError)
+    }
+
+    if (
+      [
+        'starter',
+        'builder',
+        'leader',
+        'prestige',
+      ].includes(approvedApplication?.package_id)
+    ) {
+      checkoutPricingType = approvedApplication.package_id
+    }
+  }
+
   const { data: liveProducts, error: productsError } = await supabase
     .from('products')
     .select('id, is_active, stock_quantity, regular_price, member_price')
@@ -367,12 +400,12 @@ async function startCheckout() {
   })
 
   registerCartStore(Alpine, checkoutProducts, {
-    pricingType:
-      profile.customer_type === 'member' &&
-      profile.membership_status === 'active'
-        ? 'member'
-        : 'regular',
+    pricingType: checkoutPricingType,
   })
+
+  const isMember =
+  profile.customer_type === 'member' &&
+  profile.membership_status === 'active'
 
   document.title = `Checkout | ${siteConfig.brand.name}`
 
@@ -1361,6 +1394,37 @@ contact our Facebook page to arrange the fee and schedule.
                 ></strong>
               </div>
             </div>
+
+            <div
+  x-show="${isMember} && $store.cart.totalQuantity < 10"
+  class="mt-5 rounded-2xl border border-red-400/40 bg-red-500/10 p-4"
+>
+  <p class="text-sm font-semibold text-red-200">
+    This order is not eligible for points.
+  </p>
+
+  <p class="mt-2 text-xs leading-5 text-red-100/80">
+    Members earn points only on delivered product orders with at least
+    10 perfume bottles. This order has
+    <strong x-text="$store.cart.totalQuantity"></strong>
+    bottle(s). Minimum qualified order: 10 bottles = 50 points.
+  </p>
+</div>
+
+<div
+  x-show="${isMember} && $store.cart.totalQuantity >= 10"
+  class="mt-5 rounded-2xl border border-emerald-400/30 bg-emerald-400/10 p-4"
+>
+  <p class="text-sm font-semibold text-emerald-200">
+    This order can earn points after delivery.
+  </p>
+
+  <p class="mt-2 text-xs leading-5 text-emerald-100/80">
+    Qualified member orders earn 5 points per perfume bottle after the
+    order is delivered and confirmed by admin.
+  </p>
+</div>
+
             <label
               class="mt-5 flex cursor-pointer items-start gap-3 rounded-xl border border-brand-border bg-brand-black p-4"
             >

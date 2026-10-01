@@ -180,30 +180,21 @@ export function renderProductDrawer() {
                     ></p>
                   </div>
 
-                  <div
-                    x-show="
-                      Number(
-                        $store.productView.selectedProduct
-                          .memberPrice || 0
-                      ) > 0
-                    "
-                  >
+                                    <div>
                     <p
                       class="text-[0.62rem] font-semibold uppercase tracking-[0.14em] text-brand-muted"
                     >
-                      Reseller Price
+                      Reseller Pricing
                     </p>
 
                     <p
-                      class="mt-1 font-semibold text-brand-gold"
-                      x-text="
-                        '₱' +
-                        Number(
-                          $store.productView
-                            .selectedProduct.memberPrice
-                        ).toLocaleString('en-PH')
-                      "
-                    ></p>
+                      class="mt-1 text-sm leading-6 text-brand-muted"
+                    >
+                      Approved package tier pricing starts at
+                      <span class="font-semibold text-brand-gold">
+                        ₱245 per bottle
+                      </span>.
+                    </p>
                   </div>
                 </div>
 

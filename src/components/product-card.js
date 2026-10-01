@@ -7,16 +7,16 @@ const pesoFormatter = new Intl.NumberFormat(
   },
 )
 
-export function renderProductCard(product) {
+export function renderProductCard(product, options = {}) {
   const isAvailable =
-  product.isActive &&
-  Number(product.stockQuantity || 0) > 0
+    product.isActive &&
+    Number(product.stockQuantity || 0) > 0
 
-const stockLabel = !product.isActive
-  ? 'Coming soon'
-  : isAvailable
-    ? 'In stock'
-    : 'Out of stock'
+  const stockLabel = !product.isActive
+    ? 'Coming soon'
+    : isAvailable
+      ? 'In stock'
+      : 'Out of stock'
 
   const stockTextClass = isAvailable
     ? 'text-emerald-400'
@@ -26,27 +26,50 @@ const stockLabel = !product.isActive
     ? 'bg-emerald-400'
     : 'bg-red-400'
 
-  const memberPriceMarkup = product.memberPrice
+  const tierLabel = options.tierLabel || ''
+  const tierPrice = Number(options.tierPrice || 0)
+
+  const memberPriceMarkup = tierPrice > 0
     ? `
         <div
-          class="mt-2 flex items-center justify-between gap-3"
+          class="mt-2 rounded-xl border border-brand-gold/25 bg-brand-gold/10 px-3 py-2"
         >
-          <span
-            class="text-[0.55rem] font-medium uppercase tracking-[0.08em] text-brand-muted sm:text-[0.68rem] sm:tracking-[0.16em]"
+          <p
+            class="text-[0.55rem] font-semibold uppercase tracking-[0.08em] text-brand-gold sm:text-[0.68rem] sm:tracking-[0.14em]"
           >
-            Reseller price
-          </span>
+            ${tierLabel || 'Your reseller price'}
+          </p>
 
-          <span
-            class="shrink-0 text-sm font-semibold text-brand-gold sm:text-base"
+          <p
+            class="mt-1 font-semibold text-brand-gold"
           >
-            ${pesoFormatter.format(
-              product.memberPrice,
-            )}
-          </span>
+            ${pesoFormatter.format(tierPrice)} per bottle
+          </p>
+
+          <p
+            class="mt-1 text-xs leading-5 text-brand-muted"
+          >
+            Retail ${pesoFormatter.format(product.regularPrice)}. Tier pricing is based on your approved package.
+          </p>
         </div>
       `
-    : ''
+    : `
+        <div
+          class="mt-2 rounded-xl border border-brand-gold/25 bg-brand-gold/10 px-3 py-2"
+        >
+          <p
+            class="text-[0.55rem] font-semibold uppercase tracking-[0.08em] text-brand-gold sm:text-[0.68rem] sm:tracking-[0.14em]"
+          >
+            Reseller tiers
+          </p>
+
+          <p
+            class="mt-1 text-xs leading-5 text-brand-muted"
+          >
+            From ₱245 to ₱175 per bottle, depending on approved package.
+          </p>
+        </div>
+      `
 
   const pointsMarkup =
     product.isPointsQualified

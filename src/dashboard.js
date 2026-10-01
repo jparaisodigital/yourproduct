@@ -99,6 +99,7 @@ const allowedMembershipStatuses = [
 ]
 
 const hasPendingMembership =
+!isApprovedMemberPreview &&
 Boolean(selectedDashboardPackage) &&
 allowedMembershipStatuses.includes(
   requestedMembershipStatus,
@@ -1181,7 +1182,7 @@ const dashboardProductCards = () => activeProducts
             "
             x-transition.opacity.duration.200ms
           >
-            ${renderProductCard(product)}
+          ${renderProductCard(product, window.dashboardProductCardOptions || {})}
           </div>
         `
 })
@@ -2225,7 +2226,7 @@ async function startDashboard() {
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
     .select(
-      'first_name, last_name, email, mobile_number, customer_type, membership_status, role, account_status',
+      'id, first_name, last_name, email, mobile_number, customer_type, membership_status, role, account_status',
     )
     .eq('id', user.id)
     .single()
@@ -2372,8 +2373,7 @@ try {
   for (const product of dashboardProducts) {
     const liveProduct = liveProductsById.get(product.id)
     const hasValidPrices =
-      Number(liveProduct?.regular_price) > 0 &&
-      Number(liveProduct?.member_price) > 0
+    Number(liveProduct?.regular_price) > 0
 
     product.isActive =
       liveProduct?.is_active === true &&
@@ -2396,12 +2396,63 @@ try {
   productsLoadError = true
 }
 
+let dashboardPricingType = 'regular'
+
+if (
+  profile.customer_type === 'member' &&
+  profile.membership_status === 'active'
+) {
+  const { data: approvedApplication, error: tierError } =
+    await supabase
+      .from('membership_applications')
+      .select('package_id')
+      .eq('customer_id', profile.id)
+      .eq('status', 'approved')
+      .not('membership_activated_at', 'is', null)
+      .order('membership_activated_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+  if (tierError) {
+    console.error('Unable to load dashboard pricing tier:', tierError)
+  }
+
+  if (
+    [
+      'starter',
+      'builder',
+      'leader',
+      'prestige',
+    ].includes(approvedApplication?.package_id)
+  ) {
+    dashboardPricingType = approvedApplication.package_id
+  }
+}
+
+const tierPriceByType = {
+  starter: 245,
+  builder: 227,
+  leader: 210,
+  prestige: 175,
+}
+
+const tierLabelByType = {
+  starter: 'Your Starter price',
+  builder: 'Your Builder price',
+  leader: 'Your Leader price',
+  prestige: 'Your Prestige price',
+}
+
+window.dashboardProductCardOptions =
+  dashboardPricingType === 'regular'
+    ? {}
+    : {
+        tierLabel: tierLabelByType[dashboardPricingType],
+        tierPrice: tierPriceByType[dashboardPricingType],
+      }
+
 registerCartStore(Alpine, dashboardProducts, {
-  pricingType:
-    profile.customer_type === 'member' &&
-    profile.membership_status === 'active'
-      ? 'member'
-      : 'regular',
+  pricingType: dashboardPricingType,
 })
 
   const { data: orderRows, error: ordersError } = await supabase
