@@ -651,11 +651,11 @@ class="mt-4"
             </div>
 
             <div
-              class="grid shrink-0 gap-3 sm:grid-cols-2"
-            >
+              class="grid w-full gap-3 sm:w-auto sm:min-w-56"
+               >
               <button
                 type="button"
-                class="inline-flex min-h-11 items-center justify-center rounded-xl border border-red-400/40 px-5 text-sm font-semibold text-red-300 transition hover:border-red-300 hover:bg-red-400/10 hover:text-red-200"
+                class="inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-red-400/40 px-5 text-sm font-semibold text-red-300 transition hover:border-red-300 hover:bg-red-400/10 hover:text-red-200"
                 @click="
                   openPackageFulfillmentAction('unship')
                 "
@@ -665,7 +665,7 @@ class="mt-4"
 
               <button
                 type="button"
-                class="inline-flex min-h-11 items-center justify-center rounded-xl bg-emerald-600 px-5 text-sm font-semibold text-white transition hover:bg-emerald-500"
+                class="inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-emerald-600 px-5 text-sm font-semibold text-white transition hover:bg-emerald-500"
                 @click="
                   openPackageFulfillmentAction('complete')
                 "

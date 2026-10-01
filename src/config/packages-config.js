@@ -39,7 +39,7 @@ export const packages = [
     description:
       'Build today. A stronger tomorrow.',
 
-    productQuantity: 27,
+    productQuantity: 25,
 
     ...packageProductRules,
 

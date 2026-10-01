@@ -1290,33 +1290,33 @@ function renderApplicationDetailsDrawer() {
               x-text="'Reference: ' + (selectedApplication.reference_number || 'Not provided')"
             ></p>
             <p
-  class="mt-3 break-all text-xs text-brand-muted"
-  x-text="'Proof file: ' + (selectedApplication.payment_proof_file_name || 'Not submitted')"
-></p>
+              class="mt-3 break-all text-xs text-brand-muted"
+              x-text="'Proof file: ' + (selectedApplication.payment_proof_file_name || 'Not submitted')"
+            ></p>
 
-<p
-  x-show="applicationProofLoading"
-  class="mt-3 text-sm text-brand-muted"
->Loading payment proof…</p>
+            <p
+              x-show="applicationProofLoading"
+              class="mt-3 text-sm text-brand-muted"
+            >Loading payment proof…</p>
 
-<p
-  x-show="applicationProofError"
-  x-text="applicationProofError"
-  class="mt-3 text-sm text-red-300"
-  role="alert"
-></p>
+            <p
+              x-show="applicationProofError"
+              x-text="applicationProofError"
+              class="mt-3 text-sm text-red-300"
+              role="alert"
+            ></p>
 
-<img
-  x-show="applicationProofUrl"
-  :src="applicationProofUrl"
-  alt="Submitted membership payment proof"
-  class="mt-3 max-h-96 w-full rounded-lg object-contain"
->
+            <img
+              x-show="applicationProofUrl"
+              :src="applicationProofUrl"
+              alt="Submitted membership payment proof"
+              class="mt-3 max-h-96 w-full rounded-lg object-contain"
+            >
 
-<p
-  x-show="!applicationProofLoading && !applicationProofUrl && !applicationProofError"
-  class="mt-3 text-xs text-brand-muted"
->No payment screenshot submitted.</p>
+            <p
+              x-show="!applicationProofLoading && !applicationProofUrl && !applicationProofError"
+              class="mt-3 text-xs text-brand-muted"
+            >No payment screenshot submitted.</p>
           </section>
 
           <section
@@ -1333,145 +1333,160 @@ function renderApplicationDetailsDrawer() {
           </section>
 
           <div class="mt-5 rounded-2xl border border-brand-border bg-brand-black/40 p-4">
-  <p class="text-sm font-semibold text-brand-cream">
-    Admin Review
-  </p>
+            <p class="text-sm font-semibold text-brand-cream">
+              Admin Review
+            </p>
 
-  <p class="mt-2 text-xs leading-5 text-brand-muted">
-    Review the uploaded payment proof and verify the actual payment
-    in the company account before approving this membership.
-  </p>
+            <p class="mt-2 text-xs leading-5 text-brand-muted">
+              Review the uploaded payment proof and verify the actual payment
+              in the company account before approving this membership.
+            </p>
 
-  <div
-    x-show="
-      selectedApplication &&
-      selectedApplication.status === 'pending-verification'
-    "
-    x-transition
-    class="mt-4 grid gap-3 sm:grid-cols-2"
-  >
-    <button
-      type="button"
-      class="inline-flex min-h-11 items-center justify-center rounded-full border border-red-400/40 px-5 text-sm font-semibold text-red-300 transition hover:border-red-300 hover:bg-red-400/10 disabled:cursor-not-allowed disabled:opacity-50"
-      @click="openReviewPanel('reject-payment')"
-      :disabled="reviewSubmitting"
-    >
-      Reject Payment
-    </button>
+            <div
+              x-show="
+                selectedApplication &&
+                selectedApplication.status === 'pending-verification'
+              "
+              x-transition
+              class="mt-4 grid gap-3 sm:grid-cols-2"
+            >
+              <button
+                type="button"
+                class="inline-flex min-h-11 items-center justify-center rounded-full border border-red-400/40 px-5 text-sm font-semibold text-red-300 transition hover:border-red-300 hover:bg-red-400/10 disabled:cursor-not-allowed disabled:opacity-50"
+                @click="openReviewPanel('reject-payment')"
+                :disabled="reviewSubmitting"
+              >
+                Reject Payment
+              </button>
 
-    <button
-      type="button"
-      class="inline-flex min-h-11 items-center justify-center rounded-full bg-emerald-500 px-5 text-sm font-semibold text-[#07130d] transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-50"
-      @click="openReviewPanel('approve-membership')"
-      :disabled="
-        reviewSubmitting ||
-        applicationProofLoading ||
-        !applicationProofUrl
-      "
-    >
-      Approve Membership
-    </button>
-  </div>
+              <button
+                type="button"
+                class="inline-flex min-h-11 items-center justify-center rounded-full bg-emerald-500 px-5 text-sm font-semibold text-[#07130d] transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-50"
+                @click="openReviewPanel('approve-membership')"
+                :disabled="
+                  reviewSubmitting ||
+                  applicationProofLoading ||
+                  !applicationProofUrl
+                "
+              >
+                Approve Membership
+              </button>
+            </div>
 
-  <p
-    x-show="
-      selectedApplication &&
-      selectedApplication.status === 'awaiting-payment'
-    "
-    class="mt-4 rounded-xl border border-amber-400/30 bg-amber-400/10 p-3 text-xs leading-5 text-amber-200"
-  >
-    This application is still awaiting payment. Review controls will
-    appear after the customer uploads payment proof.
-  </p>
+            <p
+              x-show="
+                selectedApplication &&
+                selectedApplication.status === 'awaiting-payment'
+              "
+              class="mt-4 rounded-xl border border-amber-400/30 bg-amber-400/10 p-3 text-xs leading-5 text-amber-200"
+            >
+              This application is still awaiting payment. Review controls will
+              appear after the customer uploads payment proof.
+            </p>
 
-  <p
-    x-show="
-      selectedApplication &&
-      selectedApplication.status !== 'awaiting-payment' &&
-      selectedApplication.status !== 'pending-verification'
-    "
-    class="mt-4 rounded-xl border border-brand-border bg-brand-panel p-3 text-xs leading-5 text-brand-muted"
-  >
-    This application has already been reviewed or closed.
-  </p>
+            <p
+              x-show="
+                selectedApplication &&
+                selectedApplication.status !== 'awaiting-payment' &&
+                selectedApplication.status !== 'pending-verification'
+              "
+              class="mt-4 rounded-xl border border-brand-border bg-brand-panel p-3 text-xs leading-5 text-brand-muted"
+            >
+              This application has already been reviewed or closed.
+            </p>
 
-  <form
-    x-show="reviewPanelOpen"
-    x-transition
-    class="mt-4 rounded-2xl border border-brand-border bg-brand-panel p-4"
-    @submit.prevent="confirmReviewAction()"
-  >
-    <h3
-      class="text-sm font-semibold text-brand-cream"
-      x-text="reviewActionTitle"
-    ></h3>
+            <form
+              x-show="reviewPanelOpen"
+              x-transition
+              class="mt-4 rounded-2xl border border-brand-border bg-brand-panel p-4"
+              @submit.prevent="confirmReviewAction()"
+            >
+              <h3
+                class="text-sm font-semibold text-brand-cream"
+                x-text="reviewActionTitle"
+              ></h3>
 
-    <p
-      class="mt-2 text-xs leading-5 text-brand-muted"
-      x-text="reviewActionDescription"
-    ></p>
+              <p
+                class="mt-2 text-xs leading-5 text-brand-muted"
+                x-text="reviewActionDescription"
+              ></p>
 
-    <label
-      x-show="reviewAction === 'approve-membership'"
-      class="mt-4 flex gap-3 rounded-xl border border-emerald-400/30 bg-emerald-400/10 p-3 text-xs leading-5 text-emerald-100"
-    >
-      <input
-        type="checkbox"
-        x-model="reviewPaymentVerified"
-        class="mt-1 size-4 rounded border-emerald-300 bg-brand-black text-emerald-400"
-      >
+              <label
+                x-show="reviewAction === 'approve-membership'"
+                class="mt-4 flex gap-3 rounded-xl border border-emerald-400/30 bg-emerald-400/10 p-3 text-xs leading-5 text-emerald-100"
+              >
+                <input
+                  type="checkbox"
+                  x-model="reviewPaymentVerified"
+                  class="mt-1 size-4 rounded border-emerald-300 bg-brand-black text-emerald-400"
+                >
 
-      <span>
-        I verified the actual payment in the company account.
-      </span>
-    </label>
+                <span>
+                  I verified the actual payment in the company account.
+                </span>
+              </label>
 
-    <label
-      for="admin-review-note"
-      class="mt-4 block text-xs font-semibold uppercase tracking-[0.12em] text-brand-muted"
-    >
-      Admin Note
-    </label>
+              <label
+                for="admin-review-note"
+                class="mt-4 block text-xs font-semibold uppercase tracking-[0.12em] text-brand-muted"
+              >
+                Admin Note
+              </label>
 
-    <textarea
-      id="admin-review-note"
-      x-model.trim="reviewNote"
-      rows="3"
-      maxlength="300"
-      :placeholder="
-        reviewAction === 'reject-payment'
-          ? 'Required: explain why this payment is rejected'
-          : 'Optional: add a short approval note'
-      "
-      class="mt-2 w-full resize-none rounded-xl border border-brand-border bg-brand-black px-4 py-3 text-sm leading-6 text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
-    ></textarea>
+              <textarea
+                id="admin-review-note"
+                x-model.trim="reviewNote"
+                rows="3"
+                maxlength="300"
+                :placeholder="
+                  reviewAction === 'reject-payment'
+                    ? 'Required: explain why this payment is rejected'
+                    : 'Optional: add a short approval note'
+                "
+                class="mt-2 w-full resize-none rounded-xl border border-brand-border bg-brand-black px-4 py-3 text-sm leading-6 text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
+              ></textarea>
 
-    <p
-      x-show="reviewError"
-      x-text="reviewError"
-      class="mt-2 text-xs leading-5 text-red-300"
-      role="alert"
-    ></p>
+              <p
+                x-show="reviewError"
+                x-text="reviewError"
+                class="mt-2 text-xs leading-5 text-red-300"
+                role="alert"
+              ></p>
 
-    <div class="mt-4 grid gap-3 sm:grid-cols-2">
-      <button
-        type="button"
-        class="inline-flex min-h-11 items-center justify-center rounded-full border border-brand-border px-4 text-sm font-semibold text-brand-cream transition hover:border-brand-gold hover:text-brand-gold disabled:cursor-not-allowed disabled:opacity-50"
-        @click="closeReviewPanel()"
-        :disabled="reviewSubmitting"
-      >
-        Cancel
-      </button>
+              <div class="mt-4 grid gap-3 sm:grid-cols-2">
+                <button
+                  type="button"
+                  class="inline-flex min-h-11 items-center justify-center rounded-full border border-brand-border px-4 text-sm font-semibold text-brand-cream transition hover:border-brand-gold hover:text-brand-gold disabled:cursor-not-allowed disabled:opacity-50"
+                  @click="closeReviewPanel()"
+                  :disabled="reviewSubmitting"
+                >
+                  Keep Current Status
+                </button>
 
-      <button
-        type="submit"
-        class="inline-flex min-h-11 items-center justify-center rounded-full bg-brand-gold px-4 text-sm font-semibold text-[#17130d] transition hover:bg-brand-gold-light disabled:cursor-not-allowed disabled:opacity-50"
-        :disabled="reviewSubmitting"
-        x-text="reviewSubmitting ? 'Submitting...' : 'Confirm Review'"
-      ></button>
-    </div>
-  </form>
-</div>
+                <button
+                  type="submit"
+                  class="inline-flex min-h-11 items-center justify-center rounded-full px-4 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50"
+                  :class="
+                    reviewAction === 'reject-payment'
+                      ? 'bg-red-700 text-white hover:bg-red-600'
+                      : 'bg-brand-gold text-[#17130d] hover:brightness-110'
+                  "
+                  :disabled="reviewSubmitting"
+                  x-text="
+                    reviewSubmitting
+                      ? 'Submitting...'
+                      : reviewAction === 'approve-membership'
+                        ? 'Confirm Approval'
+                        : reviewAction === 'reject-payment'
+                          ? 'Confirm Rejection'
+                          : 'Confirm Update'
+                  "
+                ></button>
+              </div>
+            </form>
+          </div>
+
+          ${renderAdminPackageFulfillmentPanel()}
         </div>
       </template>
     </aside>
@@ -1953,7 +1968,11 @@ Alpine.data('adminDashboard', () => ({
           payment_proof_path,
           cancellation_reason, refund_status, admin_note,
           approved_at, membership_activated_at,
-          fulfillment_status, submitted_at, updated_at,
+          fulfillment_status, package_allocation,
+          package_inventory_deducted,
+          package_inventory_deducted_at,
+          fulfillment_confirmed_at,
+          submitted_at, updated_at,
           customer:profiles!membership_applications_customer_id_fkey(
             first_name, last_name, email, mobile_number
           )
@@ -2056,6 +2075,46 @@ Alpine.data('adminDashboard', () => ({
       if (error) throw error
 
       this.liveProducts = data ?? []
+
+      const liveProductsByName = new Map(
+        this.liveProducts.map((product) => [
+          product.name,
+          product,
+        ]),
+      )
+
+      this.inventoryProducts = adminInventoryProducts.map(
+        (product) => {
+          const liveProduct = liveProductsByName.get(
+            product.name,
+          )
+
+          if (!liveProduct) {
+            return {
+              ...product,
+              stockQuantity: 0,
+            }
+          }
+
+          return {
+            ...product,
+            id: liveProduct.id,
+            sku: liveProduct.sku,
+            name: liveProduct.name,
+            regularPrice: Number(
+              liveProduct.regular_price || 0,
+            ),
+            memberPrice: Number(
+              liveProduct.member_price || 0,
+            ),
+            stockQuantity: Number(
+              liveProduct.stock_quantity || 0,
+            ),
+            isActive: liveProduct.is_active === true,
+          }
+        },
+      )
+
       this.stockDrafts = Object.fromEntries(
         this.liveProducts.map((product) => [
           product.id,
@@ -3463,239 +3522,81 @@ closeOrderDetails() {
   }, 250)
 },
 
-confirmPackageAllocation() {
+async confirmPackageAllocation() {
   if (!this.validatePackageAllocation()) {
     return
   }
 
-  const application =
-  this.selectedApplication
-
-  const selectedPackage =
-  application?.package
+  const application = this.selectedApplication
+  const selectedPackage = application?.package
 
   if (!application || !selectedPackage) {
     this.packageAllocationError =
-    'Package information is unavailable.'
-
+      'Package information is unavailable.'
     return
   }
 
-  if (
-    application.package_inventory_deducted
-  ) {
+  if (application.package_inventory_deducted) {
     this.packageAllocationError =
-    'This package has already been confirmed.'
-
+      'This package has already been confirmed.'
     return
   }
 
-  const applicationIndex =
-  this.applications.findIndex(
-    (applicationItem) =>
-      applicationItem.id ===
-    application.id,
-  )
-
-  if (applicationIndex === -1) {
-    this.packageAllocationError =
-    'The membership application could not be found.'
-
-    return
-  }
-
-  const confirmedAt =
-  new Date().toISOString()
-
-  const packageAllocation =
-  this.inventoryProducts
-  .map((product) => ({
-    product_id: product.id,
-    product_name: product.name,
-    product_image_url: product.image,
-    quantity: Number(
-      this.packageAllocationQuantities[
-        product.id
-      ] || 0,
-    ),
-  }))
-  .filter(
-    (allocation) =>
-      allocation.quantity > 0,
-  )
-
-  const packageSupplyAllocation =
-  selectedPackage.fixedInventoryItems.map(
-    (inclusion) => ({
-      inventory_item_id:
-      inclusion.inventoryItemId,
-
-      inventory_item_name:
-      inclusion.name,
-
+  const packageAllocation = this.inventoryProducts
+    .map((product) => ({
+      product_id: product.id,
+      product_name: product.name,
+      product_image_url: product.image,
       quantity: Number(
-        inclusion.quantity || 0,
+        this.packageAllocationQuantities[product.id] || 0,
       ),
-    }),
-  )
-
-  const newMovements = []
-
-  this.inventoryProducts =
-  this.inventoryProducts.map(
-    (product) => {
-      const allocation =
-      packageAllocation.find(
-        (allocationItem) =>
-          allocationItem.product_id ===
-        product.id,
-      )
-
-      if (!allocation) {
-        return product
-      }
-
-      const previousStock = Number(
-        product.stockQuantity || 0,
-      )
-
-      const newStock =
-      previousStock -
-      allocation.quantity
-
-      newMovements.push({
-        id:
-        `package-product-${application.id}-` +
-        `${product.id}-${Date.now()}`,
-
-        product_id: product.id,
-        product_name: product.name,
-
-        inventory_item_type: 'product',
-
-        type: 'package-fulfillment',
-
-        quantity: -allocation.quantity,
-
-        previous_stock: previousStock,
-        new_stock: newStock,
-
-        reason:
-        `${selectedPackage.name} fulfillment ` +
-        `for ${application.customer_name}`,
-
-        membership_application_id:
-        application.id,
-
-        created_at: confirmedAt,
-      })
-
-      return {
-        ...product,
-        stockQuantity: newStock,
-      }
-    },
-  )
-
-  this.packageSupplies =
-  this.packageSupplies.map(
-    (supply) => {
-      const allocation =
-      packageSupplyAllocation.find(
-        (allocationItem) =>
-          allocationItem
-        .inventory_item_id ===
-        supply.id,
-      )
-
-      if (!allocation) {
-        return supply
-      }
-
-      const previousStock = Number(
-        supply.stockQuantity || 0,
-      )
-
-      const newStock =
-      previousStock -
-      allocation.quantity
-
-      newMovements.push({
-        id:
-        `package-supply-${application.id}-` +
-        `${supply.id}-${Date.now()}`,
-
-        product_id: supply.id,
-        product_name: supply.name,
-
-        inventory_item_type:
-        'package-supply',
-
-        type: 'package-fulfillment',
-
-        quantity: -allocation.quantity,
-
-        previous_stock: previousStock,
-        new_stock: newStock,
-
-        reason:
-        `${selectedPackage.name} fulfillment ` +
-        `for ${application.customer_name}`,
-
-        membership_application_id:
-        application.id,
-
-        created_at: confirmedAt,
-      })
-
-      return {
-        ...supply,
-        stockQuantity: newStock,
-      }
-    },
-  )
-
-  this.applications[applicationIndex] = {
-    ...this.applications[applicationIndex],
-
-    fulfillment_status:
-    'ready-for-packing',
-
-    package_allocation:
-    packageAllocation,
-
-    package_supply_allocation:
-    packageSupplyAllocation,
-
-    package_inventory_deducted: true,
-
-    package_inventory_deducted_at:
-    confirmedAt,
-
-    package_inventory_restored: false,
-
-    package_inventory_restored_at: null,
-
-    fulfillment_confirmed_at:
-    confirmedAt,
-
-    updated_at: confirmedAt,
-  }
-
-  this.inventoryMovements.unshift(
-    ...newMovements,
-  )
+    }))
+    .filter((allocation) => allocation.quantity > 0)
 
   this.packageAllocationError = ''
 
-  this.inventoryFeedback =
-  `${selectedPackage.name} package confirmed. ` +
-  `${this.packageAllocationTotal} perfume bottles ` +
-  `and fixed supplies were deducted.`
+  try {
+    const { data: nextStatus, error } = await supabase.rpc(
+      'admin_confirm_package_allocation',
+      {
+        p_application_id: application.id,
+        p_allocation: packageAllocation,
+      },
+    )
 
-  window.setTimeout(() => {
-    this.inventoryFeedback = ''
-  }, 4000)
+    if (error) throw error
+
+    this.inventoryFeedback =
+      'Package inventory deducted and marked ready for packing.'
+
+    if (typeof this.loadMembershipApplications === 'function') {
+      await this.loadMembershipApplications()
+    }
+
+    if (typeof this.loadLiveProducts === 'function') {
+      await this.loadLiveProducts()
+    }
+
+    if (typeof this.loadStockHistory === 'function') {
+      await this.loadStockHistory()
+    }
+
+    const updatedApplication = this.applications.find(
+      (applicationItem) => applicationItem.id === application.id,
+    )
+
+    if (updatedApplication) {
+      this.selectedApplicationId = updatedApplication.id
+    }
+
+    this.packageAllocationError = ''
+  } catch (error) {
+    console.error('Unable to confirm package allocation:', error)
+
+    this.packageAllocationError =
+      error?.message ||
+      'Could not confirm package allocation. Refresh and check inventory.'
+  }
 },
 
 openPackageFulfillmentAction(action) {

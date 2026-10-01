@@ -1,9 +1,9 @@
 # YOUR PRODUCT Roadmap
 
-Updated: September 30, 2026  
-Project start: September 22, 2026  
-Soft launch target: October 1, 2026  
-Final target: October 5, 2026  
+Updated: October 1, 2026
+Project start: September 22, 2026
+Soft launch target: October 1, 2026
+Final target: October 5, 2026
 
 ## 1. Project Summary
 
@@ -34,23 +34,48 @@ Technology stack:
 
 - Regular/free customer perfume price: PHP 350 per bottle
 - Approved member/reseller perfume price: PHP 199 per bottle
+- Member savings: PHP 151 per bottle, approximately 43% off SRP
 - Old PHP 175 member price and 50% off claims are deprecated
 - Existing submitted order snapshots must not be changed retroactively
 
+### Product Points
+
+- Product points are based on perfume bottles only
+- Points formula: bottles sold x 5 points
+- Retail/member product orders can earn points only after the order is delivered
+- Membership package bottles do not earn points
+- Physical inclusions such as tester kits, tarpaulins, and carts do not count as bottles for points
+
 ### Membership Packages
 
-Confirmed package prices:
+Confirmed package prices and package math:
 
-- Starter: PHP 1,000
-- Builder: PHP 5,000
-- Leader: PHP 10,000
-- Prestige: PHP 50,000
+| Package | Price | Bottles | Retail Income | Potential Profit | Product Points |
+|---|---:|---:|---:|---:|---:|
+| Starter | PHP 1,000 | 4 | PHP 1,400 | PHP 400 | 20 |
+| Builder | PHP 5,000 | 25 | PHP 8,750 | PHP 3,750 | 125 |
+| Leader | PHP 10,000 | 50 | PHP 17,500 | PHP 7,500 | 250 |
+| Prestige | PHP 50,000 | 240 | PHP 84,000 | PHP 34,000 | 1,200 |
 
-Package rules:
+Package computation:
 
-- Membership package bottles do not earn points
-- Package inclusions are company-assorted
-- Final inclusion details must follow the latest approved client posters/rules
+- Retail income = bottles x PHP 350 SRP
+- Potential profit = retail income - package price
+- Product points = bottles x 5
+
+Package inclusions:
+
+- Starter: 4 bottles, or 1 tester kit plus 2 bottles
+- Builder: 25 bottles, 1 tester kit, 1 roll-up tarpaulin, marketing support
+- Leader: 50 bottles, 1 tester kit, 1 tarpaulin, marketing support
+- Prestige: 240 bottles, 5 tester kits, official mobile perfume cart, roll-up tarpaulin, business unlock support
+
+Package fulfillment rules:
+
+- Package perfume bottles are company-assorted
+- Admin must allocate the actual perfume bottle mix
+- Package bottle stock must be deducted once only
+- Tester kits, tarpaulins, and carts are physical inclusions and should be tracked if supply inventory is added
 - Stickers are removed from package inclusions
 
 ### Orders and Payments
@@ -72,15 +97,6 @@ Package rules:
 - Same-day delivery is outside fixed system pricing for now
 - Messenger-assisted sales must still be encoded as orders by admin if they need history, stock, and points records
 - Prestige / PHP 50,000 package has free delivery and 5-day processing after payment approval
-
-### Points
-
-- Points apply only to approved members/resellers
-- Qualified repeat product order: 5 points per bottle
-- Tester Kit: 10 fixed points for members only
-- Points are awarded after delivered status, not merely payment approval
-- Cancelled, rejected, unverified, or refunded orders earn zero points
-- Membership package bottles and package upgrades do not earn points
 
 ### Referrals and Payouts
 
@@ -127,7 +143,7 @@ Package rules:
 ### Product and Cart
 
 - 20 product records seeded
-- Product prices updated to PHP 349 / PHP 199
+- Product prices updated to PHP 350 / PHP 199
 - Cart blocks inactive products
 - Checkout reads live product availability
 - Dashboard/storefront use live product status
@@ -135,17 +151,20 @@ Package rules:
 
 ### Customer Order Flow
 
-Tested September 30:
+Tested September 30 to October 1:
 
 - Free customer can create order
 - Customer can upload dummy payment screenshot
 - Order appears in customer Order History
 - Admin can view submitted payment proof
 - Admin can reject payment
-- Rejected order appears as rejected in customer dashboard
+- Rejected order appears as Payment Rejected in customer dashboard
 - Admin can approve payment
-- Approved order moves to processing
-- Product stock deduction works after refresh
+- Approved order moves to Processing
+- Product stock deduction works after payment approval
+- Admin can mark Processing order as Shipped
+- Admin can mark Shipped order as Delivered
+- Customer dashboard reflects updated order status after refresh
 
 ### Admin Review
 
@@ -156,6 +175,11 @@ Tested September 30:
 - Admin order review has payment verification checkbox
 - Rejection requires admin note
 - Approval requires payment proof and confirmation checkbox
+- Admin order fulfillment RPC added: `admin_update_order_fulfillment`
+- Allowed fulfillment transitions:
+  - `processing` to `shipped`
+  - `shipped` to `delivered`
+- Fulfillment actions are admin-only and guarded server-side
 
 ### Inventory
 
@@ -167,35 +191,41 @@ Tested September 30:
 
 ## 4. Done but Needs UI Polish
 
-These are functional but need better presentation before handoff:
+Functional and already improved:
 
-- Customer order status badges
-- Admin order status badges
-- Rejected status should be red and clearer
-- Pending verification should be gold/amber
-- Processing should be blue or emerald
-- Completed/delivered should be green
-- Replace raw database words like `rejected` with customer-friendly labels:
-  - Payment Rejected
-  - Pending Verification
-  - Processing
-  - Delivered
-- Admin order drawer layout can be cleaned up
+- Customer order status badges added
+- Admin order status badges added
+- Payment Rejected uses red badge
+- Pending Verification uses amber/gold badge
+- Processing uses blue/sky badge
+- Shipped uses blue badge
+- Delivered/Completed uses emerald badge
+
+Still needs polish:
+
+- Admin order drawer layout can still be cleaned up
 - Delivery fee text can be clearer for pending/custom delivery
-- Product inventory button label should become Add Stock / Update Stock instead of Save Stock if client prefers
+- Product inventory button label can become Add Stock / Update Stock if client prefers
 - Admin dashboard still shows In Development label in some places
 
 ## 5. Pending MVP Tasks
 
 ### A. Order Fulfillment
 
-Required next:
+Status: Core fulfillment flow is connected and committed.
 
-- Add admin action to move order from processing to shipped
-- Add admin action to move shipped to delivered
-- Add admin tracking/reference note if needed
-- Customer dashboard should show latest order status clearly
-- Delivered status should become the trigger for future points awarding
+Completed:
+
+- Admin action: Processing to Shipped
+- Admin action: Shipped to Delivered
+- Customer dashboard shows latest status after refresh
+- Delivered status is now available as the future trigger for points awarding
+
+Still pending:
+
+- Optional tracking/reference note
+- Optional cancellation/refund flow
+- Points awarding after delivered status
 
 ### B. Order Cancellation and Refund Handling
 
@@ -262,6 +292,17 @@ Partially present but still needs end-to-end QA:
 - Rejection/cancellation path
 - Member dashboard updates after approval
 
+### Membership QA Update
+
+- Storefront package selection now shows a confirmation modal before continuing
+- Logged-in customers are routed to the dashboard package application flow
+- Free customer dashboard shows an upgrade prompt when no open membership application exists
+- Membership payment proof submission works after enabling the payment control switch
+- Admin membership approval works
+- Approved customers become active members
+- Member pricing PHP 199 reaches checkout correctly
+- Admin customer list now has search and filters
+
 ### H. Manual Admin Order Entry
 
 Needed for Messenger/same-day/offsite sales:
@@ -285,6 +326,7 @@ Current important tables/functions include:
 - `inventory_movements`
 - `admin_review_membership_application`
 - `admin_review_order_payment`
+- `admin_update_order_fulfillment`
 - `submit_order`
 
 Important guards:
@@ -299,6 +341,9 @@ Important guards:
   - enough stock
 - Rejection must require admin note
 - Stock deduction must happen once only
+- Fulfillment status changes must follow:
+  - processing to shipped
+  - shipped to delivered
 - Future cancellation/refund must restore stock once only
 
 ## 7. Immediate Next Steps Toward October 5 MVP
@@ -307,21 +352,22 @@ The project is now in MVP lock mode. Prioritize only the features needed for the
 
 ### Day 1: Finish Core Order Operations
 
-Goal: Orders can move safely from payment review to fulfillment.
+Status: Completed October 1.
 
-1. Commit the working order payment review flow.
-2. Polish order status labels and badge colors:
-   - Pending Verification
-   - Payment Rejected
-   - Processing
-   - Shipped
-   - Delivered
-   - Cancelled / Refunded if available
-3. Add admin action: Processing → Shipped.
-4. Add admin action: Shipped → Delivered.
-5. Show updated status clearly in customer Order History.
-6. Confirm approved orders deduct stock once only.
-7. Confirm rejected orders do not deduct stock.
+Completed:
+
+1. Working order payment review flow committed.
+2. Order status labels and badge colors polished.
+3. Admin action added: Processing to Shipped.
+4. Admin action added: Shipped to Delivered.
+5. Customer Order History reflects updated statuses after refresh.
+6. Approved orders deduct stock.
+7. Rejected orders do not deduct stock.
+8. SQL note added for `admin_update_order_fulfillment`.
+
+Next checkpoint:
+
+- Use Delivered status as the trigger for points in Day 3.
 
 ### Day 2: Finish Membership Activation and Member Pricing QA
 
@@ -335,7 +381,11 @@ Goal: A real customer can become an approved member/reseller and use member pric
 4. Confirm approved member sees member/reseller pricing.
 5. Confirm free customer still sees regular pricing.
 6. Test member order checkout.
-7. Decide whether to enforce the 10-bottle member repeat-order minimum now or leave it documented for after MVP.
+7. QA membership package allocation:
+   - admin selects assorted perfume bottles
+   - selected package inventory deducts safely
+   - package fulfillment status updates correctly
+8. Decide whether to enforce the 10-bottle member repeat-order minimum now or leave it documented for after MVP.
 
 ### Day 3: Points Ledger
 
@@ -427,6 +477,9 @@ Passed:
 - Admin reject order works
 - Admin approve order works
 - Stock deduction works after approval
+- Admin can mark order as shipped
+- Admin can mark order as delivered
+- Customer and admin order status badges render cleaner labels/colors
 
 Still needs QA:
 
@@ -434,7 +487,6 @@ Still needs QA:
 - 10-bottle member minimum if enforced
 - Membership approval to active member
 - Package fulfillment
-- Shipped/delivered flow
 - Points awarding
 - Point reversal
 - Referral commission
@@ -457,3 +509,23 @@ Not included in MVP unless separately quoted:
 - Automated raffle draw
 - Advanced delivery fee calculator
 - Real-time courier integration
+
+## 11. Handoff Summary
+
+Current status as of October 1:
+
+Day 1 order operations are complete. Product orders can be submitted with payment proof, reviewed by admin, rejected or approved, stock deducts after approval, and approved orders can move Processing to Shipped to Delivered. Status badges are polished on customer and admin screens.
+
+Next priority:
+
+Day 2: membership activation, package allocation QA, and member/reseller pricing QA.
+
+### Immediate Next Technical Task
+
+- Build DB-backed package fulfillment:
+  - confirm package allocation from admin
+  - deduct allocated perfume bottle stock once
+  - save package allocation to membership application
+  - write inventory movement records
+  - move fulfillment status to ready-for-packing
+  - optionally track tester kit, tarpaulin, and cart supply stock if supply tables exist
