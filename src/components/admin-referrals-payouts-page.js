@@ -1,7 +1,9 @@
+import { supabase } from '../lib/supabase.js'
+
 import {
-    registerAdminReferralCard,
-    renderAdminReferralCard,
-  } from './admin-referral-card.js'
+  registerAdminReferralCard,
+  renderAdminReferralCard,
+} from './admin-referral-card.js'
   
   const previewPayoutRequests = [
     {
