@@ -77,6 +77,7 @@ import {
         referenceNumber: '',
         proofFileName: '',
         proofPreviewUrl: '',
+        proofFile: null,
         adminNote: '',
       },
 
@@ -157,27 +158,55 @@ import {
 
           if (error) throw error
 
-          this.payoutRequests = (data ?? []).map((request) => ({
-            id: request.id,
-            memberId: request.customer_id,
-            memberName: [
-              request.customer?.first_name,
-              request.customer?.last_name,
-            ].filter(Boolean).join(' ') || 'Member',
-            memberEmail: request.customer?.email || 'No email',
-            amount: Number(request.amount || 0),
-            paymentMethod: request.payment_method,
-            accountName: request.account_name,
-            accountNumber: request.account_number,
-            status: request.status || 'pending',
-            requestedAt: request.requested_at,
-            reviewedAt: request.reviewed_at,
-            paidAt: request.paid_at,
-            referenceNumber: request.reference_number || '',
-            proofUrl: request.proof_url || '',
-            proofFileName: request.proof_file_name || '',
-            adminNote: request.admin_note || '',
-          }))
+          const payoutRows = await Promise.all(
+            (data ?? []).map(async (request) => {
+              let proofUrl = ''
+
+              if (request.proof_url) {
+                const { data: signedProof, error: signedProofError } =
+                  await supabase.storage
+                    .from('payout-proofs')
+                    .createSignedUrl(
+                      request.proof_url,
+                      60 * 10,
+                    )
+
+                if (signedProofError) {
+                  console.error(
+                    'Unable to create payout proof signed URL:',
+                    signedProofError,
+                  )
+                }
+
+                proofUrl = signedProof?.signedUrl || ''
+              }
+
+              return {
+                id: request.id,
+                memberId: request.customer_id,
+                memberName: [
+                  request.customer?.first_name,
+                  request.customer?.last_name,
+                ].filter(Boolean).join(' ') || 'Member',
+                memberEmail: request.customer?.email || 'No email',
+                amount: Number(request.amount || 0),
+                paymentMethod: request.payment_method,
+                accountName: request.account_name,
+                accountNumber: request.account_number,
+                status: request.status || 'pending',
+                requestedAt: request.requested_at,
+                reviewedAt: request.reviewed_at,
+                paidAt: request.paid_at,
+                referenceNumber: request.reference_number || '',
+                proofUrl,
+                proofFileName: request.proof_file_name || '',
+                adminNote: request.admin_note || '',
+              }
+            }),
+          )
+
+          this.payoutRequests = payoutRows
+
         } catch (error) {
           console.error('Unable to load payout requests:', error)
           this.payoutsError =
@@ -315,6 +344,7 @@ import {
           referenceNumber: '',
           proofFileName: '',
           proofPreviewUrl: '',
+          proofFile: null,
           adminNote: '',
         }
       },
@@ -364,6 +394,7 @@ import {
 
         this.actionForm.proofFileName = ''
         this.actionForm.proofPreviewUrl = ''
+        this.actionForm.proofFile = null
         this.actionError = ''
 
         if (!file) {
@@ -391,8 +422,9 @@ import {
         }
 
         this.actionForm.proofFileName = file.name
+        this.actionForm.proofFile = file
         this.actionForm.proofPreviewUrl =
-          URL.createObjectURL(file)
+        URL.createObjectURL(file)
       },
 
       async confirmPayoutAction() {
@@ -431,6 +463,33 @@ import {
         this.actionSuccess = ''
 
         try {
+          let payoutProofPath = null
+
+          if (this.payoutAction === 'mark-paid') {
+            const fileExtension =
+              this.actionForm.proofFileName
+                .split('.')
+                .pop()
+                ?.toLowerCase() || 'png'
+
+            payoutProofPath =
+              `${request.id}/${Date.now()}.${fileExtension}`
+
+            const { error: uploadError } =
+              await supabase.storage
+                .from('payout-proofs')
+                .upload(
+                  payoutProofPath,
+                  this.actionForm.proofFile,
+                  {
+                    cacheControl: '3600',
+                    upsert: false,
+                  },
+                )
+
+            if (uploadError) throw uploadError
+          }
+
           const { data: nextStatus, error } = await supabase.rpc(
             'admin_update_payout_request',
             {
@@ -440,10 +499,10 @@ import {
                 this.actionForm.adminNote.trim() || null,
               p_reference_number:
                 this.actionForm.referenceNumber.trim() || null,
-              p_proof_file_name:
+                p_proof_file_name:
                 this.actionForm.proofFileName || null,
               p_proof_url:
-                this.actionForm.proofPreviewUrl || null,
+                payoutProofPath,
             },
           )
 
@@ -662,41 +721,46 @@ import {
                     ></p>
                   </div>
 
-                  <div class="flex flex-wrap gap-2 xl:justify-end">
-                    <button
-                      x-show="request.status === 'pending'"
-                      type="button"
-                      class="inline-flex min-h-10 items-center justify-center rounded-full bg-brand-gold px-4 text-xs font-semibold text-[#17130d]"
-                      @click="openPayoutAction(request.id, 'approve')"
-                    >
-                      Approve
-                    </button>
-                    <button
-                      x-show="request.status === 'pending'"
-                      type="button"
-                      class="inline-flex min-h-10 items-center justify-center rounded-full border border-red-400/40 px-4 text-xs font-semibold text-red-300"
-                      @click="openPayoutAction(request.id, 'reject')"
-                    >
-                      Reject
-                    </button>
-                    <button
-                      x-show="request.status === 'approved'"
-                      type="button"
-                      class="inline-flex min-h-10 items-center justify-center rounded-full bg-emerald-600 px-4 text-xs font-semibold text-white"
-                      @click="openPayoutAction(request.id, 'mark-paid')"
-                    >
-                      Mark as Paid
-                    </button>
-                    <a
-                      x-show="request.status === 'paid' && request.proofUrl"
-                      :href="request.proofUrl"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      class="inline-flex min-h-10 items-center justify-center rounded-full border border-brand-border px-4 text-xs font-semibold text-brand-gold"
-                    >
-                      View Proof
-                    </a>
-                  </div>
+                  <div
+  class="mt-4 grid gap-2 sm:grid-cols-2 lg:flex lg:flex-wrap lg:justify-end"
+>
+  <button
+    x-show="request.status === 'pending'"
+    type="button"
+    class="inline-flex min-h-10 items-center justify-center rounded-full bg-brand-gold px-4 text-xs font-semibold text-[#17130d]"
+    @click="openPayoutAction(request.id, 'approve')"
+  >
+    Approve
+  </button>
+
+  <button
+    x-show="request.status === 'pending'"
+    type="button"
+    class="inline-flex min-h-10 items-center justify-center rounded-full border border-red-400/40 px-4 text-xs font-semibold text-red-300"
+    @click="openPayoutAction(request.id, 'reject')"
+  >
+    Reject
+  </button>
+
+  <button
+    x-show="request.status === 'approved'"
+    type="button"
+    class="inline-flex min-h-10 items-center justify-center rounded-full bg-emerald-600 px-4 text-xs font-semibold text-white"
+    @click="openPayoutAction(request.id, 'mark-paid')"
+  >
+    Mark as Paid
+  </button>
+
+  <a
+    x-show="request.status === 'paid' && request.proofUrl"
+    :href="request.proofUrl"
+    target="_blank"
+    rel="noopener noreferrer"
+    class="inline-flex min-h-10 items-center justify-center rounded-full border border-brand-gold/40 px-4 text-xs font-semibold text-brand-gold transition hover:border-brand-gold hover:bg-brand-gold/10"
+  >
+    View Proof
+  </a>
+</div>
                 </div>
 
                 <div

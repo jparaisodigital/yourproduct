@@ -53,7 +53,7 @@ export const packages = [
 
     inclusions: [
       '1 Tester Kit',
-      '27 Assorted Bottles (85ml)',
+      '25 Assorted Bottles (85ml)',
       'Business Programs',
     ],
 
@@ -107,7 +107,7 @@ export const packages = [
     description:
       'Maximize today. Multiply tomorrow.',
 
-    productQuantity: 250,
+    productQuantity: 240,
 
     ...packageProductRules,
 
@@ -131,7 +131,7 @@ export const packages = [
 
     inclusions: [
       '2 Tester Kits',
-      '250 Assorted Bottles (85ml)',
+      '240 Assorted Bottles (85ml)',
       '1 Tarpaulin',
       '1 Mini Stall',
       'Business Programs',
