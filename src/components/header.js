@@ -216,7 +216,6 @@ export function renderHeader(
         </nav>
 
         <div class="hidden items-center gap-2.5 lg:flex">
-          ${themeToggleButton}
 
           <a
             href="/login/"
@@ -318,7 +317,6 @@ export function renderHeader(
         </div>
 
         <div class="flex shrink-0 items-center gap-2 lg:hidden">
-          ${themeToggleButton}
 
           <button
             type="button"
