@@ -139,7 +139,7 @@ export function renderAdminPackageFulfillmentPanel() {
             to ready for packing.
           </p>
         </div>
-        
+
         <div
           class="rounded-2xl border border-brand-border bg-brand-panel p-4"
         >
