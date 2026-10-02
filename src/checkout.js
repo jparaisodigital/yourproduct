@@ -422,10 +422,10 @@ async function startCheckout() {
         class="mx-auto flex w-[min(1120px,90%)] items-center justify-between gap-4 py-4"
       >
         <a
-          href="/"
-          class="flex min-w-0 items-center gap-3"
-          aria-label="Return to ${siteConfig.brand.name}"
-        >
+  href="/"
+  class="flex min-w-0 items-center gap-3"
+  aria-label="Return to ${siteConfig.brand.name}"
+>
           <img
             src="${logoImage}"
             alt="${siteConfig.brand.name} logo"
@@ -475,12 +475,12 @@ async function startCheckout() {
     </header>
     <main class="px-5 py-10 sm:py-14">
       <div class="mx-auto w-full max-w-6xl">
-        <a
-          href="/"
+                <a
+          href="/dashboard/"
           class="inline-flex items-center gap-2 text-sm font-semibold text-brand-gold transition hover:text-brand-gold-light"
         >
           <span aria-hidden="true">←</span>
-          Continue shopping
+          Back to dashboard
         </a>
         <div class="mt-8">
           <p
