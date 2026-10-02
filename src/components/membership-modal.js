@@ -1,8 +1,7 @@
 import modalLogo from '../assets/logoyourproduct.png'
-
 import modalOrnament from '../assets/modal-ornament.png'
 
-const OPEN_DELAY = 1200
+const OPEN_DELAY = 1400
 
 export function registerMembershipModal(
   Alpine,
@@ -80,23 +79,23 @@ export function renderMembershipModal() {
 
       <section
         x-show="open"
-        x-transition:enter="transition duration-300 ease-out"
-        x-transition:enter-start="translate-y-5 scale-[0.97] opacity-0"
+        x-transition:enter="transition duration-200 ease-out"
+        x-transition:enter-start="translate-y-3 scale-[0.98] opacity-0"
         x-transition:enter-end="translate-y-0 scale-100 opacity-100"
-        x-transition:leave="transition duration-200 ease-in"
+        x-transition:leave="transition duration-150 ease-in"
         x-transition:leave-start="translate-y-0 scale-100 opacity-100"
-        x-transition:leave-end="translate-y-4 scale-[0.98] opacity-0"
-        class="relative w-full max-w-xl overflow-hidden rounded-[2rem] border border-brand-gold/40 bg-brand-panel px-6 py-10 text-center shadow-2xl sm:px-12 sm:py-12"
+        x-transition:leave-end="translate-y-2 scale-[0.99] opacity-0"
+        class="relative w-full max-w-lg overflow-hidden rounded-[1.5rem] border border-brand-gold/35 bg-brand-panel px-5 py-8 text-center shadow-2xl sm:px-10 sm:py-10"
       >
         <img
           src="${modalLogo}"
           alt=""
           aria-hidden="true"
-          class="pointer-events-none absolute inset-0 size-full scale-110 select-none object-contain p-4 opacity-[0.05] sm:p-8"
+          class="pointer-events-none absolute inset-0 size-full scale-105 select-none object-contain p-5 opacity-[0.045] sm:p-8"
         >
 
         <div
-          class="pointer-events-none absolute inset-0 bg-gradient-to-b from-brand-panel/20 via-brand-panel/35 to-brand-panel/70"
+          class="pointer-events-none absolute inset-0 bg-gradient-to-b from-brand-panel/10 via-brand-panel/35 to-brand-panel/75"
           aria-hidden="true"
         ></div>
 
@@ -104,19 +103,19 @@ export function renderMembershipModal() {
           src="${modalOrnament}"
           alt=""
           aria-hidden="true"
-          class="pointer-events-none absolute -bottom-8 -left-8 z-[5] w-28 max-w-none select-none object-contain opacity-[0.28] sm:-bottom-10 sm:-left-10 sm:w-36 sm:opacity-[0.34]"
+          class="pointer-events-none absolute -bottom-8 -left-8 z-[5] w-24 max-w-none select-none object-contain opacity-[0.22] sm:w-32 sm:opacity-[0.3]"
         >
 
         <img
           src="${modalOrnament}"
           alt=""
           aria-hidden="true"
-          class="pointer-events-none absolute -right-8 -top-8 z-[5] w-28 max-w-none rotate-180 select-none object-contain opacity-[0.28] sm:-right-10 sm:-top-10 sm:w-36 sm:opacity-[0.34]"
+          class="pointer-events-none absolute -right-8 -top-8 z-[5] w-24 max-w-none rotate-180 select-none object-contain opacity-[0.22] sm:w-32 sm:opacity-[0.3]"
         >
 
         <button
           type="button"
-          class="absolute right-4 top-4 z-20 grid size-10 place-items-center rounded-full border border-brand-border bg-brand-panel/80 text-brand-muted transition hover:border-brand-gold hover:text-brand-gold"
+          class="absolute right-4 top-4 z-20 grid size-9 place-items-center rounded-full border border-brand-border bg-brand-panel/85 text-brand-muted transition hover:border-brand-gold hover:text-brand-gold"
           aria-label="Close membership offer"
           @click="close()"
         >
@@ -137,47 +136,79 @@ export function renderMembershipModal() {
 
         <div class="relative z-10">
           <p
-            class="text-[0.65rem] font-semibold uppercase tracking-[0.3em] text-brand-gold"
+            class="text-[0.65rem] font-semibold uppercase tracking-[0.24em] text-brand-gold"
           >
-            Exclusive Member Pricing
+            Member Pricing Is Live
           </p>
 
           <h2
             id="membership-modal-title"
-            class="mx-auto mt-4 max-w-md font-display text-4xl font-semibold leading-none text-brand-cream sm:text-5xl"
+            class="mx-auto mt-4 max-w-md font-display text-3xl font-semibold leading-none text-brand-cream sm:text-5xl"
           >
-            Become a Member.
+            From PHP 349 to as low as
 
             <span class="mt-2 block italic text-brand-gold">
-              Save up to ₱150 Per Bottle.
+              PHP 175 per bottle.
             </span>
           </h2>
 
           <p
             class="mx-auto mt-5 max-w-md text-sm leading-6 text-brand-muted sm:text-base sm:leading-7"
           >
-            Unlock exclusive member pricing on selected
-            products, earn rewards, and access more ways
-            to grow with YOUR PRODUCT.
+            Become a YOUR PRODUCT member and unlock
+            reseller pricing, referral rewards, and member
+            dashboard access after approval.
           </p>
 
           <div
-            class="mx-auto mt-8 flex max-w-sm flex-col gap-3 sm:flex-row sm:justify-center"
+            class="mx-auto mt-7 grid max-w-sm gap-2 rounded-2xl border border-brand-border bg-brand-black/25 p-3 text-left"
+          >
+            <p class="flex items-center justify-between gap-4 text-xs text-brand-muted">
+              <span>Starter member</span>
+              <strong class="font-semibold text-brand-cream">
+                PHP 245 / bottle
+              </strong>
+            </p>
+
+            <p class="flex items-center justify-between gap-4 text-xs text-brand-muted">
+              <span>Builder member</span>
+              <strong class="font-semibold text-brand-cream">
+                PHP 227 / bottle
+              </strong>
+            </p>
+
+            <p class="flex items-center justify-between gap-4 text-xs text-brand-muted">
+              <span>Leader member</span>
+              <strong class="font-semibold text-brand-cream">
+                PHP 210 / bottle
+              </strong>
+            </p>
+
+            <p class="flex items-center justify-between gap-4 text-xs text-brand-muted">
+              <span>Prestige member</span>
+              <strong class="font-semibold text-brand-cream">
+                PHP 175 / bottle
+              </strong>
+            </p>
+          </div>
+
+          <div
+            class="mx-auto mt-7 flex max-w-sm flex-col gap-3 sm:flex-row sm:justify-center"
           >
             <a
               href="#packages"
               class="inline-flex min-h-12 flex-1 items-center justify-center rounded-full bg-brand-gold px-6 text-sm font-semibold text-brand-black transition hover:-translate-y-0.5 hover:bg-brand-gold-light"
               @click="close()"
             >
-              Become a Member
+              View Packages
             </a>
 
             <a
-              href="/login/"
+              href="/register/"
               class="inline-flex min-h-12 flex-1 items-center justify-center rounded-full border border-brand-border bg-brand-panel/60 px-6 text-sm font-semibold text-brand-cream transition hover:border-brand-gold hover:text-brand-gold"
               @click="close()"
             >
-              Member Login
+              Create Account
             </a>
           </div>
 
@@ -192,8 +223,8 @@ export function renderMembershipModal() {
           <p
             class="mx-auto mt-4 max-w-sm text-[0.65rem] leading-5 text-brand-muted"
           >
-            Member discounts apply to selected products
-            and are subject to current membership benefits.
+            Membership applications are manually reviewed
+            before benefits activate.
           </p>
         </div>
       </section>
