@@ -38,6 +38,16 @@ function renderPackageCard(packageItem, index) {
           </div>
         `
 
+        const discountMarkup = packageItem.discountLabel
+    ? `
+        <span
+          class="mt-2 inline-flex w-fit rounded-full border border-brand-gold/30 bg-brand-gold/10 px-3 py-1 text-[0.6rem] font-semibold uppercase tracking-[0.12em] text-brand-gold"
+        >
+          ${packageItem.discountLabel}
+        </span>
+      `
+    : ''
+
   const inclusionsMarkup =
     packageItem.inclusions.length > 0
       ? `
@@ -169,6 +179,7 @@ function renderPackageCard(packageItem, index) {
         </p>
 
       ${priceMarkup}
+      ${discountMarkup}
       ${optionsMarkup}
       ${inclusionsMarkup}
 
@@ -239,7 +250,7 @@ export function renderPackagesSection(packages) {
           </div>
 
           <p
-            class="max-w-lg text-sm leading-6 text-brand-muted sm:text-base lg:justify-self-end lg:text-sm"
+            class="max-w-lg text-sm leading-6 text-brand-muted sm:text-base lg:justify-self-endpriceMarkup lg:text-sm"
           >
             Explore the four membership options and choose the package
             that best matches your goals.
