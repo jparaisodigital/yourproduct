@@ -752,7 +752,7 @@ async function startCheckout() {
               ></strong>
             </div>
             <p class="mt-4 text-xs leading-5 text-brand-muted">
-              Metro Manila standard delivery is ₱150 via J&amp;T.
+              Metro Manila standard delivery is ₱120 via J&amp;T.
 For addresses outside Metro Manila or same-day delivery,
 contact our Facebook page to arrange the fee and schedule.
             </p>
