@@ -63,6 +63,109 @@ const womenImages = [
   women10Image,
 ]
 
+const perfumeDetailsBySku = {
+  M01: {
+    name: 'Red Rush',
+    inspiredBy: 'Lacoste Red · Lacoste',
+    notes: 'Fresh, fruity, woody',
+  },
+  M02: {
+    name: 'Eros',
+    inspiredBy: 'Eros · Versace',
+    notes: 'Fresh, minty, sweet',
+  },
+  M03: {
+    name: 'Happy Man',
+    inspiredBy: 'Happy for Men · Clinique',
+    notes: 'Citrus, fresh, clean',
+  },
+  M04: {
+    name: 'Aventus Style',
+    inspiredBy: 'Aventus · Creed',
+    notes: 'Fruity, smoky, woody',
+  },
+  M05: {
+    name: '212 Sexy',
+    inspiredBy: '212 Sexy Men · Carolina Herrera',
+    notes: 'Spicy, warm, seductive',
+  },
+  M06: {
+    name: 'Fresh Sauvage',
+    inspiredBy: 'Sauvage · Dior',
+    notes: 'Fresh, spicy, woody',
+  },
+  M07: {
+    name: 'Acqua Blue',
+    inspiredBy: 'Acqua di Gio · Giorgio Armani',
+    notes: 'Aquatic, citrus, fresh',
+  },
+  M08: {
+    name: 'Million Gold',
+    inspiredBy: '1 Million · Paco Rabanne',
+    notes: 'Sweet, spicy, warm',
+  },
+  M09: {
+    name: 'Y Fresh',
+    inspiredBy: 'Y · Yves Saint Laurent',
+    notes: 'Fresh, aromatic, woody',
+  },
+  M10: {
+    name: 'Bleu Style',
+    inspiredBy: 'Bleu de Chanel · Chanel',
+    notes: 'Citrus, aromatic, woody',
+  },
+  W01: {
+    name: 'La Vie',
+    inspiredBy: 'La Vie Est Belle · Lancôme',
+    notes: 'Sweet, floral, vanilla',
+  },
+  W02: {
+    name: 'Good Girl',
+    inspiredBy: 'Good Girl · Carolina Herrera',
+    notes: 'Sweet, warm, seductive',
+  },
+  W03: {
+    name: 'Chance',
+    inspiredBy: 'Chance · Chanel',
+    notes: 'Fresh, floral, elegant',
+  },
+  W04: {
+    name: 'Coco Bloom',
+    inspiredBy: 'Coco Mademoiselle · Chanel',
+    notes: 'Citrus, floral, woody',
+  },
+  W05: {
+    name: 'Idôle',
+    inspiredBy: 'Idôle · Lancôme',
+    notes: 'Fresh, rose, clean',
+  },
+  W06: {
+    name: 'Libre',
+    inspiredBy: 'Libre · Yves Saint Laurent',
+    notes: 'Lavender, floral, vanilla',
+  },
+  W07: {
+    name: 'Miss Dior',
+    inspiredBy: 'Miss Dior · Dior',
+    notes: 'Floral, rose, fresh',
+  },
+  W08: {
+    name: 'Bombshell',
+    inspiredBy: "Bombshell · Victoria's Secret",
+    notes: 'Fruity, floral, fresh',
+  },
+  W09: {
+    name: 'Daisy',
+    inspiredBy: 'Daisy · Marc Jacobs',
+    notes: 'Fruity, floral, fresh',
+  },
+  W10: {
+    name: 'Fantasy',
+    inspiredBy: 'Fantasy · Britney Spears',
+    notes: 'Sweet, fruity, vanilla',
+  },
+}
+
 function createProduct({
   number,
   category,
@@ -83,6 +186,13 @@ function createProduct({
   category === 'men'
   ? "Men's Collection"
   : "Women's Collection"
+
+  const perfumeDetails =
+  perfumeDetailsBySku[sku] || {
+    name: sku,
+    inspiredBy: '',
+    notes: '',
+  }
   
   let stockQuantity = 20
   
@@ -105,16 +215,18 @@ function createProduct({
     
     sku,
     slug: sku.toLowerCase(),
-    name: sku,
+    name: perfumeDetails.name,
     category,
     collectionLabel,
-    
-    // Keep product information empty until the
-    // client confirms the official scent details.
-    shortDescription: '',
-    scentProfile: '',
-    scentCharacter: '',
-    bestFor: '',
+
+    shortDescription: perfumeDetails.inspiredBy
+      ? `Inspired by ${perfumeDetails.inspiredBy}.`
+      : '',
+    scentProfile: perfumeDetails.notes,
+    scentCharacter: perfumeDetails.notes,
+    bestFor: perfumeDetails.inspiredBy
+      ? `For customers who enjoy ${perfumeDetails.inspiredBy}.`
+      : '',
     
     regularPrice: 349,
     memberPrice: 199,
