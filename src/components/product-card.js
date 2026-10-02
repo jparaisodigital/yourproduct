@@ -163,7 +163,6 @@ export function renderProductCard(product, options = {}) {
         activeCategory === 'all' ||
         activeCategory === '${product.category}'
       "
-      x-transition.opacity.duration.200ms
       class="group flex h-full flex-col overflow-hidden rounded-[1.1rem] border border-brand-border bg-brand-panel shadow-[0_18px_50px_rgb(74_57_27_/_0.08)] transition duration-300 hover:border-brand-gold/50 hover:shadow-[0_24px_65px_rgb(183_138_50_/_0.14)] sm:rounded-[1.5rem]"
       data-product-card
       data-product-id="${product.id}"
