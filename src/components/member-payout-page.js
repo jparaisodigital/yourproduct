@@ -10,8 +10,12 @@ export function registerMemberPayoutPage(Alpine) {
     form: {
       amount: '',
       paymentMethod: '',
+      paymentProvider: '',
       accountName: '',
       accountNumber: '',
+      qrCodeFile: null,
+      qrCodeFileName: '',
+      qrCodePreviewUrl: '',
       note: '',
     },
 
@@ -36,9 +40,10 @@ export function registerMemberPayoutPage(Alpine) {
             supabase
               .from('payout_requests')
               .select(`
-                id, amount, payment_method, account_name,
-                account_number, note, status, reference_number,
-                proof_url, requested_at, reviewed_at, paid_at
+                id, amount, payment_method, payment_provider,
+account_name, account_number, qr_code_path,
+qr_code_file_name, note, status, reference_number,
+proof_url, requested_at, reviewed_at, paid_at
               `)
               .order('requested_at', { ascending: false }),
           ])
@@ -64,6 +69,9 @@ export function registerMemberPayoutPage(Alpine) {
             id: request.id,
             amount: Number(request.amount || 0),
             paymentMethod: request.payment_method,
+            paymentProvider: request.payment_provider || '',
+            qrCodePath: request.qr_code_path || '',
+            qrCodeFileName: request.qr_code_file_name || '',
             accountName: request.account_name,
             accountNumber: request.account_number,
             note: request.note || '',
@@ -130,12 +138,64 @@ export function registerMemberPayoutPage(Alpine) {
       )
     },
 
+    handleQrCodeUpload(event) {
+      const file = event.target.files?.[0]
+
+      if (this.form.qrCodePreviewUrl) {
+        URL.revokeObjectURL(
+          this.form.qrCodePreviewUrl,
+        )
+      }
+
+      this.form.qrCodeFile = null
+      this.form.qrCodeFileName = ''
+      this.form.qrCodePreviewUrl = ''
+      this.errorMessage = ''
+
+      if (!file) return
+
+      const allowedTypes = [
+        'image/jpeg',
+        'image/png',
+        'image/webp',
+      ]
+
+      if (!allowedTypes.includes(file.type)) {
+        this.errorMessage =
+          'Upload a JPG, PNG, or WEBP QR code.'
+        event.target.value = ''
+        return
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        this.errorMessage =
+          'The QR code image must be 5 MB or smaller.'
+        event.target.value = ''
+        return
+      }
+
+      this.form.qrCodeFile = file
+      this.form.qrCodeFileName = file.name
+      this.form.qrCodePreviewUrl =
+        URL.createObjectURL(file)
+    },
+
     resetForm() {
+      if (this.form.qrCodePreviewUrl) {
+        URL.revokeObjectURL(
+          this.form.qrCodePreviewUrl,
+        )
+      }
+
       this.form = {
         amount: '',
         paymentMethod: '',
+        paymentProvider: '',
         accountName: '',
         accountNumber: '',
+        qrCodeFile: null,
+        qrCodeFileName: '',
+        qrCodePreviewUrl: '',
         note: '',
       }
     },
@@ -168,6 +228,12 @@ export function registerMemberPayoutPage(Alpine) {
         return
       }
 
+      if (!this.form.paymentProvider.trim()) {
+        this.errorMessage =
+          'Select or enter the payout provider.'
+        return
+      }
+
       if (!this.form.accountName.trim()) {
         this.errorMessage =
           'Enter the payout account name.'
@@ -180,18 +246,63 @@ export function registerMemberPayoutPage(Alpine) {
         return
       }
 
+      if (!this.form.qrCodeFile) {
+        this.errorMessage =
+          'Upload the QR code for your payout account.'
+        return
+      }
+
       this.submitting = true
 
       try {
+        const {
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser()
+
+        if (userError || !user) {
+          throw userError || new Error('Sign in required.')
+        }
+
+        const fileExtension =
+          this.form.qrCodeFileName
+            .split('.')
+            .pop()
+            ?.toLowerCase() || 'png'
+
+        const qrCodePath =
+          `${user.id}/${Date.now()}.${fileExtension}`
+
+        const { error: uploadError } =
+          await supabase.storage
+            .from('payout-qr-codes')
+            .upload(
+              qrCodePath,
+              this.form.qrCodeFile,
+              {
+                cacheControl: '3600',
+                upsert: false,
+              },
+            )
+
+        if (uploadError) throw uploadError
+
         const { error } = await supabase.rpc(
           'customer_create_payout_request',
           {
             p_amount: requestedAmount,
             p_payment_method: this.form.paymentMethod,
-            p_account_name: this.form.accountName.trim(),
-            p_account_number: this.form.accountNumber.trim(),
+            p_payment_provider:
+              this.form.paymentProvider.trim(),
+            p_account_name:
+              this.form.accountName.trim(),
+            p_account_number:
+              this.form.accountNumber.trim(),
+            p_qr_code_path: qrCodePath,
+            p_qr_code_file_name:
+              this.form.qrCodeFileName || null,
             p_note: this.form.note.trim() || null,
-          },
+          }
         )
 
         if (error) throw error
@@ -325,11 +436,39 @@ export function renderMemberPayoutPage() {
                   class="min-h-12 rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition focus:border-brand-gold"
                 >
                   <option value="">Select method</option>
-                  <option value="GCash">GCash</option>
-                  <option value="Maya">Maya</option>
-                  <option value="Bank Transfer">Bank Transfer</option>
+                  <option value="gcash">GCash</option>
+                  <option value="maya">Maya</option>
+                  <option value="bank">Bank Transfer</option>
                 </select>
               </label>
+
+              <label class="grid gap-2">
+  <span class="text-xs font-semibold uppercase tracking-[0.12em] text-brand-muted">
+    Provider / Bank
+  </span>
+
+  <select
+    x-model="form.paymentProvider"
+    class="min-h-12 rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition focus:border-brand-gold"
+  >
+<option value="">Select provider</option>
+<option value="GCash">GCash</option>
+<option value="Maya">Maya</option>
+<option value="GoTyme">GoTyme</option>
+<option value="Maya Bank">Maya Bank</option>
+<option value="Maribank">Maribank</option>
+<option value="CIMB">CIMB</option>
+<option value="UnionBank">UnionBank</option>
+<option value="BDO">BDO</option>
+<option value="PSBank">PSBank</option>
+<option value="BPI">BPI</option>
+<option value="Metrobank">Metrobank</option>
+<option value="RCBC">RCBC</option>
+<option value="EastWest Bank">EastWest Bank</option>
+<option value="Security Bank">Security Bank</option>
+<option value="China Bank">China Bank</option>
+  </select>
+</label>
 
               <label class="grid gap-2">
                 <span class="text-xs font-semibold uppercase tracking-[0.12em] text-brand-muted">
@@ -359,6 +498,25 @@ export function renderMemberPayoutPage() {
                   class="min-h-12 rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
                 >
               </label>
+
+              <label class="mt-4 grid gap-2">
+  <span class="text-xs font-semibold uppercase tracking-[0.12em] text-brand-muted">
+    QR Code Screenshot
+  </span>
+
+  <input
+    type="file"
+    accept="image/jpeg,image/png,image/webp"
+    class="min-h-12 rounded-xl border border-brand-border bg-brand-black px-3 py-2 text-xs text-brand-muted file:mr-3 file:rounded-full file:border-0 file:bg-brand-gold file:px-3 file:py-2 file:font-semibold file:text-[#17130d]"
+    @change="handleQrCodeUpload($event)"
+  >
+
+  <span
+    x-show="form.qrCodeFileName"
+    x-text="'Selected: ' + form.qrCodeFileName"
+    class="text-xs text-brand-gold"
+  ></span>
+</label>
             </div>
 
             <label class="mt-4 grid gap-2">
@@ -469,10 +627,12 @@ export function renderMemberPayoutPage() {
                       class="mt-2 text-xs leading-5 text-brand-muted"
                       x-text="
                         request.paymentMethod +
-                        ' · ' +
-                        request.accountName +
-                        ' · ' +
-                        request.accountNumber
+                      ' · ' +
+                      (request.paymentProvider || 'No provider') +
+                      ' · ' +
+                      request.accountName +
+                      ' · ' +
+                      request.accountNumber
                       "
                     ></p>
 

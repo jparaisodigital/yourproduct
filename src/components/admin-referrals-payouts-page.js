@@ -161,7 +161,7 @@ import {
           const payoutRows = await Promise.all(
             (data ?? []).map(async (request) => {
               let proofUrl = ''
-
+              let qrCodeUrl = ''
               if (request.proof_url) {
                 const { data: signedProof, error: signedProofError } =
                   await supabase.storage
