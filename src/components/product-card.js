@@ -28,8 +28,11 @@ export function renderProductCard(product, options = {}) {
 
   const tierLabel = options.tierLabel || ''
   const tierPrice = Number(options.tierPrice || 0)
+  const hasTierPrice =
+    tierPrice > 0 &&
+    !product.fixedPrice
 
-  const priceMarkup = tierPrice > 0
+    const priceMarkup = hasTierPrice
     ? `
         <div
           class="flex items-end justify-between gap-3"
@@ -61,41 +64,73 @@ export function renderProductCard(product, options = {}) {
           Retail ${pesoFormatter.format(product.regularPrice)}. Tier pricing is based on your approved package.
         </p>
       `
-    : `
-        <div
-          class="flex items-end justify-between gap-3"
-        >
-          <div>
+    : product.fixedPrice
+      ? `
+          <div
+            class="flex items-end justify-between gap-3"
+          >
+            <div>
+              <p
+                class="text-[0.55rem] font-semibold uppercase tracking-[0.08em] text-brand-gold sm:text-[0.68rem] sm:tracking-[0.14em]"
+              >
+                Tester Kit Price
+              </p>
+
+              <p
+                class="mt-1 text-xs font-medium text-brand-muted"
+              >
+                20 pcs 5ml assorted scents
+              </p>
+            </div>
+
             <p
-              class="text-[0.55rem] font-medium uppercase tracking-[0.08em] text-brand-muted sm:text-[0.68rem] sm:tracking-[0.16em]"
+              class="shrink-0 text-right font-display text-2xl leading-none text-brand-gold sm:text-3xl"
             >
-              Regular price
+              ${pesoFormatter.format(product.regularPrice)}
             </p>
           </div>
 
           <p
-            class="shrink-0 text-right font-display text-2xl leading-none text-brand-cream sm:text-3xl"
+            class="mt-2 text-xs leading-5 text-brand-muted"
           >
-            ${pesoFormatter.format(product.regularPrice)}
+            Fixed price product. Reseller tier pricing does not apply.
           </p>
-        </div>
+        `
+      : `
+          <div
+            class="flex items-end justify-between gap-3"
+          >
+            <div>
+              <p
+                class="text-[0.55rem] font-medium uppercase tracking-[0.08em] text-brand-muted sm:text-[0.68rem] sm:tracking-[0.16em]"
+              >
+                Regular price
+              </p>
+            </div>
 
-        <div
-          class="mt-3 rounded-xl border border-brand-gold/25 bg-brand-gold/10 px-3 py-2"
-        >
-          <p
-            class="text-[0.55rem] font-semibold uppercase tracking-[0.08em] text-brand-gold sm:text-[0.68rem] sm:tracking-[0.14em]"
-          >
-            Reseller tiers
-          </p>
+            <p
+              class="shrink-0 text-right font-display text-2xl leading-none text-brand-cream sm:text-3xl"
+            >
+              ${pesoFormatter.format(product.regularPrice)}
+            </p>
+          </div>
 
-          <p
-            class="mt-1 text-xs leading-5 text-brand-muted"
+          <div
+            class="mt-3 rounded-xl border border-brand-gold/25 bg-brand-gold/10 px-3 py-2"
           >
-            From PHP 245 to PHP 175 per bottle, depending on approved package.
-          </p>
-        </div>
-      `
+            <p
+              class="text-[0.55rem] font-semibold uppercase tracking-[0.08em] text-brand-gold sm:text-[0.68rem] sm:tracking-[0.14em]"
+            >
+              Reseller tiers
+            </p>
+
+            <p
+              class="mt-1 text-xs leading-5 text-brand-muted"
+            >
+              From PHP 245 to PHP 175 per bottle, depending on approved package.
+            </p>
+          </div>
+        `
 
   const pointsMarkup =
     product.isPointsQualified
@@ -129,7 +164,7 @@ export function renderProductCard(product, options = {}) {
         activeCategory === '${product.category}'
       "
       x-transition.opacity.duration.200ms
-      class="group overflow-hidden rounded-[1.1rem] border border-brand-border bg-brand-panel shadow-[0_18px_50px_rgb(74_57_27_/_0.08)] transition duration-300 hover:border-brand-gold/50 hover:shadow-[0_24px_65px_rgb(183_138_50_/_0.14)] sm:rounded-[1.5rem]"
+      class="group flex h-full flex-col overflow-hidden rounded-[1.1rem] border border-brand-border bg-brand-panel shadow-[0_18px_50px_rgb(74_57_27_/_0.08)] transition duration-300 hover:border-brand-gold/50 hover:shadow-[0_24px_65px_rgb(183_138_50_/_0.14)] sm:rounded-[1.5rem]"
       data-product-card
       data-product-id="${product.id}"
       data-product-category="${product.category}"
@@ -151,7 +186,7 @@ export function renderProductCard(product, options = {}) {
         >
       </button>
 
-      <div class="p-4 sm:p-6">
+      <div class="flex flex-1 flex-col p-4 sm:p-6">
         <div
           class="flex flex-wrap items-center justify-between gap-2"
         >
@@ -191,14 +226,14 @@ export function renderProductCard(product, options = {}) {
         </div>
 
         <div
-          class="mt-4 border-t border-brand-border pt-4"
-        >
-          ${priceMarkup}
-        </div>
+  class="mt-4 min-h-[6.25rem] border-t border-brand-border pt-4"
+>
+  ${priceMarkup}
+</div>
 
         <div
-          class="mt-4 flex items-center gap-2.5"
-        >
+  class="mt-auto flex items-center gap-2.5 pt-4"
+>
           <button
             type="button"
             class="group/view hidden size-11 shrink-0 place-items-center rounded-full border border-brand-border bg-transparent text-brand-muted transition duration-200 hover:border-brand-gold hover:bg-brand-gold/10 hover:text-brand-gold active:scale-95 sm:grid"

@@ -64,13 +64,19 @@ YOUR PRODUCT is a perfume e-commerce and membership system with:
 
 ### Product Points
 
-- Points apply only to delivered product orders from active members
-- Points do not apply to membership package inclusions
-- Physical inclusions such as tester kits, tarpaulins, and carts do not count as bottles
-- Minimum qualified delivered order: 10 bottles
-- Formula: qualified bottle quantity × 5 points
-- Example: 10 bottles = 50 points
-- Points must be awarded once only per qualified order
+- Points are awarded once admin approves the payment/order.
+- Product order points apply only to perfume bottles and approved standalone tester kit orders.
+- Perfume bottle formula: bottles × 5 points.
+- Minimum qualified perfume bottle order: 10 bottles.
+- Standalone Tester Kit: +10 points when approved by admin.
+- Membership package points are awarded once admin approves the package payment:
+  - Starter: 20 points
+  - Builder: 125 points
+  - Leader: 250 points
+  - Prestige: 1,200 points
+- Points are awarded once only per qualified order or approved package.
+- Cancelled/refunded orders require point reversal once only.
+- Tester kits and bottles included inside membership packages are covered by package points and do not earn separate product-order points.
 
 ### Orders & Payments
 

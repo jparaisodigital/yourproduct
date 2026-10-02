@@ -208,6 +208,10 @@ export function registerCartStore(
         product?.regularPrice || 0,
       )
 
+      if (product?.fixedPrice) {
+        return regularPrice
+      }
+
       if (this.pricingType in tierPrices) {
         return tierPrices[this.pricingType]
       }

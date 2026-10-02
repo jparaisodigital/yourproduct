@@ -219,7 +219,9 @@ document.querySelector('#app').innerHTML = `
 
       ${renderStarterOffersSection()}
       ${renderProductsSection(
-        storefrontProducts,
+        storefrontProducts.filter(
+          (product) => !product.isStandaloneOffer,
+        ),
         productCategories,
         productsLoadError,
       )}

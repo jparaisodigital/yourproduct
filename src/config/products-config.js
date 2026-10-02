@@ -20,6 +20,8 @@ import women8Image from '../assets/women/8.png'
 import women9Image from '../assets/women/9.png'
 import women10Image from '../assets/women/10.png'
 
+import testerKitImage from '../assets/products/tester-kit.png'
+
 export const productCategories = [
   {
     id: 'all',
@@ -138,7 +140,42 @@ function createProduct({
   }
 }
 
+const testerKitProduct = {
+  id: 'tester-kit',
+  sku: 'TK01',
+  slug: 'tester-kit',
+  name: 'Premium Tester Kit',
+  category: 'tester-kit',
+  collectionLabel: 'Tester Kit',
+
+  shortDescription:
+    '20-piece 5ml tester kit for exploring the full scent lineup.',
+  scentProfile: '',
+  scentCharacter: '',
+  bestFor: 'Product sampling and scent discovery.',
+
+  regularPrice: 700,
+  memberPrice: 700,
+  fixedPrice: true,
+
+  costPrice: null,
+
+  image: testerKitImage,
+
+  isFeatured: true,
+  isActive: true,
+  isPointsQualified: true,
+  pointsPerUnit: 10,
+
+  stockQuantity: 0,
+  lowStockThreshold: 5,
+
+  isSample: false,
+  isStandaloneOffer: true,
+}
+
 export const products = [
+  testerKitProduct,
   ...menImages.map((image, index) =>
     createProduct({
     number: index + 1,
