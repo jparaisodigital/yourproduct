@@ -4010,7 +4010,7 @@ registerProductViewStore(
                   x-show="order.delivery_fee === null"
                   class="mt-1 text-xs text-brand-muted"
                 >
-                  Delivery fee to be confirmed
+                  Delivery handled manually
                 </p>
               </article>
             </template>
