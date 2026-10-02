@@ -10,28 +10,33 @@ export function renderAdminPackageFulfillmentPanel() {
       <div
         class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between"
       >
-        <div class="min-w-0">
-          <p
-            class="text-[0.62rem] font-semibold uppercase tracking-[0.18em] text-brand-gold"
-          >
-            Package Fulfillment
-          </p>
+              <div>
+        <p
+          class="text-xs font-semibold uppercase tracking-[0.14em] text-brand-gold"
+          x-text="
+            selectedApplication.package_inventory_deducted
+              ? 'Allocated Package Contents'
+              : 'Company-Assorted Products'
+          "
+        ></p>
 
-          <h3
-            id="package-fulfillment-title"
-            class="mt-2 font-display text-2xl text-brand-cream"
-          >
-            Company-Assorted Products
-          </h3>
+        <h3
+          class="mt-2 text-xl font-semibold text-brand-cream"
+          x-text="
+            selectedApplication.package_inventory_deducted
+              ? 'Confirmed products prepared for this membership package.'
+              : 'Assign the perfume products included in this package.'
+          "
+        ></h3>
 
-          <p
-            class="mt-2 max-w-xl text-xs leading-5 text-brand-muted"
-          >
-            Assign the perfume products included in this
-            package. The customer cannot select individual
-            scents.
-          </p>
-        </div>
+        <p
+          class="mt-2 text-sm leading-6 text-brand-muted"
+          x-show="!selectedApplication.package_inventory_deducted"
+        >
+          The customer cannot select individual scents. Allocate the required
+          assorted bottles and confirm once before packing.
+        </p>
+      </div>
 
         <div
           class="w-fit shrink-0 rounded-lg border px-3 py-2"
@@ -106,6 +111,35 @@ export function renderAdminPackageFulfillmentPanel() {
         "
         class="mt-5"
       >
+
+              <div
+          x-show="
+            selectedApplication.status === 'approved' &&
+            selectedApplication.fulfillment_status === 'pending-allocation'
+          "
+          class="mb-4 rounded-2xl border border-amber-500/35 bg-amber-500/10 p-4"
+        >
+          <p
+            class="text-xs font-semibold uppercase tracking-[0.14em] text-amber-300"
+          >
+            Next step required
+          </p>
+
+          <h3
+            class="mt-2 text-base font-semibold text-brand-cream"
+          >
+            Confirm package contents
+          </h3>
+
+          <p
+            class="mt-1 text-sm leading-6 text-brand-muted"
+          >
+            Allocate the required assorted bottles and package supplies.
+            Confirming contents deducts inventory once and moves this package
+            to ready for packing.
+          </p>
+        </div>
+        
         <div
           class="rounded-2xl border border-brand-border bg-brand-panel p-4"
         >
