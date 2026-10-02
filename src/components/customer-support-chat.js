@@ -24,6 +24,9 @@ export function registerCustomerSupportChat(
     y: null,
 
     dragging: false,
+    dismissVisible: false,
+    dismissTimer: null,
+    hidden: false,
     moved: false,
 
     pointerId: null,
@@ -243,6 +246,58 @@ export function registerCustomerSupportChat(
       this.moved = false
     },
 
+    showDismiss() {
+      this.dismissVisible = true
+
+      if (this.dismissTimer) {
+        clearTimeout(this.dismissTimer)
+      }
+
+      this.dismissTimer = setTimeout(() => {
+        this.dismissVisible = false
+      }, 5000)
+    },
+
+    hideDismiss() {
+      if (this.dismissTimer) {
+        clearTimeout(this.dismissTimer)
+      }
+
+      this.dismissVisible = false
+    },
+
+    hideChatHead() {
+      this.hidden = true
+      this.hideDismiss()
+    },
+
+    openSupport(event) {
+      if (this.hidden || this.dragging) {
+        return
+      }
+
+      if (this.moved) {
+        event?.preventDefault()
+        event?.stopPropagation()
+        this.moved = false
+        return
+      }
+
+      if (event?.pointerType === 'touch' && !this.dismissVisible) {
+        event.preventDefault()
+        this.showDismiss()
+        return
+      }
+
+      window.open(
+        SUPPORT_URL,
+        '_blank',
+        'noopener,noreferrer',
+      )
+
+      this.hideDismiss()
+    },
+
     savePosition() {
       try {
         localStorage.setItem(
@@ -280,6 +335,7 @@ export function renderCustomerSupportChat() {
   return `
     <div
       x-data="customerSupportChat"
+      x-show="!hidden"
       class="fixed bottom-5 right-5 z-[65]"
       :style="positionStyle"
       @resize.window="keepInsideScreen()"
@@ -289,7 +345,7 @@ export function renderCustomerSupportChat() {
         href="${SUPPORT_URL}"
         target="_blank"
         rel="noopener noreferrer"
-        class="customer-support-chat group relative flex size-16 items-center justify-center rounded-full border-2 border-brand-gold bg-brand-black p-1.5 shadow-2xl outline-none transition-transform duration-200 focus-visible:ring-2 focus-visible:ring-brand-gold focus-visible:ring-offset-2 focus-visible:ring-offset-brand-black"
+        class="customer-support-chat group relative flex size-12 items-center justify-center rounded-full border-2 border-brand-gold bg-brand-black p-1.5 shadow-2xl outline-none transition-transform duration-200 focus-visible:ring-2 focus-visible:ring-brand-gold focus-visible:ring-offset-2 focus-visible:ring-offset-brand-black sm:size-14"
         :class="{
           'customer-support-chat--dragging scale-105 cursor-grabbing':
             dragging,
@@ -305,7 +361,9 @@ export function renderCustomerSupportChat() {
         @pointermove.prevent="drag($event)"
         @pointerup="endDrag($event)"
         @pointercancel="cancelDrag()"
-        @click="handleClick($event)"
+        @click.prevent="openSupport($event)"
+        @mouseenter="showDismiss()"
+        @mouseleave="hideDismiss()"
       >
         <span
           class="pointer-events-none absolute inset-0 rounded-full bg-brand-gold/25 motion-safe:animate-ping"
@@ -322,7 +380,7 @@ export function renderCustomerSupportChat() {
         >
 
         <span
-          class="pointer-events-none absolute bottom-0.5 right-0.5 z-20 size-3.5 rounded-full border-2 border-brand-black bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.9)]"
+          class="pointer-events-none absolute bottom-0.5 right-0.5 z-20 size-3 rounded-full border-2 border-brand-black bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.9)]"
           aria-hidden="true"
         ></span>
 
@@ -331,6 +389,20 @@ export function renderCustomerSupportChat() {
         >
           Customer Support
         </span>
+
+        <button
+          type="button"
+          x-show="dismissVisible"
+          x-transition.opacity.duration.150ms
+          class="absolute -right-1.5 -top-1.5 z-30 grid size-6 place-items-center rounded-full border border-white/15 bg-black text-sm leading-none text-white shadow-lg"
+          aria-label="Hide customer support"
+          @pointerdown.stop.prevent
+          @pointerup.stop.prevent
+          @pointermove.stop.prevent
+          @click.stop.prevent="hideChatHead()"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
       </a>
     </div>
   `
