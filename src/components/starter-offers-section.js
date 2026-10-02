@@ -10,9 +10,10 @@ const pesoFormatter = new Intl.NumberFormat('en-PH', {
 export function renderStarterOffersSection() {
   return `
     <section
-      id="starter-offers"
-      class="border-t border-brand-border bg-brand-black py-14 sm:py-16"
-    >
+  id="starter-offers"
+  x-data="{}"
+  class="border-t border-brand-border bg-brand-black py-14 sm:py-16"
+>
       <div class="mx-auto w-[min(1240px,90%)]">
         <div class="max-w-3xl">
           <p class="text-[0.68rem] font-semibold uppercase tracking-[0.3em] text-brand-gold">
