@@ -137,9 +137,16 @@ export function renderAdminSalesInventoryPage() {
         role="status"
       ></p>
 
+      <p
+        x-show="!liveProductsLoading && !liveProductsError && liveProducts.length > 0"
+        class="mt-6 rounded-xl border border-brand-border bg-brand-panel px-5 py-4 text-sm leading-6 text-brand-muted"
+      >
+        Use stock updates for restocks, manual corrections, or offsite inventory changes. Full add/deduct adjustment notes can be added after final inventory rules are confirmed.
+      </p>
+
       <div
         x-show="!liveProductsLoading && !liveProductsError && liveProducts.length > 0"
-        class="mt-6 grid gap-4 md:grid-cols-2"
+        class="mt-4 grid gap-4 md:grid-cols-2"
       >
         <template x-for="product in liveProducts" :key="product.id">
           <article class="rounded-2xl border border-brand-border bg-brand-panel p-5">
@@ -168,11 +175,10 @@ export function renderAdminSalesInventoryPage() {
               </div>
 
               <div>
-                <p class="text-xs text-brand-muted">Member</p>
-                <p
-                  class="mt-1 font-semibold text-brand-cream"
-                  x-text="formatMoney(product.member_price)"
-                ></p>
+                <p class="text-xs text-brand-muted">Reseller</p>
+                <p class="mt-1 font-semibold text-brand-cream">
+                  ₱245–₱175
+                </p>
               </div>
 
               <div>
@@ -202,7 +208,7 @@ export function renderAdminSalesInventoryPage() {
                 @click="saveProductStock(product)"
                 :disabled="savingProductId === product.id"
                 class="min-h-10 rounded-full bg-brand-gold px-5 text-sm font-semibold text-[#17130d] disabled:opacity-50"
-                x-text="savingProductId === product.id ? 'Saving...' : 'Save Stock'"
+                x-text="savingProductId === product.id ? 'Saving...' : 'Save Stock Count'"
               ></button>
             </div>
           </article>
