@@ -124,20 +124,6 @@ export function renderAdminSalesInventoryPage() {
       </p>
 
       <p
-        x-show="stockSaveError"
-        x-text="stockSaveError"
-        class="mt-4 text-sm text-red-300"
-        role="alert"
-      ></p>
-
-      <p
-        x-show="stockSaveMessage"
-        x-text="stockSaveMessage"
-        class="mt-4 text-sm text-brand-gold"
-        role="status"
-      ></p>
-
-      <p
         x-show="!liveProductsLoading && !liveProductsError && liveProducts.length > 0"
         class="mt-6 rounded-xl border border-brand-border bg-brand-panel px-5 py-4 text-sm leading-6 text-brand-muted"
       >
@@ -190,16 +176,42 @@ export function renderAdminSalesInventoryPage() {
               </div>
             </div>
 
-            <div class="mt-5 flex flex-wrap items-end gap-3 border-t border-brand-border pt-4">
-              <label class="text-xs text-brand-muted">
-                Set stock
+                        <div class="mt-5 space-y-3 border-t border-brand-border pt-4">
+              <div class="grid gap-3 sm:grid-cols-[10rem_minmax(0,1fr)]">
+                <label class="text-xs text-brand-muted">
+                  Action
+                  <select
+                    x-model="stockAdjustmentModes[product.id]"
+                    :disabled="savingProductId === product.id"
+                    class="mt-1 block min-h-10 w-full rounded-lg border border-brand-border bg-brand-black px-3 py-2 text-sm text-brand-cream"
+                  >
+                    <option value="set">Set count</option>
+                    <option value="add">Add stock</option>
+                    <option value="deduct">Deduct stock</option>
+                  </select>
+                </label>
+
+                <label class="text-xs text-brand-muted">
+                  Quantity
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    x-model.number="stockDrafts[product.id]"
+                    :disabled="savingProductId === product.id"
+                    class="mt-1 block min-h-10 w-full rounded-lg border border-brand-border bg-brand-black px-3 py-2 text-sm text-brand-cream"
+                  >
+                </label>
+              </div>
+
+              <label class="block text-xs text-brand-muted">
+                Adjustment note
                 <input
-                  type="number"
-                  min="0"
-                  step="1"
-                  x-model.number="stockDrafts[product.id]"
+                  type="text"
+                  x-model="stockAdjustmentNotes[product.id]"
                   :disabled="savingProductId === product.id"
-                  class="mt-1 block w-28 rounded-lg border border-brand-border bg-brand-black px-3 py-2 text-sm text-brand-cream"
+                  placeholder="Example: restock, offsite sale, damaged item"
+                  class="mt-1 block min-h-10 w-full rounded-lg border border-brand-border bg-brand-black px-3 py-2 text-sm text-brand-cream placeholder:text-brand-muted"
                 >
               </label>
 
@@ -207,10 +219,32 @@ export function renderAdminSalesInventoryPage() {
                 type="button"
                 @click="saveProductStock(product)"
                 :disabled="savingProductId === product.id"
-                class="min-h-10 rounded-full bg-brand-gold px-5 text-sm font-semibold text-[#17130d] disabled:opacity-50"
-                x-text="savingProductId === product.id ? 'Saving...' : 'Save Stock Count'"
+                class="inline-flex min-h-10 w-full items-center justify-center rounded-full bg-brand-gold px-5 text-sm font-semibold text-[#17130d] disabled:opacity-50 sm:w-auto"
+                x-text="
+                  savingProductId === product.id
+                    ? 'Saving...'
+                    : stockAdjustmentModes[product.id] === 'add'
+                      ? 'Add Stock'
+                      : stockAdjustmentModes[product.id] === 'deduct'
+                        ? 'Deduct Stock'
+                        : 'Save Stock Count'
+                "
               ></button>
             </div>
+
+            <p
+              x-show="stockSaveProductId === product.id && stockSaveError"
+              x-text="stockSaveError"
+              class="mt-3 rounded-xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-xs leading-5 text-red-200"
+              role="alert"
+            ></p>
+
+            <p
+              x-show="stockSaveProductId === product.id && stockSaveMessage"
+              x-text="stockSaveMessage"
+              class="mt-3 rounded-xl border border-emerald-400/30 bg-emerald-500/10 px-4 py-3 text-xs leading-5 text-emerald-100"
+              role="status"
+            ></p>
           </article>
         </template>
       </div>

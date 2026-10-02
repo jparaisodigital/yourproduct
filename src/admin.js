@@ -1559,8 +1559,11 @@ Alpine.data('adminDashboard', () => ({
   liveProductsLoading: true,
   liveProductsError: '',
   stockDrafts: {},
+  stockAdjustmentModes: {},
+  stockAdjustmentNotes: {},
   savingProductId: null,
   stockSaveMessage: '',
+  stockSaveProductId: null,
   stockSaveError: '',
   stockHistory: [],
   stockHistoryLoading: true,
@@ -2156,6 +2159,20 @@ Alpine.data('adminDashboard', () => ({
           product.stock_quantity,
         ]),
       )
+
+      this.stockAdjustmentModes = Object.fromEntries(
+        this.liveProducts.map((product) => [
+          product.id,
+          'set',
+        ]),
+      )
+
+      this.stockAdjustmentNotes = Object.fromEntries(
+        this.liveProducts.map((product) => [
+          product.id,
+          '',
+        ]),
+      )
     } catch (error) {
       console.error('Unable to load admin products:', error)
       this.liveProductsError = 'Unable to load products. Please refresh.'
@@ -2190,21 +2207,54 @@ Alpine.data('adminDashboard', () => ({
 
 
   async saveProductStock(product) {
-    const rawStock = this.stockDrafts[product.id]
-    const newStock =
-      rawStock === '' ||
-      rawStock === null ||
-      rawStock === undefined
+    const mode =
+      this.stockAdjustmentModes[product.id] || 'set'
+
+    const rawQuantity = this.stockDrafts[product.id]
+    const quantity =
+      rawQuantity === '' ||
+      rawQuantity === null ||
+      rawQuantity === undefined
         ? NaN
-        : Number(rawStock)
+        : Number(rawQuantity)
+
+    const note =
+      this.stockAdjustmentNotes[product.id]?.trim() || ''
+
+    const currentStock = Number(product.stock_quantity || 0)
 
     this.stockSaveMessage = ''
     this.stockSaveError = ''
+    this.stockSaveProductId = product.id
 
-    if (!Number.isSafeInteger(newStock) || newStock < 0) {
+    if (!['set', 'add', 'deduct'].includes(mode)) {
+      this.stockSaveError = 'Select a valid stock action.'
+      return
+    }
+
+    if (!Number.isSafeInteger(quantity) || quantity < 0) {
       this.stockSaveError = 'Enter a whole number of 0 or more.'
       return
     }
+
+    if (!note) {
+      this.stockSaveError =
+        'Add a short note for this stock adjustment.'
+      return
+    }
+
+    const newStock =
+      mode === 'add'
+        ? currentStock + quantity
+        : mode === 'deduct'
+          ? currentStock - quantity
+          : quantity
+
+          if (newStock < 0) {
+            this.stockSaveError =
+              `Cannot deduct ${quantity} from ${product.name}. Current stock is only ${currentStock}.`
+            return
+          }
 
     this.savingProductId = product.id
 
@@ -2219,12 +2269,21 @@ Alpine.data('adminDashboard', () => ({
 
       if (error) throw error
 
-      product.stock_quantity = Number(data)
-      this.stockSaveMessage = `Stock saved for ${product.name}.`
+      const savedStock = Number(data)
+
+      product.stock_quantity = savedStock
+      this.stockDrafts[product.id] = savedStock
+      this.stockAdjustmentModes[product.id] = 'set'
+      this.stockAdjustmentNotes[product.id] = ''
+
+      this.stockSaveMessage =
+        `Stock updated for ${product.name}. ${currentStock} → ${savedStock}.`
+
       await this.loadStockHistory()
     } catch (error) {
       console.error('Unable to save product stock:', error)
-      this.stockSaveError = 'Unable to save stock. Please try again.'
+      this.stockSaveError =
+        'Unable to save stock. Please try again.'
     } finally {
       this.savingProductId = null
     }
