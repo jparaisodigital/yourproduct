@@ -6,6 +6,8 @@ import { supabase } from './lib/supabase.js'
 
 import logoImage from './assets/logoyourproduct.png'
 
+import rewardJourneyImage from './assets/rewards/reward-journey.png'
+
 import {
   siteConfig,
 } from './config/site-config.js'
@@ -1130,6 +1132,8 @@ const dashboardProducts = products.map((product) => ({
   stockQuantity: 0,
 }))
 
+let dashboardProductCardOptions = {}
+
 const activeProducts = dashboardProducts
 
 const dashboardCategoryButtons = productCategories
@@ -1184,7 +1188,7 @@ const dashboardProductCards = () => activeProducts
             "
             x-transition.opacity.duration.200ms
           >
-          ${renderProductCard(product, window.dashboardProductCardOptions || {})}
+          ${renderProductCard(product, dashboardProductCardOptions)}
           </div>
         `
 })
@@ -1654,8 +1658,6 @@ function renderSidebar() {
 }
 
 window.Alpine = Alpine
-
-registerProductViewStore(Alpine, dashboardProducts)
 registerCustomerSupportChat(Alpine)
 registerMemberPointsPage(Alpine)
 registerMemberReferralCard(Alpine, {
@@ -2468,7 +2470,7 @@ const dashboardHasApprovedPricingTier =
     'prestige',
   ].includes(dashboardPricingType)
 
-const dashboardProductCardOptions =
+  dashboardProductCardOptions =
   dashboardHasApprovedPricingTier
     ? {
         tierLabel: tierLabelByType[dashboardPricingType],
@@ -2479,6 +2481,12 @@ const dashboardProductCardOptions =
 registerCartStore(Alpine, dashboardProducts, {
   pricingType: dashboardPricingType,
 })
+
+registerProductViewStore(
+  Alpine,
+  dashboardProducts,
+  dashboardProductCardOptions,
+)
 
   const { data: orderRows, error: ordersError } = await supabase
     .from('orders')
@@ -2860,7 +2868,7 @@ registerCartStore(Alpine, dashboardProducts, {
             <p
               class="mt-3 text-xs leading-5 text-brand-muted"
             >
-              Referral tracking coming soon
+              Direct referral tracking active
             </p>
           </article>
 
@@ -2882,7 +2890,7 @@ registerCartStore(Alpine, dashboardProducts, {
             <p
               class="mt-3 text-xs leading-5 text-brand-muted"
             >
-              Rules pending confirmation
+               Delivered member orders earn points
             </p>
           </article>
 
@@ -3013,57 +3021,60 @@ registerCartStore(Alpine, dashboardProducts, {
           </section>
 
           <section
+            x-data="{ rewardJourneyZoomOpen: false }"
             x-show="isMember"
             x-transition.opacity
             class="rounded-[1.5rem] border border-brand-border bg-brand-panel p-5 shadow-panel sm:p-6"
           >
-            <p
-              class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
+                        <button
+              type="button"
+              class="mt-6 block w-full overflow-hidden rounded-2xl border border-brand-border bg-brand-black/70 p-2 transition hover:border-brand-gold/60"
+              aria-label="Open reward journey image"
+              @click="rewardJourneyZoomOpen = true"
             >
-              Reward Journey
-            </p>
-
-            <h2
-              class="mt-1 font-display text-3xl text-brand-cream"
-            >
-              Your Milestones
-            </h2>
-
-            <p
-              class="mt-3 max-w-2xl text-sm leading-6 text-brand-muted"
-            >
-              Qualification thresholds are intentionally
-              not shown yet. They will be added after the
-              client confirms the final rules.
-            </p>
+              <img
+                src="${rewardJourneyImage}"
+                alt="YOUR PRODUCT reward journey"
+                class="mx-auto max-h-[34rem] w-full rounded-xl object-contain"
+                loading="lazy"
+              >
+            </button>
 
             <div
-              class="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4"
+              x-cloak
+              x-show="rewardJourneyZoomOpen"
+              x-transition.opacity.duration.200ms
+              class="fixed inset-0 z-[95] grid place-items-center bg-black/80 px-4 py-6 backdrop-blur-sm"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Reward journey image preview"
+              @keydown.escape.window="rewardJourneyZoomOpen = false"
             >
-              ${previewRewards.map((reward) => `
-                <article
-                  class="rounded-2xl border border-brand-border bg-brand-black p-4 text-center"
+              <button
+                type="button"
+                class="absolute inset-0 cursor-default"
+                aria-label="Close reward journey preview"
+                @click="rewardJourneyZoomOpen = false"
+              ></button>
+
+              <div
+                class="relative z-10 w-full max-w-4xl overflow-hidden rounded-2xl border border-brand-gold/40 bg-brand-black p-3 shadow-2xl"
+              >
+                <button
+                  type="button"
+                  class="absolute right-3 top-3 z-20 grid size-9 place-items-center rounded-full border border-white/15 bg-black/80 text-xl leading-none text-white shadow-lg transition hover:border-brand-gold hover:text-brand-gold"
+                  aria-label="Close reward journey preview"
+                  @click="rewardJourneyZoomOpen = false"
                 >
-                  <span
-                    class="mx-auto grid size-12 place-items-center rounded-full bg-brand-charcoal text-2xl"
-                    aria-hidden="true"
-                  >
-                    ${reward.icon}
-                  </span>
+                  <span aria-hidden="true">&times;</span>
+                </button>
 
-                  <h3
-                    class="mt-3 text-sm font-semibold text-brand-cream"
-                  >
-                    ${reward.label}
-                  </h3>
-
-                  <p
-                    class="mt-1 text-[0.65rem] uppercase tracking-[0.1em] text-brand-muted"
-                  >
-                    Locked
-                  </p>
-                </article>
-              `).join('')}
+                <img
+                  src="${rewardJourneyImage}"
+                  alt="YOUR PRODUCT reward journey enlarged preview"
+                  class="max-h-[86vh] w-full rounded-xl object-contain"
+                >
+              </div>
             </div>
           </section>
 

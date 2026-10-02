@@ -2,7 +2,10 @@ import headerLogo from '../assets/logoyourproduct.png'
 
 export function renderHeader(
   siteConfig,
-  { isLoggedIn = false } = {},
+  {
+    isLoggedIn = false,
+    role = 'customer',
+  } = {},
 ) {
   const desktopLinks = siteConfig.navigation
     .map(
@@ -92,19 +95,29 @@ export function renderHeader(
       ></span>
     </button>
   `
-  const accountHref = isLoggedIn
+  const isAdmin = isLoggedIn && role === 'admin'
+
+const accountHref = isAdmin
+  ? '/admin/'
+  : isLoggedIn
     ? '/dashboard/'
     : '/login/'
 
-  const accountLabel = isLoggedIn
+const accountLabel = isAdmin
+  ? 'Admin Portal'
+  : isLoggedIn
     ? 'Customer Dashboard'
     : 'Member Login'
 
-  const accountCtaHref = isLoggedIn
+const accountCtaHref = isAdmin
+  ? '/admin/'
+  : isLoggedIn
     ? '/dashboard/'
     : '/register/'
 
-  const accountCtaLabel = isLoggedIn
+const accountCtaLabel = isAdmin
+  ? 'Admin'
+  : isLoggedIn
     ? 'Dashboard'
     : 'Sign Up'
 
@@ -217,36 +230,42 @@ export function renderHeader(
 
         <div class="hidden items-center gap-2.5 lg:flex">
 
-          <a
-            href="/login/"
-            class="premium-icon group grid size-11 place-items-center rounded-full border border-brand-border text-brand-muted hover:border-brand-gold hover:bg-brand-gold/10 hover:text-brand-gold"
-            aria-label="${accountLabel}"
-            title="${accountLabel}"
-          >
-            <svg
-              class="size-5"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.65"
-              aria-hidden="true"
-            >
-              <circle
-                cx="12"
-                cy="8"
-                r="3.25"
-              />
+        ${
+          isLoggedIn
+            ? ''
+            : `
+                  <a
+                    href="${accountHref}"
+                    class="premium-icon group grid size-11 place-items-center rounded-full border border-brand-border text-brand-muted hover:border-brand-gold hover:bg-brand-gold/10 hover:text-brand-gold"
+                    aria-label="${accountLabel}"
+                    title="${accountLabel}"
+                  >
+                    <svg
+                      class="size-5"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.65"
+                      aria-hidden="true"
+                    >
 
-              <path
-                d="M5.5 20c.55-4.05 2.95-6.1 6.5-6.1s5.95 2.05 6.5 6.1"
-                stroke-linecap="round"
-              />
-            </svg>
+                      <path
+                        d="M20 21a8 8 0 0 0-16 0"
+                        stroke-linecap="round"
+                      />
+                      <circle
+                        cx="12"
+                        cy="7"
+                        r="4"
+                      />
+                    </svg>
 
-            <span class="sr-only">
-            ${accountLabel}
-            </span>
-          </a>
+                    <span class="sr-only">
+                      ${accountLabel}
+                    </span>
+                  </a>
+                  `
+        }
 
           <a
             href="${accountCtaHref}"

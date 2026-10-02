@@ -29,33 +29,59 @@ export function renderProductCard(product, options = {}) {
   const tierLabel = options.tierLabel || ''
   const tierPrice = Number(options.tierPrice || 0)
 
-  const memberPriceMarkup = tierPrice > 0
+  const priceMarkup = tierPrice > 0
     ? `
         <div
-          class="mt-2 rounded-xl border border-brand-gold/25 bg-brand-gold/10 px-3 py-2"
+          class="flex items-end justify-between gap-3"
         >
-          <p
-            class="text-[0.55rem] font-semibold uppercase tracking-[0.08em] text-brand-gold sm:text-[0.68rem] sm:tracking-[0.14em]"
-          >
-            ${tierLabel || 'Your reseller price'}
-          </p>
+          <div>
+            <p
+              class="text-[0.55rem] font-semibold uppercase tracking-[0.08em] text-brand-gold sm:text-[0.68rem] sm:tracking-[0.14em]"
+            >
+              ${tierLabel || 'Your reseller price'}
+            </p>
+
+            <p
+              class="mt-1 text-xs font-medium text-brand-muted line-through"
+            >
+              ${pesoFormatter.format(product.regularPrice)}
+            </p>
+          </div>
 
           <p
-            class="mt-1 font-semibold text-brand-gold"
+            class="shrink-0 text-right font-display text-2xl leading-none text-brand-gold sm:text-3xl"
           >
-            ${pesoFormatter.format(tierPrice)} per bottle
-          </p>
-
-          <p
-            class="mt-1 text-xs leading-5 text-brand-muted"
-          >
-            Retail ${pesoFormatter.format(product.regularPrice)}. Tier pricing is based on your approved package.
+            ${pesoFormatter.format(tierPrice)}
           </p>
         </div>
+
+        <p
+          class="mt-2 text-xs leading-5 text-brand-muted"
+        >
+          Retail ${pesoFormatter.format(product.regularPrice)}. Tier pricing is based on your approved package.
+        </p>
       `
     : `
         <div
-          class="mt-2 rounded-xl border border-brand-gold/25 bg-brand-gold/10 px-3 py-2"
+          class="flex items-end justify-between gap-3"
+        >
+          <div>
+            <p
+              class="text-[0.55rem] font-medium uppercase tracking-[0.08em] text-brand-muted sm:text-[0.68rem] sm:tracking-[0.16em]"
+            >
+              Regular price
+            </p>
+          </div>
+
+          <p
+            class="shrink-0 text-right font-display text-2xl leading-none text-brand-cream sm:text-3xl"
+          >
+            ${pesoFormatter.format(product.regularPrice)}
+          </p>
+        </div>
+
+        <div
+          class="mt-3 rounded-xl border border-brand-gold/25 bg-brand-gold/10 px-3 py-2"
         >
           <p
             class="text-[0.55rem] font-semibold uppercase tracking-[0.08em] text-brand-gold sm:text-[0.68rem] sm:tracking-[0.14em]"
@@ -66,7 +92,7 @@ export function renderProductCard(product, options = {}) {
           <p
             class="mt-1 text-xs leading-5 text-brand-muted"
           >
-            From ₱245 to ₱175 per bottle, depending on approved package.
+            From PHP 245 to PHP 175 per bottle, depending on approved package.
           </p>
         </div>
       `
@@ -118,11 +144,11 @@ export function renderProductCard(product, options = {}) {
         ${product.isActive ? '' : 'disabled'}
       >
         <img
-  src="${product.image}"
-  alt="${product.name}"
-  class="size-full object-contain object-center p-2 sm:p-3"
-  loading="lazy"
->
+          src="${product.image}"
+          alt="${product.name}"
+          class="size-full object-contain object-center p-2 sm:p-3"
+          loading="lazy"
+        >
       </button>
 
       <div class="p-4 sm:p-6">
@@ -167,25 +193,7 @@ export function renderProductCard(product, options = {}) {
         <div
           class="mt-4 border-t border-brand-border pt-4"
         >
-          <div
-            class="flex items-center justify-between gap-3"
-          >
-            <span
-              class="text-[0.55rem] font-medium uppercase tracking-[0.08em] text-brand-muted sm:text-[0.68rem] sm:tracking-[0.16em]"
-            >
-              Regular price
-            </span>
-
-            <span
-              class="shrink-0 text-sm font-semibold text-brand-cream sm:text-base"
-            >
-              ${pesoFormatter.format(
-                product.regularPrice,
-              )}
-            </span>
-          </div>
-
-          ${memberPriceMarkup}
+          ${priceMarkup}
         </div>
 
         <div

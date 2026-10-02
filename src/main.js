@@ -183,13 +183,32 @@ async function startStorefront() {
   document.title =
   `${siteConfig.brand.name} | Premium Fragrances`
 
-const { data: sessionData } = await supabase.auth.getSession()
-const isLoggedIn = Boolean(sessionData.session?.user)
+  const { data: sessionData } = await supabase.auth.getSession()
+  const signedInUser = sessionData.session?.user ?? null
+  const isLoggedIn = Boolean(signedInUser)
+  let signedInRole = 'customer'
+
+  if (signedInUser) {
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', signedInUser.id)
+      .maybeSingle()
+
+    if (profileError) {
+      console.error('Unable to load storefront profile role:', profileError)
+    }
+
+    signedInRole = profile?.role || 'customer'
+  }
 
 document.querySelector('#app').innerHTML = `
   ${renderSiteLoader()}
 
-  ${renderHeader(siteConfig, { isLoggedIn })}
+  ${renderHeader(siteConfig, {
+    isLoggedIn,
+    role: signedInRole,
+  })}
 
     <main>
       ${renderHero(homeConfig, siteConfig)}

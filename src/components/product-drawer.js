@@ -157,45 +157,99 @@ export function renderProductDrawer() {
                   "
                 ></p>
 
-                <!-- Pricing -->
+                                <!-- Pricing -->
                 <div
-                  class="mt-5 grid grid-cols-2 gap-3 border-y border-brand-border py-4"
+                  class="mt-6 rounded-2xl border border-brand-border bg-brand-black/30 p-4"
                 >
-                  <div>
-                    <p
-                      class="text-[0.62rem] font-semibold uppercase tracking-[0.14em] text-brand-muted"
-                    >
-                      Regular Price
-                    </p>
+                  <template x-if="$store.productView.hasTierPrice">
+                    <div>
+                      <div
+                        class="flex items-end justify-between gap-4"
+                      >
+                        <div>
+                          <p
+                            class="text-[0.62rem] font-semibold uppercase tracking-[0.14em] text-brand-gold"
+                            x-text="$store.productView.tierLabel || 'Your reseller price'"
+                          ></p>
 
-                    <p
-                      class="mt-1 font-semibold text-brand-cream"
-                      x-text="
-                        '₱' +
-                        Number(
-                          $store.productView
-                            .selectedProduct.regularPrice
-                        ).toLocaleString('en-PH')
-                      "
-                    ></p>
-                  </div>
+                          <p
+                            class="mt-1 text-sm font-medium text-brand-muted line-through"
+                            x-text="
+                              '₱' +
+                              Number(
+                                $store.productView.selectedProduct.regularPrice
+                              ).toLocaleString('en-PH')
+                            "
+                          ></p>
+                        </div>
 
-                                    <div>
-                    <p
-                      class="text-[0.62rem] font-semibold uppercase tracking-[0.14em] text-brand-muted"
-                    >
-                      Reseller Pricing
-                    </p>
+                        <p
+                          class="shrink-0 text-right font-display text-3xl leading-none text-brand-gold"
+                          x-text="
+                            '₱' +
+                            Number(
+                              $store.productView.tierPrice
+                            ).toLocaleString('en-PH')
+                          "
+                        ></p>
+                      </div>
 
-                    <p
-                      class="mt-1 text-sm leading-6 text-brand-muted"
-                    >
-                      Approved package tier pricing starts at
-                      <span class="font-semibold text-brand-gold">
-                        ₱245 per bottle
-                      </span>.
-                    </p>
-                  </div>
+                      <p
+                        class="mt-3 text-xs leading-5 text-brand-muted"
+                      >
+                        Retail
+                        <span
+                          x-text="
+                            '₱' +
+                            Number(
+                              $store.productView.selectedProduct.regularPrice
+                            ).toLocaleString('en-PH')
+                          "
+                        ></span>.
+                        Tier pricing is based on your approved package.
+                      </p>
+                    </div>
+                  </template>
+
+                  <template x-if="!$store.productView.hasTierPrice">
+                    <div>
+                      <div
+                        class="flex items-end justify-between gap-4"
+                      >
+                        <p
+                          class="text-[0.62rem] font-semibold uppercase tracking-[0.14em] text-brand-muted"
+                        >
+                          Regular Price
+                        </p>
+
+                        <p
+                          class="shrink-0 text-right font-display text-3xl leading-none text-brand-cream"
+                          x-text="
+                            '₱' +
+                            Number(
+                              $store.productView.selectedProduct.regularPrice
+                            ).toLocaleString('en-PH')
+                          "
+                        ></p>
+                      </div>
+
+                      <div
+                        class="mt-4 rounded-xl border border-brand-gold/25 bg-brand-gold/10 px-3 py-2"
+                      >
+                        <p
+                          class="text-[0.62rem] font-semibold uppercase tracking-[0.14em] text-brand-gold"
+                        >
+                          Reseller tiers
+                        </p>
+
+                        <p
+                          class="mt-1 text-sm leading-6 text-brand-muted"
+                        >
+                          From PHP 245 to PHP 175 per bottle, depending on approved package.
+                        </p>
+                      </div>
+                    </div>
+                  </template>
                 </div>
 
                 <!-- Optional scent information -->
