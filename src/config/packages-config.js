@@ -13,16 +13,43 @@ export const packages = [
     price: 1000,
 
     description:
-      'Perfect start for new partners.',
+      'Perfect for beginners who want to start small.',
 
-    productQuantity: 5,
+    productQuantity: 4,
 
     ...packageProductRules,
 
     fixedInventoryItems: [],
 
+    options: [
+      {
+        id: 'starter-option-a',
+        label: 'Option A',
+        title: '4 Bottles',
+        description: '4 assorted bottles, 60ml each.',
+        productQuantity: 4,
+        fixedInventoryItems: [],
+      },
+      {
+        id: 'starter-option-b',
+        label: 'Option B',
+        title: '1 Tester Kit + 2 Bottles',
+        description:
+          '1 tester kit with 20 pcs 5ml testers plus 2 assorted bottles.',
+        productQuantity: 2,
+        fixedInventoryItems: [
+          {
+            inventoryItemId: 'supply-tester-kit',
+            name: 'Tester Kit',
+            quantity: 1,
+          },
+        ],
+      },
+    ],
+
     inclusions: [
-      '5 Assorted Bottles (85ml)',
+      'Option A: 4 Assorted Bottles (60ml each)',
+      'Option B: 1 Tester Kit + 2 Assorted Bottles',
       'Business Access',
     ],
 

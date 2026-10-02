@@ -5,6 +5,10 @@ import Alpine from 'alpinejs'
 import { supabase } from './lib/supabase.js'
 
 import {
+  renderStarterOffersSection,
+} from './components/starter-offers-section.js'
+
+import {
   renderSiteLoader,
   dismissSiteLoader,
 } from './components/site-loader.js'
@@ -213,6 +217,7 @@ document.querySelector('#app').innerHTML = `
     <main>
       ${renderHero(homeConfig, siteConfig)}
 
+      ${renderStarterOffersSection()}
       ${renderProductsSection(
         storefrontProducts,
         productCategories,

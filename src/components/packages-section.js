@@ -71,6 +71,41 @@ function renderPackageCard(packageItem, index) {
           </div>
         `
 
+        const optionsMarkup =
+        packageItem.options?.length > 0
+          ? `
+              <div class="mt-3 grid gap-2">
+                ${packageItem.options
+                  .map(
+                    (option) => `
+                      <div
+                        class="rounded-xl border border-brand-gold/25 bg-brand-gold/10 px-3 py-2"
+                      >
+                        <p
+                          class="text-[0.58rem] font-semibold uppercase tracking-[0.12em] text-brand-gold"
+                        >
+                          ${option.label}
+                        </p>
+
+                        <p
+                          class="mt-1 text-xs font-semibold text-brand-cream"
+                        >
+                          ${option.title}
+                        </p>
+
+                        <p
+                          class="mt-1 text-xs leading-5 text-brand-muted"
+                        >
+                          ${option.description}
+                        </p>
+                      </div>
+                    `,
+                  )
+                  .join('')}
+              </div>
+            `
+          : ''
+
   const featuredLabel = packageItem.isFeatured
     ? `
         <span
@@ -133,8 +168,9 @@ function renderPackageCard(packageItem, index) {
           ${packageItem.description}
         </p>
 
-        ${priceMarkup}
-        ${inclusionsMarkup}
+      ${priceMarkup}
+      ${optionsMarkup}
+      ${inclusionsMarkup}
 
         <div class="mt-auto pt-4 sm:pt-5 lg:pt-3">
           <a
