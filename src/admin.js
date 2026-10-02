@@ -4328,6 +4328,155 @@ formatDate(dateValue) {
   return adminDateFormatter.format(new Date(dateValue))
 },
 
+formatCurrency(value) {
+  return adminPesoFormatter.format(Number(value || 0))
+},
+
+csvEscape(value) {
+  const text =
+    value === null || value === undefined
+      ? ''
+      : String(value)
+
+  return `"${text.replace(/"/g, '""')}"`
+},
+
+downloadCsv(filename, rows) {
+  const csvContent = rows
+    .map((row) =>
+      row.map((value) => this.csvEscape(value)).join(','),
+    )
+    .join('\r\n')
+
+  const blob = new Blob([`\uFEFF${csvContent}`], {
+    type: 'text/csv;charset=utf-8;',
+  })
+
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+
+  link.href = url
+  link.download = filename
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+
+  URL.revokeObjectURL(url)
+},
+
+exportSalesCsv() {
+  const rows = [
+    [
+      'Order ID',
+      'Customer',
+      'Email',
+      'Status',
+      'Submitted At',
+      'Approved At',
+      'Subtotal',
+      'Total Amount',
+    ],
+    ...this.approvedOrders.map((order) => [
+      order.id,
+      order.customer_name || '',
+      order.customer_email || '',
+      order.status || '',
+      order.submitted_at || order.created_at || '',
+      order.approved_at || '',
+      Number(order.subtotal || 0),
+      Number(order.total_amount || order.subtotal || 0),
+    ]),
+  ]
+
+  this.downloadCsv(
+    `your-product-sales-${new Date().toISOString().slice(0, 10)}.csv`,
+    rows,
+  )
+},
+
+salesPeriodStart(period) {
+  const now = new Date()
+
+  if (period === 'today') {
+    const start = new Date(now)
+    start.setHours(0, 0, 0, 0)
+    return start
+  }
+
+  if (period === 'week') {
+    const start = new Date(now)
+    const daysSinceMonday = (start.getDay() + 6) % 7
+
+    start.setDate(start.getDate() - daysSinceMonday)
+    start.setHours(0, 0, 0, 0)
+
+    return start
+  }
+
+  const start = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    1,
+  )
+
+  start.setHours(0, 0, 0, 0)
+
+  return start
+},
+
+ordersBetween(startDate, endDate) {
+  return this.approvedOrders.filter((order) => {
+    const approvedDate = this.approvedOrderDate(order)
+
+    return (
+      approvedDate &&
+      approvedDate >= startDate &&
+      approvedDate <= endDate
+    )
+  })
+},
+
+exportSalesSummaryCsv() {
+  const now = new Date()
+
+  const periods = [
+    ['Today', this.salesPeriodStart('today'), now],
+    ['This Week', this.salesPeriodStart('week'), now],
+    ['This Month', this.salesPeriodStart('month'), now],
+  ]
+
+  const rows = [
+    [
+      'Period',
+      'Start Date',
+      'End Date',
+      'Product Sales',
+      'Orders Count',
+    ],
+    ...periods.map(([label, startDate, endDate]) => {
+      const orders = this.ordersBetween(startDate, endDate)
+      const total = orders.reduce(
+        (sum, order) =>
+          sum + Number(order.subtotal || 0),
+        0,
+      )
+
+      return [
+        label,
+        `'${startDate.toLocaleDateString('en-PH')}`,
+        `'${endDate.toLocaleDateString('en-PH')}`,
+        adminPesoFormatter.format(total),
+        orders.length,
+      ]
+    }),
+  ]
+
+  this.downloadCsv(
+    `your-product-sales-summary-${new Date().toISOString().slice(0, 10)}.csv`,
+    rows,
+  )
+},
+
 orderStatusLabel(status) {
   const labels = {
     pending_verification: 'Pending Verification',
@@ -4877,7 +5026,7 @@ document.querySelector('#admin-app').innerHTML = `
                 <p
                   class="mt-2 text-xs leading-5 text-emerald-100/80"
                 >
-                  Authentication, orders, customers, products, and inventory are connected. Membership submission and review are in progress.
+                  Authentication, orders, customers, products, inventory, memberships, referrals, payouts, and points are connected.
                 </p>
               </div>
             </aside>

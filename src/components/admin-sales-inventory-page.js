@@ -25,6 +25,63 @@ export function renderAdminSalesInventoryPage() {
           Product prices, availability, and stock from the database.
         </p>
 
+        <div class="mt-6 grid gap-3 sm:grid-cols-3">
+          <article class="rounded-xl border border-brand-border bg-brand-black px-5 py-4">
+            <p class="text-xs uppercase tracking-[0.13em] text-brand-muted">
+              Daily Sales
+            </p>
+
+            <strong
+              class="mt-2 block font-display text-2xl text-brand-cream"
+              x-text="'₱' + Number(dailyApprovedSales || 0).toLocaleString('en-PH')"
+            ></strong>
+          </article>
+
+          <article class="rounded-xl border border-brand-border bg-brand-black px-5 py-4">
+            <p class="text-xs uppercase tracking-[0.13em] text-brand-muted">
+              Weekly Sales
+            </p>
+
+            <strong
+              class="mt-2 block font-display text-2xl text-brand-cream"
+              x-text="'₱' + Number(weeklyApprovedSales || 0).toLocaleString('en-PH')"
+            ></strong>
+          </article>
+
+          <article class="rounded-xl border border-brand-border bg-brand-black px-5 py-4">
+            <p class="text-xs uppercase tracking-[0.13em] text-brand-muted">
+              Monthly Sales
+            </p>
+
+            <strong
+              class="mt-2 block font-display text-2xl text-brand-cream"
+              x-text="'₱' + Number(monthlyApprovedSales || 0).toLocaleString('en-PH')"
+            ></strong>
+          </article>
+        </div>
+
+          <div class="mt-4 grid gap-3 sm:flex sm:flex-wrap">
+          <button
+            type="button"
+            class="inline-flex min-h-10 items-center justify-center rounded-full bg-brand-gold px-5 text-sm font-semibold text-[#17130d] transition hover:bg-brand-gold-light"
+            @click="exportSalesCsv()"
+          >
+            Export Sales Details
+          </button>
+
+          <button
+            type="button"
+            class="inline-flex min-h-10 items-center justify-center rounded-full border border-brand-border px-5 text-sm font-semibold text-brand-cream transition hover:border-brand-gold hover:text-brand-gold"
+            @click="exportSalesSummaryCsv()"
+          >
+            Export Sales Summary
+          </button>
+        </div>
+
+        <p class="mt-3 text-xs leading-5 text-brand-muted">
+          CSV reports open in Excel or Google Sheets. Sales are based on approved, shipped, or delivered product orders.
+        </p>
+
         <div class="mt-6 flex flex-wrap gap-3">
           <div class="rounded-xl border border-brand-border bg-brand-black px-5 py-3">
             <p class="text-xs text-brand-muted">Total products</p>
@@ -149,7 +206,7 @@ export function renderAdminSalesInventoryPage() {
               ></button>
             </div>
           </article>
-                </template>
+        </template>
       </div>
 
       <div class="mt-8 rounded-2xl border border-brand-border bg-brand-panel p-5 sm:p-6">
