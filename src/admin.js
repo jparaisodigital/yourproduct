@@ -170,6 +170,26 @@ const navigationMarkup = adminNavigationItems
 )
 .join('')
 
+function sortAdminProducts(products) {
+  return [...products].sort((firstProduct, secondProduct) => {
+    if (firstProduct.id === 'tester-kit') {
+      return -1
+    }
+
+    if (secondProduct.id === 'tester-kit') {
+      return 1
+    }
+
+    return String(firstProduct.sku || '').localeCompare(
+      String(secondProduct.sku || ''),
+      undefined,
+      {
+        numeric: true,
+      },
+    )
+  })
+}
+
 function renderAdminSidebar() {
   return `
     <div class="flex h-full flex-col">
@@ -2147,7 +2167,7 @@ Alpine.data('adminDashboard', () => ({
 
       if (error) throw error
 
-      this.liveProducts = data ?? []
+      this.liveProducts = sortAdminProducts(data ?? [])
 
       const liveProductsByName = new Map(
         this.liveProducts.map((product) => [
