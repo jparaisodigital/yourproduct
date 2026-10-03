@@ -1399,32 +1399,16 @@ contact our Facebook page to arrange the fee and schedule.
             </div>
 
             <div
-  x-show="${isMember} && $store.cart.totalQuantity < 10"
-  class="mt-5 rounded-2xl border border-red-400/40 bg-red-500/10 p-4"
->
-  <p class="text-sm font-semibold text-red-200">
-    This order is not eligible for points.
-  </p>
-
-  <p class="mt-2 text-xs leading-5 text-red-100/80">
-    Members earn points only on delivered product orders with at least
-    10 perfume bottles. This order has
-    <strong x-text="$store.cart.totalQuantity"></strong>
-    bottle(s). Minimum qualified order: 10 bottles = 50 points.
-  </p>
-</div>
-
-<div
-  x-show="${isMember} && $store.cart.totalQuantity >= 10"
+  x-show="${isMember}"
   class="mt-5 rounded-2xl border border-emerald-400/30 bg-emerald-400/10 p-4"
 >
   <p class="text-sm font-semibold text-emerald-200">
-    This order can earn points after delivery.
+    Eligible member order points
   </p>
 
   <p class="mt-2 text-xs leading-5 text-emerald-100/80">
-    Qualified member orders earn 5 points per perfume bottle after the
-    order is delivered and confirmed by admin.
+    Approved member product orders earn points automatically after admin payment approval:
+    5 points per perfume bottle and 10 points per tester kit.
   </p>
 </div>
 
@@ -1449,50 +1433,62 @@ contact our Facebook page to arrange the fee and schedule.
     Manual payment verification
   </p>
   <p class="mt-1 text-xs leading-5 text-brand-muted">
-    Submit your order with payment proof. Admin will review the payment before processing.
+    Review your details first. After submitting, admin will verify the payment proof before processing the order.
   </p>
 </div>
-            <div
-              id="checkout-preview-status"
-              x-show="checkoutPreviewComplete"
-              x-transition
-              class="mt-4 rounded-xl border border-[#2f6b59] bg-[#234f42] px-4 py-3 text-sm font-medium leading-6 text-[#fff8e9] shadow-sm"
-              role="status"
-            >
-              Details checked. No order or payment proof has been submitted yet.
-            </div>
-            <button
+
+<div
+  id="checkout-preview-status"
+  x-show="checkoutPreviewComplete"
+  x-transition
+  class="mt-4 rounded-xl border border-emerald-400/35 bg-emerald-400/10 px-4 py-3 text-sm font-medium leading-6 text-emerald-100"
+  role="status"
+>
+  Details checked. You can now submit this order for admin verification.
+</div>
+
+<button
   type="submit"
+  x-show="!checkoutPreviewComplete"
   class="mt-5 inline-flex h-12 w-full items-center justify-center rounded-full bg-brand-gold px-7 text-sm font-semibold text-brand-black transition hover:bg-brand-gold-light disabled:cursor-not-allowed disabled:opacity-60"
-  :disabled="!checkoutPaymentsReady || checkoutPreviewComplete || isCheckingCart"
+  :disabled="!checkoutPaymentsReady || isCheckingCart"
   x-text="
     !checkoutPaymentsReady
       ? 'Ordering not open yet'
       : isCheckingCart
-        ? 'Checking stock and price...'
-        : checkoutPreviewComplete
-          ? 'Checkout details checked'
-          : 'Check checkout details'
+        ? 'Reviewing order details...'
+        : 'Review Order Details'
   "
 ></button>
-            <button
-              type="button"
-              x-show="checkoutPreviewComplete && !submittedOrderId"
-              @click="submitOrder()"
-              :disabled="!checkoutPaymentsReady || isSubmittingOrder || orderSubmissionUncertain"
-              class="mt-3 inline-flex h-12 w-full items-center justify-center rounded-full border border-brand-gold px-7 text-sm font-semibold text-brand-gold disabled:cursor-not-allowed disabled:opacity-50"
-              x-text="isSubmittingOrder ? 'Submitting order...' : 'Submit order for verification'"
-            ></button>
-            <p
-              x-show="orderCheckError"
-              x-text="orderCheckError"
-              class="mt-3 text-center text-sm text-red-400"
-              role="alert"
-            ></p>
-            <p class="mt-3 text-center text-xs leading-5 text-brand-muted">
-              Once ordering opens, submitted orders remain pending until the company verifies
-              the payment and order details.
-            </p>
+
+<button
+  type="button"
+  x-show="checkoutPreviewComplete && !submittedOrderId"
+  @click="submitOrder()"
+  :disabled="!checkoutPaymentsReady || isSubmittingOrder || orderSubmissionUncertain"
+  class="mt-5 inline-flex h-12 w-full items-center justify-center rounded-full bg-brand-gold px-7 text-sm font-semibold text-brand-black transition hover:bg-brand-gold-light disabled:cursor-not-allowed disabled:opacity-50"
+  x-text="isSubmittingOrder ? 'Submitting order...' : 'Submit Order for Verification'"
+></button>
+
+<button
+  type="button"
+  x-show="checkoutPreviewComplete && !submittedOrderId"
+  @click="checkoutPreviewComplete = false"
+  class="mt-3 inline-flex h-11 w-full items-center justify-center rounded-full border border-brand-border px-7 text-sm font-semibold text-brand-muted transition hover:border-brand-gold hover:text-brand-gold"
+>
+  Edit Details
+</button>
+
+<p
+  x-show="orderCheckError"
+  x-text="orderCheckError"
+  class="mt-3 text-center text-sm text-red-400"
+  role="alert"
+></p>
+
+<p class="mt-3 text-center text-xs leading-5 text-brand-muted">
+  Submitted orders remain pending until the company verifies the payment and order details.
+</p>
           </section>
           </form>
         </div>
