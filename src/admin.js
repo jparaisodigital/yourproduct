@@ -3648,9 +3648,9 @@ async awardOrderPoints() {
     return
   }
 
-  if (order.status !== 'delivered') {
+  if (!this.approvedOrderStatuses.includes(order.status)) {
     this.orderPointsError =
-      'Only delivered orders can receive points.'
+      'Only approved orders can receive points.'
     return
   }
 
