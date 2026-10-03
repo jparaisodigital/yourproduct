@@ -12,6 +12,23 @@ export function renderProductCard(product, options = {}) {
     product.isActive &&
     Number(product.stockQuantity || 0) > 0
 
+  const isAdminPreview =
+    options.isAdminPreview === true
+
+  const addToCartAttributes =
+    isAdminPreview
+      ? 'disabled aria-disabled="true"'
+      : `
+          data-action="add-to-cart"
+          data-product-id="${product.id}"
+          @click.prevent="$addToCartWithAnimation('${product.id}', $event.currentTarget)"
+        `
+
+  const addToCartDisabledAttribute =
+    isAdminPreview || !isAvailable
+      ? 'disabled'
+      : ''
+
   const stockLabel = !product.isActive
     ? 'Coming soon'
     : isAvailable
@@ -32,7 +49,7 @@ export function renderProductCard(product, options = {}) {
     tierPrice > 0 &&
     !product.fixedPrice
 
-    const priceMarkup = hasTierPrice
+  const priceMarkup = hasTierPrice
     ? `
         <div
           class="flex items-end justify-between gap-3"
@@ -274,11 +291,9 @@ export function renderProductCard(product, options = {}) {
           <button
             type="button"
             class="inline-flex h-10 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-lg bg-brand-gold px-3 text-[0.65rem] font-bold uppercase tracking-[0.05em] text-[#17130d] shadow-[0_8px_22px_rgb(183_138_50_/_0.18)] transition duration-200 hover:-translate-y-0.5 hover:bg-brand-gold-light active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 sm:h-11 sm:gap-2 sm:rounded-xl sm:px-4 sm:text-xs sm:tracking-[0.1em]"
-            data-action="add-to-cart"
-            data-product-id="${product.id}"
-            @click.prevent="$addToCartWithAnimation('${product.id}', $event.currentTarget)"
+            ${addToCartAttributes}
             aria-live="polite"
-            ${isAvailable ? '' : 'disabled'}
+            ${addToCartDisabledAttribute}
           >
             <svg
               viewBox="0 0 24 24"
@@ -311,18 +326,20 @@ export function renderProductCard(product, options = {}) {
 
             <span
               x-text="
-                $store.cart.quantityFor(
-                  '${product.id}'
-                ) > 0
-                  ? 'Added (' +
-                    $store.cart.quantityFor(
+                ${isAdminPreview}
+                  ? 'Admin Preview'
+                  : $store.cart.quantityFor(
                       '${product.id}'
-                    ) +
-                    ')'
-                  : 'Add to cart'
+                    ) > 0
+                      ? 'Added (' +
+                        $store.cart.quantityFor(
+                          '${product.id}'
+                        ) +
+                        ')'
+                      : 'Add to cart'
               "
             >
-              Add to cart
+              ${isAdminPreview ? 'Admin Preview' : 'Add to cart'}
             </span>
           </button>
         </div>

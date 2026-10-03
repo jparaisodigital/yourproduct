@@ -148,6 +148,8 @@ async function startStorefront() {
     signedInProfile = profile ?? null
   }
 
+  const isAdminPreview = signedInRole === 'admin'
+
   if (
     signedInProfile?.customer_type === 'member' &&
     signedInProfile?.membership_status === 'active'
@@ -201,13 +203,15 @@ async function startStorefront() {
       'prestige',
     ].includes(storefrontPricingType)
 
-  const storefrontProductCardOptions =
-    storefrontHasApprovedPricingTier
+  const storefrontProductCardOptions = {
+    ...(storefrontHasApprovedPricingTier
       ? {
           tierLabel: tierLabelByType[storefrontPricingType],
           tierPrice: tierPriceByType[storefrontPricingType],
         }
-      : {}
+      : {}),
+    isAdminPreview,
+  }
 
   const liveProductsById = new Map(
     liveProducts.map((product) => [product.id, product]),
@@ -286,10 +290,21 @@ async function startStorefront() {
     role: signedInRole,
   })}
 
+  ${isAdminPreview
+    ? `
+    <div class="border-b border-brand-gold/30 bg-brand-gold/10 px-4 py-3 text-center text-xs font-semibold uppercase tracking-[0.14em] text-brand-gold">
+      Admin preview mode. Shopping and package selection are disabled for admin accounts.
+    </div>
+  `
+    : ''
+  }
+
     <main>
       ${renderHero(homeConfig, siteConfig)}
 
-      ${renderStarterOffersSection()}
+      ${renderStarterOffersSection({
+        isAdminPreview,
+      })}
 
       ${renderProductsSection(
         storefrontProducts.filter(
@@ -300,7 +315,9 @@ async function startStorefront() {
         storefrontProductCardOptions,
       )}
 
-      ${renderPackagesSection(packages)}
+      ${renderPackagesSection(packages, {
+        isAdminPreview,
+      })}
 
       ${renderAccountCtaSection()}
 

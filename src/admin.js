@@ -232,9 +232,44 @@ function renderAdminSidebar() {
             Admin Workspace
           </p>
 
-          <p class="mt-1 text-xs text-brand-muted">
+                    <p class="mt-1 text-xs text-brand-muted">
             Orders, customers, products, and inventory are connected. Other sections are in progress.
           </p>
+
+          <button
+            type="button"
+            class="mt-4 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-xl border border-brand-border px-4 text-xs font-semibold text-brand-cream transition hover:border-brand-gold hover:text-brand-gold disabled:cursor-not-allowed disabled:opacity-50"
+            :disabled="isLoggingOut"
+            @click="logOut()"
+          >
+            <svg
+              class="size-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              aria-hidden="true"
+            >
+              <path
+                d="M10 17l5-5-5-5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              ></path>
+
+              <path
+                d="M15 12H3"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              ></path>
+
+              <path
+                d="M21 4v16"
+                stroke-linecap="round"
+              ></path>
+            </svg>
+
+            <span x-text="isLoggingOut ? 'Logging out...' : 'Log out'"></span>
+          </button>
         </div>
       </div>
     </div>
@@ -4867,14 +4902,6 @@ document.querySelector('#admin-app').innerHTML = `
 >
   View Store
 </a>
-
-<button
-  type="button"
-  class="text-xs font-semibold text-brand-muted transition hover:text-brand-gold disabled:opacity-50 sm:text-sm"
-  @click="logOut()"
-  :disabled="isLoggingOut"
-  x-text="isLoggingOut ? 'Logging out...' : 'Log out'"
-></button>
 
 <p
   x-show="logoutError"

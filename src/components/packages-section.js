@@ -4,7 +4,13 @@ const pesoFormatter = new Intl.NumberFormat('en-PH', {
   minimumFractionDigits: 0,
 })
 
-function renderPackageCard(packageItem, index) {
+function renderPackageCard(
+  packageItem,
+  index,
+  options = {},
+) {
+  const isAdminPreview =
+    options.isAdminPreview === true
   const priceMarkup =
     packageItem.price !== null
       ? `
@@ -150,6 +156,32 @@ function renderPackageCard(packageItem, index) {
     ? 'bg-brand-gold text-[#17130d] hover:bg-brand-gold-light'
     : 'border border-brand-border text-brand-cream hover:border-brand-gold hover:bg-brand-gold/5 hover:text-brand-gold'
 
+    const packageCtaHref =
+    isAdminPreview
+      ? '#packages'
+      : `/login/?package=${encodeURIComponent(packageItem.id)}`
+
+  const packageCtaLabel =
+    isAdminPreview
+      ? 'Admin Preview Only'
+      : `Choose ${packageItem.shortLabel}`
+
+  const packageCtaAttributes =
+    isAdminPreview
+      ? 'aria-disabled="true" tabindex="-1"'
+      : `
+          data-package-cta="${packageItem.id}"
+          data-package-name="${packageItem.name}"
+          data-package-price="${pesoFormatter.format(packageItem.price)}"
+          data-package-description="${packageItem.description}"
+          data-package-inclusions="${packageItem.inclusions.join(' | ')}"
+        `
+
+  const packageCtaClass =
+    isAdminPreview
+      ? 'border border-brand-border text-brand-muted opacity-70 cursor-not-allowed'
+      : buttonClass
+
   return `
     <article
       class="${cardClass} package-scroll-card group relative flex h-full flex-col overflow-hidden rounded-[1.4rem] border p-5 transition duration-300 hover:-translate-y-1 hover:border-brand-gold/60 sm:p-6 lg:p-5"
@@ -198,15 +230,11 @@ function renderPackageCard(packageItem, index) {
 
         <div class="mt-auto pt-4 sm:pt-5 lg:pt-3">
           <a
-  href="/login/?package=${encodeURIComponent(packageItem.id)}"
-  data-package-cta="${packageItem.id}"
-  data-package-name="${packageItem.name}"
-  data-package-price="${pesoFormatter.format(packageItem.price)}"
-  data-package-description="${packageItem.description}"
-  data-package-inclusions="${packageItem.inclusions.join(' | ')}"
-  class="${buttonClass} inline-flex h-10 w-full items-center justify-center rounded-xl px-4 text-[0.68rem] font-semibold uppercase tracking-[0.07em] transition duration-200 active:scale-[0.98] sm:h-11 sm:text-xs sm:tracking-[0.08em] lg:h-10"
->
-            Choose ${packageItem.shortLabel}
+           href="${packageCtaHref}"
+           ${packageCtaAttributes}
+           class="${packageCtaClass} inline-flex h-10 w-full items-center justify-center rounded-xl px-4 text-[0.68rem] font-semibold uppercase tracking-[0.07em] transition duration-200 active:scale-[0.98] sm:h-11 sm:text-xs sm:tracking-[0.08em] lg:h-10"
+           >
+           ${packageCtaLabel}
           </a>
         </div>
       </div>
@@ -214,14 +242,21 @@ function renderPackageCard(packageItem, index) {
   `
 }
 
-export function renderPackagesSection(packages) {
+export function renderPackagesSection(
+  packages,
+  options = {},
+) {
   const activePackages = packages.filter(
     (packageItem) => packageItem.isActive,
   )
 
   const packageCards = activePackages
     .map((packageItem, index) =>
-      renderPackageCard(packageItem, index),
+      renderPackageCard(
+        packageItem,
+        index,
+        options,
+      ),
     )
     .join('')
 

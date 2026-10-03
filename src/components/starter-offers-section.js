@@ -7,7 +7,26 @@ const pesoFormatter = new Intl.NumberFormat('en-PH', {
   minimumFractionDigits: 0,
 })
 
-export function renderStarterOffersSection() {
+export function renderStarterOffersSection(
+  options = {},
+) {
+  const isAdminPreview =
+    options.isAdminPreview === true
+
+  const testerKitActionAttributes =
+    isAdminPreview
+      ? 'disabled aria-disabled="true"'
+      : `
+          data-action="add-to-cart"
+          data-product-id="tester-kit"
+          @click.prevent="$addToCartWithAnimation('tester-kit', $event.currentTarget)"
+        `
+
+  const testerKitButtonLabel =
+    isAdminPreview
+      ? 'Admin Preview Only'
+      : 'Add Tester Kit to Cart'
+
   return `
   <section
   id="starter-offers"
@@ -78,11 +97,9 @@ export function renderStarterOffersSection() {
               <button
   type="button"
   class="mt-6 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-brand-gold px-5 text-sm font-semibold text-[#17130d] transition hover:bg-brand-gold-light disabled:cursor-not-allowed disabled:opacity-50"
-  data-action="add-to-cart"
-  data-product-id="tester-kit"
-  @click.prevent="$addToCartWithAnimation('tester-kit', $event.currentTarget)"
+  ${testerKitActionAttributes}
 >
-  Add Tester Kit to Cart
+  ${testerKitButtonLabel}
 </button>
             </div>
           </article>
