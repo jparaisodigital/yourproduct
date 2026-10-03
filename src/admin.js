@@ -2348,19 +2348,23 @@ Alpine.data('adminDashboard', () => ({
   },
 
   get approvedOrders() {
-    return this.orders.filter(
-      (order) =>
-        this.approvedOrderStatuses.includes(
-        order.status,
-      ),
+    const sourceOrders =
+      this.liveOrders.length > 0
+        ? this.liveOrders
+        : this.orders
+
+    return sourceOrders.filter((order) =>
+      this.approvedOrderStatuses.includes(order.status),
     )
   },
 
   approvedOrderDate(order) {
     const approvedDateValue =
-    order.approved_at ||
+    order.payment_approved_at ||
+    order.shipped_at ||
+    order.delivered_at ||
     order.reviewed_at ||
-    order.updated_at
+    order.created_at
 
     if (!approvedDateValue) {
       return null
@@ -4754,6 +4758,8 @@ async loadLiveOrders() {
       .from('orders')
       .select(`
         id, status, subtotal, delivery_fee, created_at,
+        payment_approved_at, payment_rejected_at,
+        reviewed_at, shipped_at, delivered_at,
         customer_details, delivery_details,
         payment_method, payment_proof_path,
         order_items(id, product_name, quantity, unit_price)
