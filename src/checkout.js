@@ -386,16 +386,19 @@ async function startCheckout() {
     const liveProduct = liveProductById.get(product.id)
     const regularPrice = Number(liveProduct?.regular_price ?? 0)
     const memberPrice = Number(liveProduct?.member_price ?? 0)
+    const effectiveMemberPrice = product.fixedPrice
+      ? regularPrice
+      : memberPrice
 
     return {
       ...product,
       isActive:
         liveProduct?.is_active === true &&
         regularPrice > 0 &&
-        memberPrice > 0,
+        effectiveMemberPrice > 0,
       stockQuantity: Number(liveProduct?.stock_quantity ?? 0),
       regularPrice,
-      memberPrice,
+      memberPrice: effectiveMemberPrice,
     }
   })
 

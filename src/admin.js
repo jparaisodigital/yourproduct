@@ -1092,8 +1092,7 @@ function renderOrderDetailsDrawer() {
   </p>
 
   <p class="mt-1 text-xs leading-5 text-emerald-100/80">
-    This order is complete. Award points only for qualified
-    active-member perfume orders.
+    This order is complete. Points are awarded automatically for eligible active-member orders.
   </p>
 
   <button
@@ -3551,15 +3550,19 @@ async updateOrderFulfillment(nextStatus) {
   this.orderFulfillmentError = ''
 
   try {
-    const { data: updatedStatus, error } =
-      await supabase.rpc(
-        'admin_update_order_fulfillment',
-        {
-          p_order_id: order.id,
-          p_next_status: nextStatus,
-          p_admin_note: null,
-        },
-      )
+    const fulfillmentAction =
+    nextStatus === 'shipped' ? 'ship' : 'deliver'
+
+  const { data: updatedStatus, error } =
+    await supabase.rpc(
+      'admin_update_order_fulfillment',
+      {
+        p_order_id: order.id,
+        p_action: fulfillmentAction,
+        p_tracking_reference: null,
+        p_fulfillment_note: null,
+      },
+    )
 
     if (error) throw error
 
@@ -3585,11 +3588,7 @@ async updateOrderFulfillment(nextStatus) {
       this.liveOrders = this.liveOrders.map(updateOrder)
     }
 
-    this.selectedOrder = {
-      ...order,
-      status: updatedStatus,
-      reviewed_at: reviewedAt,
-    }
+    this.selectedOrderId = order.id
 
     if (typeof this.loadLiveOrders === 'function') {
       await this.loadLiveOrders()
@@ -3609,7 +3608,8 @@ async updateOrderFulfillment(nextStatus) {
     )
 
     this.orderFulfillmentError =
-      'Could not update fulfillment status. Refresh and check the order.'
+    error?.message ||
+    'Could not update fulfillment status. Refresh and check the order.'
   } finally {
     this.orderFulfillmentSubmitting = false
   }
