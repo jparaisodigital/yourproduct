@@ -122,7 +122,7 @@ const adminNavigationItems = [
   },
   {
     id: 'points-audit',
-    label: 'Points Audit',
+    label: 'Points & Rewards',
   },
   {
     id: 'customers',
@@ -140,7 +140,7 @@ const adminPageTitles = {
   orders: 'Orders',
   'sales-inventory': 'Sales & Inventory',
   'referrals-payouts': 'Referrals & Payouts',
-  'points-audit': 'Points Audit',
+  'points-audit': 'Points & Rewards',
   customers: 'Customers',
   products: 'Products',
 }

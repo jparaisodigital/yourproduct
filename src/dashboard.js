@@ -1584,7 +1584,7 @@ function renderSidebar() {
     ></path>
   </svg>
 
-  <span>My Points</span>
+  <span>Points & Rewards</span>
 </button>
 
         <button

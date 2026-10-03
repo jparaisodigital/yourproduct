@@ -188,10 +188,10 @@ export function renderAdminPointsAuditPage() {
             id="admin-points-audit-title"
             class="mt-2 font-display text-4xl text-brand-cream sm:text-5xl"
           >
-            Points Audit
+            Points & Rewards
           </h1>
           <p class="mt-3 max-w-2xl text-sm leading-7 text-brand-muted">
-            Review real member points awarded from qualified delivered product orders.
+            Review member points activity and future reward redemption requests.
           </p>
         </div>
       </div>
@@ -242,6 +242,62 @@ export function renderAdminPointsAuditPage() {
             ></strong>
           </article>
         </div>
+
+                <section
+          class="mt-6 rounded-[1.5rem] border border-brand-border bg-brand-panel p-5 shadow-panel sm:p-6"
+          aria-labelledby="admin-reward-requests-title"
+        >
+          <div class="grid gap-5 lg:grid-cols-[1fr_auto] lg:items-start">
+            <div>
+              <p class="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-brand-gold">
+                Rewards
+              </p>
+
+              <h2
+                id="admin-reward-requests-title"
+                class="mt-1 font-display text-3xl text-brand-cream"
+              >
+                Reward Requests
+              </h2>
+
+              <p class="mt-2 max-w-2xl text-sm leading-6 text-brand-muted">
+                Future member reward claims will appear here after redemption review is connected.
+              </p>
+            </div>
+
+            <div class="grid gap-3 sm:grid-cols-2">
+              <div class="rounded-2xl border border-brand-border bg-brand-black px-5 py-4">
+                <p class="text-xs uppercase tracking-[0.13em] text-brand-muted">
+                  Pending Requests
+                </p>
+
+                <strong class="mt-2 block font-display text-3xl text-brand-cream">
+                  0
+                </strong>
+              </div>
+
+              <div class="rounded-2xl border border-brand-border bg-brand-black px-5 py-4">
+                <p class="text-xs uppercase tracking-[0.13em] text-brand-muted">
+                  Approved Rewards
+                </p>
+
+                <strong class="mt-2 block font-display text-3xl text-brand-cream">
+                  0
+                </strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-5 rounded-2xl border border-dashed border-brand-border bg-brand-black px-5 py-8 text-center">
+            <h3 class="font-display text-2xl text-brand-cream">
+              No reward requests yet
+            </h3>
+
+            <p class="mx-auto mt-2 max-w-xl text-sm leading-6 text-brand-muted">
+              Eligible members will be able to request rewards from their Points & Rewards page. Admin approval and point deduction will be added in the redemption backend update.
+            </p>
+          </div>
+        </section>
 
         <section
           class="mt-6 rounded-[1.5rem] border border-brand-border bg-brand-panel p-5 shadow-panel sm:p-6"

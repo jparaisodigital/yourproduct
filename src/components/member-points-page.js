@@ -1,5 +1,95 @@
 import { supabase } from '../lib/supabase.js'
 
+import rewardJourneyImage from '../assets/rewards/reward-journey.png'
+import androidPhoneImage from '../assets/rewards/android-phone.jpg'
+import laptopImage from '../assets/rewards/laptop.jpg'
+import iphoneImage from '../assets/rewards/iphone.jpg'
+import motorcycleImage from '../assets/rewards/motorcyle.jpg'
+import carImage from '../assets/rewards/car.jpg'
+
+const rewardCatalog = [
+  {
+    id: 'android-phone',
+    name: 'Brand-New Android Cellphone',
+    points: 10000,
+    image: androidPhoneImage,
+  },
+  {
+    id: 'laptop',
+    name: 'Laptop',
+    points: 20000,
+    image: laptopImage,
+  },
+  {
+    id: 'iphone',
+    name: 'iPhone 17 Pro Max',
+    points: 50000,
+    image: iphoneImage,
+  },
+  {
+    id: 'motorcycle',
+    name: 'Achiever Motorcycle',
+    points: 100000,
+    image: motorcycleImage,
+  },
+  {
+    id: 'car',
+    name: 'Achiever Car',
+    points: 200000,
+    image: carImage,
+  },
+]
+
+const rewardCardsMarkup = rewardCatalog
+  .map(
+    (reward) => `
+      <article class="flex h-full flex-col overflow-hidden rounded-2xl border border-brand-border bg-brand-black">
+        <div class="aspect-[4/5] bg-brand-panel p-2">
+          <img
+            src="${reward.image}"
+            alt="${reward.name}"
+            class="h-full w-full rounded-xl object-contain"
+            loading="lazy"
+          >
+        </div>
+
+        <div class="flex flex-1 flex-col p-4">
+          <p class="text-xs font-semibold uppercase tracking-[0.12em] text-brand-gold">
+            ${reward.points.toLocaleString('en-PH')} points
+          </p>
+
+          <h3 class="mt-2 text-base font-semibold leading-6 text-brand-cream">
+            ${reward.name}
+          </h3>
+
+          <p
+            class="mt-3 text-xs leading-5"
+            :class="availablePoints >= ${reward.points} ? 'text-emerald-300' : 'text-brand-muted'"
+            x-text="
+              availablePoints >= ${reward.points}
+                ? 'Eligible for admin review'
+                : 'Need ' + (${reward.points} - availablePoints).toLocaleString('en-PH') + ' more points'
+            "
+          ></p>
+
+          <button
+            type="button"
+            class="mt-auto inline-flex min-h-10 items-center justify-center rounded-full border px-4 text-xs font-semibold transition"
+            :class="
+              availablePoints >= ${reward.points}
+                ? 'border-brand-gold text-brand-gold hover:bg-brand-gold hover:text-[#17130d]'
+                : 'border-brand-border text-brand-muted opacity-60'
+            "
+            :disabled="availablePoints < ${reward.points}"
+          >
+            Request Reward
+          </button>
+        </div>
+      </article>
+    `,
+  )
+  .join('')
+
 export function registerMemberPointsPage(Alpine) {
   Alpine.data('memberPointsPage', () => ({
     transactions: [],
@@ -169,11 +259,11 @@ export function renderMemberPointsPage() {
             id="member-points-title"
             class="mt-2 font-display text-4xl text-brand-cream sm:text-5xl"
           >
-            Points Ledger
+            My Points & Rewards
           </h1>
 
           <p class="mt-3 max-w-2xl text-sm leading-7 text-brand-muted">
-            Track points earned from qualified delivered product orders.
+            Track your points balance, history, and achievement rewards.
           </p>
         </div>
       </div>
@@ -233,6 +323,65 @@ export function renderMemberPointsPage() {
             </p>
           </article>
         </div>
+
+        <section
+          class="mt-6 rounded-[1.5rem] border border-brand-border bg-brand-panel p-5 shadow-panel sm:p-6"
+          aria-labelledby="reward-journey-title"
+        >
+          <div class="grid gap-5 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+            <div>
+              <p class="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-brand-gold">
+                Rewards
+              </p>
+
+              <h2
+                id="reward-journey-title"
+                class="mt-1 font-display text-3xl text-brand-cream"
+              >
+                Reward Journey
+              </h2>
+
+              <p class="mt-2 text-sm leading-6 text-brand-muted">
+                Reach points milestones and request admin review for eligible rewards.
+              </p>
+            </div>
+
+            <p class="text-xs leading-5 text-brand-muted lg:text-right">
+              Rewards are subject to official qualification, mechanics, eligibility, and admin approval.
+            </p>
+          </div>
+
+          <div class="mt-5 rounded-2xl border border-brand-border bg-brand-black p-3">
+            <img
+              src="${rewardJourneyImage}"
+              alt="YOUR PRODUCT points achievement rewards"
+              class="mx-auto h-auto max-h-[900px] w-full object-contain"
+              loading="lazy"
+            >
+          </div>
+
+          <div class="mt-6">
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p class="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-brand-gold">
+                  Rewards Catalog
+                </p>
+
+                <h3 class="mt-1 font-display text-2xl text-brand-cream">
+                  Choose a milestone reward
+                </h3>
+              </div>
+
+              <p class="text-xs leading-5 text-brand-muted">
+                Rewards are arranged from lowest to highest required points.
+              </p>
+            </div>
+
+            <div class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+              ${rewardCardsMarkup}
+            </div>
+          </div>
+        </section>
 
         <div class="mt-6 rounded-[1.5rem] border border-brand-border bg-brand-panel p-5 shadow-panel sm:p-6">
           <p class="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-brand-gold">
