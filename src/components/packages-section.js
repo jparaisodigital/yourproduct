@@ -190,10 +190,10 @@ function renderPackageCard(packageItem, index) {
         </p>
 
       ${priceMarkup}
-      ${pointsRewardMarkup}
-      ${inclusionsMarkup}
       ${discountMarkup}
+      ${pointsRewardMarkup}
       ${optionsMarkup}
+      ${inclusionsMarkup}
       
 
         <div class="mt-auto pt-4 sm:pt-5 lg:pt-3">

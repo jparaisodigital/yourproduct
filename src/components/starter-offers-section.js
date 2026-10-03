@@ -66,11 +66,12 @@ export function renderStarterOffersSection() {
 
               <p class="mt-4 text-sm leading-6 text-brand-muted">
                 A complete 20-piece 5ml tester kit for customers who want to explore the full scent lineup.
+                Includes 20 pcs 5ml assorted testers, ideal for scent sampling before buying full bottles.
               </p>
 
               <div class="mt-5 rounded-xl border border-brand-gold/25 bg-brand-gold/10 px-4 py-3">
                 <p class="text-xs font-semibold text-brand-gold">
-                  Earns 10 points when delivered as a product order.
+                  Active members earn 10 points after order approval.
                 </p>
               </div>
 
