@@ -3599,7 +3599,7 @@ async updateOrderFulfillment(nextStatus) {
     )
 
     if (refreshedOrder) {
-      this.selectedOrder = refreshedOrder
+      this.selectedOrderId = refreshedOrder.id
     }
   } catch (error) {
     console.error(
