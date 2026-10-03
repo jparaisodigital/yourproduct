@@ -2528,7 +2528,33 @@ registerProductViewStore(
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
 
-  signedInOrders = orderRows ?? []
+    const orderIds = (orderRows ?? []).map((order) => order.id)
+  let pointsByOrderId = new Map()
+
+  if (orderIds.length > 0) {
+    const { data: pointRows, error: pointsError } = await supabase
+      .from('points_transactions')
+      .select('order_id, points')
+      .in('order_id', orderIds)
+      .eq('type', 'order_award')
+      .eq('status', 'confirmed')
+
+    if (pointsError) {
+      console.error('Unable to load order points:', pointsError)
+    } else {
+      pointsByOrderId = new Map(
+        (pointRows ?? []).map((row) => [
+          row.order_id,
+          Number(row.points || 0),
+        ]),
+      )
+    }
+  }
+
+  signedInOrders = (orderRows ?? []).map((order) => ({
+    ...order,
+    pointsAwarded: pointsByOrderId.get(order.id) ?? 0,
+  }))
   signedInOrdersError = Boolean(ordersError)
 
   if (ordersError) {
@@ -4120,6 +4146,13 @@ registerProductViewStore(
                   class="mt-3 text-sm text-brand-cream"
                   x-text="'Items: ₱' + Number(order.subtotal).toLocaleString('en-PH', { minimumFractionDigits: 2 })"
                 ></p>
+
+                <p
+                  x-show="Number(order.pointsAwarded || 0) > 0"
+                  class="mt-2 inline-flex rounded-full border border-brand-gold/35 bg-brand-gold/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.08em] text-brand-gold"
+                  x-text="'+' + Number(order.pointsAwarded || 0).toLocaleString('en-PH') + ' points earned'"
+                ></p>
+
                 <p
                   x-show="order.delivery_fee === null"
                   class="mt-1 text-xs text-brand-muted"

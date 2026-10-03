@@ -1095,20 +1095,17 @@ function renderOrderDetailsDrawer() {
     This order is complete. Points are awarded automatically for eligible active-member orders.
   </p>
 
-  <button
-  x-show="!orderPointsAwarded"
-  type="button"
-  class="mt-4 inline-flex min-h-10 w-full items-center justify-center rounded-full bg-brand-gold px-4 text-sm font-semibold text-[#17130d] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
-  @click="awardOrderPoints()"
-  :disabled="orderPointsSubmitting"
-  x-text="orderPointsSubmitting ? 'Awarding...' : 'Award Points'"
-></button>
+  <p
+  x-show="Number(selectedOrder?.pointsAwarded || 0) > 0"
+  class="mt-4 rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-xs font-semibold uppercase tracking-[0.08em] text-emerald-200"
+  x-text="'Points awarded: +' + Number(selectedOrder?.pointsAwarded || 0).toLocaleString('en-PH')"
+></p>
 
 <p
-  x-show="orderPointsAwarded"
-  class="mt-4 rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-xs font-semibold uppercase tracking-[0.08em] text-emerald-200"
+  x-show="Number(selectedOrder?.pointsAwarded || 0) === 0"
+  class="mt-4 rounded-xl border border-brand-border bg-brand-black px-4 py-3 text-xs leading-5 text-brand-muted"
 >
-  Points already awarded
+  No points were awarded for this order. Points apply only to eligible active-member orders.
 </p>
 
   <p
@@ -4765,7 +4762,33 @@ async loadLiveOrders() {
 
     if (error) throw error
 
-    this.liveOrders = data ?? []
+    const orderIds = (data ?? []).map((order) => order.id)
+    let pointsByOrderId = new Map()
+
+    if (orderIds.length > 0) {
+      const { data: pointRows, error: pointsError } = await supabase
+        .from('points_transactions')
+        .select('order_id, points')
+        .in('order_id', orderIds)
+        .eq('type', 'order_award')
+        .eq('status', 'confirmed')
+
+      if (pointsError) {
+        console.error('Unable to load order points:', pointsError)
+      } else {
+        pointsByOrderId = new Map(
+          (pointRows ?? []).map((row) => [
+            row.order_id,
+            Number(row.points || 0),
+          ]),
+        )
+      }
+    }
+
+    this.liveOrders = (data ?? []).map((order) => ({
+      ...order,
+      pointsAwarded: pointsByOrderId.get(order.id) ?? 0,
+    }))
   } catch (error) {
     console.error('Unable to load live orders:', error)
     this.liveOrders = []
