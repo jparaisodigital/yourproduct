@@ -219,7 +219,7 @@ proof_url, requested_at, reviewed_at, paid_at
 
       if (requestedAmount > this.availableIncome) {
         this.errorMessage =
-          'The requested amount is greater than your available balance.'
+          'The requested amount is greater than your available income.'
         return
       }
 
@@ -378,20 +378,73 @@ export function renderMemberPayoutPage() {
 
       <div x-show="!loading">
         <div class="mt-6 grid gap-6 xl:grid-cols-[0.8fr_1.2fr]">
-          <aside class="rounded-[1.5rem] border border-emerald-400/30 bg-brand-panel p-5 shadow-panel sm:p-6">
-            <p class="text-xs font-semibold uppercase tracking-[0.16em] text-brand-muted">
-              Available Balance
+                    <aside class="rounded-[1.5rem] border border-brand-border bg-brand-panel p-5 shadow-panel sm:p-6">
+            <p class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold">
+              Payouts
             </p>
 
-            <strong
-              class="mt-3 block font-display text-5xl text-emerald-300"
-              x-text="formatMoney(availableIncome)"
-            ></strong>
+            <h2 class="mt-1 font-display text-3xl text-brand-cream">
+              Wallet Summary
+            </h2>
 
-            <p class="mt-4 text-xs leading-5 text-brand-muted">
-              Only earned direct-referral commissions can be requested.
-              For MVP, request the exact available commission amount.
+            <p class="mt-2 text-xs leading-5 text-brand-muted">
+              Only approved direct-referral income can be requested for payout.
             </p>
+
+            <div class="mt-5 grid gap-3">
+              <div class="rounded-2xl border border-emerald-400/30 bg-emerald-400/10 p-4">
+                <p class="text-xs font-semibold uppercase tracking-[0.12em] text-emerald-200">
+                  Available Income
+                </p>
+
+                <strong
+                  class="mt-2 block font-display text-4xl text-emerald-200"
+                  x-text="formatMoney(availableIncome)"
+                ></strong>
+
+                <p class="mt-2 text-xs leading-5 text-brand-muted">
+                  Ready to request once payout details are complete.
+                </p>
+              </div>
+
+              <div class="rounded-2xl border border-brand-border bg-brand-black p-4">
+                <p class="text-xs font-semibold uppercase tracking-[0.12em] text-brand-muted">
+                  Pending Payouts
+                </p>
+
+                <strong
+                  class="mt-2 block font-display text-3xl text-brand-cream"
+                  x-text="formatMoney(
+                    payoutRequests
+                      .filter((request) => request.status === 'pending')
+                      .reduce((total, request) => total + Number(request.amount || 0), 0)
+                  )"
+                ></strong>
+
+                <p class="mt-2 text-xs leading-5 text-brand-muted">
+                  Requests waiting for admin review.
+                </p>
+              </div>
+
+              <div class="rounded-2xl border border-brand-border bg-brand-black p-4">
+                <p class="text-xs font-semibold uppercase tracking-[0.12em] text-brand-muted">
+                  Total Paid
+                </p>
+
+                <strong
+                  class="mt-2 block font-display text-3xl text-brand-cream"
+                  x-text="formatMoney(
+                    payoutRequests
+                      .filter((request) => request.status === 'paid')
+                      .reduce((total, request) => total + Number(request.amount || 0), 0)
+                  )"
+                ></strong>
+
+                <p class="mt-2 text-xs leading-5 text-brand-muted">
+                  Released payouts with admin proof.
+                </p>
+              </div>
+            </div>
           </aside>
 
           <form
@@ -401,12 +454,16 @@ export function renderMemberPayoutPage() {
           >
             <div>
               <p class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold">
-                Request Details
+              Request Payout
               </p>
 
               <h2 class="mt-1 font-display text-3xl text-brand-cream">
-                Where should we send it?
+               Payout Destination
               </h2>
+
+              <p class="mt-2 text-xs leading-5 text-brand-muted">
+              Enter the account where admin should send your approved payout.
+              </p>
             </div>
 
             <div class="mt-5 grid gap-4 sm:grid-cols-2">
@@ -570,7 +627,7 @@ export function renderMemberPayoutPage() {
           >
             <div>
               <p class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold">
-                Request Records
+                Payout Records
               </p>
 
               <h2
@@ -582,7 +639,7 @@ export function renderMemberPayoutPage() {
             </div>
 
             <p class="text-xs leading-5 text-brand-muted">
-              Real payout requests
+              Submitted, pending, paid, and rejected payout requests.
             </p>
           </div>
 
@@ -595,7 +652,7 @@ export function renderMemberPayoutPage() {
             </h3>
 
             <p class="mx-auto mt-2 max-w-md text-sm leading-6 text-brand-muted">
-              Submitted requests and admin payment proof will appear here.
+              Your payout requests and admin payment proof will appear here.
             </p>
           </div>
 
