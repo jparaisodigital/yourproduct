@@ -240,10 +240,8 @@ function createProduct({
     isFeatured: number === 1,
     isActive: true,
     
-    // Keep disabled until the qualified-bottle
-    // points rules are finalized.
-    isPointsQualified: false,
-    pointsPerUnit: 0,
+    isPointsQualified: true,
+    pointsPerUnit: 5,
     
     stockQuantity,
     lowStockThreshold: 5,

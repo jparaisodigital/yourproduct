@@ -8,7 +8,7 @@ export const homeConfig = {
         title: 'Find a scent that feels',
         highlightedText: 'uniquely yours.',
         description:
-        'Discover fragrances for every style, with exclusive membership benefits and rewards for qualified purchases.',
+        'Discover fragrances for every style, with exclusive membership benefits and rewards for active member purchases.',
       },
       {
         eyebrow: '6 Ways to Earn',
@@ -68,7 +68,7 @@ export const homeConfig = {
   trustPoints: [
     '20 signature scents',
     'Member-exclusive pricing',
-    'Rewards on qualified purchases',
+    'Rewards on member purchases',
   ],
   
   collections: {
@@ -153,16 +153,16 @@ export const homeConfig = {
       {
         number: '05',
         title: 'Enjoy Benefits',
-        description: 'Access qualified membership benefits and rewards.',
+        description: 'Access membership benefits and rewards.',
       },
     ],
   },
   
   rewards: {
     eyebrow: 'Points and Rewards',
-    title: 'Qualified purchases move you forward.',
+    title: 'Every approved member purchase moves you forward.',
     description:
-    'Members receive five points for every qualified bottle. Points may be redeemed for rewards based on confirmed company mechanics.',
+    'Members receive 5 points per perfume bottle and 10 points per tester kit after product order approval. Points may be redeemed for rewards based on confirmed company mechanics.',
   },
   
   finalCallToAction: {

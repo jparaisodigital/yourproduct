@@ -123,7 +123,7 @@ export function registerMemberPointsPage(Alpine) {
           source: this.typeLabel(transaction.type),
           description:
             transaction.description ||
-            'Qualified member product order',
+            'Approved member product order',
           points: Number(transaction.points || 0),
           status: transaction.status || 'confirmed',
           date: transaction.created_at,

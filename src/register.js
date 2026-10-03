@@ -423,7 +423,7 @@ Alpine.data('registerPage', () => ({
 
       if (!data.session) {
         this.registrationSuccess =
-          'Account submitted. Check your email and open the confirmation link before signing in.'
+          'Account created. You can now sign in with your email and password.'
         return
       }
 
@@ -753,10 +753,9 @@ document.querySelector('#register-app').innerHTML = `
                     :type="showPassword ? 'text' : 'password'"
                     x-model="account.password"
                     autocomplete="new-password"
-                    minlength="8"
-                    pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).{8,}"
-                    title="Use at least 8 characters with an uppercase letter, lowercase letter, and number."
-                    placeholder="Create a secure password"
+                    minlength="6"
+                    title="Use at least 6 characters."
+                    placeholder="Create a password"
                     class="h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 pr-20 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
                     required
                   >
@@ -772,8 +771,7 @@ document.querySelector('#register-app').innerHTML = `
                 <p
                   class="mt-2 text-xs leading-5 text-brand-muted"
                 >
-                  Minimum 8 characters with uppercase, lowercase, and
-                  one number.
+                Use at least 6 characters. Simple passwords are accepted.
                 </p>
               </div>
 
@@ -790,7 +788,7 @@ document.querySelector('#register-app').innerHTML = `
                   :type="showPassword ? 'text' : 'password'"
                   x-model="account.confirmPassword"
                   autocomplete="new-password"
-                  minlength="8"
+                  minlength="6"
                   placeholder="Enter your password again"
                   class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
                   required

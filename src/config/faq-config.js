@@ -114,7 +114,7 @@ export const faqItems = [
     id: 'question-18',
     category: 'rewards',
     question: 'How are points earned?',
-    answer: 'Approved membership packages can award starting points after admin approval. Qualified member product orders may also earn points after admin approval under the official points rules.',
+    answer: 'Approved membership packages earn points after admin approval. Active members also earn 5 points per perfume bottle and 10 points per tester kit after product order approval.',
   },
   {
     id: 'question-19',

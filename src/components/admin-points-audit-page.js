@@ -43,7 +43,7 @@ export function registerAdminPointsAuditPage(Alpine) {
           source: this.typeLabel(entry.type),
           description:
             entry.description ||
-            'Qualified member product order',
+            'Approved member product order',
           points: Number(entry.points || 0),
           status: entry.status || 'confirmed',
           date: entry.created_at,
