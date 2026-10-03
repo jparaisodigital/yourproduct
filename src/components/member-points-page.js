@@ -389,10 +389,11 @@ export function renderMemberPointsPage() {
           </p>
 
           <ul class="mt-4 grid gap-3 text-sm leading-6 text-brand-muted sm:grid-cols-2">
-            <li>Minimum qualified product order: 10 bottles.</li>
-            <li>Qualified product orders earn 5 points per bottle.</li>
-            <li>Points are awarded only after delivery.</li>
-            <li>Membership package bottles earn no points.</li>
+            <li>Approved member product orders earn points even from 1 item.</li>
+            <li>Perfume bottles earn 5 points each.</li>
+            <li>Tester kits earn 10 points each.</li>
+            <li>Approved membership packages also earn package points.</li>
+            <li>Cancelled or refunded points may be reversed.</li>
             <li>Cancelled or refunded points may be reversed.</li>
           </ul>
         </div>
