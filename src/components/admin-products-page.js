@@ -59,11 +59,28 @@ export function renderAdminProductsPage() {
                 ></span>
               </div>
 
-              <p class="mt-4 text-sm text-brand-muted">
-                Regular:
-                <span class="text-brand-cream" x-text="formatMoney(product.regular_price)"></span>
-                · Member:
-                <span class="text-brand-cream" x-text="formatMoney(product.member_price)"></span>
+                <p class="mt-4 text-sm text-brand-muted">
+                <template x-if="product.id === 'tester-kit'">
+                  <span>
+                    Fixed price:
+                    <span
+                      class="text-brand-cream"
+                      x-text="formatMoney(product.regular_price)"
+                    ></span>
+                  </span>
+                </template>
+
+                <template x-if="product.id !== 'tester-kit'">
+                  <span>
+                    Regular:
+                    <span
+                      class="text-brand-cream"
+                      x-text="formatMoney(product.regular_price)"
+                    ></span>
+                    · Reseller tiers:
+                    <span class="text-brand-cream">₱245–₱175</span>
+                  </span>
+                </template>
               </p>
               <p class="mt-2 text-sm text-brand-muted">
                 Stock:
@@ -81,7 +98,7 @@ export function renderAdminProductsPage() {
                 type="button"
                 class="mt-5 min-h-10 rounded-full border border-brand-gold px-5 text-sm font-semibold text-brand-gold disabled:cursor-not-allowed disabled:opacity-40"
                 @click="toggleProductAvailability(product)"
-                :disabled="savingAvailabilityProductId !== null || (!product.is_active && (Number(product.stock_quantity) < 1 || Number(product.regular_price) <= 0 || Number(product.member_price) <= 0))"
+                :disabled="savingAvailabilityProductId !== null || (!product.is_active && (Number(product.stock_quantity) < 1 || Number(product.regular_price) <= 0))"
                 x-text="savingAvailabilityProductId === product.id ? 'Saving...' : product.is_active ? 'Deactivate' : 'Activate'"
               ></button>
             </article>
