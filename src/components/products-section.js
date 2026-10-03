@@ -2,10 +2,11 @@ import { renderProductCard } from './product-card.js'
 
 export function renderProductsSection(
   products,
-  categories,
-  productsLoadError = false,
+  productCategories,
+  productsLoadError,
+  productCardOptions = {},
 ) {
-  const categoryButtons = categories
+  const categoryButtons = productCategories
     .map(
       (category) => `
         <button
@@ -25,8 +26,10 @@ export function renderProductsSection(
     )
     .join('')
 
-  const productCards = products
-    .map((product) => renderProductCard(product))
+    const productCards = products
+    .map((product) =>
+      renderProductCard(product, productCardOptions),
+    )
     .join('')
 
   return `

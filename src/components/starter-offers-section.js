@@ -9,9 +9,9 @@ const pesoFormatter = new Intl.NumberFormat('en-PH', {
 
 export function renderStarterOffersSection() {
   return `
-    <section
+  <section
   id="starter-offers"
-  x-data="{}"
+  x-data="{ zoomImage: null, zoomAlt: '' }"
   class="border-t border-brand-border bg-brand-black py-14 sm:py-16"
 >
       <div class="mx-auto w-[min(1240px,90%)]">
@@ -34,12 +34,19 @@ export function renderStarterOffersSection() {
             class="group overflow-hidden rounded-[1.5rem] border border-brand-gold/45 bg-brand-panel shadow-gold-soft"
           >
             <div class="bg-brand-black p-4">
-              <img
-                src="${testerKitImage}"
-                alt="Premium Tester Kit"
-                class="aspect-[4/3] w-full rounded-[1.1rem] object-contain transition duration-300 group-hover:scale-[1.02]"
-                loading="lazy"
-              >
+              <button
+  type="button"
+  class="block w-full cursor-zoom-in"
+  aria-label="Zoom Premium Tester Kit image"
+  @click="zoomImage = '${testerKitImage}'; zoomAlt = 'Premium Tester Kit'"
+>
+  <img
+    src="${testerKitImage}"
+    alt="Premium Tester Kit"
+    class="aspect-[4/3] w-full rounded-[1.1rem] object-contain transition duration-300 group-hover:scale-[1.02]"
+    loading="lazy"
+  >
+</button>
             </div>
 
             <div class="p-6 sm:p-7">
@@ -83,12 +90,19 @@ export function renderStarterOffersSection() {
             class="group overflow-hidden rounded-[1.5rem] border border-brand-border bg-brand-panel shadow-panel transition hover:border-brand-gold/50"
           >
             <div class="bg-brand-black p-4">
-              <img
-                src="${starterPackageImage}"
-                alt="Starter Package"
-                class="aspect-[4/3] w-full rounded-[1.1rem] object-contain transition duration-300 group-hover:scale-[1.02]"
-                loading="lazy"
-              >
+              <button
+  type="button"
+  class="block w-full cursor-zoom-in"
+  aria-label="Zoom Starter Package image"
+  @click="zoomImage = '${starterPackageImage}'; zoomAlt = 'Starter Package'"
+>
+  <img
+    src="${starterPackageImage}"
+    alt="Starter Package"
+    class="aspect-[4/3] w-full rounded-[1.1rem] object-contain transition duration-300 group-hover:scale-[1.02]"
+    loading="lazy"
+  >
+</button>
             </div>
 
             <div class="p-6 sm:p-7">
@@ -150,6 +164,33 @@ export function renderStarterOffersSection() {
           </article>
         </div>
       </div>
+
+            <div
+        x-show="zoomImage"
+        x-transition.opacity.duration.150ms
+        x-cloak
+        class="fixed inset-0 z-[95] grid place-items-center bg-black/85 px-4 py-6 backdrop-blur-sm"
+        role="dialog"
+        aria-modal="true"
+        @click.self="zoomImage = null; zoomAlt = ''"
+        @keydown.escape.window="zoomImage = null; zoomAlt = ''"
+      >
+        <button
+          type="button"
+          class="absolute right-4 top-4 grid size-10 place-items-center rounded-full border border-white/20 bg-black/70 text-2xl leading-none text-white transition hover:border-brand-gold hover:text-brand-gold"
+          aria-label="Close image preview"
+          @click="zoomImage = null; zoomAlt = ''"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+
+        <img
+          :src="zoomImage"
+          :alt="zoomAlt"
+          class="max-h-[88vh] w-auto max-w-[94vw] rounded-[1.25rem] border border-brand-gold/30 bg-brand-black object-contain shadow-2xl"
+        >
+      </div>
+
     </section>
   `
 }

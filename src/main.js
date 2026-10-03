@@ -126,6 +126,89 @@ async function startStorefront() {
     productsLoadError = true
   }
 
+  const { data: sessionData } = await supabase.auth.getSession()
+  const signedInUser = sessionData.session?.user ?? null
+  const isLoggedIn = Boolean(signedInUser)
+  let signedInRole = 'customer'
+  let signedInProfile = null
+  let storefrontPricingType = 'regular'
+
+  if (signedInUser) {
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('role, customer_type, membership_status')
+      .eq('id', signedInUser.id)
+      .maybeSingle()
+
+    if (profileError) {
+      console.error('Unable to load storefront profile role:', profileError)
+    }
+
+    signedInRole = profile?.role || 'customer'
+    signedInProfile = profile ?? null
+  }
+
+  if (
+    signedInProfile?.customer_type === 'member' &&
+    signedInProfile?.membership_status === 'active'
+  ) {
+    const { data: approvedApplication, error: tierError } =
+      await supabase
+        .from('membership_applications')
+        .select('package_id')
+        .eq('customer_id', signedInUser.id)
+        .eq('status', 'approved')
+        .not('membership_activated_at', 'is', null)
+        .order('membership_activated_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+
+    if (tierError) {
+      console.error('Unable to load storefront pricing tier:', tierError)
+    }
+
+    if (
+      [
+        'starter',
+        'builder',
+        'leader',
+        'prestige',
+      ].includes(approvedApplication?.package_id)
+    ) {
+      storefrontPricingType = approvedApplication.package_id
+    }
+  }
+
+  const tierPriceByType = {
+    starter: 245,
+    builder: 227,
+    leader: 210,
+    prestige: 175,
+  }
+
+  const tierLabelByType = {
+    starter: 'Your Starter price',
+    builder: 'Your Builder price',
+    leader: 'Your Leader price',
+    prestige: 'Your Prestige price',
+  }
+
+  const storefrontHasApprovedPricingTier =
+    [
+      'starter',
+      'builder',
+      'leader',
+      'prestige',
+    ].includes(storefrontPricingType)
+
+  const storefrontProductCardOptions =
+    storefrontHasApprovedPricingTier
+      ? {
+          tierLabel: tierLabelByType[storefrontPricingType],
+          tierPrice: tierPriceByType[storefrontPricingType],
+        }
+      : {}
+
   const liveProductsById = new Map(
     liveProducts.map((product) => [product.id, product]),
   )
@@ -151,8 +234,16 @@ async function startStorefront() {
 
   window.Alpine = Alpine
 
-  registerCartStore(Alpine, storefrontProducts)
-  registerProductViewStore(Alpine, storefrontProducts)
+  registerCartStore(Alpine, storefrontProducts, {
+    pricingType: storefrontPricingType,
+  })
+
+  registerProductViewStore(
+    Alpine,
+    storefrontProducts,
+    storefrontProductCardOptions,
+  )
+
   registerMembershipModal(Alpine)
   registerCustomerSupportChat(Alpine)
 
@@ -185,28 +276,9 @@ async function startStorefront() {
   )
 
   document.title =
-  `${siteConfig.brand.name} | Premium Fragrances`
+    `${siteConfig.brand.name} | Premium Fragrances`
 
-  const { data: sessionData } = await supabase.auth.getSession()
-  const signedInUser = sessionData.session?.user ?? null
-  const isLoggedIn = Boolean(signedInUser)
-  let signedInRole = 'customer'
-
-  if (signedInUser) {
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', signedInUser.id)
-      .maybeSingle()
-
-    if (profileError) {
-      console.error('Unable to load storefront profile role:', profileError)
-    }
-
-    signedInRole = profile?.role || 'customer'
-  }
-
-document.querySelector('#app').innerHTML = `
+  document.querySelector('#app').innerHTML = `
   ${renderSiteLoader()}
 
   ${renderHeader(siteConfig, {
@@ -218,12 +290,14 @@ document.querySelector('#app').innerHTML = `
       ${renderHero(homeConfig, siteConfig)}
 
       ${renderStarterOffersSection()}
+
       ${renderProductsSection(
         storefrontProducts.filter(
           (product) => !product.isStandaloneOffer,
         ),
         productCategories,
         productsLoadError,
+        storefrontProductCardOptions,
       )}
 
       ${renderPackagesSection(packages)}
@@ -378,9 +452,9 @@ document.querySelector('#app').innerHTML = `
           )
           .join('')
 
-          packageConfirmationModal.classList.remove('hidden')
-          packageConfirmationModal.classList.add('flex')
-          document.body.classList.add('overflow-hidden')
+        packageConfirmationModal.classList.remove('hidden')
+        packageConfirmationModal.classList.add('flex')
+        document.body.classList.add('overflow-hidden')
       })
     })
 
