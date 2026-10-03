@@ -11,6 +11,7 @@ export const packages = [
     name: 'Your Starter',
     shortLabel: 'Starter',
     price: 1000,
+    pointsReward: 20,
     discountLabel: '30% off per bottle',
 
     description:
@@ -63,6 +64,7 @@ export const packages = [
     name: 'Your Builder',
     shortLabel: 'Builder',
     price: 5000,
+    pointsReward: 125,
     discountLabel: '35% off per bottle',
 
     description:
@@ -95,6 +97,7 @@ export const packages = [
     name: 'Your Leader',
     shortLabel: 'Leader',
     price: 10000,
+    pointsReward: 250,
     discountLabel: '40% off per bottle',
 
     description:
@@ -133,6 +136,7 @@ export const packages = [
     name: 'Your Prestige',
     shortLabel: 'Prestige',
     price: 50000,
+    pointsReward: 1200,
     discountLabel: '50% off per bottle',
 
     description:

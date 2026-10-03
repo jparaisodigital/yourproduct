@@ -48,6 +48,17 @@ function renderPackageCard(packageItem, index) {
       `
     : ''
 
+    const pointsRewardMarkup =
+    packageItem.pointsReward
+      ? `
+          <p
+            class="mt-2 inline-flex rounded-full border border-brand-gold/30 bg-brand-gold/10 px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-brand-gold"
+          >
+            Earn ${packageItem.pointsReward.toLocaleString()} points after approval
+          </p>
+        `
+      : ''
+
   const inclusionsMarkup =
     packageItem.inclusions.length > 0
       ? `
@@ -179,9 +190,11 @@ function renderPackageCard(packageItem, index) {
         </p>
 
       ${priceMarkup}
+      ${pointsRewardMarkup}
+      ${inclusionsMarkup}
       ${discountMarkup}
       ${optionsMarkup}
-      ${inclusionsMarkup}
+      
 
         <div class="mt-auto pt-4 sm:pt-5 lg:pt-3">
           <a
