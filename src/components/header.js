@@ -95,31 +95,32 @@ export function renderHeader(
       ></span>
     </button>
   `
+
   const isAdmin = isLoggedIn && role === 'admin'
 
-const accountHref = isAdmin
-  ? '/admin/'
-  : isLoggedIn
-    ? '/dashboard/'
-    : '/login/'
+  const accountHref = isAdmin
+    ? '/admin/'
+    : isLoggedIn
+      ? '/dashboard/'
+      : '/login/'
 
-const accountLabel = isAdmin
-  ? 'Admin Portal'
-  : isLoggedIn
-    ? 'Customer Dashboard'
-    : 'Member Login'
+  const accountLabel = isAdmin
+    ? 'Admin Portal'
+    : isLoggedIn
+      ? 'Customer Dashboard'
+      : 'Member Login'
 
-const accountCtaHref = isAdmin
-  ? '/admin/'
-  : isLoggedIn
-    ? '/dashboard/'
-    : '/register/'
+  const accountCtaHref = isAdmin
+    ? '/admin/'
+    : isLoggedIn
+      ? '/dashboard/'
+      : '/register/'
 
-const accountCtaLabel = isAdmin
-  ? 'Admin'
-  : isLoggedIn
-    ? 'Dashboard'
-    : 'Sign Up'
+  const accountCtaLabel = isAdmin
+    ? 'Admin'
+    : isLoggedIn
+      ? 'Dashboard'
+      : 'Sign Up'
 
   return `
     <header
@@ -159,23 +160,23 @@ const accountCtaLabel = isAdmin
         },
 
         toggleTheme() {
-  const root = document.documentElement
+          const root = document.documentElement
 
-  root.classList.add('theme-transitioning')
+          root.classList.add('theme-transitioning')
 
-  window.requestAnimationFrame(() => {
-    this.theme =
-      this.theme === 'black'
-        ? 'ivory'
-        : 'black'
+          window.requestAnimationFrame(() => {
+            this.theme =
+              this.theme === 'black'
+                ? 'ivory'
+                : 'black'
 
-    this.applyTheme()
+            this.applyTheme()
 
-    window.setTimeout(() => {
-      root.classList.remove('theme-transitioning')
-    }, 650)
-  })
-}
+            window.setTimeout(() => {
+              root.classList.remove('theme-transitioning')
+            }, 650)
+          })
+        }
       }"
       x-effect="
         document.body.classList.toggle(
@@ -230,10 +231,10 @@ const accountCtaLabel = isAdmin
 
         <div class="hidden items-center gap-2.5 lg:flex">
 
-        ${
-          isLoggedIn
-            ? ''
-            : `
+          ${
+            isLoggedIn
+              ? ''
+              : `
                   <a
                     href="${accountHref}"
                     class="premium-icon group grid size-11 place-items-center rounded-full border border-brand-border text-brand-muted hover:border-brand-gold hover:bg-brand-gold/10 hover:text-brand-gold"
@@ -248,7 +249,6 @@ const accountCtaLabel = isAdmin
                       stroke-width="1.65"
                       aria-hidden="true"
                     >
-
                       <path
                         d="M20 21a8 8 0 0 0-16 0"
                         stroke-linecap="round"
@@ -264,24 +264,8 @@ const accountCtaLabel = isAdmin
                       ${accountLabel}
                     </span>
                   </a>
-                  `
-        }
-
-          <a
-            href="${accountCtaHref}"
-            class="premium-cta group inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-brand-gold px-5 text-sm font-semibold text-[#17130d] hover:bg-brand-gold-light"
-          >
-            <span>
-            ${accountCtaLabel}
-            </span>
-
-            <span
-              class="premium-cta-arrow text-base leading-none"
-              aria-hidden="true"
-            >
-              →
-            </span>
-          </a>
+                `
+          }
 
           <button
             type="button"
@@ -333,6 +317,13 @@ const accountCtaLabel = isAdmin
               aria-hidden="true"
             ></span>
           </button>
+
+          <a
+          href="${accountCtaHref}"
+          class="premium-cta group inline-flex h-11 items-center justify-center rounded-xl bg-brand-gold px-5 text-sm font-semibold text-[#17130d] hover:bg-brand-gold-light"
+          >
+          ${accountCtaLabel}
+          </a>
         </div>
 
         <div class="flex shrink-0 items-center gap-2 lg:hidden">
@@ -473,21 +464,12 @@ const accountCtaLabel = isAdmin
           </a>
 
           <a
-            href="${accountCtaHref}"
-            class="premium-cta mt-2.5 inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-brand-gold px-5 text-sm font-semibold text-[#17130d] hover:bg-brand-gold-light"
-            @click="menuOpen = false"
+          href="${accountCtaHref}"
+          class="premium-cta mt-2.5 inline-flex h-11 items-center justify-center rounded-xl bg-brand-gold px-5 text-sm font-semibold text-[#17130d] hover:bg-brand-gold-light"
+          @click="menuOpen = false"
           >
-            <span>
-            ${accountCtaLabel}
-            </span>
-
-            <span
-              class="premium-cta-arrow text-base leading-none"
-              aria-hidden="true"
-            >
-              →
-            </span>
-          </a>
+  ${accountCtaLabel}
+</a>
         </nav>
       </div>
     </header>
