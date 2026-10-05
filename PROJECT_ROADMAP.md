@@ -1,6 +1,6 @@
 # YOUR PRODUCT Roadmap
 
-**Updated:** October 2, 2026
+**Updated:** October 3, 2026
 **Project start:** September 22, 2026
 **Soft launch target:** October 1, 2026
 **Final target:** October 5, 2026
@@ -17,27 +17,43 @@ YOUR PRODUCT is a perfume e-commerce and membership system with:
 - Membership application and admin approval
 - Personal one-level referral links
 - Member-only points system
+- Member rewards catalog
 - Manual payout request flow
-- Admin inventory and sales monitoring
+- Admin inventory, sales, order, payout, and points monitoring
 
 **Technology stack:**
+
 - Vite + Vanilla JavaScript + Alpine.js + Tailwind CSS
 - Supabase Auth, Database, Storage, and RPC
+- Cloudflare Pages deployment target
 
 ## 2. Locked Business Rules
 
+### Registration & Auth
+
+- Customers can register with simple passwords.
+- Password does not require uppercase, lowercase, or special characters.
+- Supabase email confirmation should be turned off so accounts are active after registration.
+- Email provider must remain enabled.
+- Checkout/payment proof submission requires a registered account.
+- Admin accounts can view storefront but storefront purchase CTAs are blocked for admin preview mode.
+
 ### Pricing
 
-- Free customer: **PHP 349** per bottle
+- Free customer: **PHP 349** per bottle.
 - Approved member/reseller tier pricing is based on approved package:
-  - Starter package PHP 1,000 → **30% discount** → **PHP 245** per bottle
-  - Builder package PHP 5,000 → **35% discount** → **PHP 227** per bottle
-  - Leader package PHP 10,000 → **40% discount** → **PHP 210** per bottle
-  - Prestige package PHP 50,000 → **50% discount** → **PHP 175** per bottle
-- Universal PHP 199 member price is **deprecated**
-- Public product cards may show reseller tiers from PHP 245 to PHP 175
-- Logged-in approved members see their exact approved tier price
-- Existing order snapshots are never changed retroactively
+
+| Package | Package Price | Discount | Reseller Bottle Price |
+|---|---:|---:|---:|
+| Starter | PHP 1,000 | 30% | PHP 245 |
+| Builder | PHP 5,000 | 35% | PHP 227 |
+| Leader | PHP 10,000 | 40% | PHP 210 |
+| Prestige | PHP 50,000 | 50% | PHP 175 |
+
+- Universal PHP 199 member price is **deprecated**.
+- Public product cards may show reseller tiers from PHP 245 to PHP 175.
+- Logged-in approved members see their exact approved tier price.
+- Existing order snapshots are never changed retroactively.
 
 ### Product Catalog
 
@@ -45,12 +61,16 @@ YOUR PRODUCT is a perfume e-commerce and membership system with:
   - 1 standalone Tester Kit product
   - 20 perfume products
   - 4 membership packages
-- Standalone Tester Kit:
-  - Price: **PHP 700**
-  - Includes 20 pcs 5ml assorted scents
-  - Fixed price product
-  - Reseller tier pricing does not apply
-  - Buying the Tester Kit does **not** activate membership
+
+**Standalone Tester Kit:**
+
+- SKU: TK01
+- Price: **PHP 700**
+- Includes 20 pcs 5ml assorted scents
+- Fixed price product
+- Reseller tier pricing does not apply
+- Buying the Tester Kit does **not** activate membership
+- Tester Kit is prioritized in admin product lists
 
 ### Membership Packages
 
@@ -62,272 +82,506 @@ YOUR PRODUCT is a perfume e-commerce and membership system with:
 | Prestige | PHP 50,000 | 50% | PHP 175 | 1,200 |
 
 **Starter package options:**
+
 - Option A: 4 assorted bottles
 - Option B: 1 tester kit + 2 assorted bottles
 
 **Other package inclusions:**
+
 - Builder: 25 assorted bottles + 1 tester kit
 - Leader: 50 assorted bottles + 1 tester kit + 1 tarpaulin
 - Prestige: 240 assorted bottles + tester kits + tarpaulin + mobile cart / stall support
 - Stickers removed from inclusions
 
 **Fulfillment rules:**
-- Package bottles are company-assorted
-- Admin allocates actual perfume mix
-- Stock is deducted once only after allocation confirmation
-- Tester kits, tarpaulins, carts/stalls are tracked separately if supply inventory exists
-- Membership package bottles and package inclusions do **not** earn separate product-order points
+
+- Package bottles are company-assorted.
+- Admin allocates actual perfume mix.
+- Stock is deducted once only after allocation confirmation.
+- Tester kits, tarpaulins, carts/stalls are tracked separately if supply inventory exists.
+- Membership package bottles and package inclusions do **not** earn separate product-order points.
 
 ### Points
 
-- Points are a **member-only benefit**
-- Free customers can buy products and Tester Kit, but they do **not** earn points
-- A customer becomes eligible for points only after approved membership package activation
+- Points are a **member-only benefit**.
+- Free customers can buy products and Tester Kit, but they do **not** earn points.
+- A customer becomes eligible for points only after approved membership package activation.
 - Package points are awarded once admin approves the membership package payment:
   - Starter: 20 points
   - Builder: 125 points
   - Leader: 250 points
   - Prestige: 1,200 points
-- Product order points are awarded once admin approves the product order payment, if buyer is already an active member
-- Perfume product formula: bottles × 5 points
-- Minimum qualified perfume bottle order: 10 bottles
-- Standalone Tester Kit: +10 points only if buyer is already an active member at approval time
-- Points are awarded once only per qualified order or approved package
-- Cancelled/refunded orders require point reversal once only
+- Product order points are awarded once admin approves the product order payment, if buyer is already an active member.
+- No minimum product order is required to earn points.
+- Perfume product formula: **quantity × 5 points**.
+- Standalone Tester Kit formula: **quantity × 10 points**.
+- Points are awarded once only per qualified order or approved package.
+- Cancelled/refunded orders require point reversal once only.
 
 ### Orders & Payments
 
-- No COD
-- Manual payment only
-- Accepted methods: e-wallet or bank transfer
-- Customer uploads payment proof
-- Admin verifies payment before processing
-- Stock deducted only after payment approval
-- Rejected or unverified orders do not deduct stock
-- Refunds are manual
+- No COD.
+- Manual payment only.
+- Accepted methods: e-wallet or bank transfer.
+- Customer uploads payment proof.
+- Admin verifies payment before processing.
+- Stock is deducted only after payment approval.
+- Points are awarded automatically after approved eligible payment.
+- Rejected or unverified orders do not deduct stock.
+- Refunds are manual.
 
 ### Customer Purchase Flow
 
-- Guests can browse and add items to cart
-- Account is required before checkout/payment proof submission
+- Guests can browse and add items to cart.
+- Account is required before checkout/payment proof submission.
 - Registered free customers can buy:
   - Perfume products at PHP 349
   - Standalone Tester Kit at PHP 700
 - Approved members can buy:
   - Perfume products at their approved tier price
   - Standalone Tester Kit at fixed PHP 700
-- Membership is activated only through approved Starter, Builder, Leader, or Prestige package
+- Membership is activated only through approved Starter, Builder, Leader, or Prestige package.
 
 ### Delivery
 
-- Metro Manila: PHP 120
-- Outside Metro Manila: pending final client flow
-- Recommended outside Metro Manila flow: redirect customer to Facebook Messenger before payment
-- Same-day delivery: arranged via Messenger
+- Final delivery fee is still pending client confirmation.
+- Metro Manila delivery is currently not locked because client still needs to confirm whether it is PHP 120 or PHP 150.
+- Outside Metro Manila flow is pending final client confirmation.
+- Recommended outside Metro Manila flow: redirect customer to Facebook Messenger before final payment.
+- Same-day delivery: arranged via Messenger.
 - Membership delivery rule pending final client confirmation:
-  - Starter / Builder / Leader may add PHP 120
+  - Starter / Builder / Leader may add delivery fee
   - Prestige may include free delivery
-- Delivery fee must stay separate from package price so referral commission remains based on package amount only
+- Delivery fee must stay separate from package price so referral commission remains based on package amount only.
 
 ### Referrals & Payouts
 
-- Direct referral only
-- No downline, binary, pairing, or multi-level commissions
-- Commission: 10% of approved referred membership package amount
-- Commission excludes delivery fees
-- Minimum payout request: PHP 500
-- Payout request requires payout method, provider/bank, account name, account number, and QR code screenshot
-- Admin manually reviews and pays payout requests
-- Admin payment proof is stored in Supabase Storage
-- No automatic payout
+- Direct referral only.
+- No downline, binary, pairing, or multi-level commissions.
+- Commission: 10% of approved referred membership package amount.
+- Commission excludes delivery fees.
+- Minimum payout request: PHP 500.
+- Payout request requires payout method, provider/bank, account name, account number, and QR code screenshot.
+- Admin manually reviews and pays payout requests.
+- Admin payment proof is stored in Supabase Storage.
+- No automatic payout.
 
-## 3. Completed Features as of Oct 2, 2026
+## 3. Completed Features as of Oct 3, 2026
 
 ### Core Foundation
 
-- Responsive storefront, product collection, quick view, cart, and checkout
-- Login, register, forgot password, and reset password
-- Customer dashboard
-- Admin dashboard
-- FAQ, Terms, University, and supporting pages
-- Supabase Auth, profiles, products, storage, and RPC foundation
+- Responsive storefront, product collection, quick view, cart, and checkout.
+- Login, register, forgot password, and reset password.
+- Customer dashboard.
+- Admin dashboard.
+- FAQ, Terms, University, and supporting pages.
+- Supabase Auth, profiles, products, storage, and RPC foundation.
+- Customer and admin logout flows cleaned.
+- Header/sidebar actions cleaned for mobile.
+- Admin storefront preview mode blocks purchase actions.
 
 ### Product & Pricing
 
-- 20 perfume products configured with official names and scent descriptions
-- Standalone Tester Kit product added
-- Regular customer PHP 349 pricing implemented
-- Tester Kit fixed PHP 700 pricing implemented
-- Tiered reseller pricing implemented
-- Checkout and dashboard use approved package tier pricing
-- Universal PHP 199 member price removed from active pricing behavior
-- Cart blocks inactive or unavailable products
-- Server-side product order quote via `quote_order_cart`
+- 20 perfume products configured with official names and scent descriptions.
+- Standalone Tester Kit product added.
+- Regular customer PHP 349 pricing implemented.
+- Tester Kit fixed PHP 700 pricing implemented.
+- Tiered reseller pricing implemented.
+- Checkout and dashboard use approved package tier pricing.
+- Universal PHP 199 member price removed from active pricing behavior.
+- Cart blocks inactive or unavailable products.
+- Server-side product order quote via `quote_order_cart`.
+- Tester Kit fixed price is protected in checkout and server-side quote logic.
+- Admin product pricing labels updated to show reseller price range instead of old member PHP 199 pricing.
+- Tester Kit prioritized in admin product lists.
 
 ### Product Order Flow
 
-- Guests can prepare cart
-- Checkout requires registered account
-- Free customers and members can place product orders
-- Checkout pre-fills customer profile details
-- Payment proof upload works
-- Admin can view payment proof
-- Admin can approve or reject order payments
-- Stock deduction is guarded and happens only after approval
-- Order fulfillment statuses are connected
-- Admin fulfillment RPC exists for order status updates
+- Guests can prepare cart.
+- Checkout requires registered account.
+- Free customers and members can place product orders.
+- Checkout pre-fills customer profile details.
+- Payment proof upload works.
+- Admin can view payment proof.
+- Admin can approve or reject order payments.
+- Stock deduction is guarded and happens only after approval.
+- Order fulfillment statuses are connected.
+- Admin can mark orders as shipped and delivered.
+- Admin fulfillment RPC signature mismatch fixed.
+- Alpine selected-order refresh bug fixed.
+- Checkout final confirmation UI clarified.
+- Order history shows awarded points for eligible orders.
 
 ### Membership Flow
 
-- Customer can apply for membership package
-- Starter package now shows Option A / Option B
-- Customer can upload membership payment proof
-- Admin can approve, reject, or manage membership applications
-- Approved applications activate member account
-- Approved package tier controls reseller price
+- Customer can apply for membership package.
+- Starter package now shows Option A / Option B.
+- Customer can upload membership payment proof.
+- Admin can approve, reject, or manage membership applications.
+- Approved applications activate member account.
+- Approved package tier controls reseller price.
 - Package fulfillment supports:
   - allocation
   - inventory deduction
   - ready for packing
   - shipped
   - completed
-- Admin package fulfillment copy now clearly shows next steps and confirmed contents
+- Admin package fulfillment copy clearly shows next steps and confirmed contents.
+- Membership package points are awarded after approval.
 
 ### Referrals & Payouts
 
-- Active members have personal referral links
-- Referral code uses `profiles.username`
-- Registration validates referral links against active member profiles
-- Direct referral commission is created after approved membership package
-- Commission is duplicate-protected
-- Member earnings page loads real referral commission rows
-- Member payout request uses Supabase RPC
-- Payout request collects provider/bank and QR code screenshot
-- Admin referrals and payouts page loads real referral and payout data
-- Admin can approve, reject, and mark payout as paid
-- Admin payout proof uploads use Supabase Storage instead of blob URLs
+- Active members have personal referral links.
+- Referral code uses `profiles.username`.
+- Registration validates referral links against active member profiles.
+- Direct referral commission is created after approved membership package.
+- Commission is duplicate-protected.
+- Member earnings page loads real referral commission rows.
+- Member payout request uses Supabase RPC.
+- Payout request collects provider/bank and QR code screenshot.
+- Admin referrals and payouts page loads real referral and payout data.
+- Admin can approve, reject, and mark payout as paid.
+- Admin payout proof uploads use Supabase Storage instead of blob URLs.
+- Member payout request UI cleaned for MVP clarity.
 
-### Points
+### Points & Rewards
 
-- Points transaction table exists
-- Points pages load Supabase data
-- Admin points audit page exists
-- Final points awarding logic must be aligned to new member-only/admin-approved rule
+- Points transaction table exists.
+- Points pages load Supabase data.
+- Admin points audit page exists.
+- Package points awarding is connected to admin membership approval.
+- Product order points awarding is connected to admin order payment approval.
+- Product order points support:
+  - 5 points per perfume bottle
+  - 10 points per standalone Tester Kit
+  - no minimum order
+  - active members only
+- Duplicate point awards are guarded.
+- Member order history shows points earned per order.
+- Admin order detail shows points awarded.
+- Member “Points & Rewards” section exists.
+- Rewards catalog added using client reward images.
+- Reward images are shown fully without cropping.
+- Admin points/rewards monitoring placeholder exists for future reward request workflow.
 
 ### Inventory
 
-- Admin product inventory management exists
-- Inventory movement history exists
-- Add stock / deduct stock / set stock flow exists
-- Stock is deducted safely on approved product orders
-- Package allocation deducts inventory once only
+- Admin product inventory management exists.
+- Inventory movement history exists.
+- Add stock / deduct stock / set stock flow exists.
+- Stock is deducted safely on approved product orders.
+- Package allocation deducts inventory once only.
+- Sales & Inventory page shows product stock from database.
 
 ### Reports
 
-- Admin sales summary cards exist
-- Sales detail CSV export exists
-- Sales summary CSV export exists
+- Admin sales summary cards exist.
+- Daily / weekly / monthly sales totals now use real approved order data.
+- Sales detail CSV export exists.
+- Sales summary CSV export exists.
+- Sales reports are based on approved, processing, shipped, or delivered product orders.
+
+### FAQ & Copy
+
+- FAQ updated for current pricing and rewards.
+- Checkout copy clarified.
+- Member points rule copy updated.
+- Admin product labels cleaned.
+- Payout request page simplified for MVP readability.
+
+### Database / Supabase
+
+- Points awarding rules migration created:
+  - `supabase/migrations/20261003183800_update_points_awarding_rules.sql`
+- `points_transactions.membership_application_id` added.
+- Unique guards added for order and membership point awards.
+- `quote_order_cart` updated for Tester Kit fixed pricing.
+- `admin_review_order_payment` updated for automatic eligible points award.
+- `private.review_membership_application_impl` updated for package points award.
+- `admin_award_order_points` aligned with new rules.
 
 ## 4. Pending / Needs Confirmation
 
-### Points Ledger Update
-
-- Award package points once admin approves membership package payment
-- Award product order points once admin approves qualified active-member product order payment
-- Award 5 pts per qualified perfume bottle
-- Award +10 pts for approved standalone Tester Kit orders only if buyer is active member
-- Prevent duplicate point awards
-- Reverse points once only on cancellation/refund
-
 ### Delivery Rules
 
-- Final Metro Manila delivery behavior
-- Outside Metro Manila checkout behavior
-- Whether outside Metro Manila should be blocked before payment and redirected to Messenger
-- Membership package delivery fee:
-  - Starter / Builder / Leader PHP 120
-  - Prestige free delivery
-- Backend storage for delivery fee and total due if client wants full payment amount displayed and validated in checkout
+- Confirm final Metro Manila delivery amount:
+  - PHP 120 or PHP 150
+- Confirm outside Metro Manila checkout behavior.
+- Decide whether outside Metro Manila should be blocked before payment and redirected to Messenger.
+- Confirm same-day delivery flow.
+- Confirm membership package delivery fee:
+  - Starter / Builder / Leader delivery fee
+  - Prestige free delivery or separate delivery
+- Add backend storage for delivery fee and total due if client wants full payment amount displayed and validated in checkout.
 
 ### Order Cancellation / Refund
 
-- Define cancellation rules per order status
-- Admin cancel action
-- Restore stock once only if already deducted
-- Prevent duplicate restore or duplicate deduction
-- Manual refund status tracking
+- Define cancellation rules per order status.
+- Add admin cancel action.
+- Restore stock once only if already deducted.
+- Prevent duplicate restore or duplicate deduction.
+- Add manual refund status tracking.
+- Add point reversal once only for cancelled/refunded eligible orders.
+
+### Rewards Request Workflow
+
+- Add member reward request action when eligible.
+- Add reward request database table.
+- Add admin reward request review page.
+- Add reward request statuses:
+  - pending
+  - approved
+  - rejected
+  - released / claimed
+- Deduct or reserve points safely once reward request is approved.
+- Add point reversal if reward request is cancelled.
 
 ### Reports
 
-- Inventory movement CSV export if still needed
-- Payout history CSV export if still needed
+- Inventory movement CSV export if still needed.
+- Payout history CSV export if still needed.
+- Reward request CSV export if needed later.
 
 ### Manual Admin Order Entry
 
-- Admin-created orders for Messenger, same-day, or offsite sales
-- Create verified order for existing customer
-- Safe stock deduction
-- Points eligibility for active member orders
+- Admin-created orders for Messenger, same-day, or offsite sales.
+- Create verified order for existing customer.
+- Safe stock deduction.
+- Points eligibility for active member orders.
 
 ### Final Launch Cleanup
 
-- Remove test accounts if needed
-- Remove test orders
-- Remove test membership applications
-- Remove test payout requests
-- Remove test commissions
-- Preserve admin account, products, schema, RPC functions, storage buckets, and policies
+- Remove test accounts if needed.
+- Remove test orders.
+- Remove test membership applications.
+- Remove test payout requests.
+- Remove test commissions.
+- Preserve admin account, products, schema, RPC functions, storage buckets, and policies.
 
 ## 5. Launch QA Checklist
 
-- [ ] Register without referral link
-- [ ] Register with valid referral link
-- [ ] Login / logout
-- [ ] Guest add-to-cart flow
-- [ ] Free customer product checkout at PHP 349
-- [ ] Free customer Tester Kit checkout at PHP 700
-- [ ] Active member product checkout with correct tier price
-- [ ] Active member Tester Kit checkout stays PHP 700
-- [ ] Admin product order approval
-- [ ] Product stock deduction after approval
-- [ ] Membership application payment proof upload
-- [ ] Starter package Option A / Option B display
-- [ ] Admin membership approval
-- [ ] Approved member tier pricing applied
-- [ ] Package points awarded after admin approval
-- [ ] Product order points awarded only for active members after admin approval
-- [ ] Package allocation and inventory deduction
-- [ ] Package ready for packing
-- [ ] Package shipped and completed status
-- [ ] Referral commission creation
-- [ ] Member payout request with QR code
-- [ ] Admin payout approve / reject / mark paid
-- [ ] Admin payout proof opens correctly
-- [ ] No console errors on core flows
-- [ ] Mobile final pass
-- [ ] Desktop final pass
-- [ ] Live Cloudflare deployment check
+### Auth
+
+- [ ] Register without referral link.
+- [ ] Register with valid referral link.
+- [ ] Register with simple password.
+- [ ] Confirm new account can login without email confirmation.
+- [ ] Login / logout as customer.
+- [ ] Login / logout as admin.
+
+### Storefront & Checkout
+
+- [ ] Guest add-to-cart flow.
+- [ ] Free customer product checkout at PHP 349.
+- [ ] Free customer Tester Kit checkout at PHP 700.
+- [ ] Active member product checkout with correct tier price.
+- [ ] Active member Tester Kit checkout stays PHP 700.
+- [ ] Checkout payment proof upload.
+- [ ] Checkout final confirmation flow.
+- [ ] Admin preview cannot add products/packages to cart or checkout.
+
+### Product Orders
+
+- [ ] Admin product order approval.
+- [ ] Admin product order rejection.
+- [ ] Product stock deduction after approval.
+- [ ] Admin mark as shipped.
+- [ ] Admin mark as delivered.
+- [ ] Member order history shows correct status.
+- [ ] Member order history shows awarded points.
+
+### Membership
+
+- [ ] Membership application payment proof upload.
+- [ ] Starter package Option A / Option B display.
+- [ ] Admin membership approval.
+- [ ] Admin membership rejection.
+- [ ] Approved member tier pricing applied.
+- [ ] Package points awarded after admin approval.
+- [ ] Package allocation and inventory deduction.
+- [ ] Package ready for packing.
+- [ ] Package shipped and completed status.
+
+### Points
+
+- [ ] Free customer product order earns 0 points.
+- [ ] Active member 1 perfume bottle order earns 5 points.
+- [ ] Active member Tester Kit order earns 10 points.
+- [ ] Active member perfume + Tester Kit order totals correctly.
+- [ ] Duplicate product order points are prevented.
+- [ ] Duplicate package points are prevented.
+- [ ] Admin points audit page shows transactions.
+- [ ] Member Points & Rewards page shows correct totals.
+
+### Referrals & Payouts
+
+- [ ] Referral commission creation.
+- [ ] Duplicate referral commission prevention.
+- [ ] Member earnings page shows referral commissions.
+- [ ] Member payout request with QR code.
+- [ ] Admin payout approve.
+- [ ] Admin payout reject.
+- [ ] Admin mark payout as paid.
+- [ ] Admin payout proof opens correctly.
+
+### Inventory & Sales
+
+- [ ] Product stock updates manually.
+- [ ] Product stock deducts after approved order.
+- [ ] Sales summary totals update after approved orders.
+- [ ] Sales detail CSV export.
+- [ ] Sales summary CSV export.
+
+### Final QA
+
+- [ ] No console errors on core flows.
+- [ ] Mobile final pass.
+- [ ] Desktop final pass.
+- [ ] Supabase live database final check.
+- [ ] Cloudflare deployment check.
+- [ ] Test data cleanup.
+- [ ] Final handoff notes.
 
 ## 6. Out of Scope Until After Oct 5
 
-- Automatic payment gateway
-- Automatic payout
-- Full accounting / tax reports
-- MLM, multi-level, binary, or pairing logic
-- Real courier integration
-- Advanced delivery calculator
-- Mobile app
-- Major UI redesigns beyond clarity fixes
-- Complex charts and analytics dashboards
+- Automatic payment gateway.
+- Automatic payout.
+- Full accounting / tax reports.
+- MLM, multi-level, binary, or pairing logic.
+- Real courier integration.
+- Advanced delivery calculator.
+- Full reward redemption backend, unless client requires it before launch.
+- Mobile app.
+- Major UI redesigns beyond clarity fixes.
+- Complex charts and analytics dashboards.
+- Individual reseller stores.
+- Automated raffle draw.
 
 ## 7. Immediate Next Steps
 
-1. Update points awarding logic to member-only/admin-approved rule
-2. Confirm final delivery fee and outside Metro Manila checkout rules with client
-3. Finish delivery fee UI/backend behavior after confirmation
-4. Add cancellation/refund + stock restore safeguards
-5. Add manual admin order entry if still needed for MVP
-6. Clean test data
-7. Full live QA
-8. Push final deployment
-9. Prepare handoff notes
+1. Confirm final delivery fee and outside Metro Manila checkout rules with client.
+2. Finish delivery fee UI/backend behavior after confirmation.
+3. Run full QA for registration, checkout, admin approval, stock deduction, points, fulfillment, referrals, and payouts.
+4. Clean test data before deployment.
+5. Commit any final cleanup changes.
+6. Push final code when ready for Cloudflare deployment.
+7. Verify live Cloudflare build.
+8. Prepare client handoff notes.
+9. List post-launch backlog clearly so new requests do not blur into MVP scope.
+
+## 8. Current MVP Status
+
+As of October 3, 2026, the MVP is functionally close to launch.
+
+Completed core flow:
+
+1. Customer registers.
+2. Customer logs in.
+3. Customer can buy perfume or Tester Kit.
+4. Customer uploads payment proof.
+5. Admin reviews payment.
+6. Approved order deducts stock.
+7. Eligible active-member order earns points automatically.
+8. Admin can ship and deliver order.
+9. Member can see order history and earned points.
+10. Admin can monitor orders, inventory, sales, points, referrals, and payouts.
+
+Main blocker before final launch:
+
+- Delivery fee confirmation from client.
+- Final QA and test data cleanup.
+
+## Security Hardening Roadmap
+
+### Must-Have Before Live
+
+- Confirm Supabase Row Level Security is enabled on all public tables:
+  - profiles
+  - products
+  - orders
+  - order_items
+  - membership_applications
+  - referral_commissions
+  - payout_requests
+  - points_transactions
+  - inventory_movements
+- Verify customers can only read/update their own records.
+- Verify admins are the only users allowed to:
+  - approve/reject orders
+  - approve/reject memberships
+  - change product stock
+  - mark orders shipped/delivered
+  - approve/reject/mark paid payout requests
+  - view all customer orders and payout records
+- Keep service role key out of frontend code and GitHub.
+- Confirm `.env` and `.env.local` are ignored by git.
+- Use Supabase Storage policies so customers can only upload/access their own payment proof files.
+- Use signed URLs for private payment proof and payout proof images.
+- Keep admin-only RPC functions protected with active-admin checks.
+- Confirm RPC functions validate server-side rules, not just frontend rules:
+  - stock availability
+  - product price
+  - order status transitions
+  - duplicate point awards
+  - duplicate commission awards
+  - payout status transitions
+- Prevent duplicate stock deduction for the same order.
+- Prevent duplicate package inventory deduction.
+- Prevent duplicate points award.
+- Prevent duplicate referral commission.
+- Disable admin purchase actions on storefront preview.
+- Run final no-console-error QA on mobile and desktop.
+
+### Recommended Before Client Handoff
+
+- Add a simple admin activity audit trail for sensitive actions:
+  - order payment approved/rejected
+  - order shipped/delivered
+  - membership approved/rejected
+  - stock adjusted
+  - payout approved/rejected/paid
+  - points awarded/reversed
+- Add clear confirmation prompts for dangerous admin actions:
+  - approve payment
+  - reject payment
+  - mark shipped
+  - mark delivered
+  - deduct stock
+  - approve payout
+  - mark payout paid
+- Add rate-limit or cooldown protection for forms where possible:
+  - register
+  - login
+  - checkout submit
+  - membership application submit
+  - payout request submit
+- Add file upload validation:
+  - accepted image types only
+  - max file size
+  - reject empty files
+  - store files under user/order/application-specific folders
+- Review Supabase Auth settings:
+  - email confirmation off if client requires instant account creation
+  - secure password policy matches client request
+  - site URL and redirect URLs are correct for live domain
+- Review Cloudflare Pages environment variables:
+  - correct Supabase URL
+  - correct public anon key
+  - no secret key exposed
+- Review CORS/domain settings if any Edge Functions are used.
+- Add manual test account cleanup checklist before final deployment.
+
+### Post-Launch Security Backlog
+
+- Add point reversal logic for cancellations/refunds.
+- Add reward request approval and points reservation/deduction safeguards.
+- Add admin activity logs UI.
+- Add exportable audit reports.
+- Add admin role levels if the company grows:
+  - owner
+  - inventory staff
+  - order staff
+  - payout staff
+- Add automated database backup/export routine.
+- Add stricter fraud checks for repeated payment reference numbers.
+- Add suspicious activity review for repeated failed uploads or duplicate payment proofs.
