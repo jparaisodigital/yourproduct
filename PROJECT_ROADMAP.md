@@ -1,6 +1,7 @@
+
 # YOUR PRODUCT Roadmap
 
-**Updated:** October 3, 2026
+**Updated:** October 5, 2026
 **Project start:** September 22, 2026
 **Soft launch target:** October 1, 2026
 **Final target:** October 5, 2026
@@ -43,12 +44,14 @@ YOUR PRODUCT is a perfume e-commerce and membership system with:
 - Free customer: **PHP 349** per bottle.
 - Approved member/reseller tier pricing is based on approved package:
 
-| Package | Package Price | Discount | Reseller Bottle Price |
-|---|---:|---:|---:|
-| Starter | PHP 1,000 | 30% | PHP 245 |
-| Builder | PHP 5,000 | 35% | PHP 227 |
-| Leader | PHP 10,000 | 40% | PHP 210 |
-| Prestige | PHP 50,000 | 50% | PHP 175 |
+```
+| Package  | Package Price | Discount | Reseller Bottle Price |
+| -------- | ------------: | -------: | --------------------: |
+| Starter  |     PHP 1,000 |      30% |               PHP 245 |
+| Builder  |     PHP 5,000 |      35% |               PHP 227 |
+| Leader   |    PHP 10,000 |      40% |               PHP 210 |
+| Prestige |    PHP 50,000 |      50% |               PHP 175 |
+```
 
 - Universal PHP 199 member price is **deprecated**.
 - Public product cards may show reseller tiers from PHP 245 to PHP 175.
@@ -58,9 +61,9 @@ YOUR PRODUCT is a perfume e-commerce and membership system with:
 ### Product Catalog
 
 - Storefront has:
-  - 1 standalone Tester Kit product
-  - 20 perfume products
-  - 4 membership packages
+- 1 standalone Tester Kit product
+- 20 perfume products
+- 4 membership packages
 
 **Standalone Tester Kit:**
 
@@ -74,12 +77,14 @@ YOUR PRODUCT is a perfume e-commerce and membership system with:
 
 ### Membership Packages
 
-| Package | Price | Discount | Reseller Price | Package Points |
-|---|---:|---:|---:|---:|
-| Starter | PHP 1,000 | 30% | PHP 245 | 20 |
-| Builder | PHP 5,000 | 35% | PHP 227 | 125 |
-| Leader | PHP 10,000 | 40% | PHP 210 | 250 |
-| Prestige | PHP 50,000 | 50% | PHP 175 | 1,200 |
+```
+| Package  |      Price | Discount | Reseller Price | Package Points |
+| -------- | ---------: | -------: | -------------: | -------------: |
+| Starter  |  PHP 1,000 |      30% |        PHP 245 |            20  |
+| Builder  |  PHP 5,000 |      35% |        PHP 227 |            125 |
+| Leader   | PHP 10,000 |      40% |        PHP 210 |            250 |
+| Prestige | PHP 50,000 |      50% |        PHP 175 |          1,200 |
+```
 
 **Starter package options:**
 
@@ -107,10 +112,10 @@ YOUR PRODUCT is a perfume e-commerce and membership system with:
 - Free customers can buy products and Tester Kit, but they do **not** earn points.
 - A customer becomes eligible for points only after approved membership package activation.
 - Package points are awarded once admin approves the membership package payment:
-  - Starter: 20 points
-  - Builder: 125 points
-  - Leader: 250 points
-  - Prestige: 1,200 points
+- Starter: 20 points
+- Builder: 125 points
+- Leader: 250 points
+- Prestige: 1,200 points
 - Product order points are awarded once admin approves the product order payment, if buyer is already an active member.
 - No minimum product order is required to earn points.
 - Perfume product formula: **quantity × 5 points**.
@@ -135,11 +140,11 @@ YOUR PRODUCT is a perfume e-commerce and membership system with:
 - Guests can browse and add items to cart.
 - Account is required before checkout/payment proof submission.
 - Registered free customers can buy:
-  - Perfume products at PHP 349
-  - Standalone Tester Kit at PHP 700
+- Perfume products at PHP 349
+- Standalone Tester Kit at PHP 700
 - Approved members can buy:
-  - Perfume products at their approved tier price
-  - Standalone Tester Kit at fixed PHP 700
+- Perfume products at their approved tier price
+- Standalone Tester Kit at fixed PHP 700
 - Membership is activated only through approved Starter, Builder, Leader, or Prestige package.
 
 ### Delivery
@@ -150,8 +155,8 @@ YOUR PRODUCT is a perfume e-commerce and membership system with:
 - Recommended outside Metro Manila flow: redirect customer to Facebook Messenger before final payment.
 - Same-day delivery: arranged via Messenger.
 - Membership delivery rule pending final client confirmation:
-  - Starter / Builder / Leader may add delivery fee
-  - Prestige may include free delivery
+- Starter / Builder / Leader may add delivery fee
+- Prestige may include free delivery
 - Delivery fee must stay separate from package price so referral commission remains based on package amount only.
 
 ### Referrals & Payouts
@@ -221,11 +226,11 @@ YOUR PRODUCT is a perfume e-commerce and membership system with:
 - Approved applications activate member account.
 - Approved package tier controls reseller price.
 - Package fulfillment supports:
-  - allocation
-  - inventory deduction
-  - ready for packing
-  - shipped
-  - completed
+- allocation
+- inventory deduction
+- ready for packing
+- shipped
+- completed
 - Admin package fulfillment copy clearly shows next steps and confirmed contents.
 - Membership package points are awarded after approval.
 
@@ -252,10 +257,10 @@ YOUR PRODUCT is a perfume e-commerce and membership system with:
 - Package points awarding is connected to admin membership approval.
 - Product order points awarding is connected to admin order payment approval.
 - Product order points support:
-  - 5 points per perfume bottle
-  - 10 points per standalone Tester Kit
-  - no minimum order
-  - active members only
+- 5 points per perfume bottle
+- 10 points per standalone Tester Kit
+- no minimum order
+- active members only
 - Duplicate point awards are guarded.
 - Member order history shows points earned per order.
 - Admin order detail shows points awarded.
@@ -292,7 +297,7 @@ YOUR PRODUCT is a perfume e-commerce and membership system with:
 ### Database / Supabase
 
 - Points awarding rules migration created:
-  - `supabase/migrations/20261003183800_update_points_awarding_rules.sql`
+- `supabase/migrations/20261003183800_update_points_awarding_rules.sql`
 - `points_transactions.membership_application_id` added.
 - Unique guards added for order and membership point awards.
 - `quote_order_cart` updated for Tester Kit fixed pricing.
@@ -305,13 +310,13 @@ YOUR PRODUCT is a perfume e-commerce and membership system with:
 ### Delivery Rules
 
 - Confirm final Metro Manila delivery amount:
-  - PHP 120 or PHP 150
+- PHP 120 or PHP 150
 - Confirm outside Metro Manila checkout behavior.
 - Decide whether outside Metro Manila should be blocked before payment and redirected to Messenger.
 - Confirm same-day delivery flow.
 - Confirm membership package delivery fee:
-  - Starter / Builder / Leader delivery fee
-  - Prestige free delivery or separate delivery
+- Starter / Builder / Leader delivery fee
+- Prestige free delivery or separate delivery
 - Add backend storage for delivery fee and total due if client wants full payment amount displayed and validated in checkout.
 
 ### Order Cancellation / Refund
@@ -329,10 +334,10 @@ YOUR PRODUCT is a perfume e-commerce and membership system with:
 - Add reward request database table.
 - Add admin reward request review page.
 - Add reward request statuses:
-  - pending
-  - approved
-  - rejected
-  - released / claimed
+- pending
+- approved
+- rejected
+- released / claimed
 - Deduct or reserve points safely once reward request is approved.
 - Add point reversal if reward request is cancelled.
 
@@ -471,7 +476,7 @@ YOUR PRODUCT is a perfume e-commerce and membership system with:
 
 ## 8. Current MVP Status
 
-As of October 3, 2026, the MVP is functionally close to launch.
+As of October 5, 2026, the MVP is functionally close to launch and the must-have security hardening pass is complete.
 
 Completed core flow:
 
@@ -490,12 +495,13 @@ Main blocker before final launch:
 
 - Delivery fee confirmation from client.
 - Final QA and test data cleanup.
+- Live Cloudflare deployment verification after final push.
 
-## Security Hardening Roadmap
+## 9. Security Hardening Status
 
-### Must-Have Before Live
+### Completed Before Live
 
-- Confirm Supabase Row Level Security is enabled on all public tables:
+- Supabase Row Level Security verified enabled on all important public tables:
   - profiles
   - products
   - orders
@@ -505,43 +511,97 @@ Main blocker before final launch:
   - payout_requests
   - points_transactions
   - inventory_movements
-- Verify customers can only read/update their own records.
-- Verify admins are the only users allowed to:
-  - approve/reject orders
-  - approve/reject memberships
-  - change product stock
-  - mark orders shipped/delivered
-  - approve/reject/mark paid payout requests
-  - view all customer orders and payout records
-- Keep service role key out of frontend code and GitHub.
-- Confirm `.env` and `.env.local` are ignored by git.
-- Use Supabase Storage policies so customers can only upload/access their own payment proof files.
-- Use signed URLs for private payment proof and payout proof images.
-- Keep admin-only RPC functions protected with active-admin checks.
-- Confirm RPC functions validate server-side rules, not just frontend rules:
+
+- Customer data access verified:
+  - customers can read their own profile
+  - customers can read their own orders and order items
+  - customers can read their own membership applications
+  - members can read their own payout requests
+  - members can read their own points transactions
+  - members can read their own referral commissions
+
+- Profile update permissions verified safe:
+  - customers can only update first name, last name, and mobile number
+  - customers cannot update role, account status, customer type, membership status, selected package, or referral authority fields
+
+- Admin policies verified for:
+  - order review access
+  - membership review access
+  - payout review access
+  - points monitoring
+  - inventory movement monitoring
+  - customer profile reads
+
+- Product public access verified:
+  - anonymous and authenticated users can read active products only
+  - product writes remain admin/RPC-controlled
+
+- Storage buckets verified private:
+  - payment-proofs
+  - payout-proofs
+  - payout-qr-codes
+
+- Storage upload restrictions hardened:
+  - maximum file size: 5MB
+  - allowed types: JPEG, PNG, WebP
+
+- Storage ownership policies verified:
+  - customers can upload/read only their own payment proofs
+  - members can upload/read only their own payout QR codes
+  - admins can read payment proofs, payout proofs, and payout QR codes as needed
+
+- Admin RPC functions verified with active-admin checks:
+  - admin_review_order_payment
+  - admin_update_order_fulfillment
+  - admin_review_membership_application
+  - admin_award_order_points
+  - admin_update_payout_request
+
+- Server-side RPC rules verified:
   - stock availability
-  - product price
+  - server-side product pricing
+  - Tester Kit fixed price
   - order status transitions
-  - duplicate point awards
-  - duplicate commission awards
+  - payment proof requirement
+  - duplicate point award prevention
+  - duplicate referral commission prevention
   - payout status transitions
-- Prevent duplicate stock deduction for the same order.
-- Prevent duplicate package inventory deduction.
-- Prevent duplicate points award.
-- Prevent duplicate referral commission.
-- Disable admin purchase actions on storefront preview.
-- Run final no-console-error QA on mobile and desktop.
+
+- Private helper function access hardened:
+  - direct execute access removed from anon/authenticated for `private.award_order_points_if_eligible`
+
+- Old duplicate RPC signatures removed:
+  - old `admin_update_order_fulfillment` overload removed
+  - old `customer_create_payout_request` overload removed
+
+- Payout request RPC hardened:
+  - active member check added
+  - QR code path ownership validation confirmed
+  - available commission balance validation confirmed
+
+- Frontend secret check passed:
+  - `.env` and `.env.local` are ignored by git
+  - no service role key found in frontend source
+  - public Supabase anon key usage remains acceptable
+
+- Security migration added:
+  - `supabase/migrations/20261005023500_harden_security_policies.sql`
 
 ### Recommended Before Client Handoff
 
-- Add a simple admin activity audit trail for sensitive actions:
-  - order payment approved/rejected
-  - order shipped/delivered
-  - membership approved/rejected
-  - stock adjusted
-  - payout approved/rejected/paid
-  - points awarded/reversed
-- Add clear confirmation prompts for dangerous admin actions:
+- Run final no-console-error QA on mobile and desktop.
+
+- Review Cloudflare Pages environment variables:
+  - correct Supabase URL
+  - correct public anon key
+  - no secret key exposed
+
+- Review Supabase Auth settings:
+  - email confirmation off if client requires instant account creation
+  - secure password policy matches client request
+  - site URL and redirect URLs are correct for live domain
+
+- Add or confirm clear confirmation prompts for dangerous admin actions:
   - approve payment
   - reject payment
   - mark shipped
@@ -549,26 +609,7 @@ Main blocker before final launch:
   - deduct stock
   - approve payout
   - mark payout paid
-- Add rate-limit or cooldown protection for forms where possible:
-  - register
-  - login
-  - checkout submit
-  - membership application submit
-  - payout request submit
-- Add file upload validation:
-  - accepted image types only
-  - max file size
-  - reject empty files
-  - store files under user/order/application-specific folders
-- Review Supabase Auth settings:
-  - email confirmation off if client requires instant account creation
-  - secure password policy matches client request
-  - site URL and redirect URLs are correct for live domain
-- Review Cloudflare Pages environment variables:
-  - correct Supabase URL
-  - correct public anon key
-  - no secret key exposed
-- Review CORS/domain settings if any Edge Functions are used.
+
 - Add manual test account cleanup checklist before final deployment.
 
 ### Post-Launch Security Backlog
@@ -577,11 +618,20 @@ Main blocker before final launch:
 - Add reward request approval and points reservation/deduction safeguards.
 - Add admin activity logs UI.
 - Add exportable audit reports.
+
 - Add admin role levels if the company grows:
   - owner
   - inventory staff
   - order staff
   - payout staff
+
 - Add automated database backup/export routine.
 - Add stricter fraud checks for repeated payment reference numbers.
 - Add suspicious activity review for repeated failed uploads or duplicate payment proofs.
+
+- Add rate-limit or cooldown protection for public/customer forms where possible:
+  - register
+  - login
+  - checkout submit
+  - membership application submit
+  - payout request submit
