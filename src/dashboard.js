@@ -8,6 +8,11 @@ import logoImage from './assets/logoyourproduct.png'
 
 import rewardJourneyImage from './assets/rewards/reward-journey.png'
 
+import starterPackageImage from './assets/starter.png'
+import builderPackageImage from './assets/builder.png'
+import leaderPackageImage from './assets/leader.png'
+import prestigePackageImage from './assets/prestige.png'
+
 import {
   siteConfig,
 } from './config/site-config.js'
@@ -87,14 +92,32 @@ dashboardParams.get('membership')?.trim() || ''
 const isApprovedMemberPreview =
   requestedMembershipStatus === 'active'
 
-const selectedDashboardPackage =
-packages.find(
-  (packageItem) =>
-    packageItem.id === requestedPackageId &&
-  packageItem.isActive,
-) || null
+  const selectedDashboardPackage =
+  packages.find(
+    (packageItem) =>
+      packageItem.id === requestedPackageId &&
+    packageItem.isActive,
+  ) || null
 
-const allowedMembershipStatuses = [
+  const requestedPackageOptionId =
+    dashboardParams.get('option')?.trim() || ''
+
+  const selectedDashboardPackageOption =
+    selectedDashboardPackage?.options?.find(
+      (option) =>
+        option.id === requestedPackageOptionId,
+    ) || null
+
+    const selectedMembershipPackageOption =
+  selectedDashboardPackageOption
+    ? {
+        label: selectedDashboardPackageOption.label,
+        title: selectedDashboardPackageOption.title,
+        description: selectedDashboardPackageOption.description,
+      }
+    : null
+
+  const allowedMembershipStatuses = [
   'awaiting-payment',
   'pending-verification',
   'cancellation-requested',
@@ -115,23 +138,25 @@ const dashboardPesoFormatter = new Intl.NumberFormat(
   },
 )
 
-const membershipInclusionItems =
-selectedDashboardPackage?.inclusions
-.map(
-  (inclusion) => `
-        <li
-          class="flex items-start gap-3 text-sm leading-6 text-brand-muted"
-        >
-          <span
-            class="mt-2 size-1.5 shrink-0 rounded-full bg-brand-gold"
-            aria-hidden="true"
-          ></span>
+const selectedDashboardPackageInclusions =
+  selectedMembershipPackageOption
+    ? [
+        selectedMembershipPackageOption.title,
+        'Business Access',
+      ]
+    : selectedDashboardPackage?.inclusions || []
 
+const membershipInclusionItems =
+  selectedDashboardPackageInclusions
+    .map(
+      (inclusion) => `
+        <li class="flex gap-3 text-sm leading-6 text-brand-muted">
+          <span class="mt-2 size-1.5 shrink-0 rounded-full bg-brand-gold"></span>
           <span>${inclusion}</span>
         </li>
       `,
-)
-.join('') || ''
+    )
+    .join('')
 
 const pendingMembershipMarkup = hasPendingMembership
 ? `
@@ -143,7 +168,7 @@ const pendingMembershipMarkup = hasPendingMembership
           class="flex flex-col gap-5 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6"
         >
           <div class="min-w-0 flex-1">
-            <div class="flex flex-wrap items-center gap-3">
+                        <div class="flex flex-wrap items-center gap-3">
               <p
                 class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
               >
@@ -153,15 +178,11 @@ const pendingMembershipMarkup = hasPendingMembership
               <span
                 class="inline-flex items-center gap-2 rounded-full border border-amber-500/40 bg-amber-500/10 px-3 py-1 text-[0.62rem] font-semibold uppercase tracking-[0.1em] text-amber-300"
               >
-                <span
-                  class="relative flex size-2"
-                  aria-hidden="true"
-                >
+                <span class="relative flex size-2" aria-hidden="true">
                   <span
                     class="absolute inline-flex size-full rounded-full bg-amber-400 opacity-60 motion-safe:animate-ping motion-reduce:animate-none"
                     style="animation-duration: 1.8s;"
                   ></span>
-
                   <span
                     class="relative inline-flex size-2 rounded-full bg-amber-400 [box-shadow:0_0_10px_rgba(251,191,36,0.85)]"
                   ></span>
@@ -181,14 +202,12 @@ const pendingMembershipMarkup = hasPendingMembership
               </span>
             </div>
 
-            <h2
-              class="mt-3 font-display text-3xl text-brand-cream"
-            >
+            <h2 class="mt-3 font-display text-3xl text-brand-cream">
               ${selectedDashboardPackage.name}
             </h2>
 
             <p
-              class="mt-2 max-w-2xl text-sm leading-6 text-brand-muted"
+              class="mt-2 max-w-3xl text-sm leading-6 text-brand-muted"
               x-text="
                 membershipApplicationStatus ===
                 'cancellation-requested'
@@ -199,6 +218,35 @@ const pendingMembershipMarkup = hasPendingMembership
                     : 'Your free customer account remains active. Continue to payment to submit your transaction details and payment proof for admin verification.'
               "
             ></p>
+
+            <div class="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1fr)_15rem] lg:items-stretch">
+              ${selectedMembershipPackageOption
+                ? `
+                  <div class="flex min-h-32 flex-col justify-center rounded-2xl border border-brand-border bg-brand-black/70 px-5 py-4">
+                    <p class="text-xs font-semibold uppercase tracking-[0.14em] text-brand-gold">
+                      Selected Option · ${selectedMembershipPackageOption.label}
+                    </p>
+                    <p class="mt-2 text-base font-semibold text-brand-cream">
+                      ${selectedMembershipPackageOption.title}
+                    </p>
+                    <p class="mt-1 text-xs leading-5 text-brand-muted">
+                      ${selectedMembershipPackageOption.description}
+                    </p>
+                  </div>
+                `
+                : ''}
+
+              <div class="flex min-h-32 flex-col justify-center rounded-2xl border border-brand-border bg-brand-black/70 px-5 py-4 lg:text-right">
+                <p class="text-xs font-semibold uppercase tracking-[0.14em] text-brand-muted">
+                  Selected Package
+                </p>
+                <p class="mt-3 font-display text-3xl text-brand-gold">
+                  ${dashboardPesoFormatter.format(
+                    selectedDashboardPackage.price,
+                  )}
+                </p>
+              </div>
+            </div>
 
             <div
               class="mt-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap"
@@ -225,24 +273,6 @@ const pendingMembershipMarkup = hasPendingMembership
               </button>
             </div>
           </div>
-
-          <div
-            class="w-full shrink-0 rounded-2xl border border-brand-border bg-brand-black px-5 py-4 sm:w-auto sm:min-w-48 sm:text-right"
-          >
-            <p
-              class="text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-brand-muted"
-            >
-              Selected Package
-            </p>
-
-            <p
-              class="mt-2 font-display text-3xl text-brand-gold"
-            >
-              ${dashboardPesoFormatter.format(
-selectedDashboardPackage.price,
-)}
-            </p>
-          </div>
         </div>
       </section>
     `
@@ -252,50 +282,337 @@ const membershipUpgradeMarkup =
   !hasPendingMembership && !isApprovedMemberPreview
     ? `
       <section
-  x-show="!isMember"
-  x-transition.opacity
-  class="mt-6 overflow-hidden rounded-[1.5rem] border border-brand-gold/30 bg-brand-panel shadow-gold-soft"
-  aria-label="Membership upgrade"
->
+        x-data="{
+          selectedPackageModal: null,
+          selectedStarterOption: '',
+          packages: {
+            starter: {
+              id: 'starter',
+              name: 'Your Starter',
+              label: 'Starter',
+              price: '₱1,000',
+              image: '${starterPackageImage}',
+              description: 'Perfect for beginners who want to start small.',
+              inclusions: [
+                'Option A: 4 assorted bottles, 60ml each',
+                'Option B: 1 tester kit with 20 pcs 5ml testers plus 2 assorted bottles',
+                '30% reseller bottle pricing',
+                '20 package points after approval',
+              ],
+            },
+            builder: {
+              id: 'builder',
+              name: 'Your Builder',
+              label: 'Builder',
+              price: '₱5,000',
+              image: '${builderPackageImage}',
+              description: 'Build today. A stronger tomorrow.',
+              inclusions: [
+                '25 assorted bottles, 85ml',
+                '1 tester kit',
+                '35% reseller bottle pricing',
+                '125 package points after approval',
+              ],
+            },
+            leader: {
+              id: 'leader',
+              name: 'Your Leader',
+              label: 'Leader',
+              price: '₱10,000',
+              image: '${leaderPackageImage}',
+              description: 'Lead your way to greater success.',
+              inclusions: [
+                '55 assorted bottles, 85ml',
+                '1 tester kit',
+                '1 tarpaulin',
+                '40% reseller bottle pricing',
+                '250 package points after approval',
+              ],
+            },
+            prestige: {
+              id: 'prestige',
+              name: 'Your Prestige',
+              label: 'Prestige',
+              price: '₱50,000',
+              image: '${prestigePackageImage}',
+              description: 'Maximize today. Multiply tomorrow.',
+              inclusions: [
+                '240 assorted bottles, 85ml',
+                '2 tester kits',
+                '1 tarpaulin',
+                '1 mini stall',
+                '50% reseller bottle pricing',
+                '1,200 package points after approval',
+              ],
+            },
+          },
+          openPackageModal(packageId) {
+            this.selectedPackageModal = this.packages[packageId]
+            this.selectedStarterOption = ''
+            document.body.classList.add('overflow-hidden')
+
+            requestAnimationFrame(() => {
+              this.$refs.packageModalContent?.scrollTo?.({
+                top: 0,
+                behavior: 'auto',
+              })
+            })
+          },
+          closePackageModal() {
+            this.selectedPackageModal = null
+            this.selectedStarterOption = ''
+            document.body.classList.remove('overflow-hidden')
+          },
+          confirmPackageApplication() {
+            if (!this.selectedPackageModal) return
+
+            const packageId = this.selectedPackageModal.id
+            const optionQuery =
+              packageId === 'starter'
+                ? '&option=' + encodeURIComponent(this.selectedStarterOption)
+                : ''
+
+            if (packageId === 'starter' && !this.selectedStarterOption) return
+
+            window.location.href =
+              '/dashboard/?package=' +
+              encodeURIComponent(packageId) +
+              '&membership=awaiting-payment' +
+              optionQuery
+          },
+        }"
+        x-show="!isMember"
+        x-transition.opacity
+        class="mt-6 relative isolate overflow-hidden rounded-[1.5rem] border border-brand-gold/35 bg-brand-charcoal p-5 shadow-panel sm:p-6"
+      >
         <div
-          class="grid gap-5 px-5 py-5 sm:px-6 lg:grid-cols-[1fr_auto] lg:items-center"
-        >
-          <div>
-            <p
-              class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
-            >
-              Optional Membership
-            </p>
+          class="pointer-events-none absolute -right-20 -top-20 size-56 rounded-full bg-brand-gold/10 blur-3xl"
+          aria-hidden="true"
+        ></div>
 
-            <h2
-              class="mt-3 font-display text-3xl text-brand-cream"
-            >
-              Upgrade to reseller pricing
-            </h2>
+        <div class="relative">
+          <p class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold">
+            Optional Membership
+          </p>
 
-            <p
-              class="mt-2 max-w-2xl text-sm leading-6 text-brand-muted"
-            >
-              Apply for a membership package to unlock reseller pricing,
-              package inclusions, referral tools, and future member rewards.
-            </p>
-          </div>
+          <h2 class="mt-1 max-w-xl font-display text-3xl text-brand-cream">
+            Choose your reseller package.
+          </h2>
 
-          <div
-            class="flex flex-col gap-3 sm:flex-row lg:flex-col"
-          >
-            <a
-              href="/#packages"
-              class="premium-cta inline-flex min-h-11 items-center justify-center rounded-full bg-brand-gold px-6 text-sm font-semibold text-[#17130d]"
-            >
-              View Packages
-            </a>
+          <p class="mt-3 max-w-2xl text-sm leading-6 text-brand-muted">
+            Select a package to view inclusions and start your membership application.
+            Your account stays free until payment is submitted and approved.
+          </p>
 
-            <p class="text-xs leading-5 text-brand-muted lg:max-w-52">
-              Your account stays free until payment is submitted and approved.
-            </p>
+          <div class="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <template x-for="packageItem in Object.values(packages)" :key="packageItem.id">
+              <button
+                type="button"
+                class="group overflow-hidden rounded-2xl border border-brand-border bg-brand-black/70 text-left transition hover:-translate-y-0.5 hover:border-brand-gold/70"
+                @click="openPackageModal(packageItem.id)"
+              >
+                <div class="aspect-[4/3] overflow-hidden bg-brand-black p-3">
+                  <img
+                    :src="packageItem.image"
+                    :alt="packageItem.name"
+                    class="size-full object-contain transition duration-500 group-hover:scale-105"
+                  >
+                </div>
+
+                <div class="p-4">
+                  <div class="flex items-start justify-between gap-3">
+                    <div>
+                      <p
+                        class="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-brand-gold"
+                        x-text="packageItem.label"
+                      ></p>
+                      <h3
+                        class="mt-1 font-display text-2xl text-brand-cream"
+                        x-text="packageItem.name"
+                      ></h3>
+                    </div>
+
+                    <strong
+                      class="shrink-0 font-display text-xl text-brand-gold"
+                      x-text="packageItem.price"
+                    ></strong>
+                  </div>
+
+                  <p
+                    class="mt-3 text-sm leading-6 text-brand-muted"
+                    x-text="packageItem.description"
+                  ></p>
+
+                  <span class="mt-4 inline-flex text-xs font-semibold text-brand-gold">
+                    View inclusions
+                  </span>
+                </div>
+              </button>
+            </template>
           </div>
         </div>
+
+                <template x-teleport="body">
+          <div
+            x-show="selectedPackageModal"
+            x-cloak
+            class="fixed inset-0 z-[100] grid place-items-center bg-black/90 px-4 py-4 backdrop-blur-sm sm:px-6 lg:pl-[19.5rem]"
+            @click.self="closePackageModal()"
+            @keydown.escape.window="closePackageModal()"
+          >
+            <div class="relative w-full max-w-[1240px] overflow-hidden rounded-[1.5rem] border border-brand-gold/30 bg-brand-panel shadow-gold-soft">
+              <button
+                type="button"
+                class="absolute right-3 top-3 z-20 inline-flex size-9 items-center justify-center rounded-full bg-brand-black text-lg font-semibold leading-none text-brand-cream transition hover:text-brand-gold"
+                @click="closePackageModal()"
+                aria-label="Close package details"
+              >
+                X
+              </button>
+
+              <template x-if="selectedPackageModal">
+                <div
+                  x-ref="packageModalContent"
+                  class="max-h-[92vh] overflow-y-auto lg:h-[90vh] lg:max-h-none lg:overflow-hidden"
+                >
+                  <div class="grid lg:h-full lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
+
+                    <div class="flex items-center justify-center bg-brand-black p-4 sm:p-6 lg:h-full lg:min-h-0">
+                      <img
+                        :src="selectedPackageModal.image"
+                        :alt="selectedPackageModal.name"
+                        class="h-auto w-full max-w-md rounded-xl object-contain lg:max-h-full lg:w-auto lg:max-w-full"
+                      >
+                    </div>
+
+                    <div class="flex flex-col lg:h-full lg:min-h-0">
+                      <div class="p-5 sm:p-6 lg:flex-1 lg:overflow-y-auto">
+                        <div class="pr-10">
+                          <p
+                            class="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-brand-gold"
+                            x-text="selectedPackageModal.label"
+                          ></p>
+
+                          <div class="mt-1 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                            <h3
+                              class="font-display text-3xl text-brand-cream"
+                              x-text="selectedPackageModal.name"
+                            ></h3>
+
+                            <strong
+                              class="font-display text-2xl text-brand-gold"
+                              x-text="selectedPackageModal.price"
+                            ></strong>
+                          </div>
+
+                          <p
+                            class="mt-3 text-sm leading-6 text-brand-muted"
+                            x-text="selectedPackageModal.description"
+                          ></p>
+                        </div>
+
+                        <div class="mt-5 rounded-xl border border-brand-border bg-brand-black p-4">
+                          <p class="text-sm font-semibold text-brand-cream">
+                            Package inclusions
+                          </p>
+
+                          <ul class="mt-3 grid gap-x-6 gap-y-2 text-sm leading-6 text-brand-muted sm:grid-cols-2">
+                            <template
+                              x-for="inclusion in selectedPackageModal.inclusions"
+                              :key="inclusion"
+                            >
+                              <li class="flex gap-2">
+                                <span class="mt-2 size-1.5 shrink-0 rounded-full bg-brand-gold"></span>
+                                <span x-text="inclusion"></span>
+                              </li>
+                            </template>
+                          </ul>
+                        </div>
+
+                        <div
+                          x-show="selectedPackageModal.id === 'starter'"
+                          class="mt-5 rounded-xl border border-brand-gold/30 bg-brand-black p-4"
+                        >
+                          <p class="text-sm font-semibold text-brand-cream">
+                            Choose Starter option
+                          </p>
+
+                          <div class="mt-3 grid gap-3 sm:grid-cols-2">
+                            <label class="flex cursor-pointer items-start gap-3 rounded-xl border border-brand-border p-3 transition hover:border-brand-gold/60">
+                              <input
+                                type="radio"
+                                name="starter-package-option"
+                                value="starter-option-a"
+                                x-model="selectedStarterOption"
+                                class="mt-1 size-4 accent-[#b78a32]"
+                              >
+                              <span>
+                                <span class="block text-sm font-semibold text-brand-cream">
+                                  Option A: 4 Bottles
+                                </span>
+                                <span class="mt-1 block text-xs leading-5 text-brand-muted">
+                                  4 assorted bottles, 60ml each.
+                                </span>
+                              </span>
+                            </label>
+
+                            <label class="flex cursor-pointer items-start gap-3 rounded-xl border border-brand-border p-3 transition hover:border-brand-gold/60">
+                              <input
+                                type="radio"
+                                name="starter-package-option"
+                                value="starter-option-b"
+                                x-model="selectedStarterOption"
+                                class="mt-1 size-4 accent-[#b78a32]"
+                              >
+                              <span>
+                                <span class="block text-sm font-semibold text-brand-cream">
+                                  Option B: Tester Kit + 2 Bottles
+                                </span>
+                                <span class="mt-1 block text-xs leading-5 text-brand-muted">
+                                  1 tester kit with 20 pcs 5ml testers plus 2 assorted bottles.
+                                </span>
+                              </span>
+                            </label>
+                          </div>
+                        </div>
+
+                        <div class="mt-5 rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-3">
+                          <p class="text-sm font-semibold text-amber-100">
+                            Confirm membership application?
+                          </p>
+                          <p class="mt-1 text-xs leading-5 text-amber-100/80">
+                            Selecting yes will start this package application. Payment still needs to be submitted and approved by admin.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div class="grid gap-3 border-t border-brand-border p-5 sm:grid-cols-2 sm:p-6 lg:flex lg:justify-end">
+                        <button
+                          type="button"
+                          class="inline-flex min-h-11 items-center justify-center rounded-full border border-brand-border px-6 text-sm font-semibold text-brand-muted transition hover:border-brand-gold hover:text-brand-gold"
+                          @click="closePackageModal()"
+                        >
+                          No, cancel
+                        </button>
+
+                        <button
+                          type="button"
+                          class="premium-cta inline-flex min-h-11 items-center justify-center rounded-full bg-brand-gold px-6 text-sm font-semibold text-[#17130d] disabled:cursor-not-allowed disabled:opacity-50"
+                          :disabled="selectedPackageModal.id === 'starter' && !selectedStarterOption"
+                          @click="confirmPackageApplication()"
+                        >
+                          Yes, start application
+                        </button>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+              </template>
+            </div>
+          </div>
+        </template>
+
       </section>
     `
     : ''
@@ -372,6 +689,23 @@ const membershipApplicationPageMarkup = hasPendingMembership
                 >
                   ${selectedDashboardPackage.description}
                 </p>
+
+                ${selectedMembershipPackageOption
+                  ? `
+                    <div class="mt-4 rounded-xl border border-brand-gold/25 bg-brand-black/70 px-4 py-3">
+                      <p class="text-xs font-semibold uppercase tracking-[0.14em] text-brand-gold">
+                        Selected option
+                      </p>
+                      <p class="mt-1 text-sm font-semibold text-brand-cream">
+                        ${selectedMembershipPackageOption.title}
+                      </p>
+                      <p class="mt-1 text-xs leading-5 text-brand-muted">
+                        ${selectedMembershipPackageOption.description}
+                      </p>
+                    </div>
+                  `
+                  : ''}
+
               </div>
 
               <p
@@ -2319,7 +2653,7 @@ const openApplicationStatuses = [
 let { data: membershipApplication, error: membershipError } =
   await supabase
     .from('membership_applications')
-    .select('package_id, status')
+    .select('package_id, selected_package_option_id, status')
     .eq('customer_id', user.id)
     .order('submitted_at', { ascending: false })
     .limit(1)
@@ -2344,9 +2678,11 @@ if (shouldCreateApplication) {
       .insert({
         customer_id: user.id,
         package_id: selectedDashboardPackage.id,
+        selected_package_option_id:
+          selectedDashboardPackageOption?.id || null,
         amount: selectedDashboardPackage.price,
       })
-      .select('package_id, status')
+      .select('package_id, selected_package_option_id, status')
       .single()
 
   if (insertError?.code === '23505') {
@@ -2354,7 +2690,7 @@ if (shouldCreateApplication) {
     const { data: existingApplication, error: reloadError } =
       await supabase
         .from('membership_applications')
-        .select('package_id, status')
+        .select('package_id, selected_package_option_id, status')
         .eq('customer_id', user.id)
         .in('status', openApplicationStatuses)
         .limit(1)
@@ -2375,6 +2711,24 @@ if (membershipError) {
   )
   document.querySelector('#dashboard-app').textContent =
     'Unable to load your membership details. Please refresh.'
+  return
+}
+
+if (
+  membershipApplication?.selected_package_option_id &&
+  !requestedPackageOptionId &&
+  selectedDashboardPackage?.id === membershipApplication.package_id
+) {
+  const nextParams = new URLSearchParams(window.location.search)
+
+  nextParams.set(
+    'option',
+    membershipApplication.selected_package_option_id,
+  )
+
+  window.location.replace(
+    window.location.pathname + '?' + nextParams.toString(),
+  )
   return
 }
 
@@ -3096,79 +3450,6 @@ signedInPointsBalance = confirmedPointRows.reduce(
         <div
           class="mt-6 grid gap-6 xl:grid-cols-[1.25fr_0.75fr]"
         >
-          <section
-            x-show="!isMember"
-            x-transition.opacity
-            class="relative isolate overflow-hidden rounded-[1.5rem] border border-brand-gold/35 bg-brand-charcoal p-5 shadow-panel sm:p-6"
-          >
-            <div
-              class="pointer-events-none absolute -right-20 -top-20 size-56 rounded-full bg-brand-gold/10 blur-3xl"
-              aria-hidden="true"
-            ></div>
-
-            <div class="relative">
-              <p
-                class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
-              >
-                Optional Membership
-              </p>
-
-              <h2
-                class="mt-1 max-w-xl font-display text-3xl text-brand-cream"
-              >
-                Turn every qualified purchase into progress.
-              </h2>
-
-              <p
-                class="mt-3 max-w-2xl text-sm leading-6 text-brand-muted"
-              >
-                Explore the membership packages when you are ready
-                to unlock approved points, rewards and earning features.
-                Your regular customer account remains free.
-              </p>
-
-              <ul
-                class="mt-6 grid gap-3 text-sm text-brand-cream sm:grid-cols-3"
-              >
-                <li
-                  class="flex items-center gap-3 rounded-xl border border-brand-border bg-brand-black/60 px-4 py-3"
-                >
-                  <span
-                    class="size-2 shrink-0 rounded-full bg-brand-gold"
-                    aria-hidden="true"
-                  ></span>
-                  Points
-                </li>
-
-                <li
-                  class="flex items-center gap-3 rounded-xl border border-brand-border bg-brand-black/60 px-4 py-3"
-                >
-                  <span
-                    class="size-2 shrink-0 rounded-full bg-brand-gold"
-                    aria-hidden="true"
-                  ></span>
-                  Rewards
-                </li>
-
-                <li
-                  class="flex items-center gap-3 rounded-xl border border-brand-border bg-brand-black/60 px-4 py-3"
-                >
-                  <span
-                    class="size-2 shrink-0 rounded-full bg-brand-gold"
-                    aria-hidden="true"
-                  ></span>
-                  Earning Features
-                </li>
-              </ul>
-
-              <a
-                href="/#packages"
-                class="premium-cta mt-6 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-brand-gold px-6 text-sm font-semibold text-[#17130d] sm:w-auto"
-              >
-                Explore Membership Packages
-              </a>
-            </div>
-          </section>
 
           <section
             x-data="{ rewardJourneyZoomOpen: false }"
