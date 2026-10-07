@@ -283,105 +283,187 @@ export function renderMemberPointsPage() {
       ></p>
 
       <div x-show="!loading && !error">
-        <div class="mt-6 grid gap-4 sm:grid-cols-3">
-          <article class="rounded-[1.4rem] border border-emerald-400/30 bg-brand-panel p-5 shadow-panel">
-            <p class="text-xs uppercase tracking-[0.13em] text-brand-muted">
-              Available Points
-            </p>
-            <strong
-              class="mt-3 block font-display text-4xl text-emerald-300"
-              x-text="availablePoints.toLocaleString('en-PH')"
-            ></strong>
-            <p class="mt-2 text-xs leading-5 text-brand-muted">
-              Confirmed balance after reversals
-            </p>
-          </article>
+  <div class="mt-6 grid gap-4 sm:grid-cols-3">
+    <article class="rounded-[1.4rem] border border-emerald-400/30 bg-brand-panel p-5 shadow-panel">
+      <p class="text-xs uppercase tracking-[0.13em] text-brand-muted">
+        Available Points
+      </p>
+      <strong
+        class="mt-3 block font-display text-4xl text-emerald-300"
+        x-text="availablePoints.toLocaleString('en-PH')"
+      ></strong>
+      <p class="mt-2 text-xs leading-5 text-brand-muted">
+        Confirmed balance after reversals
+      </p>
+    </article>
 
-          <article class="rounded-[1.4rem] border border-amber-400/30 bg-brand-panel p-5 shadow-panel">
-            <p class="text-xs uppercase tracking-[0.13em] text-brand-muted">
-              Pending Points
-            </p>
-            <strong
-              class="mt-3 block font-display text-4xl text-amber-300"
-              x-text="pendingPoints.toLocaleString('en-PH')"
-            ></strong>
-            <p class="mt-2 text-xs leading-5 text-brand-muted">
-              Waiting for admin confirmation
-            </p>
-          </article>
+    <article class="rounded-[1.4rem] border border-amber-400/30 bg-brand-panel p-5 shadow-panel">
+      <p class="text-xs uppercase tracking-[0.13em] text-brand-muted">
+        Pending Points
+      </p>
+      <strong
+        class="mt-3 block font-display text-4xl text-amber-300"
+        x-text="pendingPoints.toLocaleString('en-PH')"
+      ></strong>
+      <p class="mt-2 text-xs leading-5 text-brand-muted">
+        Waiting for admin confirmation
+      </p>
+    </article>
 
-          <article class="rounded-[1.4rem] border border-red-400/30 bg-brand-panel p-5 shadow-panel">
-            <p class="text-xs uppercase tracking-[0.13em] text-brand-muted">
-              Reversed Points
+    <article class="rounded-[1.4rem] border border-red-400/30 bg-brand-panel p-5 shadow-panel">
+      <p class="text-xs uppercase tracking-[0.13em] text-brand-muted">
+        Reversed Points
+      </p>
+      <strong
+        class="mt-3 block font-display text-4xl text-red-300"
+        x-text="reversedPoints.toLocaleString('en-PH')"
+      ></strong>
+      <p class="mt-2 text-xs leading-5 text-brand-muted">
+        Removed after correction, cancellation, or refund
+      </p>
+    </article>
+  </div>
+
+  <section
+    class="mt-6 rounded-[1.5rem] border border-brand-border bg-brand-panel p-5 shadow-panel sm:p-6"
+    aria-labelledby="points-history-title"
+  >
+    <div class="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-start">
+      <div>
+        <p class="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-brand-gold">
+          Activity
+        </p>
+        <h2
+          id="points-history-title"
+          class="mt-1 font-display text-3xl text-brand-cream"
+        >
+          Points History
+        </h2>
+      </div>
+
+      <label class="text-xs font-semibold text-brand-muted">
+        Status
+        <select
+          x-model="statusFilter"
+          class="ml-2 rounded-lg border border-brand-border bg-brand-black px-3 py-2 text-xs text-brand-cream outline-none focus:border-brand-gold"
+        >
+          <option value="all">All</option>
+          <option value="confirmed">Confirmed</option>
+          <option value="pending">Pending</option>
+          <option value="reversed">Reversed</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="mt-5 space-y-3">
+      <template
+        x-for="transaction in filteredTransactions"
+        :key="transaction.id"
+      >
+        <article class="grid gap-4 rounded-2xl border border-brand-border bg-brand-black p-4 sm:grid-cols-[1fr_auto] sm:items-center">
+          <div class="min-w-0">
+            <div class="flex flex-wrap items-center gap-2">
+              <strong
+                class="text-sm text-brand-cream"
+                x-text="transaction.source"
+              ></strong>
+              <span
+                class="rounded-full border px-2.5 py-1 text-[0.58rem] font-semibold uppercase tracking-[0.1em]"
+                :class="statusClass(transaction.status)"
+                x-text="statusLabel(transaction.status)"
+              ></span>
+            </div>
+
+            <p
+              class="mt-2 text-sm leading-6 text-brand-muted"
+              x-text="transaction.description"
+            ></p>
+
+            <p class="mt-1 text-xs text-brand-muted">
+              <span x-text="transaction.reference"></span>
+              <span aria-hidden="true"> · </span>
+              <span x-text="formatDate(transaction.date)"></span>
             </p>
-            <strong
-              class="mt-3 block font-display text-4xl text-red-300"
-              x-text="reversedPoints.toLocaleString('en-PH')"
-            ></strong>
-            <p class="mt-2 text-xs leading-5 text-brand-muted">
-              Removed after correction, cancellation, or refund
-            </p>
-          </article>
+          </div>
+
+          <strong
+            class="font-display text-3xl"
+            :class="transaction.points < 0 ? 'text-red-300' : 'text-brand-gold'"
+            x-text="
+              (transaction.points > 0 ? '+' : '') +
+              transaction.points.toLocaleString('en-PH')
+            "
+          ></strong>
+        </article>
+      </template>
+    </div>
+
+    <p
+      x-show="filteredTransactions.length === 0"
+      class="mt-5 rounded-xl border border-brand-border bg-brand-black px-4 py-8 text-center text-sm text-brand-muted"
+    >
+      No points history yet.
+    </p>
+  </section>
+
+  <section
+    class="mt-6 rounded-[1.5rem] border border-brand-border bg-brand-panel p-5 shadow-panel sm:p-6"
+    aria-labelledby="reward-journey-title"
+  >
+    <div class="grid gap-5 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+      <div>
+        <p class="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-brand-gold">
+          Rewards
+        </p>
+
+        <h2
+          id="reward-journey-title"
+          class="mt-1 font-display text-3xl text-brand-cream"
+        >
+          Reward Journey
+        </h2>
+
+        <p class="mt-2 text-sm leading-6 text-brand-muted">
+          Reach points milestones and request admin review for eligible rewards.
+        </p>
+      </div>
+
+      <p class="text-xs leading-5 text-brand-muted lg:text-right">
+        Rewards are subject to official qualification, mechanics, eligibility, and admin approval.
+      </p>
+    </div>
+
+    <div class="mt-5 rounded-2xl border border-brand-border bg-brand-black p-3">
+      <img
+        src="${rewardJourneyImage}"
+        alt="YOUR PRODUCT points achievement rewards"
+        class="mx-auto h-auto max-h-[900px] w-full object-contain"
+        loading="lazy"
+      >
+    </div>
+
+    <div class="mt-6">
+      <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p class="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-brand-gold">
+            Rewards Catalog
+          </p>
+
+          <h3 class="mt-1 font-display text-2xl text-brand-cream">
+            Choose a milestone reward
+          </h3>
         </div>
 
-        <section
-          class="mt-6 rounded-[1.5rem] border border-brand-border bg-brand-panel p-5 shadow-panel sm:p-6"
-          aria-labelledby="reward-journey-title"
-        >
-          <div class="grid gap-5 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
-            <div>
-              <p class="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-brand-gold">
-                Rewards
-              </p>
+        <p class="text-xs leading-5 text-brand-muted">
+          Rewards are arranged from lowest to highest required points.
+        </p>
+      </div>
 
-              <h2
-                id="reward-journey-title"
-                class="mt-1 font-display text-3xl text-brand-cream"
-              >
-                Reward Journey
-              </h2>
-
-              <p class="mt-2 text-sm leading-6 text-brand-muted">
-                Reach points milestones and request admin review for eligible rewards.
-              </p>
-            </div>
-
-            <p class="text-xs leading-5 text-brand-muted lg:text-right">
-              Rewards are subject to official qualification, mechanics, eligibility, and admin approval.
-            </p>
-          </div>
-
-          <div class="mt-5 rounded-2xl border border-brand-border bg-brand-black p-3">
-            <img
-              src="${rewardJourneyImage}"
-              alt="YOUR PRODUCT points achievement rewards"
-              class="mx-auto h-auto max-h-[900px] w-full object-contain"
-              loading="lazy"
-            >
-          </div>
-
-          <div class="mt-6">
-            <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-              <div>
-                <p class="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-brand-gold">
-                  Rewards Catalog
-                </p>
-
-                <h3 class="mt-1 font-display text-2xl text-brand-cream">
-                  Choose a milestone reward
-                </h3>
-              </div>
-
-              <p class="text-xs leading-5 text-brand-muted">
-                Rewards are arranged from lowest to highest required points.
-              </p>
-            </div>
-
-            <div class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-              ${rewardCardsMarkup}
-            </div>
-          </div>
-        </section>
+      <div class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        ${rewardCardsMarkup}
+      </div>
+    </div>
+  </section>
 
         <div class="mt-6 rounded-[1.5rem] border border-brand-border bg-brand-panel p-5 shadow-panel sm:p-6">
           <p class="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-brand-gold">
@@ -397,88 +479,6 @@ export function renderMemberPointsPage() {
             <li>Cancelled or refunded points may be reversed.</li>
           </ul>
         </div>
-
-        <section
-          class="mt-6 rounded-[1.5rem] border border-brand-border bg-brand-panel p-5 shadow-panel sm:p-6"
-          aria-labelledby="points-history-title"
-        >
-          <div class="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-start">
-            <div>
-              <p class="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-brand-gold">
-                Activity
-              </p>
-              <h2
-                id="points-history-title"
-                class="mt-1 font-display text-3xl text-brand-cream"
-              >
-                Points History
-              </h2>
-            </div>
-
-            <label class="text-xs font-semibold text-brand-muted">
-              Status
-              <select
-                x-model="statusFilter"
-                class="ml-2 rounded-lg border border-brand-border bg-brand-black px-3 py-2 text-xs text-brand-cream outline-none focus:border-brand-gold"
-              >
-                <option value="all">All</option>
-                <option value="confirmed">Confirmed</option>
-                <option value="pending">Pending</option>
-                <option value="reversed">Reversed</option>
-              </select>
-            </label>
-          </div>
-
-          <div class="mt-5 space-y-3">
-            <template
-              x-for="transaction in filteredTransactions"
-              :key="transaction.id"
-            >
-              <article class="grid gap-4 rounded-2xl border border-brand-border bg-brand-black p-4 sm:grid-cols-[1fr_auto] sm:items-center">
-                <div class="min-w-0">
-                  <div class="flex flex-wrap items-center gap-2">
-                    <strong
-                      class="text-sm text-brand-cream"
-                      x-text="transaction.source"
-                    ></strong>
-                    <span
-                      class="rounded-full border px-2.5 py-1 text-[0.58rem] font-semibold uppercase tracking-[0.1em]"
-                      :class="statusClass(transaction.status)"
-                      x-text="statusLabel(transaction.status)"
-                    ></span>
-                  </div>
-
-                  <p
-                    class="mt-2 text-sm leading-6 text-brand-muted"
-                    x-text="transaction.description"
-                  ></p>
-
-                  <p class="mt-1 text-xs text-brand-muted">
-                    <span x-text="transaction.reference"></span>
-                    <span aria-hidden="true"> · </span>
-                    <span x-text="formatDate(transaction.date)"></span>
-                  </p>
-                </div>
-
-                <strong
-                  class="font-display text-3xl"
-                  :class="transaction.points < 0 ? 'text-red-300' : 'text-brand-gold'"
-                  x-text="
-                    (transaction.points > 0 ? '+' : '') +
-                    transaction.points.toLocaleString('en-PH')
-                  "
-                ></strong>
-              </article>
-            </template>
-          </div>
-
-          <p
-            x-show="filteredTransactions.length === 0"
-            class="mt-5 rounded-xl border border-brand-border bg-brand-black px-4 py-8 text-center text-sm text-brand-muted"
-          >
-            No points history yet.
-          </p>
-        </section>
       </div>
     </section>
   `

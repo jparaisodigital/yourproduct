@@ -2524,14 +2524,15 @@ registerProductViewStore(
 
   const { data: orderRows, error: ordersError } = await supabase
     .from('orders')
-    .select('id, status, subtotal, delivery_fee, created_at')
+    .select('id, status, subtotal, delivery_fee, delivery_details, created_at')
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
 
     const orderIds = (orderRows ?? []).map((order) => order.id)
-  let pointsByOrderId = new Map()
+let pointsByOrderId = new Map()
+let signedInPointsBalance = 0
 
-  if (orderIds.length > 0) {
+if (orderIds.length > 0) {
     const { data: pointRows, error: pointsError } = await supabase
       .from('points_transactions')
       .select('order_id, points')
@@ -2542,12 +2543,19 @@ registerProductViewStore(
     if (pointsError) {
       console.error('Unable to load order points:', pointsError)
     } else {
-      pointsByOrderId = new Map(
-        (pointRows ?? []).map((row) => [
-          row.order_id,
-          Number(row.points || 0),
-        ]),
-      )
+      const confirmedPointRows = pointRows ?? []
+
+pointsByOrderId = new Map(
+  confirmedPointRows.map((row) => [
+    row.order_id,
+    Number(row.points || 0),
+  ]),
+)
+
+signedInPointsBalance = confirmedPointRows.reduce(
+  (total, row) => total + Number(row.points || 0),
+  0,
+)
     }
   }
 
@@ -2556,6 +2564,8 @@ registerProductViewStore(
     pointsAwarded: pointsByOrderId.get(order.id) ?? 0,
   }))
   signedInOrdersError = Boolean(ordersError)
+
+  previewAccount.pointsBalance = signedInPointsBalance
 
   if (ordersError) {
     console.error('Unable to load orders:', ordersError)
@@ -3329,61 +3339,123 @@ registerProductViewStore(
           </div>
 
           <div
-            class="mt-6 rounded-2xl border border-dashed border-brand-border bg-brand-black px-5 py-10 text-center"
-          >
-            <span
-              class="mx-auto grid size-12 place-items-center rounded-full bg-brand-charcoal text-brand-gold"
-            >
-              <svg
-                class="size-5"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.7"
-                aria-hidden="true"
-              >
-                <path
-                  d="M4 5h2l2 10h9l2-7H7"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
+  x-show="ordersError"
+  class="mt-6 rounded-2xl border border-red-400/30 bg-red-400/10 px-5 py-4 text-sm text-red-200"
+>
+  Unable to load recent orders. Please refresh this page.
+</div>
 
-                <circle
-                  cx="10"
-                  cy="19"
-                  r="1"
-                />
+<div
+  x-show="!ordersError && orders.length === 0"
+  class="mt-6 rounded-2xl border border-dashed border-brand-border bg-brand-black px-5 py-10 text-center"
+>
+  <span class="mx-auto grid size-12 place-items-center rounded-full bg-brand-charcoal text-brand-gold">
+    <svg
+      class="size-5"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.7"
+      aria-hidden="true"
+    >
+      <path
+        d="M4 5h2l2 10h9l2-7H7"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+      <circle cx="10" cy="19" r="1" />
+      <circle cx="17" cy="19" r="1" />
+    </svg>
+  </span>
 
-                <circle
-                  cx="17"
-                  cy="19"
-                  r="1"
-                />
-              </svg>
-            </span>
+  <h3 class="mt-4 font-display text-2xl text-brand-cream">
+    No Orders Yet
+  </h3>
 
-            <h3
-              class="mt-4 font-display text-2xl text-brand-cream"
-            >
-              No Preview Orders Yet
-            </h3>
+  <p class="mx-auto mt-2 max-w-md text-sm leading-6 text-brand-muted">
+    Your latest submitted orders will appear here.
+  </p>
+</div>
 
-            <p
-              class="mx-auto mt-2 max-w-md text-sm leading-6 text-brand-muted"
-            >
-              Real order records will appear here after
-              Supabase and secure account access are connected.
-            </p>
-          </div>
+<div
+  x-show="!ordersError && orders.length > 0"
+  class="mt-6 grid gap-3"
+>
+  <template
+    x-for="order in orders.slice(0, 3)"
+    :key="order.id"
+  >
+    <article class="rounded-2xl border border-brand-border bg-brand-black p-4">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <p
+            class="text-sm font-semibold text-brand-cream"
+            x-text="'Order ' + order.id.slice(0, 8).toUpperCase()"
+          ></p>
+
+          <p
+            class="mt-1 text-xs text-brand-muted"
+            x-text="new Date(order.created_at).toLocaleDateString('en-PH')"
+          ></p>
+        </div>
+
+        <span
+  class="shrink-0 rounded-full border px-2.5 py-1 text-[0.6rem] font-semibold uppercase tracking-[0.08em]"
+  :class="{
+    'border-amber-300/40 bg-amber-400/10 text-amber-200': ['pending', 'pending_verification', 'pending-verification'].includes(order.status),
+    'border-sky-300/40 bg-sky-400/10 text-sky-200': order.status === 'processing',
+    'border-blue-300/40 bg-blue-400/10 text-blue-200': order.status === 'shipped',
+    'border-emerald-300/40 bg-emerald-400/10 text-emerald-200': order.status === 'delivered',
+    'border-red-300/40 bg-red-400/10 text-red-200': order.status === 'rejected',
+    'border-brand-border text-brand-muted': !['pending', 'pending_verification', 'pending-verification', 'processing', 'shipped', 'delivered', 'rejected'].includes(order.status),
+  }"
+  x-text="{
+    pending: 'Pending',
+    pending_verification: 'Pending Verification',
+    'pending-verification': 'Pending Verification',
+    processing: 'Processing',
+    shipped: 'Shipped',
+    delivered: 'Delivered',
+    rejected: 'Payment Rejected',
+  }[order.status] || order.status"
+></span>
+      </div>
+
+      <p
+        class="mt-3 text-sm text-brand-cream"
+        x-text="'Items: ' + formatMoney(order.subtotal)"
+      ></p>
+
+      <p
+        x-show="Number(order.pointsAwarded || 0) > 0"
+        class="mt-2 inline-flex rounded-full border border-brand-gold/35 bg-brand-gold/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.08em] text-brand-gold"
+        x-text="'+' + Number(order.pointsAwarded || 0).toLocaleString('en-PH') + ' points earned'"
+      ></p>
+
+      <p
+        x-show="order.delivery_details?.fulfillmentType === 'pickup'"
+        class="mt-2 text-xs text-brand-muted"
+      >
+        Pickup at 1244 Gen. Jacinto St, Makati City, Metro Manila
+      </p>
+
+      <p
+        x-show="order.delivery_details?.fulfillmentType !== 'pickup' && order.delivery_fee === null"
+        class="mt-2 text-xs text-brand-muted"
+      >
+        Delivery handled manually
+      </p>
+
+      <p
+        x-show="order.delivery_details?.fulfillmentType !== 'pickup' && order.delivery_fee !== null"
+        class="mt-2 text-xs text-brand-muted"
+        x-text="'Delivery fee: ' + formatMoney(order.delivery_fee)"
+      ></p>
+        </article>
+        </template>
+       </div>
         </section>
-
-        <p
-          class="mt-6 text-center text-xs leading-5 text-brand-muted"
-        >
-          Dashboard interface preview — no account,
-          points, income, or order data is being saved yet.
-        </p>
-                </div>
+      </div>
 
         ${memberReferralsReady ? renderMemberReferralsPage() : ''}
 
@@ -3954,54 +4026,48 @@ registerProductViewStore(
           </div>
 
           <section
-            class="mt-6 grid gap-4 sm:grid-cols-3"
-            aria-label="Order overview"
-          >
-            <article
-              class="rounded-[1.35rem] border border-brand-border bg-brand-panel p-5 shadow-panel"
-            >
-              <p
-                class="text-xs uppercase tracking-[0.13em] text-brand-muted"
-              >
-                Total Orders
-              </p>
+  class="mt-6 grid gap-4 sm:grid-cols-3"
+  aria-label="Order overview"
+>
+  <article
+    class="rounded-[1.35rem] border border-brand-border bg-brand-panel p-5 shadow-panel"
+  >
+    <p class="text-xs uppercase tracking-[0.13em] text-brand-muted">
+      Total Orders
+    </p>
 
-              <strong
-  class="mt-3 block font-display text-4xl text-brand-cream"
-  x-text="ordersError ? '—' : orders.length"
-></strong>
-            </article>
+    <strong
+      class="mt-3 block font-display text-4xl text-brand-cream"
+      x-text="ordersError ? '—' : orders.length"
+    ></strong>
+  </article>
 
-            <article
-              class="rounded-[1.35rem] border border-brand-border bg-brand-panel p-5 shadow-panel"
-            >
-              <p
-                class="text-xs uppercase tracking-[0.13em] text-brand-muted"
-              >
-                Pending Verification
-              </p>
+  <article
+    class="rounded-[1.35rem] border border-brand-border bg-brand-panel p-5 shadow-panel"
+  >
+    <p class="text-xs uppercase tracking-[0.13em] text-brand-muted">
+      Pending Verification
+    </p>
 
-              <strong
-  class="mt-3 block font-display text-4xl text-brand-cream"
-  x-text="ordersError ? '—' : orders.filter(order => order.status === 'pending_verification').length"
-></strong>
-            </article>
+    <strong
+      class="mt-3 block font-display text-4xl text-brand-cream"
+      x-text="ordersError ? '—' : orders.filter(order => ['pending', 'pending_verification', 'pending-verification'].includes(order.status)).length"
+    ></strong>
+  </article>
 
-            <article
-              class="rounded-[1.35rem] border border-brand-border bg-brand-panel p-5 shadow-panel"
-            >
-              <p
-                class="text-xs uppercase tracking-[0.13em] text-brand-muted"
-              >
-                Completed
-              </p>
+  <article
+    class="rounded-[1.35rem] border border-brand-border bg-brand-panel p-5 shadow-panel"
+  >
+    <p class="text-xs uppercase tracking-[0.13em] text-brand-muted">
+      Completed
+    </p>
 
-              <strong
-  class="mt-3 block font-display text-4xl text-brand-cream"
-  x-text="ordersError ? '—' : orders.filter(order => order.status === 'completed').length"
-></strong>
-            </article>
-          </section>
+    <strong
+      class="mt-3 block font-display text-4xl text-brand-cream"
+      x-text="ordersError ? '—' : orders.filter(order => order.status === 'delivered').length"
+    ></strong>
+  </article>
+</section>
 
           <section
             class="mt-6 rounded-[1.5rem] border border-brand-border bg-brand-panel p-5 shadow-panel sm:p-6"
@@ -4154,11 +4220,24 @@ registerProductViewStore(
                 ></p>
 
                 <p
-                  x-show="order.delivery_fee === null"
-                  class="mt-1 text-xs text-brand-muted"
-                >
-                  Delivery handled manually
-                </p>
+  x-show="order.delivery_details?.fulfillmentType === 'pickup'"
+  class="mt-1 text-xs text-brand-muted"
+>
+  Pickup at 1244 Gen. Jacinto St, Makati City, Metro Manila
+</p>
+
+<p
+  x-show="order.delivery_details?.fulfillmentType !== 'pickup' && order.delivery_fee === null"
+  class="mt-1 text-xs text-brand-muted"
+>
+  Delivery handled manually
+</p>
+
+<p
+  x-show="order.delivery_details?.fulfillmentType !== 'pickup' && order.delivery_fee !== null"
+  class="mt-1 text-xs text-brand-muted"
+  x-text="'Delivery fee: ' + formatMoney(order.delivery_fee)"
+></p>
               </article>
             </template>
           </div>

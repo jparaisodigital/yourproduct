@@ -728,11 +728,7 @@ function renderOrdersPage() {
                   x-text="
                     liveOrdersLoading || liveOrdersError
                       ? '—'
-                      : liveOrders.filter(
-                          (order) =>
-                            order.status ===
-                            'pending_verification',
-                        ).length
+                      : pendingOrderCount
                   "
                 ></strong>
               </div>
@@ -912,39 +908,84 @@ function renderOrderDetailsDrawer() {
           </section>
 
           <section class="rounded-xl border border-brand-border bg-brand-black p-5">
-            <h3 class="font-semibold text-brand-cream">Delivery</h3>
-            <p
-              class="mt-3 text-sm text-brand-cream"
-              x-text="[selectedOrder.delivery_details.recipientFirstName, selectedOrder.delivery_details.recipientLastName].filter(Boolean).join(' ')"
-            ></p>
-            <p
-              class="mt-1 text-sm text-brand-muted"
-              x-text="selectedOrder.delivery_details.recipientMobile"
-            ></p>
-            <p
-              class="mt-2 text-sm leading-6 text-brand-cream"
-              x-text="[selectedOrder.delivery_details.houseStreet, selectedOrder.delivery_details.barangay, selectedOrder.delivery_details.city, selectedOrder.delivery_details.province, selectedOrder.delivery_details.region].filter(Boolean).join(', ')"
-            ></p>
-            <p
-              x-show="selectedOrder.delivery_details.notes"
-              class="mt-2 text-sm text-brand-muted"
-              x-text="selectedOrder.delivery_details.notes"
-            ></p>
-          </section>
+  <h3
+    class="font-semibold text-brand-cream"
+    x-text="selectedOrder.delivery_details.fulfillmentType === 'pickup' ? 'Pickup' : 'Delivery'"
+  ></h3>
+
+  <div
+    x-show="selectedOrder.delivery_details.fulfillmentType === 'pickup'"
+    class="mt-3 rounded-xl border border-brand-gold/30 bg-brand-gold/10 px-4 py-3"
+  >
+    <p class="text-sm font-semibold text-brand-cream">
+      Customer will pick up this order.
+    </p>
+
+    <p class="mt-2 text-sm leading-6 text-brand-muted">
+      1244 Gen. Jacinto St, Makati City, Metro Manila
+    </p>
+
+    <p class="mt-2 text-xs font-semibold uppercase tracking-[0.12em] text-brand-gold">
+      No delivery fee
+    </p>
+  </div>
+
+  <div x-show="selectedOrder.delivery_details.fulfillmentType !== 'pickup'">
+    <p
+      class="mt-3 text-sm text-brand-cream"
+      x-text="[selectedOrder.delivery_details.recipientFirstName, selectedOrder.delivery_details.recipientLastName].filter(Boolean).join(' ')"
+    ></p>
+
+    <p
+      class="mt-1 text-sm text-brand-muted"
+      x-text="selectedOrder.delivery_details.recipientMobile"
+    ></p>
+
+    <p
+      class="mt-2 text-sm leading-6 text-brand-cream"
+      x-text="[selectedOrder.delivery_details.houseStreet, selectedOrder.delivery_details.barangay, selectedOrder.delivery_details.city, selectedOrder.delivery_details.province, selectedOrder.delivery_details.region].filter(Boolean).join(', ')"
+    ></p>
+
+    <p
+      x-show="selectedOrder.delivery_details.notes"
+      class="mt-2 text-sm text-brand-muted"
+      x-text="selectedOrder.delivery_details.notes"
+    ></p>
+  </div>
+</section>
 
           <section class="rounded-xl border border-brand-border bg-brand-black p-5">
             <h3 class="font-semibold text-brand-cream">Items</h3>
             <template x-for="item in selectedOrder.order_items || []" :key="item.id">
-              <div class="mt-3 flex justify-between gap-4 border-t border-brand-border pt-3 text-sm">
-                <span
-                  class="text-brand-cream"
-                  x-text="item.product_name + ' × ' + item.quantity"
-                ></span>
-                <span
-                  class="shrink-0 text-brand-gold"
-                  x-text="formatMoney(Number(item.unit_price) * item.quantity)"
-                ></span>
-              </div>
+              <div class="mt-3 flex items-center justify-between gap-4 border-t border-brand-border pt-3 text-sm">
+  <div class="flex min-w-0 items-center gap-3">
+    <div class="size-14 shrink-0 overflow-hidden rounded-xl border border-brand-border bg-brand-panel">
+      <img
+        x-show="item.product_image_url"
+        :src="item.product_image_url"
+        :alt="item.product_name"
+        class="size-full object-cover"
+      >
+    </div>
+
+    <div class="min-w-0">
+      <p
+        class="truncate text-brand-cream"
+        x-text="item.product_name"
+      ></p>
+
+      <p
+        class="mt-1 text-xs text-brand-muted"
+        x-text="'Qty: ' + item.quantity"
+      ></p>
+    </div>
+  </div>
+
+  <span
+    class="shrink-0 text-brand-gold"
+    x-text="formatMoney(Number(item.unit_price) * item.quantity)"
+  ></span>
+</div>
             </template>
             <p
               class="mt-4 text-sm text-brand-cream"
@@ -957,32 +998,73 @@ function renderOrderDetailsDrawer() {
           </section>
 
           <section class="rounded-xl border border-brand-border bg-brand-black p-5">
-            <h3 class="font-semibold text-brand-cream">Payment</h3>
-            <p
-              class="mt-2 text-sm capitalize text-brand-muted"
-              x-text="'Method: ' + selectedOrder.payment_method.replaceAll('-', ' ')"
-            ></p>
-            <p
-              x-show="orderProofLoading"
-              class="mt-3 text-sm text-brand-muted"
-            >
-              Loading payment proof…
-            </p>
-            <p
-              x-show="orderProofError"
-              x-text="orderProofError"
-              class="mt-3 text-sm text-red-300"
-              role="alert"
-            ></p>
-            <img
-              x-show="orderProofUrl"
-              :src="orderProofUrl"
-              alt="Submitted payment proof"
-              class="mt-3 max-h-96 w-full rounded-lg object-contain"
-            >
-          </section>
+  <h3 class="font-semibold text-brand-cream">Payment</h3>
 
-          <section
+  <p
+    class="mt-2 text-sm capitalize text-brand-muted"
+    x-text="'Method: ' + selectedOrder.payment_method.replaceAll('-', ' ')"
+  ></p>
+
+  <p
+    x-show="orderProofLoading"
+    class="mt-3 text-sm text-brand-muted"
+  >
+    Loading payment proof…
+  </p>
+
+  <p
+    x-show="orderProofError"
+    x-text="orderProofError"
+    class="mt-3 text-sm text-red-300"
+    role="alert"
+  ></p>
+
+  <button
+    x-show="orderProofUrl"
+    type="button"
+    class="mt-3 block w-full overflow-hidden rounded-xl border border-brand-border bg-brand-panel transition hover:border-brand-gold/60"
+    @click="orderProofPreviewOpen = true"
+  >
+    <img
+      :src="orderProofUrl"
+      alt="Submitted payment proof"
+      class="max-h-80 w-full object-contain"
+    >
+
+    <span
+      class="block border-t border-brand-border px-3 py-2 text-center text-xs font-semibold text-brand-gold"
+    >
+      Click to zoom proof
+    </span>
+  </button>
+</section>
+
+<div
+  x-show="orderProofPreviewOpen"
+  x-cloak
+  class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+  @click.self="orderProofPreviewOpen = false"
+  @keydown.escape.window="orderProofPreviewOpen = false"
+>
+  <div class="relative inline-block max-h-[90vh] max-w-[92vw]">
+    <img
+      :src="orderProofUrl"
+      alt="Submitted payment proof preview"
+      class="block max-h-[90vh] max-w-[92vw] rounded-xl object-contain"
+    >
+
+    <button
+      type="button"
+      class="absolute -right-3 -top-3 z-10 inline-flex size-9 items-center justify-center rounded-full bg-black/80 text-xl font-semibold leading-none text-white shadow-lg ring-1 ring-white/20 transition hover:bg-black"
+      @click="orderProofPreviewOpen = false"
+      aria-label="Close payment proof preview"
+    >
+      ×
+    </button>
+  </div>
+</div>
+
+<section
   class="rounded-xl border border-brand-border bg-brand-black p-5"
   aria-labelledby="order-review-actions-title"
 >
@@ -1053,13 +1135,37 @@ function renderOrderDetailsDrawer() {
     This order is ready to be marked as shipped.
   </p>
 
+  <template x-if="orderFulfillmentConfirming !== 'shipped'">
   <button
     type="button"
     class="mt-4 inline-flex min-h-10 w-full items-center justify-center rounded-full bg-sky-600 px-4 text-sm font-semibold text-white transition hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-50"
-    @click="updateOrderFulfillment('shipped')"
+    @click="orderFulfillmentConfirming = 'shipped'"
     :disabled="orderFulfillmentSubmitting"
-    x-text="orderFulfillmentSubmitting ? 'Updating...' : 'Mark as Shipped'"
-  ></button>
+  >
+    Mark as Shipped
+  </button>
+</template>
+
+<template x-if="orderFulfillmentConfirming === 'shipped'">
+  <div class="mt-4 grid gap-2 sm:grid-cols-2">
+    <button
+      type="button"
+      class="inline-flex min-h-10 items-center justify-center rounded-full bg-sky-600 px-4 text-sm font-semibold text-white transition hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-50"
+      @click="updateOrderFulfillment('shipped')"
+      :disabled="orderFulfillmentSubmitting"
+      x-text="orderFulfillmentSubmitting ? 'Updating...' : 'Confirm Shipped'"
+    ></button>
+
+    <button
+      type="button"
+      class="inline-flex min-h-10 items-center justify-center rounded-full border border-brand-border px-4 text-sm font-semibold text-brand-muted transition hover:border-brand-gold/60 hover:text-brand-cream"
+      @click="orderFulfillmentConfirming = ''"
+      :disabled="orderFulfillmentSubmitting"
+    >
+      Cancel
+    </button>
+  </div>
+</template>
 </div>
 
 <div
@@ -1074,13 +1180,37 @@ function renderOrderDetailsDrawer() {
     Mark this order delivered once the customer receives it.
   </p>
 
+  <template x-if="orderFulfillmentConfirming !== 'delivered'">
   <button
     type="button"
     class="mt-4 inline-flex min-h-10 w-full items-center justify-center rounded-full bg-emerald-600 px-4 text-sm font-semibold text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-50"
-    @click="updateOrderFulfillment('delivered')"
+    @click="orderFulfillmentConfirming = 'delivered'"
     :disabled="orderFulfillmentSubmitting"
-    x-text="orderFulfillmentSubmitting ? 'Updating...' : 'Mark as Delivered'"
-  ></button>
+  >
+    Mark as Delivered
+  </button>
+</template>
+
+<template x-if="orderFulfillmentConfirming === 'delivered'">
+  <div class="mt-4 grid gap-2 sm:grid-cols-2">
+    <button
+      type="button"
+      class="inline-flex min-h-10 items-center justify-center rounded-full bg-emerald-600 px-4 text-sm font-semibold text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-50"
+      @click="updateOrderFulfillment('delivered')"
+      :disabled="orderFulfillmentSubmitting"
+      x-text="orderFulfillmentSubmitting ? 'Updating...' : 'Confirm Delivered'"
+    ></button>
+
+    <button
+      type="button"
+      class="inline-flex min-h-10 items-center justify-center rounded-full border border-brand-border px-4 text-sm font-semibold text-brand-muted transition hover:border-brand-gold/60 hover:text-brand-cream"
+      @click="orderFulfillmentConfirming = ''"
+      :disabled="orderFulfillmentSubmitting"
+    >
+      Cancel
+    </button>
+  </div>
+</template>
 </div>
 
 <div
@@ -1622,7 +1752,7 @@ Alpine.data('adminDashboard', () => ({
 
   liveOrders: [],
 
-  liveOrdersLoading: false,
+  liveOrdersLoading: true,
 
   liveOrdersError: '',
 
@@ -1699,7 +1829,9 @@ Alpine.data('adminDashboard', () => ({
   orderReviewSubmitting: false,
 
   orderFulfillmentSubmitting: false,
+  orderFulfillmentConfirming: '',
   orderFulfillmentError: '',
+  orderProofPreviewOpen: false,
   orderPointsSubmitting: false,
   orderPointsMessage: '',
   orderPointsError: '',
@@ -2008,34 +2140,24 @@ Alpine.data('adminDashboard', () => ({
   },
 
   async loadOverviewMetrics() {
-    this.overviewPendingOrders = null
     this.overviewActiveMembers = null
     this.overviewMetricsError = ''
 
     try {
-      const [ordersResult, membersResult] = await Promise.all([
-        supabase
-          .from('orders')
-          .select('id', { count: 'exact', head: true })
-          .eq('status', 'pending_verification'),
+      const { count, error } = await supabase
+        .from('profiles')
+        .select('id', { count: 'exact', head: true })
+        .eq('role', 'customer')
+        .eq('customer_type', 'member')
+        .eq('membership_status', 'active')
+        .eq('account_status', 'active')
 
-        supabase
-          .from('profiles')
-          .select('id', { count: 'exact', head: true })
-          .eq('role', 'customer')
-          .eq('customer_type', 'member')
-          .eq('membership_status', 'active')
-          .eq('account_status', 'active'),
-      ])
-
-      if (ordersResult.error) throw ordersResult.error
-      if (membersResult.error) throw membersResult.error
-      if (ordersResult.count === null || membersResult.count === null) {
+      if (error) throw error
+      if (count === null) {
         throw new Error('Overview counts are unavailable.')
       }
 
-      this.overviewPendingOrders = ordersResult.count
-      this.overviewActiveMembers = membersResult.count
+      this.overviewActiveMembers = count
     } catch (error) {
       console.error('Unable to load admin overview counts:', error)
       this.overviewMetricsError =
@@ -2340,10 +2462,21 @@ Alpine.data('adminDashboard', () => ({
     }
   },
 
+  isPendingOrderStatus(status) {
+    return [
+      'pending',
+      'pending_verification',
+      'pending-verification',
+    ].includes(status)
+  },
+
   get pendingOrderCount() {
-    return this.orders.filter(
-      (order) =>
-        order.status === 'pending-verification',
+    const sourceOrders = Array.isArray(this.liveOrders)
+      ? this.liveOrders
+      : this.orders
+
+    return sourceOrders.filter((order) =>
+      this.isPendingOrderStatus(order.status),
     ).length
   },
 
@@ -3613,6 +3746,7 @@ async updateOrderFulfillment(nextStatus) {
     'Could not update fulfillment status. Refresh and check the order.'
   } finally {
     this.orderFulfillmentSubmitting = false
+    this.orderFulfillmentConfirming = ''
   }
 },
 
@@ -4762,7 +4896,7 @@ async loadLiveOrders() {
         reviewed_at, shipped_at, delivered_at,
         customer_details, delivery_details,
         payment_method, payment_proof_path,
-        order_items(id, product_name, quantity, unit_price)
+        order_items(id, product_name, quantity, unit_price, product_image_url)
       `)
       .order('created_at', { ascending: false })
 
@@ -4795,6 +4929,7 @@ async loadLiveOrders() {
       ...order,
       pointsAwarded: pointsByOrderId.get(order.id) ?? 0,
     }))
+    this.overviewPendingOrders = this.pendingOrderCount
   } catch (error) {
     console.error('Unable to load live orders:', error)
     this.liveOrders = []
@@ -5039,7 +5174,7 @@ document.querySelector('#admin-app').innerHTML = `
 
     <strong
       class="mt-4 block font-display text-4xl text-brand-cream"
-      x-text="overviewPendingOrders === null ? '—' : overviewPendingOrders"
+      x-text="liveOrdersLoading || liveOrdersError ? '—' : pendingOrderCount"
     ></strong>
 
     <p class="mt-2 text-xs leading-5 text-brand-muted">
@@ -5123,7 +5258,7 @@ document.querySelector('#admin-app').innerHTML = `
 
                   <span
   class="rounded-full bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-300"
-  x-text="overviewPendingOrders === null ? '—' : overviewPendingOrders"
+  x-text="liveOrdersLoading || liveOrdersError ? '—' : pendingOrderCount"
 ></span>
                 </button>
               </div>

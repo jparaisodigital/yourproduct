@@ -138,9 +138,10 @@ Alpine.data('checkoutPage', () => ({
       const { data: quote, error } = await supabase.rpc(
         'quote_order_cart',
         {
-          cart_items: cart.items.map(({ productId, quantity }) => ({
-            productId,
-            quantity,
+          cart_items: cart.detailedItems.map((item) => ({
+            productId: item.productId,
+            quantity: item.quantity,
+            image: item.product.image,
           })),
         },
       )
@@ -210,9 +211,10 @@ Alpine.data('checkoutPage', () => ({
         return
       }
 
-      const cartItems = cart.items.map(({ productId, quantity }) => ({
-        productId,
-        quantity,
+      const cartItems = cart.detailedItems.map((item) => ({
+        productId: item.productId,
+        quantity: item.quantity,
+        image: item.product.image,
       }))
       const { data: quote, error: quoteError } = await supabase.rpc(
         'quote_order_cart',
@@ -277,9 +279,28 @@ Alpine.data('checkoutPage', () => ({
         },
       )
       if (submitError || !orderId) {
-        console.error('Unable to confirm order submission:', submitError)
+        console.error('Unable to confirm order submission:', {
+          submitError,
+          orderId,
+          fulfillmentType: this.delivery.fulfillmentType,
+          deliveryDetails: {
+            fulfillmentType: this.delivery.fulfillmentType,
+            region: this.delivery.region.trim(),
+            recipientFirstName: this.delivery.recipientFirstName.trim(),
+            recipientLastName: this.delivery.recipientLastName.trim(),
+            recipientMobile: this.delivery.recipientMobile.trim(),
+            province: this.delivery.province.trim(),
+            city: this.delivery.city.trim(),
+            barangay: this.delivery.barangay.trim(),
+            houseStreet: this.delivery.houseStreet.trim(),
+            landmark: this.delivery.landmark.trim(),
+            notes: this.delivery.notes.trim(),
+          },
+        })
+
         this.orderSubmissionUncertain = true
         this.orderCheckError =
+          submitError?.message ||
           'Could not confirm your order. Check Order History before retrying.'
         return
       }
@@ -944,37 +965,38 @@ contact our Facebook page to arrange the fee and schedule.
                       </span>
                     </span>
                   </label>
+
                   <label
-  class="flex cursor-not-allowed items-start justify-between gap-3 rounded-xl border border-brand-border bg-brand-black p-4 opacity-60"
-  aria-disabled="true"
+  class="flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition"
+  :class="
+    delivery.fulfillmentType === 'pickup'
+      ? 'border-brand-gold bg-brand-gold/10'
+      : 'border-brand-border bg-brand-black'
+  "
 >
-  <span class="flex items-start gap-3">
-    <input
-      type="radio"
-      name="fulfillment-method"
-      value="pickup"
-      class="mt-0.5 size-4 accent-[#b78a32]"
-      disabled
-    >
-    <span>
-      <span
-        class="block text-sm font-semibold text-brand-cream"
-      >
-        Pickup
-      </span>
-      <span
-        class="mt-1 block text-xs leading-5 text-brand-muted"
-      >
-        Pickup locations and schedules are not yet available.
-      </span>
+  <input
+    type="radio"
+    name="fulfillment-method"
+    value="pickup"
+    x-model="delivery.fulfillmentType"
+    class="mt-0.5 size-4 accent-[#b78a32]"
+  >
+
+  <span>
+    <span class="block text-sm font-semibold text-brand-cream">
+      Pickup
+    </span>
+
+    <span class="mt-1 block text-xs leading-5 text-brand-muted">
+      Pickup at 1244 Gen. Jacinto St, Makati City, Metro Manila.
+    </span>
+
+    <span class="mt-2 block text-xs font-semibold text-brand-gold">
+      No delivery fee for pickup orders.
     </span>
   </span>
-  <span
-    class="shrink-0 rounded-full border border-brand-gold/30 bg-brand-gold/10 px-2.5 py-1 text-[0.58rem] font-semibold uppercase tracking-[0.1em] text-brand-gold"
-  >
-    Coming Soon
-  </span>
 </label>
+
                 </div>
               </fieldset>
               <div
@@ -989,11 +1011,12 @@ contact our Facebook page to arrange the fee and schedule.
     Delivery region
   </label>
   <select
-    id="delivery-region"
-    x-model="delivery.region"
-    class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition focus:border-brand-gold"
-    required
-  >
+  id="delivery-region"
+  x-model="delivery.region"
+  class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition focus:border-brand-gold"
+  :required="delivery.fulfillmentType === 'dropship'"
+  :disabled="delivery.fulfillmentType !== 'dropship'"
+>
     <option value="" disabled>
       Select delivery region
     </option>
@@ -1068,17 +1091,18 @@ contact our Facebook page to arrange the fee and schedule.
                     Recipient first name
                   </label>
                   <input
-                    id="recipient-first-name"
-                    type="text"
-                    x-model.trim="delivery.recipientFirstName"
-                    autocomplete="shipping given-name"
-                    placeholder="Recipient first name"
-                    :required="
-                      delivery.fulfillmentType === 'dropship' &&
-                      !delivery.sameAsCustomer
-                    "
-                    class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
-                  >
+  id="recipient-first-name"
+  type="text"
+  x-model.trim="delivery.recipientFirstName"
+  autocomplete="shipping given-name"
+  placeholder="Recipient first name"
+  :required="
+    delivery.fulfillmentType === 'dropship' &&
+    !delivery.sameAsCustomer
+  "
+  :disabled="delivery.fulfillmentType !== 'dropship'"
+  class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
+>
                 </div>
                 <div>
                   <label
@@ -1088,17 +1112,18 @@ contact our Facebook page to arrange the fee and schedule.
                     Recipient last name
                   </label>
                   <input
-                    id="recipient-last-name"
-                    type="text"
-                    x-model.trim="delivery.recipientLastName"
-                    autocomplete="shipping family-name"
-                    placeholder="Recipient last name"
-                    :required="
-                      delivery.fulfillmentType === 'dropship' &&
-                      !delivery.sameAsCustomer
-                    "
-                    class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
-                  >
+  id="recipient-last-name"
+  type="text"
+  x-model.trim="delivery.recipientLastName"
+  autocomplete="shipping family-name"
+  placeholder="Recipient last name"
+  :required="
+    delivery.fulfillmentType === 'dropship' &&
+    !delivery.sameAsCustomer
+  "
+  :disabled="delivery.fulfillmentType !== 'dropship'"
+  class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
+>
                 </div>
                 <div class="sm:col-span-2">
                   <label
@@ -1108,20 +1133,21 @@ contact our Facebook page to arrange the fee and schedule.
                     Recipient mobile number
                   </label>
                   <input
-                    id="recipient-mobile"
-                    type="tel"
-                    x-model.trim="delivery.recipientMobile"
-                    inputmode="tel"
-                    autocomplete="shipping tel"
-                    minlength="10"
-                    maxlength="13"
-                    placeholder="09XXXXXXXXX"
-                    :required="
-                      delivery.fulfillmentType === 'dropship' &&
-                      !delivery.sameAsCustomer
-                    "
-                    class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
-                  >
+  id="recipient-mobile"
+  type="tel"
+  x-model.trim="delivery.recipientMobile"
+  inputmode="tel"
+  autocomplete="shipping tel"
+  minlength="10"
+  maxlength="13"
+  placeholder="09XXXXXXXXX"
+  :required="
+    delivery.fulfillmentType === 'dropship' &&
+    !delivery.sameAsCustomer
+  "
+  :disabled="delivery.fulfillmentType !== 'dropship'"
+  class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
+>
                 </div>
               </div>
               <div class="mt-5 grid gap-5 sm:grid-cols-2">
@@ -1133,14 +1159,15 @@ contact our Facebook page to arrange the fee and schedule.
                     Province
                   </label>
                   <input
-                    id="province"
-                    type="text"
-                    x-model.trim="delivery.province"
-                    autocomplete="shipping address-level1"
-                    placeholder="Example: Cavite"
-                    class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
-                    :required="delivery.fulfillmentType === 'dropship'"
-                  >
+  id="province"
+  type="text"
+  x-model.trim="delivery.province"
+  autocomplete="shipping address-level1"
+  placeholder="Example: Cavite"
+  class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
+  :required="delivery.fulfillmentType === 'dropship'"
+  :disabled="delivery.fulfillmentType !== 'dropship'"
+>
                 </div>
                 <div>
                   <label
@@ -1150,14 +1177,15 @@ contact our Facebook page to arrange the fee and schedule.
                     City or municipality
                   </label>
                   <input
-                    id="city"
-                    type="text"
-                    x-model.trim="delivery.city"
-                    autocomplete="shipping address-level2"
-                    placeholder="Example: Bacoor"
-                    class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
-                    :required="delivery.fulfillmentType === 'dropship'"
-                  >
+  id="city"
+  type="text"
+  x-model.trim="delivery.city"
+  autocomplete="shipping address-level2"
+  placeholder="Example: Bacoor"
+  class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
+  :required="delivery.fulfillmentType === 'dropship'"
+  :disabled="delivery.fulfillmentType !== 'dropship'"
+>
                 </div>
               </div>
               <div class="mt-5 grid gap-5 sm:grid-cols-2">
@@ -1169,14 +1197,15 @@ contact our Facebook page to arrange the fee and schedule.
                     Barangay
                   </label>
                   <input
-                    id="barangay"
-                    type="text"
-                    x-model.trim="delivery.barangay"
-                    autocomplete="shipping address-level3"
-                    placeholder="Enter barangay"
-                    class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
-                    :required="delivery.fulfillmentType === 'dropship'"
-                  >
+  id="barangay"
+  type="text"
+  x-model.trim="delivery.barangay"
+  autocomplete="shipping address-level3"
+  placeholder="Enter barangay"
+  class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
+  :required="delivery.fulfillmentType === 'dropship'"
+  :disabled="delivery.fulfillmentType !== 'dropship'"
+>
                 </div>
                 <div>
                   <label
@@ -1186,14 +1215,15 @@ contact our Facebook page to arrange the fee and schedule.
                     House number and street
                   </label>
                   <input
-                    id="house-street"
-                    type="text"
-                    x-model.trim="delivery.houseStreet"
-                    autocomplete="shipping street-address"
-                    placeholder="House no., street, subdivision"
-                    class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
-                    :required="delivery.fulfillmentType === 'dropship'"
-                  >
+  id="house-street"
+  type="text"
+  x-model.trim="delivery.houseStreet"
+  autocomplete="shipping street-address"
+  placeholder="House no., street, subdivision"
+  class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
+  :required="delivery.fulfillmentType === 'dropship'"
+  :disabled="delivery.fulfillmentType !== 'dropship'"
+>
                 </div>
               </div>
               <div class="mt-5 grid gap-5 sm:grid-cols-2">

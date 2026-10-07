@@ -290,7 +290,6 @@ document.querySelector('#login-app').innerHTML = `
                     :type="showPassword ? 'text' : 'password'"
                     x-model="password"
                     autocomplete="current-password"
-                    minlength="8"
                     placeholder="Enter your password"
                     class="h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 pr-20 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
                     required
