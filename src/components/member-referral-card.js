@@ -32,47 +32,47 @@ export function registerMemberReferralCard(
           this.currentReferralCode,
         )}`
       },
-  
+
       feedbackMessage: '',
       feedbackTone: 'success',
       feedbackTimer: null,
-  
+
       showFeedback(message, tone = 'success') {
         window.clearTimeout(this.feedbackTimer)
-  
+
         this.feedbackMessage = message
         this.feedbackTone = tone
-  
+
         this.feedbackTimer = window.setTimeout(() => {
           this.feedbackMessage = ''
         }, 3000)
       },
-  
+
       copyWithFallback() {
         const temporaryInput =
           document.createElement('textarea')
-  
+
         temporaryInput.value = this.referralLink
         temporaryInput.setAttribute('readonly', '')
         temporaryInput.style.position = 'fixed'
         temporaryInput.style.left = '-9999px'
         temporaryInput.style.opacity = '0'
-  
+
         document.body.appendChild(temporaryInput)
-  
+
         temporaryInput.focus()
         temporaryInput.select()
-  
+
         const copySuccessful =
           document.execCommand('copy')
-  
+
         temporaryInput.remove()
-  
+
         if (!copySuccessful) {
           throw new Error('Unable to copy referral link.')
         }
       },
-  
+
       async copyReferralLink() {
         try {
           if (
@@ -85,7 +85,7 @@ export function registerMemberReferralCard(
           } else {
             this.copyWithFallback()
           }
-  
+
           this.showFeedback(
             'Referral link copied successfully.',
           )
@@ -96,13 +96,13 @@ export function registerMemberReferralCard(
           )
         }
       },
-  
+
       async shareReferralLink() {
         if (!navigator.share) {
           await this.copyReferralLink()
           return
         }
-  
+
         try {
           await navigator.share({
             title: 'YOUR PRODUCT Membership',
@@ -111,7 +111,7 @@ export function registerMemberReferralCard(
               `${this.memberName}'s referral link.`,
             url: this.referralLink,
           })
-  
+
           this.showFeedback(
             'Referral link shared successfully.',
           )
@@ -119,20 +119,20 @@ export function registerMemberReferralCard(
           if (error?.name === 'AbortError') {
             return
           }
-  
+
           this.showFeedback(
             'Unable to open the share options.',
             'error',
           )
         }
       },
-  
+
       destroy() {
         window.clearTimeout(this.feedbackTimer)
       },
     }))
   }
-  
+
   export function renderMemberReferralCard() {
     return `
       <section
@@ -143,16 +143,16 @@ export function registerMemberReferralCard(
   "
   x-show="isMember"
         x-transition.opacity
-        class="relative mt-6 overflow-hidden rounded-[1.5rem] border border-brand-gold/35 bg-brand-panel p-5 shadow-gold-soft sm:p-6"
+        class="relative mt-6 min-w-0 overflow-hidden rounded-[1.5rem] border border-brand-gold/35 bg-brand-panel p-4 shadow-gold-soft sm:p-6"
         aria-labelledby="member-referral-title"
       >
         <div
           class="pointer-events-none absolute -right-20 -top-20 size-56 rounded-full bg-brand-gold/10 blur-3xl"
           aria-hidden="true"
         ></div>
-  
+
         <div
-          class="relative grid gap-6 lg:grid-cols-[0.8fr_1.2fr] lg:items-center"
+          class="relative grid min-w-0 gap-6 lg:grid-cols-[0.8fr_1.2fr] lg:items-center"
         >
           <div>
             <p
@@ -160,14 +160,14 @@ export function registerMemberReferralCard(
             >
               Direct Referral
             </p>
-  
+
             <h2
               id="member-referral-title"
               class="mt-2 font-display text-3xl text-brand-cream sm:text-4xl"
             >
               Invite through your personal link.
             </h2>
-  
+
             <p
               class="mt-3 max-w-xl text-sm leading-6 text-brand-muted"
             >
@@ -175,28 +175,28 @@ export function registerMemberReferralCard(
               through your link, your account will be recorded as their
               direct referrer.
             </p>
-  
+
             <div
-              class="mt-5 inline-flex items-center gap-2 rounded-full border border-brand-border bg-brand-black px-4 py-2"
+              class="mt-5 flex min-w-0 flex-wrap items-center gap-2 rounded-2xl border border-brand-border bg-brand-black px-4 py-2 sm:inline-flex sm:rounded-full"
             >
               <span
                 class="size-2 rounded-full bg-emerald-500"
                 aria-hidden="true"
               ></span>
-  
+
               <span
                 class="text-xs font-semibold uppercase tracking-[0.12em] text-brand-muted"
               >
                 Referral code
               </span>
-  
+
               <strong
-                class="text-sm text-brand-gold"
+                class="min-w-0 break-all text-sm text-brand-gold"
                 x-text="referralCode"
               ></strong>
             </div>
           </div>
-  
+
           <div
             class="rounded-2xl border border-brand-border bg-brand-black p-4 sm:p-5"
           >
@@ -206,7 +206,7 @@ export function registerMemberReferralCard(
             >
               Your personal referral link
             </label>
-  
+
             <div
               class="mt-3 flex flex-col gap-3 sm:flex-row"
             >
@@ -219,7 +219,7 @@ export function registerMemberReferralCard(
                 aria-readonly="true"
                 @focus="$event.currentTarget.select()"
               >
-  
+
               <button
                 type="button"
                 class="inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-xl bg-brand-gold px-5 text-sm font-semibold text-[#17130d] transition hover:bg-brand-gold-light active:scale-[0.98]"
@@ -240,17 +240,17 @@ export function registerMemberReferralCard(
                     height="11"
                     rx="2"
                   ></rect>
-  
+
                   <path
                     d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"
                     stroke-linecap="round"
                   ></path>
                 </svg>
-  
+
                 Copy Link
               </button>
             </div>
-  
+
             <div
               class="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
             >
@@ -259,7 +259,7 @@ export function registerMemberReferralCard(
               >
                 Earn 10% from direct referred membership packages after admin approval.
               </p>
-  
+
               <button
                 type="button"
                 class="inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-full border border-brand-border px-4 text-xs font-semibold text-brand-cream transition hover:border-brand-gold hover:text-brand-gold"
@@ -276,16 +276,16 @@ export function registerMemberReferralCard(
                   <circle cx="18" cy="5" r="2.5"></circle>
                   <circle cx="6" cy="12" r="2.5"></circle>
                   <circle cx="18" cy="19" r="2.5"></circle>
-  
+
                   <path
                     d="m8.25 10.85 7.5-4.4M8.25 13.15l7.5 4.4"
                   ></path>
                 </svg>
-  
+
                 Share Link
               </button>
             </div>
-  
+
             <p
               x-cloak
               x-show="feedbackMessage"

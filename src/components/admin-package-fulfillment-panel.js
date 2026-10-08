@@ -166,14 +166,14 @@ export function renderAdminPackageFulfillmentPanel() {
               class="select-none whitespace-nowrap font-display text-3xl"
               :class="
                 packageAllocationTotal ===
-                selectedApplication.package.productQuantity
+                selectedApplicationPackageProductQuantity
                   ? (
                       canConfirmPackageAllocation
                         ? 'text-emerald-300'
                         : 'text-red-300'
                     )
                   : packageAllocationTotal >
-                    selectedApplication.package.productQuantity
+                    selectedApplicationPackageProductQuantity
                     ? 'text-red-300'
                     : 'text-brand-gold'
               "
@@ -188,8 +188,7 @@ export function renderAdminPackageFulfillmentPanel() {
 
               <span
                 x-text="
-                  selectedApplication.package
-                    .productQuantity
+                  selectedApplicationPackageProductQuantity
                 "
               ></span>
             </strong>
@@ -203,14 +202,14 @@ export function renderAdminPackageFulfillmentPanel() {
               class="h-full rounded-full transition-all duration-300"
               :class="
                 packageAllocationTotal ===
-                selectedApplication.package.productQuantity
+                selectedApplicationPackageProductQuantity
                   ? (
                       canConfirmPackageAllocation
                         ? 'bg-emerald-400'
                         : 'bg-red-400'
                     )
                   : packageAllocationTotal >
-                    selectedApplication.package.productQuantity
+                    selectedApplicationPackageProductQuantity
                     ? 'bg-red-400'
                     : 'bg-brand-gold'
               "
@@ -225,7 +224,7 @@ export function renderAdminPackageFulfillmentPanel() {
 
         <div class="mt-4 space-y-3">
           <template
-            x-for="product in inventoryProducts"
+            x-for="product in packageAllocationProducts"
             :key="product.id"
           >
             <div
@@ -308,10 +307,7 @@ export function renderAdminPackageFulfillmentPanel() {
         </div>
 
         <div
-          x-show="
-            selectedApplication.package
-              .fixedInventoryItems.length > 0
-          "
+          x-show="selectedApplicationFixedInventoryItems.length > 0"
           class="mt-5 rounded-2xl border border-brand-border bg-brand-panel p-4"
         >
           <p
@@ -323,9 +319,8 @@ export function renderAdminPackageFulfillmentPanel() {
           <div class="mt-3 space-y-2">
             <template
               x-for="
-                inclusion in
-                selectedApplication.package
-                  .fixedInventoryItems
+               inclusion in
+               selectedApplicationFixedInventoryItems
               "
               :key="inclusion.inventoryItemId"
             >

@@ -35,14 +35,14 @@ export const packages = [
       {
         id: 'starter-option-b',
         label: 'Option B',
-        title: '1 Tester Kit + 2 Bottles',
+        title: 'Starter Tester Kit + 2 Bottles',
         description:
-          '1 tester kit with 20 pcs 5ml testers plus 2 assorted bottles.',
+          '1 Starter Tester Kit with 20 pcs 5ml testers plus 2 assorted bottles, 60ml each.',
         productQuantity: 2,
         fixedInventoryItems: [
           {
             inventoryItemId: 'supply-tester-kit',
-            name: 'Tester Kit',
+            name: 'Starter Tester Kit',
             quantity: 1,
           },
         ],
@@ -51,7 +51,7 @@ export const packages = [
 
     inclusions: [
       'Option A: 4 Assorted Bottles (60ml each)',
-      'Option B: 1 Tester Kit + 2 Assorted Bottles',
+      'Option B: 1 Starter Tester Kit + 2 Assorted Bottles',
       'Business Access',
     ],
 

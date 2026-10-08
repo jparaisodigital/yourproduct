@@ -1,5 +1,7 @@
 const directReferrals = []
 
+import { renderMemberReferralCard } from './member-referral-card.js'
+
 const referralRowsMarkup = directReferrals.length
   ? directReferrals
       .map(
@@ -161,6 +163,8 @@ export function renderMemberReferralsPage() {
           </button>
         </div>
       </div>
+
+      ${renderMemberReferralCard()}
 
       <section
         class="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4"

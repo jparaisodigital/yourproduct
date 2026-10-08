@@ -89,6 +89,27 @@ dashboardParams.get('package')?.trim() || ''
 const requestedMembershipStatus =
 dashboardParams.get('membership')?.trim() || ''
 
+const dashboardPageNames = [
+  'general',
+  'membershipApplication',
+  'membershipPayment',
+  'createOrder',
+  'orderHistory',
+  'earnings',
+  'payoutRequest',
+  'referrals',
+  'points',
+  'account',
+]
+
+const requestedDashboardPage =
+  dashboardParams.get('page')?.trim() || ''
+
+const initialDashboardPage =
+  dashboardPageNames.includes(requestedDashboardPage)
+    ? requestedDashboardPage
+    : 'general'
+
 const isApprovedMemberPreview =
   requestedMembershipStatus === 'active'
 
@@ -295,7 +316,7 @@ const membershipUpgradeMarkup =
               description: 'Perfect for beginners who want to start small.',
               inclusions: [
                 'Option A: 4 assorted bottles, 60ml each',
-                'Option B: 1 tester kit with 20 pcs 5ml testers plus 2 assorted bottles',
+                'Option B: 1 Starter Tester Kit with 20 pcs 5ml testers + 2 Assorted Bottles 60ml each',
                 '30% reseller bottle pricing',
                 '20 package points after approval',
               ],
@@ -694,7 +715,7 @@ const membershipApplicationPageMarkup = hasPendingMembership
                   ? `
                     <div class="mt-4 rounded-xl border border-brand-gold/25 bg-brand-black/70 px-4 py-3">
                       <p class="text-xs font-semibold uppercase tracking-[0.14em] text-brand-gold">
-                        Selected option
+                       Selected option · ${selectedMembershipPackageOption.label}
                       </p>
                       <p class="mt-1 text-sm font-semibold text-brand-cream">
                         ${selectedMembershipPackageOption.title}
@@ -969,6 +990,22 @@ const membershipPaymentPageMarkup = hasPendingMembership
               ${selectedDashboardPackage.description}
             </p>
 
+            ${selectedMembershipPackageOption
+              ? `
+                <div class="mt-4 rounded-xl border border-brand-gold/25 bg-brand-black/70 px-4 py-3">
+                  <p class="text-xs font-semibold uppercase tracking-[0.14em] text-brand-gold">
+                    Selected option · ${selectedMembershipPackageOption.label}
+                  </p>
+                  <p class="mt-1 text-sm font-semibold text-brand-cream">
+                    ${selectedMembershipPackageOption.title}
+                  </p>
+                  <p class="mt-1 text-xs leading-5 text-brand-muted">
+                    ${selectedMembershipPackageOption.description}
+                  </p>
+                </div>
+              `
+              : ''}
+
             <div
               class="mt-5 border-t border-brand-border pt-5"
             >
@@ -1054,7 +1091,7 @@ selectedDashboardPackage.price,
         <span
           class="mt-1 block text-xs leading-5 text-brand-muted"
         >
-          Pay using the official company e-wallet account.
+          GCash or Maya. Use the official company account provided by admin.
         </span>
       </label>
 
@@ -1084,7 +1121,7 @@ selectedDashboardPackage.price,
         <span
           class="mt-1 block text-xs leading-5 text-brand-muted"
         >
-          Transfer to an official company bank account.
+          Bank details pending. Official bank transfer details will be added after client confirmation.
         </span>
       </label>
     </div>
@@ -1098,12 +1135,11 @@ selectedDashboardPackage.price,
     <p
       class="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-brand-gold"
     >
-      Official E-wallet Account
+            Official GCash / Maya Account
     </p>
 
     <p class="mt-2 text-sm leading-6 text-brand-muted">
-      Official e-wallet name and account number will be displayed here
-      after client confirmation.
+      Official GCash or Maya account details will be provided by admin before payment.
     </p>
   </div>
 
@@ -1115,12 +1151,11 @@ selectedDashboardPackage.price,
     <p
       class="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-brand-gold"
     >
-      Official Bank Account
+           Bank Details Pending
     </p>
 
     <p class="mt-2 text-sm leading-6 text-brand-muted">
-      Official bank name, account name, and account number will be
-      displayed here after client confirmation.
+      Official bank name, account name, and account number will be added after client confirmation.
     </p>
   </div>
 
@@ -1219,7 +1254,7 @@ selectedDashboardPackage.price,
   </div>
 
   <label
-    class="mt-5 flex cursor-pointer items-start gap-3"
+    class="mt-5 mb-4 flex cursor-pointer items-start gap-3"
   >
     <input
       type="checkbox"
@@ -1241,10 +1276,11 @@ selectedDashboardPackage.price,
     role="alert"
   ></p>
 
-  <div
+   <div
+  id="membership-payment-status"
   x-show="membershipPaymentSubmitted"
   x-transition
-  class="rounded-2xl border border-emerald-400/30 bg-emerald-500/20 px-5 py-4"
+  class="mt-4 rounded-2xl border border-emerald-400/30 bg-emerald-500/20 px-5 py-4"
 >
   <div
     class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
@@ -2075,7 +2111,7 @@ let signedInOrders = []
 let signedInOrdersError = false
 
 Alpine.data('customerPortal', () => ({
-  activePage: 'general',
+  activePage: initialDashboardPage,
   profile: signedInProfile,
   orders: signedInOrders,
   ordersError: signedInOrdersError,
@@ -2173,6 +2209,26 @@ previewTimer: null,
         isOpen,
       )
     })
+
+    window.addEventListener('popstate', () => {
+      const nextParams = new URLSearchParams(
+        window.location.search,
+      )
+
+      const nextPage = nextParams.get('page')?.trim() || 'general'
+
+      this.activePage = dashboardPageNames.includes(nextPage)
+        ? nextPage
+        : 'general'
+
+      this.profileFormTested = false
+      this.closeMobileMenu()
+
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth',
+      })
+    })
   },
 
   async logOut() {
@@ -2204,10 +2260,30 @@ previewTimer: null,
     this.mobileMenuOpen = false
   },
 
+  formatMoney(value) {
+    return dashboardPesoFormatter.format(Number(value || 0))
+  },
+
   openPage(pageName) {
+    if (!dashboardPageNames.includes(pageName)) return
+
     this.activePage = pageName
     this.profileFormTested = false
     this.closeMobileMenu()
+
+    const nextUrl = new URL(window.location.href)
+
+    if (pageName === 'general') {
+      nextUrl.searchParams.delete('page')
+    } else {
+      nextUrl.searchParams.set('page', pageName)
+    }
+
+    window.history.pushState(
+      { page: pageName },
+      '',
+      nextUrl,
+    )
 
     window.scrollTo({
       top: 0,
@@ -2452,7 +2528,14 @@ previewTimer: null,
       const dashboardUrl = new URL(window.location.href)
       dashboardUrl.searchParams.set('membership', nextStatus)
       window.history.replaceState({}, '', dashboardUrl)
-      window.scrollTo({ top: 0, behavior: 'smooth' })
+      requestAnimationFrame(() => {
+        document
+          .querySelector('#membership-payment-status')
+          ?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center',
+          })
+      })
     } catch (error) {
       console.error('Unable to submit membership payment:', error)
 
@@ -2887,31 +2970,42 @@ let pointsByOrderId = new Map()
 let signedInPointsBalance = 0
 
 if (orderIds.length > 0) {
-    const { data: pointRows, error: pointsError } = await supabase
-      .from('points_transactions')
-      .select('order_id, points')
-      .in('order_id', orderIds)
-      .eq('type', 'order_award')
-      .eq('status', 'confirmed')
+  const { data: pointRows, error: pointsError } = await supabase
+    .from('points_transactions')
+    .select('order_id, points')
+    .in('order_id', orderIds)
+    .eq('type', 'order_award')
+    .eq('status', 'confirmed')
 
-    if (pointsError) {
-      console.error('Unable to load order points:', pointsError)
-    } else {
-      const confirmedPointRows = pointRows ?? []
+  if (pointsError) {
+    console.error('Unable to load order points:', pointsError)
+  } else {
+    const confirmedPointRows = pointRows ?? []
 
-pointsByOrderId = new Map(
-  confirmedPointRows.map((row) => [
-    row.order_id,
-    Number(row.points || 0),
-  ]),
-)
-
-signedInPointsBalance = confirmedPointRows.reduce(
-  (total, row) => total + Number(row.points || 0),
-  0,
-)
-    }
+    pointsByOrderId = new Map(
+      confirmedPointRows.map((row) => [
+        row.order_id,
+        Number(row.points || 0),
+      ]),
+    )
   }
+}
+
+const { data: balancePointRows, error: balancePointsError } =
+  await supabase
+    .from('points_transactions')
+    .select('points')
+    .eq('customer_id', user.id)
+    .eq('status', 'confirmed')
+
+if (balancePointsError) {
+  console.error('Unable to load points balance:', balancePointsError)
+} else {
+  signedInPointsBalance = (balancePointRows ?? []).reduce(
+    (total, row) => total + Number(row.points || 0),
+    0,
+  )
+}
 
   signedInOrders = (orderRows ?? []).map((order) => ({
     ...order,
@@ -3144,9 +3238,9 @@ signedInPointsBalance = confirmedPointRows.reduce(
               >
                 Welcome,
                 <span
-                  class="italic text-brand-gold"
-                  x-text="(profile.first_name || 'Customer') + '.'"
-                ></span>
+                class="block max-w-full break-all italic text-brand-gold sm:inline"
+                x-text="(profile.first_name || 'Customer') + '.'"
+              ></span>
               </h1>
 
               <p
@@ -3452,21 +3546,21 @@ signedInPointsBalance = confirmedPointRows.reduce(
         >
 
           <section
-            x-data="{ rewardJourneyZoomOpen: false }"
-            x-show="isMember"
-            x-transition.opacity
-            class="rounded-[1.5rem] border border-brand-border bg-brand-panel p-5 shadow-panel sm:p-6"
-          >
-                        <button
+  x-data="{ rewardJourneyZoomOpen: false }"
+  x-show="isMember"
+  x-transition.opacity
+  class="min-w-0 overflow-hidden rounded-[1.5rem] border border-brand-border bg-brand-panel p-4 shadow-panel sm:p-6"
+>
+            <button
               type="button"
-              class="mt-6 block w-full overflow-hidden rounded-2xl border border-brand-border bg-brand-black/70 p-2 transition hover:border-brand-gold/60"
+              class="block w-full max-w-full overflow-hidden rounded-2xl border border-brand-border bg-brand-black/70 p-2 transition hover:border-brand-gold/60"
               aria-label="Open reward journey image"
               @click="rewardJourneyZoomOpen = true"
             >
               <img
                 src="${rewardJourneyImage}"
                 alt="YOUR PRODUCT reward journey"
-                class="mx-auto max-h-[34rem] w-full rounded-xl object-contain"
+                class="mx-auto block h-auto max-h-[34rem] w-full max-w-full rounded-xl object-contain"
                 loading="lazy"
               >
             </button>
@@ -3510,7 +3604,7 @@ signedInPointsBalance = confirmedPointRows.reduce(
           </section>
 
           <section
-            class="rounded-[1.5rem] border border-brand-border bg-brand-panel p-5 shadow-panel sm:p-6"
+          class="min-w-0 overflow-hidden rounded-[1.5rem] border border-brand-border bg-brand-panel p-4 shadow-panel sm:p-6"
           >
             <p
               class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
@@ -3528,33 +3622,33 @@ signedInPointsBalance = confirmedPointRows.reduce(
               class="mt-6 divide-y divide-brand-border"
             >
               <div
-                class="flex items-center justify-between gap-4 py-3 first:pt-0"
+                class="grid min-w-0 gap-1 py-3 first:pt-0 sm:flex sm:items-center sm:justify-between sm:gap-4"
               >
                 <dt class="text-sm text-brand-muted">
                   Customer Name
                 </dt>
 
                 <dd
-  class="text-right text-sm font-semibold text-brand-cream"
+  class="min-w-0 break-words text-left text-sm font-semibold text-brand-cream sm:text-right"
   x-text="[profile.first_name, profile.last_name].filter(Boolean).join(' ') || 'Customer'"
 ></dd>
               </div>
 
               <div
-                class="flex items-center justify-between gap-4 py-3"
+                class="grid min-w-0 gap-1 py-3 sm:flex sm:items-center sm:justify-between sm:gap-4"
               >
                 <dt class="text-sm text-brand-muted">
                   Email
                 </dt>
 
                 <dd
-  class="max-w-44 truncate text-right text-sm font-semibold text-brand-cream"
+  class="min-w-0 break-all text-left text-sm font-semibold text-brand-cream sm:max-w-44 sm:truncate sm:text-right"
   x-text="profile.email || ''"
 ></dd>
               </div>
 
               <div
-                class="flex items-center justify-between gap-4 py-3"
+                class="grid min-w-0 gap-1 py-3 sm:flex sm:items-center sm:justify-between sm:gap-4"
               >
                 <dt class="text-sm text-brand-muted">
                   Membership
@@ -3567,7 +3661,7 @@ signedInPointsBalance = confirmedPointRows.reduce(
               </div>
 
               <div
-                class="flex items-center justify-between gap-4 py-3 last:pb-0"
+                class="grid min-w-0 gap-1 py-3 last:pb-0 sm:flex sm:items-center sm:justify-between sm:gap-4"
               >
                 <dt class="text-sm text-brand-muted">
                   Account Type
@@ -3610,13 +3704,25 @@ signedInPointsBalance = confirmedPointRows.reduce(
               </h2>
             </div>
 
-            <button
-              type="button"
-              class="text-left text-sm font-semibold text-brand-gold transition hover:text-brand-gold-light"
-              @click="openPage('orderHistory')"
+            <div
+              class="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4"
             >
-              View Order History
-            </button>
+              <button
+                type="button"
+                class="text-left text-sm font-semibold text-brand-gold transition hover:text-brand-gold-light"
+                @click="openPage('points')"
+              >
+                View Points & Rewards
+              </button>
+
+              <button
+                type="button"
+                class="text-left text-sm font-semibold text-brand-gold transition hover:text-brand-gold-light"
+                @click="openPage('orderHistory')"
+              >
+                View Order History
+              </button>
+            </div>
           </div>
 
           <div

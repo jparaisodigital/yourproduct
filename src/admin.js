@@ -128,10 +128,6 @@ const adminNavigationItems = [
     id: 'customers',
     label: 'Customers',
   },
-  {
-    id: 'products',
-    label: 'Products',
-  },
 ]
 
 const adminPageTitles = {
@@ -142,7 +138,6 @@ const adminPageTitles = {
   'referrals-payouts': 'Referrals & Payouts',
   'points-audit': 'Points & Rewards',
   customers: 'Customers',
-  products: 'Products',
 }
 
 const navigationMarkup = adminNavigationItems
@@ -611,6 +606,17 @@ function renderMembershipApplicationsPage() {
                         'Unknown package'
                       "
                     ></strong>
+
+                    <p
+  x-show="application.packageOption"
+  class="mt-1 text-xs font-semibold text-brand-gold"
+  x-text="
+    application.packageOption
+      ? application.packageOption.label + ' - ' + application.packageOption.title
+      : ''
+  "
+></p>
+
                   </div>
 
                   <div>
@@ -1457,6 +1463,29 @@ function renderApplicationDetailsDrawer() {
               class="mt-3 text-sm text-brand-cream"
               x-text="'Package: ' + (selectedApplication.package?.name || selectedApplication.package_id)"
             ></p>
+
+            <div
+  x-show="selectedApplication.packageOption"
+  class="mt-3 rounded-xl border border-brand-gold/25 bg-brand-panel px-4 py-3"
+>
+    <p class="text-xs font-semibold uppercase tracking-[0.14em] text-brand-gold">
+    Selected Option
+  </p>
+  <p
+    class="mt-1 text-sm font-semibold text-brand-cream"
+    x-text="
+      selectedApplication.packageOption
+        ? selectedApplication.packageOption.label + ' - ' + selectedApplication.packageOption.title
+        : ''
+    "
+  ></p>
+
+  <p
+    class="mt-1 text-xs leading-5 text-brand-muted"
+    x-text="selectedApplication.packageOption?.description || ''"
+  ></p>
+</div>
+
             <p
               class="mt-1 text-sm text-brand-cream"
               x-text="'Amount: ' + formatOptionalMoney(selectedApplication.amount)"
@@ -1778,6 +1807,9 @@ Alpine.data('adminDashboard', () => ({
 
   inventoryFeedback: '',
 
+  salesExportConfirmOpen: false,
+  salesExportConfirmType: '',
+
   inventoryMovements: [],
 
   inventoryMovementFilter: 'all',
@@ -1898,8 +1930,34 @@ Alpine.data('adminDashboard', () => ({
     )
   },
 
+  get selectedApplicationPackageProductQuantity() {
+    const application = this.selectedApplication
+
+    return Number(
+      application?.packageOption?.productQuantity ??
+      application?.package?.productQuantity ??
+      0,
+    )
+  },
+
+  get selectedApplicationFixedInventoryItems() {
+    const application = this.selectedApplication
+
+    return (
+      application?.packageOption?.fixedInventoryItems ??
+      application?.package?.fixedInventoryItems ??
+      []
+    )
+  },
+
+  get packageAllocationProducts() {
+    return this.inventoryProducts.filter(
+      (product) => product.id !== 'tester-kit',
+    )
+  },
+
   get packageAllocationTotal() {
-    return this.inventoryProducts.reduce(
+    return this.packageAllocationProducts.reduce(
       (total, product) => {
         const quantity = Number.parseInt(
           this.packageAllocationQuantities[
@@ -1922,11 +1980,8 @@ Alpine.data('adminDashboard', () => ({
   },
 
   get packageAllocationProgress() {
-    const requiredQuantity = Number(
-      this.selectedApplication
-      ?.package
-      ?.productQuantity || 0,
-    )
+    const requiredQuantity =
+      this.selectedApplicationPackageProductQuantity
 
     if (requiredQuantity <= 0) {
       return 0
@@ -2031,9 +2086,8 @@ Alpine.data('adminDashboard', () => ({
       return false
     }
 
-    const requiredQuantity = Number(
-      selectedPackage.productQuantity || 0,
-    )
+    const requiredQuantity =
+    this.selectedApplicationPackageProductQuantity
 
     if (
       requiredQuantity <= 0 ||
@@ -2044,7 +2098,7 @@ Alpine.data('adminDashboard', () => ({
     }
 
     const productQuantitiesAreValid =
-    this.inventoryProducts.every(
+    this.packageAllocationProducts.every(
       (product) => {
         const rawQuantity =
         this.packageAllocationQuantities[
@@ -2173,7 +2227,7 @@ Alpine.data('adminDashboard', () => ({
       const { data, error } = await supabase
         .from('membership_applications')
         .select(`
-          id, customer_id, package_id, amount, status,
+          id, customer_id, package_id, selected_package_option_id, amount, status,
           payment_method, payment_provider, sender_name,
           reference_number, payment_proof_file_name,
           payment_proof_path,
@@ -2192,19 +2246,31 @@ Alpine.data('adminDashboard', () => ({
 
       if (error) throw error
 
-      this.applications = (data ?? []).map((application) => ({
-        ...application,
-        customer_name: [
-          application.customer?.first_name,
-          application.customer?.last_name,
-        ].filter(Boolean).join(' ') || 'Customer',
-        customer_email: application.customer?.email ?? '',
-        customer_mobile: application.customer?.mobile_number ?? '',
-        payment_proof_url: null,
-        package: packages.find(
-          (item) => item.id === application.package_id,
-        ) ?? null,
-      }))
+      this.applications = (data ?? []).map((application) => {
+        const selectedPackage =
+          packages.find(
+            (item) => item.id === application.package_id,
+          ) ?? null
+
+        const selectedPackageOption =
+          selectedPackage?.options?.find(
+            (option) =>
+              option.id === application.selected_package_option_id,
+          ) ?? null
+
+        return {
+          ...application,
+          customer_name: [
+            application.customer?.first_name,
+            application.customer?.last_name,
+          ].filter(Boolean).join(' ') || 'Customer',
+          customer_email: application.customer?.email ?? '',
+          customer_mobile: application.customer?.mobile_number ?? '',
+          payment_proof_url: null,
+          package: selectedPackage,
+          packageOption: selectedPackageOption,
+        }
+      })
     } catch (error) {
       console.error('Unable to load membership applications:', error)
       this.applicationsError =
@@ -2287,17 +2353,17 @@ Alpine.data('adminDashboard', () => ({
 
       this.liveProducts = sortAdminProducts(data ?? [])
 
-      const liveProductsByName = new Map(
+      const liveProductsById = new Map(
         this.liveProducts.map((product) => [
-          product.name,
+          product.id,
           product,
         ]),
       )
 
       this.inventoryProducts = adminInventoryProducts.map(
         (product) => {
-          const liveProduct = liveProductsByName.get(
-            product.name,
+          const liveProduct = liveProductsById.get(
+            product.id,
           )
 
           if (!liveProduct) {
@@ -3894,7 +3960,7 @@ async confirmPackageAllocation() {
     return
   }
 
-  const packageAllocation = this.inventoryProducts
+  const packageAllocation = this.packageAllocationProducts
     .map((product) => ({
       product_id: product.id,
       product_name: product.name,
@@ -3919,7 +3985,16 @@ async confirmPackageAllocation() {
     if (error) throw error
 
     this.inventoryFeedback =
-      'Package inventory deducted and marked ready for packing.'
+  'Package inventory deducted and marked ready for packing.'
+
+window.setTimeout(() => {
+  if (
+    this.inventoryFeedback ===
+    'Package inventory deducted and marked ready for packing.'
+  ) {
+    this.inventoryFeedback = ''
+  }
+}, 3500)
 
     if (typeof this.loadMembershipApplications === 'function') {
       await this.loadMembershipApplications()
@@ -4443,7 +4518,7 @@ validatePackageAllocation() {
     return false
   }
 
-  for (const product of this.inventoryProducts) {
+  for (const product of this.packageAllocationProducts) {
     const rawQuantity =
     this.packageAllocationQuantities[
       product.id
@@ -4478,9 +4553,8 @@ validatePackageAllocation() {
     }
   }
 
-  const requiredQuantity = Number(
-    selectedPackage.productQuantity || 0,
-  )
+  const requiredQuantity =
+  this.selectedApplicationPackageProductQuantity
 
   if (
     this.packageAllocationTotal <
@@ -4516,7 +4590,7 @@ validatePackageAllocation() {
 
   for (
     const inclusion of
-    selectedPackage.fixedInventoryItems
+    this.selectedApplicationFixedInventoryItems
   ) {
     const availableStock =
     this.packageSupplyStock(
@@ -4611,6 +4685,33 @@ downloadCsv(filename, rows) {
   link.remove()
 
   URL.revokeObjectURL(url)
+},
+
+openSalesExportConfirm(type) {
+  if (!['details', 'summary'].includes(type)) return
+
+  this.salesExportConfirmType = type
+  this.salesExportConfirmOpen = true
+},
+
+closeSalesExportConfirm() {
+  this.salesExportConfirmOpen = false
+  this.salesExportConfirmType = ''
+},
+
+confirmSalesExport() {
+  const exportType = this.salesExportConfirmType
+
+  this.closeSalesExportConfirm()
+
+  if (exportType === 'details') {
+    this.exportSalesCsv()
+    return
+  }
+
+  if (exportType === 'summary') {
+    this.exportSalesSummaryCsv()
+  }
 },
 
 exportSalesCsv() {
@@ -4714,7 +4815,7 @@ exportSalesSummaryCsv() {
         label,
         `'${startDate.toLocaleDateString('en-PH')}`,
         `'${endDate.toLocaleDateString('en-PH')}`,
-        adminPesoFormatter.format(total),
+        `PHP ${Number(total || 0).toLocaleString('en-PH')}`,
         orders.length,
       ]
     }),
@@ -5310,8 +5411,6 @@ ${renderOrdersPage()}
 ${renderAdminSalesInventoryPage()}
 
 ${renderAdminCustomersPage()}
-
-${renderAdminProductsPage()}
 
 ${renderAdminReferralsPayoutsPage()}
 

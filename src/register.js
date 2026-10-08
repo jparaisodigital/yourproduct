@@ -87,10 +87,10 @@ const registrationWithoutReferralUrl = selectedPackage
 const referralStatusMarkup = referringMember
   ? `
       <aside
-        class="mt-6 rounded-2xl border border-brand-gold/40 bg-brand-gold/5 px-5 py-5"
+        class="mt-6 min-w-0 overflow-hidden rounded-2xl border border-brand-gold/40 bg-brand-gold/5 px-4 py-5 sm:px-5"
         aria-label="Referring member"
       >
-        <div class="flex items-start gap-3">
+        <div class="grid min-w-0 gap-3 sm:flex sm:items-start">
           <span
             class="mt-1 grid size-10 shrink-0 place-items-center rounded-full border border-brand-gold/40 bg-brand-black text-brand-gold"
             aria-hidden="true"
@@ -128,7 +128,7 @@ const referralStatusMarkup = referringMember
             </p>
 
             <p
-              class="mt-1 font-display text-2xl text-brand-cream"
+           class="mt-1 break-words font-display text-2xl text-brand-cream"
             >
               ${referringMember.fullName}
             </p>
@@ -154,7 +154,7 @@ const referralStatusMarkup = referringMember
             id="referral-code-preview"
             type="text"
             value="${referringMember.code}"
-            class="mt-2 h-11 w-full cursor-not-allowed rounded-xl border border-brand-border bg-brand-black px-4 text-sm font-semibold text-brand-gold outline-none"
+            class="mt-2 h-11 w-full min-w-0 cursor-not-allowed rounded-xl border border-brand-border bg-brand-black px-4 text-sm font-semibold text-brand-gold outline-none"
             readonly
             aria-readonly="true"
           >
@@ -163,10 +163,10 @@ const referralStatusMarkup = referringMember
     `
   : hasInvalidReferralCode
     ? `
-        <aside
-          class="mt-6 rounded-2xl border border-red-400/40 bg-red-400/5 px-5 py-5"
-          aria-label="Invalid referral link"
-        >
+           <aside
+           class="mt-6 min-w-0 overflow-hidden rounded-2xl border border-red-400/40 bg-red-400/5 px-4 py-5 sm:px-5"
+           aria-label="Invalid referral link"
+           >
           <p
             class="text-[0.62rem] font-semibold uppercase tracking-[0.18em] text-red-300"
           >
@@ -488,9 +488,9 @@ document.querySelector('#register-app').innerHTML = `
       </div>
     </header>
 
-    <main class="px-5 py-10 sm:py-16">
+    <main class="overflow-x-hidden px-4 py-10 sm:px-5 sm:py-16">
       <div
-        class="mx-auto grid w-full max-w-6xl overflow-clip rounded-[2rem] border border-brand-border bg-brand-panel shadow-panel lg:grid-cols-2"
+        class="mx-auto grid w-full max-w-6xl min-w-0 overflow-hidden rounded-[1.5rem] border border-brand-border bg-brand-panel shadow-panel sm:rounded-[2rem] lg:grid-cols-2"
       >
         <section
           class="relative hidden min-h-[720px] overflow-clip bg-brand-black lg:block"
@@ -591,8 +591,8 @@ document.querySelector('#register-app').innerHTML = `
           </div>
         </section>
 
-        <section class="px-5 py-9 sm:px-10 sm:py-12">
-          <div class="mx-auto max-w-xl">
+        <section class="min-w-0 px-4 py-8 sm:px-10 sm:py-12">
+          <div class="mx-auto max-w-xl min-w-0">
             <p
               class="text-xs font-semibold uppercase tracking-[0.25em] text-brand-gold lg:hidden"
             >

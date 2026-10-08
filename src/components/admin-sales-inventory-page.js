@@ -11,14 +11,14 @@ export function renderAdminSalesInventoryPage() {
         <p
           class="text-[0.65rem] font-semibold uppercase tracking-[0.22em] text-brand-gold"
         >
-          Product Inventory
+          Sales Inventory
         </p>
 
         <h1
           id="sales-inventory-page-title"
           class="mt-2 font-display text-4xl text-brand-cream sm:text-5xl"
         >
-          Products & Inventory
+          Sales & Inventory
         </h1>
 
         <p class="mt-3 text-sm leading-7 text-brand-muted">
@@ -64,7 +64,7 @@ export function renderAdminSalesInventoryPage() {
           <button
             type="button"
             class="inline-flex min-h-10 items-center justify-center rounded-full bg-brand-gold px-5 text-sm font-semibold text-[#17130d] transition hover:bg-brand-gold-light"
-            @click="exportSalesCsv()"
+            @click="openSalesExportConfirm('details')"
           >
             Export Sales Details
           </button>
@@ -72,7 +72,7 @@ export function renderAdminSalesInventoryPage() {
           <button
             type="button"
             class="inline-flex min-h-10 items-center justify-center rounded-full border border-brand-border px-5 text-sm font-semibold text-brand-cream transition hover:border-brand-gold hover:text-brand-gold"
-            @click="exportSalesSummaryCsv()"
+            @click="openSalesExportConfirm('summary')"
           >
             Export Sales Summary
           </button>
@@ -82,12 +82,64 @@ export function renderAdminSalesInventoryPage() {
           CSV reports open in Excel or Google Sheets. Sales are based on approved, shipped, or delivered product orders.
         </p>
 
+        <div
+  x-cloak
+  x-show="salesExportConfirmOpen"
+  x-transition.opacity
+  class="fixed inset-0 z-[90] grid place-items-center bg-black/75 px-4 py-6 backdrop-blur-sm"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="sales-export-confirm-title"
+  @keydown.escape.window="closeSalesExportConfirm()"
+>
+  <button
+    type="button"
+    class="absolute inset-0 cursor-default"
+    aria-label="Cancel sales export"
+    @click="closeSalesExportConfirm()"
+  ></button>
+
+  <div class="relative z-10 w-full max-w-md rounded-2xl border border-brand-gold/35 bg-brand-panel p-6 shadow-gold-soft">
+    <p class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold">
+      Export CSV
+    </p>
+
+    <h2
+      id="sales-export-confirm-title"
+      class="mt-2 font-display text-3xl text-brand-cream"
+      x-text="salesExportConfirmType === 'summary' ? 'Download sales summary?' : 'Download sales details?'"
+    ></h2>
+
+    <p class="mt-3 text-sm leading-6 text-brand-muted">
+      This will download a CSV file that can be opened in Excel or Google Sheets.
+    </p>
+
+    <div class="mt-6 grid gap-3 sm:grid-cols-2">
+      <button
+        type="button"
+        class="inline-flex min-h-11 items-center justify-center rounded-full border border-brand-border px-5 text-sm font-semibold text-brand-cream transition hover:border-brand-gold hover:text-brand-gold"
+        @click="closeSalesExportConfirm()"
+      >
+        Cancel
+      </button>
+
+      <button
+        type="button"
+        class="premium-cta inline-flex min-h-11 items-center justify-center rounded-full bg-brand-gold px-5 text-sm font-semibold text-[#17130d]"
+        @click="confirmSalesExport()"
+      >
+        Download CSV
+      </button>
+    </div>
+  </div>
+</div>
+
         <div class="mt-6 flex flex-wrap gap-3">
           <div class="rounded-xl border border-brand-border bg-brand-black px-5 py-3">
             <p class="text-xs text-brand-muted">Total products</p>
             <strong
               class="mt-1 block text-2xl text-brand-cream"
-              x-text="liveProductsLoading || liveProductsError ? '—' : liveProducts.length"
+              x-text="liveProductsLoading || liveProductsError ? '—' : liveProducts.filter(product => product.id !== 'tester-kit').length"
             ></strong>
           </div>
 
@@ -95,7 +147,7 @@ export function renderAdminSalesInventoryPage() {
             <p class="text-xs text-brand-muted">Active products</p>
             <strong
               class="mt-1 block text-2xl text-brand-cream"
-              x-text="liveProductsLoading || liveProductsError ? '—' : liveProducts.filter(product => product.is_active).length"
+              x-text="liveProductsLoading || liveProductsError ? '—' : liveProducts.filter(product => product.id !== 'tester-kit' && product.is_active).length"
             ></strong>
           </div>
         </div>
@@ -134,7 +186,7 @@ export function renderAdminSalesInventoryPage() {
         x-show="!liveProductsLoading && !liveProductsError && liveProducts.length > 0"
         class="mt-4 grid gap-4 md:grid-cols-2"
       >
-        <template x-for="product in liveProducts" :key="product.id">
+        <template x-for="product in liveProducts.filter(product => product.id !== 'tester-kit')" :key="product.id">
           <article class="rounded-2xl border border-brand-border bg-brand-panel p-5">
             <div class="flex flex-wrap items-start justify-between gap-3">
               <div class="min-w-0">
@@ -227,7 +279,7 @@ export function renderAdminSalesInventoryPage() {
                       ? 'Add Stock'
                       : stockAdjustmentModes[product.id] === 'deduct'
                         ? 'Deduct Stock'
-                        : 'Save Stock Count'
+                        : 'Set Stock Count'
                 "
               ></button>
             </div>
