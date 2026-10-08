@@ -1,7 +1,7 @@
-import starterPackagePoster from '../assets/products/starter1.png'
-import builderPackagePoster from '../assets/products/builder5.png'
-import leaderPackagePoster from '../assets/products/leader10.png'
-import prestigePackagePoster from '../assets/products/prestige50.png'
+import starterPackagePoster from '../assets/products/starter1.webp'
+import builderPackagePoster from '../assets/products/builder5.webp'
+import leaderPackagePoster from '../assets/products/leader10.webp'
+import prestigePackagePoster from '../assets/products/prestige50.webp'
 
 const packagePosterById = {
   starter: starterPackagePoster,

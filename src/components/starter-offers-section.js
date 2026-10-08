@@ -1,5 +1,5 @@
-import testerKitImage from '../assets/products/tester-kit.png'
-import starterPackageImage from '../assets/products/starter-package.jpg'
+import testerKitImage from '../assets/products/tester-kit.webp'
+import starterPackageImage from '../assets/products/starter-package.webp'
 
 const pesoFormatter = new Intl.NumberFormat('en-PH', {
   style: 'currency',

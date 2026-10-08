@@ -6,7 +6,7 @@ import { supabase } from './lib/supabase.js'
 
 import logoImage from './assets/logoyourproduct.webp'
 
-import rewardJourneyImage from './assets/rewards/reward-journey.png'
+import rewardJourneyImage from './assets/rewards/reward-journey.webp'
 
 import starterPackageImage from './assets/starter.webp'
 import builderPackageImage from './assets/builder.webp'

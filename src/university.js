@@ -6,9 +6,9 @@ import {
   bindFadeLinks,
 } from './lib/page-transition.js'
 
-import uniImage1 from './assets/youuniversity/1.jpg'
-import uniImage2 from './assets/youuniversity/2.jpg'
-import uniImage3 from './assets/youuniversity/3.jpg'
+import uniImage1 from './assets/youuniversity/1.webp'
+import uniImage2 from './assets/youuniversity/2.webp'
+import uniImage3 from './assets/youuniversity/3.webp'
 
 window.Alpine = Alpine
 

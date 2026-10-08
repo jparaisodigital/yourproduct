@@ -1,11 +1,11 @@
 import { supabase } from '../lib/supabase.js'
 
-import rewardJourneyImage from '../assets/rewards/reward-journey.png'
-import androidPhoneImage from '../assets/rewards/android-phone.jpg'
-import laptopImage from '../assets/rewards/laptop.jpg'
-import iphoneImage from '../assets/rewards/iphone.jpg'
-import motorcycleImage from '../assets/rewards/motorcyle.jpg'
-import carImage from '../assets/rewards/car.jpg'
+import rewardJourneyImage from '../assets/rewards/reward-journey.webp'
+import androidPhoneImage from '../assets/rewards/android-phone.webp'
+import laptopImage from '../assets/rewards/laptop.webp'
+import iphoneImage from '../assets/rewards/iphone.webp'
+import motorcycleImage from '../assets/rewards/motorcyle.webp'
+import carImage from '../assets/rewards/car.webp'
 
 const rewardCatalog = [
   {

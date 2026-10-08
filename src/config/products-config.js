@@ -1,26 +1,26 @@
-import men1Image from '../assets/men/1.png'
-import men2Image from '../assets/men/2.png'
-import men3Image from '../assets/men/3.png'
-import men4Image from '../assets/men/4.png'
-import men5Image from '../assets/men/5.png'
-import men6Image from '../assets/men/6.png'
-import men7Image from '../assets/men/7.png'
-import men8Image from '../assets/men/8.png'
-import men9Image from '../assets/men/9.png'
-import men10Image from '../assets/men/10.png'
+import men1Image from '../assets/men/1.webp'
+import men2Image from '../assets/men/2.webp'
+import men3Image from '../assets/men/3.webp'
+import men4Image from '../assets/men/4.webp'
+import men5Image from '../assets/men/5.webp'
+import men6Image from '../assets/men/6.webp'
+import men7Image from '../assets/men/7.webp'
+import men8Image from '../assets/men/8.webp'
+import men9Image from '../assets/men/9.webp'
+import men10Image from '../assets/men/10.webp'
 
-import women1Image from '../assets/women/1.png'
-import women2Image from '../assets/women/2.png'
-import women3Image from '../assets/women/3.png'
-import women4Image from '../assets/women/4.png'
-import women5Image from '../assets/women/5.png'
-import women6Image from '../assets/women/6.png'
-import women7Image from '../assets/women/7.png'
-import women8Image from '../assets/women/8.png'
-import women9Image from '../assets/women/9.png'
-import women10Image from '../assets/women/10.png'
+import women1Image from '../assets/women/1.webp'
+import women2Image from '../assets/women/2.webp'
+import women3Image from '../assets/women/3.webp'
+import women4Image from '../assets/women/4.webp'
+import women5Image from '../assets/women/5.webp'
+import women6Image from '../assets/women/6.webp'
+import women7Image from '../assets/women/7.webp'
+import women8Image from '../assets/women/8.webp'
+import women9Image from '../assets/women/9.webp'
+import women10Image from '../assets/women/10.webp'
 
-import testerKitImage from '../assets/products/tester-kit.png'
+import testerKitImage from '../assets/products/tester-kit.webp'
 
 export const productCategories = [
   {
@@ -175,13 +175,13 @@ function createProduct({
     2,
     '0',
   )
-  
+
   const categoryCode =
   category === 'men' ? 'M' : 'W'
-  
+
   const sku =
   `${categoryCode}${paddedNumber}`
-  
+
   const collectionLabel =
   category === 'men'
   ? "Men's Collection"
@@ -193,26 +193,26 @@ function createProduct({
     inspiredBy: '',
     notes: '',
   }
-  
+
   let stockQuantity = 20
-  
+
   // Low-stock product for the current admin preview.
   if (sku === 'M02') {
     stockQuantity = 4
   }
-  
+
   // Three W02 units are already reflected in
   // the approved processing preview order.
   if (sku === 'W02') {
     stockQuantity = 17
   }
-  
+
   return {
     // Preserve these IDs because the current admin
     // orders and inventory records depend on them.
     id:
     `sample-${category}-${paddedNumber}`,
-    
+
     sku,
     slug: sku.toLowerCase(),
     name: perfumeDetails.name,
@@ -227,25 +227,25 @@ function createProduct({
     bestFor: perfumeDetails.inspiredBy
       ? `For customers who enjoy ${perfumeDetails.inspiredBy}.`
       : '',
-    
+
     regularPrice: 349,
     memberPrice: 199,
-    
+
     // Product cost is not available yet.
     // Profit reporting stays disabled until confirmed.
     costPrice: null,
-    
+
     image,
-    
+
     isFeatured: number === 1,
     isActive: true,
-    
+
     isPointsQualified: true,
     pointsPerUnit: 5,
-    
+
     stockQuantity,
     lowStockThreshold: 5,
-    
+
     isSample: false,
   }
 }
