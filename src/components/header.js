@@ -1,4 +1,4 @@
-import headerLogo from '../assets/logoyourproduct.png'
+import headerLogo from '../assets/logoyourproduct.webp'
 import { supabase } from '../lib/supabase.js'
 
 window.yourProductSupabase = supabase

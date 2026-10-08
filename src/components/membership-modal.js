@@ -1,5 +1,5 @@
-import modalLogo from '../assets/logoyourproduct.png'
-import modalOrnament from '../assets/modal-ornament.png'
+import modalLogo from '../assets/logoyourproduct.webp'
+import modalOrnament from '../assets/modal-ornament.webp'
 
 const OPEN_DELAY = 1400
 

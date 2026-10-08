@@ -1,6 +1,6 @@
 import './style.css'
 import Alpine from 'alpinejs'
-import logoImage from './assets/logoyourproduct.png'
+import logoImage from './assets/logoyourproduct.webp'
 import { siteConfig } from './config/site-config.js'
 import {
   bindFadeLinks,

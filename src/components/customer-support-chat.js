@@ -1,4 +1,4 @@
-import logoImage from '../assets/logoyourproduct.png'
+import logoImage from '../assets/logoyourproduct.webp'
 
 const SUPPORT_URL =
   'https://web.facebook.com/YourProduct2026'

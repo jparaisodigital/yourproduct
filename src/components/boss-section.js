@@ -1,4 +1,4 @@
-import bossImage from '../assets/boss.jpg'
+import bossImage from '../assets/boss.webp'
 
 export function renderBossSection() {
   return `

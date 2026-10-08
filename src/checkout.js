@@ -1,7 +1,7 @@
 import './style.css'
 import Alpine from 'alpinejs'
 import { supabase } from './lib/supabase.js'
-import logoImage from './assets/logoyourproduct.png'
+import logoImage from './assets/logoyourproduct.webp'
 import {
   products,
 } from './config/products-config.js'

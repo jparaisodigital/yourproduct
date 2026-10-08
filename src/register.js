@@ -4,7 +4,7 @@ import Alpine from 'alpinejs'
 
 import { supabase } from './lib/supabase.js'
 
-import logoImage from './assets/logoyourproduct.png'
+import logoImage from './assets/logoyourproduct.webp'
 
 import { packages } from './config/packages-config.js'
 import { siteConfig } from './config/site-config.js'

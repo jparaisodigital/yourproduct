@@ -1,4 +1,4 @@
-import loaderLogo from '../assets/logoyourproduct.png'
+import loaderLogo from '../assets/logoyourproduct.webp'
 
 export function renderSiteLoader() {
   return `

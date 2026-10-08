@@ -4,14 +4,14 @@ import Alpine from 'alpinejs'
 
 import { supabase } from './lib/supabase.js'
 
-import logoImage from './assets/logoyourproduct.png'
+import logoImage from './assets/logoyourproduct.webp'
 
 import rewardJourneyImage from './assets/rewards/reward-journey.png'
 
-import starterPackageImage from './assets/starter.png'
-import builderPackageImage from './assets/builder.png'
-import leaderPackageImage from './assets/leader.png'
-import prestigePackageImage from './assets/prestige.png'
+import starterPackageImage from './assets/starter.webp'
+import builderPackageImage from './assets/builder.webp'
+import leaderPackageImage from './assets/leader.webp'
+import prestigePackageImage from './assets/prestige.webp'
 
 import {
   siteConfig,

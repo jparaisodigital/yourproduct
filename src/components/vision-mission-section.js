@@ -1,7 +1,7 @@
-import mindsetImage from '../assets/mindset.jpg'
-import modernImage from '../assets/modern.jpg'
-import productBlackImage from '../assets/product-black.jpg'
-import productGoldImage from '../assets/product-gold.jpg'
+import mindsetImage from '../assets/mindset.webp'
+import modernImage from '../assets/modern.webp'
+import productBlackImage from '../assets/product-black.webp'
+import productGoldImage from '../assets/product-gold.webp'
 
 export function renderVisionMissionSection() {
   return `

@@ -1,4 +1,4 @@
-import heroBackgroundImage from '../assets/herosection.png'
+import heroBackgroundImage from '../assets/herosection.webp'
 
 function escapeHtml(value = '') {
   const characters = {
