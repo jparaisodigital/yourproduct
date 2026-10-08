@@ -1,3 +1,15 @@
+import starterPackagePoster from '../assets/products/starter1.png'
+import builderPackagePoster from '../assets/products/builder5.png'
+import leaderPackagePoster from '../assets/products/leader10.png'
+import prestigePackagePoster from '../assets/products/prestige50.png'
+
+const packagePosterById = {
+  starter: starterPackagePoster,
+  builder: builderPackagePoster,
+  leader: leaderPackagePoster,
+  prestige: prestigePackagePoster,
+}
+
 const pesoFormatter = new Intl.NumberFormat('en-PH', {
   style: 'currency',
   currency: 'PHP',
@@ -11,6 +23,8 @@ function renderPackageCard(
 ) {
   const isAdminPreview =
     options.isAdminPreview === true
+  const packagePoster = packagePosterById[packageItem.id] || ''
+
   const priceMarkup =
     packageItem.price !== null
       ? `
@@ -44,7 +58,7 @@ function renderPackageCard(
           </div>
         `
 
-        const discountMarkup = packageItem.discountLabel
+  const discountMarkup = packageItem.discountLabel
     ? `
         <span
           class="mt-2 inline-flex w-fit rounded-full border border-brand-gold/30 bg-brand-gold/10 px-3 py-1 text-[0.6rem] font-semibold uppercase tracking-[0.12em] text-brand-gold"
@@ -54,7 +68,7 @@ function renderPackageCard(
       `
     : ''
 
-    const pointsRewardMarkup =
+  const pointsRewardMarkup =
     packageItem.pointsReward
       ? `
           <p
@@ -65,6 +79,30 @@ function renderPackageCard(
         `
       : ''
 
+  const packagePosterMarkup = packagePoster
+    ? `
+        <button
+          type="button"
+          class="mt-4 block w-full overflow-hidden rounded-2xl border border-brand-border bg-brand-black/70 p-2 transition hover:border-brand-gold/60 sm:mt-5 lg:mt-4"
+          aria-label="Open ${packageItem.name} package image"
+          @click="
+            packagePreviewImage = '${packagePoster}'
+            packagePreviewTitle = '${packageItem.name}'
+            packagePreviewOpen = true
+          "
+        >
+          <img
+            src="${packagePoster}"
+            alt="${packageItem.name} package details"
+            class="mx-auto max-h-80 w-full rounded-xl object-contain sm:max-h-96 lg:max-h-80"
+            loading="lazy"
+          >
+        </button>
+      `
+    : ''
+
+  // NOTE: inclusionsMarkup and optionsMarkup are currently unused
+  // (replaced by the poster image). Kept for easy rollback.
   const inclusionsMarkup =
     packageItem.inclusions.length > 0
       ? `
@@ -98,40 +136,40 @@ function renderPackageCard(
           </div>
         `
 
-        const optionsMarkup =
-        packageItem.options?.length > 0
-          ? `
-              <div class="mt-3 grid gap-2">
-                ${packageItem.options
-                  .map(
-                    (option) => `
-                      <div
-                        class="rounded-xl border border-brand-gold/25 bg-brand-gold/10 px-3 py-2"
-                      >
-                        <p
-                          class="text-[0.58rem] font-semibold uppercase tracking-[0.12em] text-brand-gold"
-                        >
-                          ${option.label}
-                        </p>
+  const optionsMarkup =
+    packageItem.options?.length > 0
+      ? `
+          <div class="mt-3 grid gap-2">
+            ${packageItem.options
+              .map(
+                (option) => `
+                  <div
+                    class="rounded-xl border border-brand-gold/25 bg-brand-gold/10 px-3 py-2"
+                  >
+                    <p
+                      class="text-[0.58rem] font-semibold uppercase tracking-[0.12em] text-brand-gold"
+                    >
+                      ${option.label}
+                    </p>
 
-                        <p
-                          class="mt-1 text-xs font-semibold text-brand-cream"
-                        >
-                          ${option.title}
-                        </p>
+                    <p
+                      class="mt-1 text-xs font-semibold text-brand-cream"
+                    >
+                      ${option.title}
+                    </p>
 
-                        <p
-                          class="mt-1 text-xs leading-5 text-brand-muted"
-                        >
-                          ${option.description}
-                        </p>
-                      </div>
-                    `,
-                  )
-                  .join('')}
-              </div>
-            `
-          : ''
+                    <p
+                      class="mt-1 text-xs leading-5 text-brand-muted"
+                    >
+                      ${option.description}
+                    </p>
+                  </div>
+                `,
+              )
+              .join('')}
+          </div>
+        `
+      : ''
 
   const featuredLabel = packageItem.isFeatured
     ? `
@@ -156,7 +194,7 @@ function renderPackageCard(
     ? 'bg-brand-gold text-[#17130d] hover:bg-brand-gold-light'
     : 'border border-brand-border text-brand-cream hover:border-brand-gold hover:bg-brand-gold/5 hover:text-brand-gold'
 
-    const packageCtaHref =
+  const packageCtaHref =
     isAdminPreview
       ? '#packages'
       : `/login/?package=${encodeURIComponent(packageItem.id)}`
@@ -221,20 +259,18 @@ function renderPackageCard(
           ${packageItem.description}
         </p>
 
-      ${priceMarkup}
-      ${discountMarkup}
-      ${pointsRewardMarkup}
-      ${optionsMarkup}
-      ${inclusionsMarkup}
-      
+        ${priceMarkup}
+        ${discountMarkup}
+        ${pointsRewardMarkup}
+        ${packagePosterMarkup}
 
         <div class="mt-auto pt-4 sm:pt-5 lg:pt-3">
           <a
-           href="${packageCtaHref}"
-           ${packageCtaAttributes}
-           class="${packageCtaClass} inline-flex h-10 w-full items-center justify-center rounded-xl px-4 text-[0.68rem] font-semibold uppercase tracking-[0.07em] transition duration-200 active:scale-[0.98] sm:h-11 sm:text-xs sm:tracking-[0.08em] lg:h-10"
-           >
-           ${packageCtaLabel}
+            href="${packageCtaHref}"
+            ${packageCtaAttributes}
+            class="${packageCtaClass} inline-flex h-10 w-full items-center justify-center rounded-xl px-4 text-[0.68rem] font-semibold uppercase tracking-[0.07em] transition duration-200 active:scale-[0.98] sm:h-11 sm:text-xs sm:tracking-[0.08em] lg:h-10"
+          >
+            ${packageCtaLabel}
           </a>
         </div>
       </div>
@@ -263,7 +299,14 @@ export function renderPackagesSection(
   return `
     <section
       id="packages"
+      x-data="{
+        packagePreviewOpen: false,
+        packagePreviewImage: '',
+        packagePreviewTitle: ''
+      }"
+      x-effect="document.documentElement.classList.toggle('overflow-hidden', packagePreviewOpen)"
       class="scroll-mt-24 relative overflow-clip border-t border-brand-border bg-brand-black py-14 sm:py-16 lg:py-8"
+      @keydown.escape.window="packagePreviewOpen = false"
     >
       <div
         class="pointer-events-none absolute -left-40 top-1/3 size-80 rounded-full bg-brand-gold/10 blur-3xl"
@@ -298,14 +341,14 @@ export function renderPackagesSection(
           </div>
 
           <p
-            class="max-w-lg text-sm leading-6 text-brand-muted sm:text-base lg:justify-self-endpriceMarkup lg:text-sm"
+            class="max-w-lg text-sm leading-6 text-brand-muted sm:text-base lg:justify-self-end lg:text-sm"
           >
             Explore the four membership options and choose the package
             that best matches your goals.
           </p>
         </div>
 
-                <div
+        <div
           class="mt-8 grid gap-4 sm:grid-cols-2 lg:mt-5 xl:grid-cols-4"
           aria-label="Membership packages"
         >
@@ -318,6 +361,42 @@ export function renderPackagesSection(
           Select a package to create your account. Package payment and
           verification will be completed through your customer portal.
         </p>
+
+        <template x-teleport="body">
+          <div
+            x-cloak
+            x-show="packagePreviewOpen"
+            x-transition.opacity.duration.200ms
+            class="fixed inset-0 z-[100] grid h-dvh w-screen place-items-center overflow-y-auto overscroll-contain bg-black/80 px-4 py-6 backdrop-blur-sm"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Package image preview"
+          >
+            <button
+              type="button"
+              class="absolute inset-0 cursor-default"
+              aria-label="Close package preview"
+              @click="packagePreviewOpen = false"
+            ></button>
+
+            <div class="relative z-10 w-full max-w-3xl overflow-hidden rounded-2xl border border-brand-gold/40 bg-brand-black p-3 shadow-2xl">
+              <button
+                type="button"
+                class="absolute right-3 top-3 z-20 grid size-9 place-items-center rounded-full border border-white/15 bg-black/80 text-xl leading-none text-white shadow-lg transition hover:border-brand-gold hover:text-brand-gold"
+                aria-label="Close package preview"
+                @click="packagePreviewOpen = false"
+              >
+                <span aria-hidden="true">&times;</span>
+              </button>
+
+              <img
+                :src="packagePreviewImage"
+                :alt="packagePreviewTitle + ' enlarged package details'"
+                class="max-h-[88dvh] w-full rounded-xl object-contain"
+              >
+            </div>
+          </div>
+        </template>
       </div>
     </section>
   `

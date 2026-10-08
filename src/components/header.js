@@ -1,4 +1,7 @@
 import headerLogo from '../assets/logoyourproduct.png'
+import { supabase } from '../lib/supabase.js'
+
+window.yourProductSupabase = supabase
 
 export function renderHeader(
   siteConfig,
@@ -128,6 +131,7 @@ export function renderHeader(
       x-data="{
         menuOpen: false,
         theme: 'black',
+        isLoggingOut: false,
 
         init() {
           const savedTheme =
@@ -176,6 +180,25 @@ export function renderHeader(
               root.classList.remove('theme-transitioning')
             }, 650)
           })
+        },
+
+        async logOut() {
+          if (this.isLoggingOut) return
+
+          this.isLoggingOut = true
+
+          try {
+            const { error } = await window.yourProductSupabase.auth.signOut({
+             scope: 'local',
+           })
+
+            if (error) throw error
+
+            window.location.reload()
+          } catch (error) {
+            console.error('Unable to log out:', error)
+            this.isLoggingOut = false
+          }
         }
       }"
       x-effect="
@@ -319,11 +342,25 @@ export function renderHeader(
           </button>
 
           <a
-          href="${accountCtaHref}"
-          class="premium-cta group inline-flex h-11 items-center justify-center rounded-xl bg-brand-gold px-5 text-sm font-semibold text-[#17130d] hover:bg-brand-gold-light"
+            href="${accountCtaHref}"
+            class="premium-cta group inline-flex h-11 items-center justify-center rounded-xl bg-brand-gold px-5 text-sm font-semibold text-[#17130d] hover:bg-brand-gold-light"
           >
-          ${accountCtaLabel}
+            ${accountCtaLabel}
           </a>
+
+          ${
+            isLoggedIn
+              ? `
+                  <button
+                    type="button"
+                    class="premium-outline inline-flex h-11 items-center justify-center rounded-xl border border-brand-border px-4 text-sm font-semibold text-brand-cream transition hover:border-brand-gold hover:text-brand-gold"
+                    @click="logOut()"
+                    :disabled="isLoggingOut"
+                    x-text="isLoggingOut ? 'Logging out...' : 'Logout'"
+                  ></button>
+                `
+              : ''
+          }
         </div>
 
         <div class="flex shrink-0 items-center gap-2 lg:hidden">
@@ -464,12 +501,26 @@ export function renderHeader(
           </a>
 
           <a
-          href="${accountCtaHref}"
-          class="premium-cta mt-2.5 inline-flex h-11 items-center justify-center rounded-xl bg-brand-gold px-5 text-sm font-semibold text-[#17130d] hover:bg-brand-gold-light"
-          @click="menuOpen = false"
+            href="${accountCtaHref}"
+            class="premium-cta mt-2.5 inline-flex h-11 items-center justify-center rounded-xl bg-brand-gold px-5 text-sm font-semibold text-[#17130d] hover:bg-brand-gold-light"
+            @click="menuOpen = false"
           >
-  ${accountCtaLabel}
-</a>
+            ${accountCtaLabel}
+          </a>
+
+          ${
+            isLoggedIn
+              ? `
+                  <button
+                    type="button"
+                    class="premium-outline mt-2.5 inline-flex h-11 items-center justify-center rounded-xl border border-brand-border px-5 text-sm font-semibold text-brand-cream transition hover:border-brand-gold hover:text-brand-gold"
+                    @click="logOut()"
+                    :disabled="isLoggingOut"
+                    x-text="isLoggingOut ? 'Logging out...' : 'Logout'"
+                  ></button>
+                `
+              : ''
+          }
         </nav>
       </div>
     </header>
