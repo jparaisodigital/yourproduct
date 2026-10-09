@@ -49,6 +49,7 @@ import {
 } from './components/member-referral-card.js'
 
 import {
+  registerMemberReferralsPage,
   renderMemberReferralsPage,
 } from './components/member-referrals-page.js'
 
@@ -2069,6 +2070,8 @@ registerMemberReferralCard(Alpine, {
   memberName:
     `${previewAccount.firstName} ${previewAccount.lastName}`,
 })
+
+registerMemberReferralsPage(Alpine)
 
 registerMemberEarningsPage(Alpine, {
   availableIncome: previewAccount.availableIncome,

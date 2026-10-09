@@ -1,123 +1,143 @@
-const directReferrals = []
+import { supabase } from '../lib/supabase.js'
 
 import { renderMemberReferralCard } from './member-referral-card.js'
 
-const referralRowsMarkup = directReferrals.length
-  ? directReferrals
-      .map(
-        (referral) => `
-          <article
-            class="rounded-2xl border border-brand-border bg-brand-black p-4 sm:p-5"
-          >
-            <div
-              class="flex flex-col gap-4 lg:grid lg:grid-cols-[1.25fr_0.8fr_0.9fr_0.9fr_auto] lg:items-center"
-            >
-              <div class="min-w-0">
-                <div class="flex flex-wrap items-center gap-2">
-                  <h3
-                    class="font-display text-2xl text-brand-cream"
-                  >
-                    ${referral.fullName}
-                  </h3>
+export function registerMemberReferralsPage(Alpine) {
+  Alpine.data('memberReferralsPage', () => ({
+    referrals: [],
+    loading: true,
+    error: '',
 
-                  <span
-                    class="rounded-full border border-brand-border px-2.5 py-1 text-[0.58rem] font-semibold uppercase tracking-[0.1em] text-brand-muted"
-                  >
-                    ${referral.id}
-                  </span>
-                </div>
+    async init() {
+      await this.loadReferrals()
+    },
 
-                <p
-                  class="mt-1 text-xs leading-5 text-brand-muted"
-                >
-                  Joined through your personal referral link
-                </p>
-              </div>
+    async loadReferrals() {
+      this.loading = true
+      this.error = ''
 
-              <div>
-                <p
-                  class="text-[0.6rem] font-semibold uppercase tracking-[0.12em] text-brand-muted"
-                >
-                  Joined
-                </p>
+      try {
+        const { data, error } = await supabase
+          .from('referral_commissions')
+          .select(`
+            id, referred_customer_id, membership_application_id,
+            referral_code, package_id, package_amount,
+            commission_amount, status, created_at
+          `)
+          .order('created_at', { ascending: false })
 
-                <p
-                  class="mt-1 text-sm font-semibold text-brand-cream"
-                >
-                  ${referral.joinedDate}
-                </p>
-              </div>
+        if (error) throw error
 
-              <div>
-                <p
-                  class="text-[0.6rem] font-semibold uppercase tracking-[0.12em] text-brand-muted"
-                >
-                  Account
-                </p>
+        this.referrals = (data ?? []).map((commission) => ({
+          id: commission.id,
+          referredCustomerId: commission.referred_customer_id,
+          applicationId: commission.membership_application_id,
+          packageId: commission.package_id,
+          packageLabel: this.packageLabel(commission.package_id),
+          packageAmount: Number(commission.package_amount || 0),
+          commissionAmount: Number(commission.commission_amount || 0),
+          status: commission.status || 'earned',
+          referralCode: commission.referral_code || '',
+          createdAt: commission.created_at,
+        }))
+      } catch (error) {
+        console.error('Unable to load referral records:', error)
+        this.error = 'Unable to load referral records. Please refresh.'
+        this.referrals = []
+      } finally {
+        this.loading = false
+      }
+    },
 
-                <p
-                  class="mt-1 text-sm font-semibold text-brand-cream"
-                >
-                  ${referral.accountStatus}
-                </p>
-              </div>
+    packageLabel(packageId) {
+      const labels = {
+        starter: 'Starter',
+        builder: 'Builder',
+        leader: 'Leader',
+        prestige: 'Prestige',
+      }
 
-              <div>
-                <p
-                  class="text-[0.6rem] font-semibold uppercase tracking-[0.12em] text-brand-muted"
-                >
-                  Qualification
-                </p>
+      return labels[packageId] || 'Membership'
+    },
 
-                <p
-                  class="mt-1 text-sm font-semibold text-brand-cream"
-                >
-                  ${referral.qualificationStatus}
-                </p>
-              </div>
+    formatMoney(value) {
+      return new Intl.NumberFormat('en-PH', {
+        style: 'currency',
+        currency: 'PHP',
+        minimumFractionDigits: 0,
+      }).format(Number(value || 0))
+    },
 
-              <div class="lg:text-right">
-                <span
-                  class="inline-flex rounded-full border px-3 py-1.5 text-[0.62rem] font-semibold uppercase tracking-[0.1em] ${referral.statusClass}"
-                >
-                  ${referral.commissionStatus}
-                </span>
-              </div>
-            </div>
-          </article>
-        `,
+    formatDate(value) {
+      if (!value) return 'Not available'
+
+      return new Intl.DateTimeFormat('en-PH', {
+        dateStyle: 'medium',
+        timeStyle: 'short',
+      }).format(new Date(value))
+    },
+
+    get totalReferrals() {
+      return this.referrals.length
+    },
+
+    get qualifiedCount() {
+      return this.referrals.filter(
+        (referral) => referral.status !== 'cancelled',
+      ).length
+    },
+
+    get pendingCount() {
+      return this.referrals.filter((referral) =>
+        ['requested', 'approved'].includes(referral.status),
+      ).length
+    },
+
+    get availableCount() {
+      return this.referrals.filter(
+        (referral) => referral.status === 'earned',
+      ).length
+    },
+
+    statusLabel(status) {
+      const labels = {
+        earned: 'Available',
+        requested: 'Payout Requested',
+        approved: 'Payout Approved',
+        paid: 'Paid',
+        cancelled: 'Cancelled',
+      }
+
+      return labels[status] || status
+    },
+
+    statusClass(status) {
+      const classes = {
+        earned:
+          'border-emerald-400/40 bg-emerald-400/10 text-emerald-200',
+        requested:
+          'border-amber-400/40 bg-amber-400/10 text-amber-200',
+        approved:
+          'border-blue-400/40 bg-blue-400/10 text-blue-200',
+        paid:
+          'border-blue-400/40 bg-blue-400/10 text-blue-200',
+        cancelled:
+          'border-red-400/40 bg-red-400/10 text-red-200',
+      }
+
+      return (
+        classes[status] ||
+        'border-brand-border bg-brand-black text-brand-muted'
       )
-      .join('')
-  : `
-      <div
-        class="rounded-2xl border border-dashed border-brand-border bg-brand-black/60 p-6 text-center"
-      >
-        <p
-          class="font-display text-xl text-brand-cream"
-        >
-          No direct referrals yet
-        </p>
-        <p
-          class="mx-auto mt-2 max-w-md text-sm leading-6 text-brand-muted"
-        >
-          Customers who register through your personal referral link will appear here once referral tracking records are available.
-        </p>
-      </div>
-    `
+    },
+  }))
+}
 
 export function renderMemberReferralsPage() {
-  // Dynamic counts based on real data
-  const totalReferrals = directReferrals.length
-  const qualifiedCount = directReferrals.filter(r => r.qualificationStatus === 'Qualified').length
-  const pendingCount = directReferrals.filter(r => r.commissionStatus === 'Pending Review').length
-  const availableCount = directReferrals.filter(r => r.commissionStatus === 'Available').length
-
   return `
     <section
-      x-show="
-        activePage === 'referrals' &&
-        isMember
-      "
+      x-data="memberReferralsPage"
+      x-show="activePage === 'referrals' && isMember"
       x-transition.opacity
       aria-labelledby="member-referrals-title"
     >
@@ -129,190 +149,78 @@ export function renderMemberReferralsPage() {
           aria-hidden="true"
         ></div>
 
-        <div
-          class="relative flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between"
-        >
-          <div>
-            <p
-              class="text-[0.65rem] font-semibold uppercase tracking-[0.22em] text-brand-gold"
-            >
-              Direct Referral Program
-            </p>
+        <div class="relative">
+          <p class="text-[0.65rem] font-semibold uppercase tracking-[0.22em] text-brand-gold">
+            Direct Referral Program
+          </p>
 
-            <h1
-              id="member-referrals-title"
-              class="mt-2 font-display text-4xl text-brand-cream sm:text-5xl"
-            >
-              My Referrals
-            </h1>
-
-            <p
-              class="mt-3 max-w-2xl text-sm leading-7 text-brand-muted"
-            >
-              View customers who registered through your personal
-              referral link and monitor their qualification status.
-            </p>
-          </div>
-
-          <button
-            type="button"
-            class="inline-flex min-h-11 items-center justify-center rounded-full border border-brand-border px-5 text-sm font-semibold text-brand-cream transition hover:border-brand-gold hover:text-brand-gold"
-            @click="openPage('general')"
+          <h1
+            id="member-referrals-title"
+            class="mt-2 font-display text-4xl text-brand-cream sm:text-5xl"
           >
-            Back to Dashboard
-          </button>
+            My Referrals
+          </h1>
+
+          <p class="mt-3 max-w-2xl text-sm leading-6 text-brand-muted">
+            Share your personal referral link and monitor approved direct referral commission records.
+          </p>
         </div>
       </div>
 
-      ${renderMemberReferralCard()}
+      <div class="mt-6">
+        ${renderMemberReferralCard()}
+      </div>
 
-      <section
+      <div
+        x-show="error"
+        class="mt-6 rounded-2xl border border-red-400/30 bg-red-400/10 px-5 py-4 text-sm text-red-200"
+        x-text="error"
+      ></div>
+
+      <div
         class="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4"
         aria-label="Referral overview"
       >
-        <article
-          class="rounded-[1.35rem] border border-brand-border bg-brand-panel p-5 shadow-panel"
-        >
-          <p
-            class="text-xs uppercase tracking-[0.13em] text-brand-muted"
-          >
+        <article class="rounded-[1.35rem] border border-brand-border bg-brand-panel p-5 shadow-panel">
+          <p class="text-xs uppercase tracking-[0.13em] text-brand-muted">
             Direct Referrals
           </p>
-
-          <strong
-            class="mt-3 block font-display text-4xl text-brand-cream"
-          >
-            ${totalReferrals}
-          </strong>
-
-          <p
-            class="mt-3 text-xs leading-5 text-brand-muted"
-          >
-            Registered through your link
-          </p>
+          <strong class="mt-3 block font-display text-4xl text-brand-cream" x-text="loading ? '—' : totalReferrals"></strong>
+          <p class="mt-3 text-xs leading-5 text-brand-muted">Recorded commission rows</p>
         </article>
 
-        <article
-          class="rounded-[1.35rem] border border-brand-border bg-brand-panel p-5 shadow-panel"
-        >
-          <p
-            class="text-xs uppercase tracking-[0.13em] text-brand-muted"
-          >
+        <article class="rounded-[1.35rem] border border-brand-border bg-brand-panel p-5 shadow-panel">
+          <p class="text-xs uppercase tracking-[0.13em] text-brand-muted">
             Qualified
           </p>
-
-          <strong
-            class="mt-3 block font-display text-4xl text-brand-cream"
-          >
-            ${qualifiedCount}
-          </strong>
-
-          <p
-            class="mt-3 text-xs leading-5 text-brand-muted"
-          >
-            Eligible records
-          </p>
+          <strong class="mt-3 block font-display text-4xl text-brand-cream" x-text="loading ? '—' : qualifiedCount"></strong>
+          <p class="mt-3 text-xs leading-5 text-brand-muted">Eligible records</p>
         </article>
 
-        <article
-          class="rounded-[1.35rem] border border-brand-border bg-brand-panel p-5 shadow-panel"
-        >
-          <p
-            class="text-xs uppercase tracking-[0.13em] text-brand-muted"
-          >
+        <article class="rounded-[1.35rem] border border-brand-border bg-brand-panel p-5 shadow-panel">
+          <p class="text-xs uppercase tracking-[0.13em] text-brand-muted">
             Pending Review
           </p>
-
-          <strong
-            class="mt-3 block font-display text-4xl text-amber-300"
-          >
-            ${pendingCount}
-          </strong>
-
-          <p
-            class="mt-3 text-xs leading-5 text-brand-muted"
-          >
-            Waiting for admin approval
-          </p>
+          <strong class="mt-3 block font-display text-4xl text-brand-cream" x-text="loading ? '—' : pendingCount"></strong>
+          <p class="mt-3 text-xs leading-5 text-brand-muted">Requested or approved payout</p>
         </article>
 
-        <article
-          class="rounded-[1.35rem] border border-brand-gold/35 bg-brand-charcoal p-5 shadow-panel"
-        >
-          <p
-            class="text-xs uppercase tracking-[0.13em] text-brand-muted"
-          >
+        <article class="rounded-[1.35rem] border border-brand-border bg-brand-panel p-5 shadow-panel">
+          <p class="text-xs uppercase tracking-[0.13em] text-brand-muted">
             Available
           </p>
-
-          <strong
-            class="mt-3 block font-display text-4xl text-emerald-300"
-          >
-            ${availableCount}
-          </strong>
-
-          <p
-            class="mt-3 text-xs leading-5 text-brand-muted"
-          >
-            Approved commission record
-          </p>
+          <strong class="mt-3 block font-display text-4xl text-brand-cream" x-text="loading ? '—' : availableCount"></strong>
+          <p class="mt-3 text-xs leading-5 text-brand-muted">Approved commission record</p>
         </article>
-      </section>
-
-      <aside
-        class="mt-6 rounded-2xl border border-brand-gold/30 bg-brand-gold/5 px-5 py-4"
-        aria-label="Referral reminder"
-      >
-        <div class="flex items-start gap-3">
-          <span
-            class="mt-0.5 grid size-9 shrink-0 place-items-center rounded-full border border-brand-gold/30 bg-brand-black text-brand-gold"
-            aria-hidden="true"
-          >
-            <svg
-              class="size-4"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.8"
-            >
-              <circle cx="12" cy="12" r="9"></circle>
-
-              <path
-                d="M12 10v6M12 7h.01"
-                stroke-linecap="round"
-              ></path>
-            </svg>
-          </span>
-
-          <div>
-            <p
-              class="text-sm font-semibold text-brand-cream"
-            >
-              Direct referrals only
-            </p>
-
-            <p
-              class="mt-1 text-xs leading-5 text-brand-muted"
-            >
-              Registration alone does not create a commission.
-              Eligible purchases and payment confirmation must still
-              be reviewed and approved by the admin.
-            </p>
-          </div>
-        </div>
-      </aside>
+      </div>
 
       <section
         class="mt-6 rounded-[1.5rem] border border-brand-border bg-brand-panel p-5 shadow-panel sm:p-6"
         aria-labelledby="direct-referral-list-title"
       >
-        <div
-          class="flex flex-col gap-3 border-b border-brand-border pb-5 sm:flex-row sm:items-end sm:justify-between"
-        >
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p
-              class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
-            >
+            <p class="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-brand-gold">
               Referral Records
             </p>
 
@@ -322,17 +230,66 @@ export function renderMemberReferralsPage() {
             >
               Direct Referral List
             </h2>
-          </div>
 
-          <p
-            class="text-xs leading-5 text-brand-muted"
-          >
-            Real referral records
-          </p>
+            <p class="mt-2 text-sm leading-6 text-brand-muted">
+              Real referral commission ledger from approved membership packages.
+            </p>
+          </div>
         </div>
 
-        <div class="mt-5 grid gap-3">
-          ${referralRowsMarkup}
+        <p
+          x-show="loading"
+          class="mt-5 rounded-xl border border-brand-border bg-brand-black px-4 py-8 text-center text-sm text-brand-muted"
+        >
+          Loading referral records...
+        </p>
+
+        <p
+          x-show="!loading && referrals.length === 0"
+          class="mt-5 rounded-xl border border-brand-border bg-brand-black px-4 py-8 text-center text-sm text-brand-muted"
+        >
+          No direct referrals yet.
+        </p>
+
+        <div
+          x-show="!loading && referrals.length > 0"
+          class="mt-5 grid gap-3"
+        >
+          <template x-for="referral in referrals" :key="referral.id">
+            <article class="grid gap-4 rounded-2xl border border-brand-border bg-brand-black p-4 sm:grid-cols-[1fr_auto] sm:items-center">
+              <div class="min-w-0">
+                <div class="flex flex-wrap items-center gap-2">
+                  <strong
+                    class="text-sm text-brand-cream"
+                    x-text="referral.packageLabel + ' Package'"
+                  ></strong>
+
+                  <span
+                    class="rounded-full border px-2.5 py-1 text-[0.58rem] font-semibold uppercase tracking-[0.1em]"
+                    :class="statusClass(referral.status)"
+                    x-text="statusLabel(referral.status)"
+                  ></span>
+                </div>
+
+                <p class="mt-2 text-sm leading-6 text-brand-muted">
+                  <span x-text="'Package amount: ' + formatMoney(referral.packageAmount)"></span>
+                  <span aria-hidden="true"> · </span>
+                  <span x-text="'Referral code: ' + (referral.referralCode || 'N/A')"></span>
+                </p>
+
+                <p class="mt-1 text-xs text-brand-muted">
+                  <span x-text="'Record ' + String(referral.id).slice(0, 8)"></span>
+                  <span aria-hidden="true"> · </span>
+                  <span x-text="formatDate(referral.createdAt)"></span>
+                </p>
+              </div>
+
+              <strong
+                class="font-display text-3xl text-brand-gold"
+                x-text="formatMoney(referral.commissionAmount)"
+              ></strong>
+            </article>
+          </template>
         </div>
       </section>
     </section>
