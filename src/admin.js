@@ -318,13 +318,6 @@ function renderMembershipApplicationsPage() {
                 Membership applications
               </h1>
 
-              <p
-                class="mt-3 max-w-2xl text-sm leading-7 text-brand-muted"
-              >
-                Review package selections, customer information,
-                payment details, and cancellation requests from one
-                organized queue.
-              </p>
             </div>
 
             <div
@@ -1577,18 +1570,53 @@ function renderApplicationDetailsDrawer() {
               role="alert"
             ></p>
 
-            <img
-              x-show="applicationProofUrl"
-              :src="applicationProofUrl"
-              alt="Submitted membership payment proof"
-              class="mt-3 max-h-96 w-full rounded-lg object-contain"
-            >
+            <button
+  x-show="applicationProofUrl"
+  type="button"
+  class="mt-3 block w-full overflow-hidden rounded-xl border border-brand-border bg-brand-panel transition hover:border-brand-gold/60"
+  @click="applicationProofPreviewOpen = true"
+>
+  <img
+    :src="applicationProofUrl"
+    alt="Submitted membership payment proof"
+    class="max-h-96 w-full object-contain"
+  >
+
+  <span class="block border-t border-brand-border px-3 py-2 text-center text-xs font-semibold text-brand-gold">
+    Click to zoom proof
+  </span>
+</button>
 
             <p
               x-show="!applicationProofLoading && !applicationProofUrl && !applicationProofError"
               class="mt-3 text-xs text-brand-muted"
             >No payment screenshot submitted.</p>
           </section>
+
+          <div
+  x-show="applicationProofPreviewOpen"
+  x-cloak
+  class="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4"
+  @click.self="applicationProofPreviewOpen = false"
+  @keydown.escape.window="applicationProofPreviewOpen = false"
+>
+  <div class="relative inline-block max-h-[90vh] max-w-[92vw]">
+    <img
+      :src="applicationProofUrl"
+      alt="Submitted membership payment proof preview"
+      class="block max-h-[90vh] max-w-[92vw] rounded-xl object-contain"
+    >
+
+    <button
+      type="button"
+      class="absolute -right-3 -top-3 z-10 inline-flex size-9 items-center justify-center rounded-full bg-black/80 text-xl font-semibold leading-none text-white shadow-lg ring-1 ring-white/20 transition hover:bg-black"
+      @click="applicationProofPreviewOpen = false"
+      aria-label="Close membership payment proof preview"
+    >
+      ×
+    </button>
+  </div>
+</div>
 
           <section
             x-show="selectedApplication.cancellation_reason"
@@ -1615,9 +1643,10 @@ function renderApplicationDetailsDrawer() {
 
             <div
               x-show="
-                selectedApplication &&
-                selectedApplication.status === 'pending-verification'
-              "
+  selectedApplication &&
+  selectedApplication.status === 'pending-verification' &&
+  !reviewPanelOpen
+"
               x-transition
               class="mt-4 grid gap-3 sm:grid-cols-2"
             >
@@ -1667,11 +1696,12 @@ function renderApplicationDetailsDrawer() {
             </p>
 
             <form
-              x-show="reviewPanelOpen"
-              x-transition
-              class="mt-4 rounded-2xl border border-brand-border bg-brand-panel p-4"
-              @submit.prevent="confirmReviewAction()"
-            >
+  x-ref="membershipReviewPanel"
+  x-show="reviewPanelOpen"
+  x-transition
+  class="mt-4 rounded-2xl border border-brand-border bg-brand-panel p-4"
+  @submit.prevent="confirmReviewAction()"
+>
               <h3
                 class="text-sm font-semibold text-brand-cream"
                 x-text="reviewActionTitle"
@@ -1725,39 +1755,44 @@ function renderApplicationDetailsDrawer() {
               ></p>
 
               <div class="mt-4 grid gap-3 sm:grid-cols-2">
-                <button
-                  type="button"
-                  class="inline-flex min-h-11 items-center justify-center rounded-full border border-brand-border px-4 text-sm font-semibold text-brand-cream transition hover:border-brand-gold hover:text-brand-gold disabled:cursor-not-allowed disabled:opacity-50"
-                  @click="closeReviewPanel()"
-                  :disabled="reviewSubmitting"
-                >
-                  Keep Current Status
-                </button>
+  <button
+    type="button"
+    class="inline-flex min-h-11 items-center justify-center rounded-full border border-brand-border px-4 text-sm font-semibold text-brand-cream transition hover:border-brand-gold hover:text-brand-gold disabled:cursor-not-allowed disabled:opacity-50"
+    @click="closeReviewPanel()"
+    :disabled="reviewSubmitting"
+  >
+    Keep Current Status
+  </button>
 
-                <button
-                  type="submit"
-                  class="inline-flex min-h-11 items-center justify-center rounded-full px-4 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50"
-                  :class="
-                    reviewAction === 'reject-payment'
-                      ? 'bg-red-700 text-white hover:bg-red-600'
-                      : 'bg-brand-gold text-[#17130d] hover:brightness-110'
-                  "
-                  :disabled="reviewSubmitting"
-                  x-text="
-                    reviewSubmitting
-                      ? 'Submitting...'
-                      : reviewAction === 'approve-membership'
-                        ? 'Confirm Approval'
-                        : reviewAction === 'reject-payment'
-                          ? 'Confirm Rejection'
-                          : 'Confirm Update'
-                  "
-                ></button>
-              </div>
-            </form>
-          </div>
+  <button
+    type="submit"
+    class="inline-flex min-h-11 items-center justify-center rounded-full px-4 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50"
+    :class="
+      reviewAction === 'reject-payment'
+        ? 'bg-red-700 text-white hover:bg-red-600'
+        : 'bg-brand-gold text-[#17130d] hover:brightness-110'
+    "
+    :disabled="
+      reviewSubmitting ||
+      (
+        reviewAction === 'approve-membership' &&
+        !reviewPaymentVerified
+      )
+    "
+    x-text="
+      reviewSubmitting
+        ? 'Submitting...'
+        : reviewAction === 'approve-membership'
+          ? 'Confirm Approval'
+          : reviewAction === 'reject-payment'
+            ? 'Confirm Rejection'
+            : 'Confirm Update'
+    "
+    ></button>
+</div>
+</form>
 
-          ${renderAdminPackageFulfillmentPanel()}
+${renderAdminPackageFulfillmentPanel()}
         </div>
       </template>
     </aside>
@@ -1864,6 +1899,7 @@ Alpine.data('adminDashboard', () => ({
 
   applicationDetailsOpen: false,
   applicationProofUrl: '',
+  applicationProofPreviewOpen: false,
   applicationProofLoading: false,
   applicationProofError: '',
   applicationProofRequestId: 0,
@@ -4171,8 +4207,8 @@ confirmPackageFulfillmentAction() {
 
 get reviewActionTitle() {
   const titles = {
-    'approve-membership': 'Approve membership',
-    'reject-payment': 'Reject payment',
+    'approve-membership': 'Confirm membership approval',
+    'reject-payment': 'Confirm payment rejection',
   }
 
   return titles[this.reviewAction] || 'Review application'
@@ -4181,7 +4217,7 @@ get reviewActionTitle() {
 get reviewActionDescription() {
   const descriptions = {
     'approve-membership':
-      'This will activate the customer membership after verified payment.',
+      'This will activate the customer membership after verified payment. Check the verification box before confirming.',
 
     'reject-payment':
       'This will reject the submitted payment and keep the customer as a free account.',
@@ -4208,10 +4244,17 @@ openReviewPanel(actionName) {
   }
 
   this.reviewAction = actionName
-  this.reviewNote = ''
-  this.reviewError = ''
-  this.reviewPaymentVerified = false
-  this.reviewPanelOpen = true
+this.reviewNote = ''
+this.reviewError = ''
+this.reviewPaymentVerified = false
+this.reviewPanelOpen = true
+
+this.$nextTick(() => {
+  this.$refs.membershipReviewPanel?.scrollIntoView({
+    behavior: 'smooth',
+    block: 'start',
+  })
+})
 },
 
 closeReviewPanel() {
@@ -4304,13 +4347,22 @@ async confirmReviewAction() {
     if (error) throw error
 
     const expectedStatus =
-      rpcAction === 'approve'
-        ? 'approved'
-        : 'rejected'
+  rpcAction === 'approve'
+    ? 'approved'
+    : 'rejected'
 
-    if (nextStatus !== expectedStatus) {
-      throw new Error('Unexpected review status returned.')
-    }
+const returnedStatus =
+  typeof nextStatus === 'string'
+    ? nextStatus
+    : Array.isArray(nextStatus)
+      ? nextStatus[0]?.status || nextStatus[0]
+      : nextStatus?.status || null
+
+const resolvedStatus = returnedStatus || expectedStatus
+
+if (returnedStatus && returnedStatus !== expectedStatus) {
+  console.warn('Unexpected review status returned:', returnedStatus)
+}
 
     const reviewedAt = new Date().toISOString()
 
@@ -4321,20 +4373,20 @@ async confirmReviewAction() {
 
       return {
         ...application,
-        status: nextStatus,
+        status: resolvedStatus,
         admin_note: normalizedNote || application.admin_note,
         reviewed_at: reviewedAt,
         updated_at: reviewedAt,
         approved_at:
-          nextStatus === 'approved'
+          resolvedStatus === 'approved'
             ? reviewedAt
             : application.approved_at,
         membership_activated_at:
-          nextStatus === 'approved'
+          resolvedStatus === 'approved'
             ? reviewedAt
             : application.membership_activated_at,
         fulfillment_status:
-          nextStatus === 'approved'
+          resolvedStatus === 'approved'
             ? 'pending-allocation'
             : application.fulfillment_status,
       }
@@ -4356,8 +4408,9 @@ async confirmReviewAction() {
   } catch (error) {
     console.error('Unable to review membership application:', error)
 
-    this.reviewError =
-      'Could not confirm the review. Refresh and check the application status.'
+this.reviewError =
+  error?.message ||
+  'Could not confirm the review. Refresh and check the application status.'
   } finally {
     this.reviewSubmitting = false
   }
@@ -5258,12 +5311,6 @@ document.querySelector('#admin-app').innerHTML = `
                 Business overview
               </h1>
 
-              <p
-                class="mt-4 max-w-2xl text-sm leading-7 text-brand-muted sm:text-base"
-              >
-                Review membership applications, customer orders,
-                accounts, and products from one central workspace.
-              </p>
             </div>
           </div>
 

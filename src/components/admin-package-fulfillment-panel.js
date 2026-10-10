@@ -605,15 +605,13 @@ class="mt-4"
       <p
         class="text-sm font-semibold text-brand-cream"
       >
-        Package is ready for packing
+        Ready to Ship
       </p>
 
       <p
         class="mt-1 text-xs leading-5 text-brand-muted"
       >
-        After the package has been prepared and
-        handed to the courier, update its shipping
-        status.
+        Once this package is packed and handed to the courier, update its status.
       </p>
     </div>
 
