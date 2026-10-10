@@ -117,6 +117,7 @@ export function registerMemberPointsPage(Alpine) {
 
         this.transactions = (data ?? []).map((transaction) => ({
           id: transaction.id,
+          rawType: transaction.type,
           reference: transaction.order_id
             ? `Order ${transaction.order_id.slice(0, 8)}`
             : `Points ${transaction.id.slice(0, 8)}`,
@@ -142,10 +143,17 @@ export function registerMemberPointsPage(Alpine) {
         return this.transactions
       }
 
-      return this.transactions.filter(
-        (transaction) =>
-          transaction.status === this.statusFilter,
-      )
+      return this.transactions.filter((transaction) => {
+        if (this.statusFilter === 'reversed') {
+          return (
+            transaction.rawType === 'reversal' ||
+            Number(transaction.points || 0) < 0 ||
+            transaction.status === 'reversed'
+          )
+        }
+      
+        return transaction.status === this.statusFilter
+      })
     },
 
     get availablePoints() {
@@ -176,13 +184,18 @@ export function registerMemberPointsPage(Alpine) {
 
     get reversedPoints() {
       return Math.abs(
-        this.transactions.reduce(
-          (total, transaction) =>
-            transaction.status === 'reversed'
-              ? total + Number(transaction.points || 0)
-              : total,
-          0,
-        ),
+        this.transactions.reduce((total, transaction) => {
+          const points = Number(transaction.points || 0)
+    
+          if (
+            transaction.rawType === 'reversal' ||
+            points < 0
+          ) {
+            return total + points
+          }
+    
+          return total
+        }, 0),
       )
     },
 
@@ -197,6 +210,8 @@ export function registerMemberPointsPage(Alpine) {
 
     typeLabel(type) {
       const labels = {
+        order_award: 'Product Order Points',
+        membership_award: 'Membership Package Points',
         order_purchase: 'Product Order',
         order: 'Product Order',
         manual_adjustment: 'Manual Adjustment',
