@@ -50,7 +50,7 @@ export function renderStarterOffersSection(
 
         <div class="mt-8 grid gap-5 lg:grid-cols-2">
           <article
-            class="group overflow-hidden rounded-[1.5rem] border border-brand-gold/45 bg-brand-panel shadow-gold-soft"
+            class="group flex h-full flex-col overflow-hidden rounded-[1.5rem] border border-brand-gold/45 bg-brand-panel shadow-gold-soft"
           >
             <div class="bg-brand-black p-4">
               <button
@@ -68,7 +68,7 @@ export function renderStarterOffersSection(
 </button>
             </div>
 
-            <div class="p-6 sm:p-7">
+            <div class="flex flex-1 flex-col p-6 sm:p-7">
               <p class="text-[0.65rem] font-semibold uppercase tracking-[0.22em] text-brand-gold">
                 Standalone Product
               </p>
@@ -89,23 +89,29 @@ export function renderStarterOffersSection(
               </p>
 
               <div class="mt-5 rounded-xl border border-brand-gold/25 bg-brand-gold/10 px-4 py-3">
-                <p class="text-xs font-semibold text-brand-gold">
-                  Active members earn 10 points after order approval.
-                </p>
-              </div>
+  <p class="text-xs font-semibold text-brand-gold">
+    Active members earn 10 points after order approval.
+  </p>
+</div>
 
-              <button
-  type="button"
-  class="mt-6 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-brand-gold px-5 text-sm font-semibold text-[#17130d] transition hover:bg-brand-gold-light disabled:cursor-not-allowed disabled:opacity-50"
-  ${testerKitActionAttributes}
->
-  ${testerKitButtonLabel}
-</button>
+<p class="mt-4 text-xs leading-5 text-brand-muted">
+  Perfect for scent testing, product sampling, and introducing the fragrance line before buying full bottles.
+</p>
+
+              <div class="mt-auto pt-6">
+  <button
+    type="button"
+    class="inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-brand-gold px-5 text-sm font-semibold text-[#17130d] transition hover:bg-brand-gold-light disabled:cursor-not-allowed disabled:opacity-50"
+    ${testerKitActionAttributes}
+  >
+    ${testerKitButtonLabel}
+  </button>
+</div>
             </div>
           </article>
 
           <article
-            class="group overflow-hidden rounded-[1.5rem] border border-brand-border bg-brand-panel shadow-panel transition hover:border-brand-gold/50"
+            class="group flex h-full flex-col overflow-hidden rounded-[1.5rem] border border-brand-border bg-brand-panel shadow-panel transition hover:border-brand-gold/50"
           >
             <div class="bg-brand-black p-4">
               <button
@@ -123,7 +129,7 @@ export function renderStarterOffersSection(
 </button>
             </div>
 
-            <div class="p-6 sm:p-7">
+            <div class="flex flex-1 flex-col p-6 sm:p-7">
               <p class="text-[0.65rem] font-semibold uppercase tracking-[0.22em] text-brand-gold">
                 Membership Starter
               </p>
@@ -172,12 +178,14 @@ export function renderStarterOffersSection(
                 </div>
               </div>
 
-              <a
-                href="#packages"
-                class="mt-6 inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-brand-border px-5 text-sm font-semibold text-brand-cream transition hover:border-brand-gold hover:text-brand-gold"
-              >
-                View Starter Package
-              </a>
+              <div class="mt-auto pt-6">
+  <a
+    href="#packages"
+    class="inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-brand-border px-5 text-sm font-semibold text-brand-cream transition hover:border-brand-gold hover:text-brand-gold"
+  >
+    View Starter Package
+  </a>
+</div>
             </div>
           </article>
         </div>

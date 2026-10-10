@@ -15,6 +15,7 @@ export const siteConfig = {
     { label: 'Packages', href: '#packages' },
     { label: 'Ways to Earn', href: '#ways-to-earn' },
     { label: 'University', href: '/university/' },
+    { label: 'Videos', href: '/videos/' },
   ],
   
   contact: {

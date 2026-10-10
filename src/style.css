@@ -290,8 +290,19 @@ html[data-theme="ivory"] [data-product-card] .bg-brand-cream {
   will-change: transform, opacity;
 }
 
+@keyframes site-loader-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.site-loader-ring {
+  animation: site-loader-spin 1s linear infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .site-loader-logo img {
+  .site-loader-logo img,
+  .site-loader-ring {
     animation: none;
   }
 }
@@ -897,6 +908,23 @@ html.is-page-exiting #university-app {
 
   html.is-page-exiting #app,
   html.is-page-exiting #university-app {
+    transition: none;
+  }
+}
+
+html.is-page-exiting body {
+  opacity: 0;
+  transform: translateY(6px);
+  transition:
+    opacity 260ms ease,
+    transform 260ms ease;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.is-page-exiting body {
+    opacity: 1;
+    transform: none;
     transition: none;
   }
 }

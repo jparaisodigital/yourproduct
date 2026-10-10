@@ -70,6 +70,8 @@ import {
 
       selectedPayoutId: null,
       payoutAction: '',
+      selectedProofUrl: '',
+      selectedProofName: '',
       actionError: '',
       actionSuccess: '',
 
@@ -381,6 +383,20 @@ import {
         this.selectedPayoutId = null
         this.payoutAction = ''
         this.actionError = ''
+      },
+
+      openPayoutProof(request) {
+        if (!request?.proofUrl) return
+
+        this.selectedProofUrl = request.proofUrl
+        this.selectedProofName = request.proofFileName || 'Payout proof'
+        document.body.classList.add('overflow-hidden')
+      },
+
+      closePayoutProof() {
+        this.selectedProofUrl = ''
+        this.selectedProofName = ''
+        document.body.classList.remove('overflow-hidden')
       },
 
       handlePayoutProof(event) {
@@ -722,45 +738,44 @@ import {
                   </div>
 
                   <div
-  class="mt-4 grid gap-2 sm:grid-cols-2 lg:flex lg:flex-wrap lg:justify-end"
->
-  <button
-    x-show="request.status === 'pending'"
-    type="button"
-    class="inline-flex min-h-10 items-center justify-center rounded-full bg-brand-gold px-4 text-xs font-semibold text-[#17130d]"
-    @click="openPayoutAction(request.id, 'approve')"
-  >
-    Approve
-  </button>
+                    class="mt-4 grid gap-2 sm:grid-cols-2 lg:flex lg:flex-wrap lg:justify-end"
+                  >
+                    <button
+                      x-show="request.status === 'pending'"
+                      type="button"
+                      class="inline-flex min-h-10 items-center justify-center rounded-full bg-brand-gold px-4 text-xs font-semibold text-[#17130d]"
+                      @click="openPayoutAction(request.id, 'approve')"
+                    >
+                      Approve
+                    </button>
 
-  <button
-    x-show="request.status === 'pending'"
-    type="button"
-    class="inline-flex min-h-10 items-center justify-center rounded-full border border-red-400/40 px-4 text-xs font-semibold text-red-300"
-    @click="openPayoutAction(request.id, 'reject')"
-  >
-    Reject
-  </button>
+                    <button
+                      x-show="request.status === 'pending'"
+                      type="button"
+                      class="inline-flex min-h-10 items-center justify-center rounded-full border border-red-400/40 px-4 text-xs font-semibold text-red-300"
+                      @click="openPayoutAction(request.id, 'reject')"
+                    >
+                      Reject
+                    </button>
 
-  <button
-    x-show="request.status === 'approved'"
-    type="button"
-    class="inline-flex min-h-10 items-center justify-center rounded-full bg-emerald-600 px-4 text-xs font-semibold text-white"
-    @click="openPayoutAction(request.id, 'mark-paid')"
-  >
-    Mark as Paid
-  </button>
+                    <button
+                      x-show="request.status === 'approved'"
+                      type="button"
+                      class="inline-flex min-h-10 items-center justify-center rounded-full bg-emerald-600 px-4 text-xs font-semibold text-white"
+                      @click="openPayoutAction(request.id, 'mark-paid')"
+                    >
+                      Mark as Paid
+                    </button>
 
-  <a
-    x-show="request.status === 'paid' && request.proofUrl"
-    :href="request.proofUrl"
-    target="_blank"
-    rel="noopener noreferrer"
-    class="inline-flex min-h-10 items-center justify-center rounded-full border border-brand-gold/40 px-4 text-xs font-semibold text-brand-gold transition hover:border-brand-gold hover:bg-brand-gold/10"
-  >
-    View Proof
-  </a>
-</div>
+                    <button
+                      x-show="request.status === 'paid' && request.proofUrl"
+                      type="button"
+                      class="inline-flex min-h-10 items-center justify-center rounded-full border border-brand-gold/40 px-4 text-xs font-semibold text-brand-gold transition hover:border-brand-gold hover:bg-brand-gold/10"
+                      @click="openPayoutProof(request)"
+                    >
+                      View Proof
+                    </button>
+                  </div>
                 </div>
 
                 <div
@@ -861,6 +876,40 @@ import {
           </div>
         </section>
 
+        <!-- ✅ Modal correctly placed BEFORE Referral Records section -->
+        <div
+          x-show="selectedProofUrl"
+          x-transition.opacity
+          class="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Payout proof preview"
+          @keydown.escape.window="closePayoutProof()"
+        >
+          <div class="relative max-h-full w-full max-w-4xl">
+            <button
+              type="button"
+              class="absolute right-2 top-2 z-10 grid size-10 place-items-center rounded-full bg-brand-black text-xl font-bold text-brand-cream shadow-lg transition hover:bg-brand-gold hover:text-brand-black"
+              @click="closePayoutProof()"
+              aria-label="Close payout proof preview"
+            >
+              ×
+            </button>
+
+            <img
+              :src="selectedProofUrl"
+              :alt="selectedProofName"
+              class="mx-auto max-h-[85vh] w-full rounded-2xl border border-brand-border bg-brand-black object-contain"
+            >
+
+            <p
+              x-show="selectedProofName"
+              class="mt-3 break-all text-center text-xs font-semibold text-brand-cream"
+              x-text="selectedProofName"
+            ></p>
+          </div>
+        </div>
+
         <section
           class="mt-6 rounded-[1.5rem] border border-brand-border bg-brand-panel p-5 shadow-panel sm:p-6"
           aria-labelledby="admin-referral-records-title"
@@ -868,14 +917,18 @@ import {
           <p
             class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
           >
-            Attribution Records
+            Referral Records
           </p>
           <h2
             id="admin-referral-records-title"
-            class="mt-1 font-display text-3xl text-brand-cream"
+            class="sr-only"
           >
-            Direct Referrals
+            Referral Records
           </h2>
+
+          <p class="mt-2 text-sm leading-6 text-brand-muted">
+            Track which member invited each new member through a referral link.
+          </p>
 
           <div class="mt-5 grid gap-3">
             <template
@@ -883,31 +936,47 @@ import {
               :key="record.id"
             >
               <article
-                class="grid gap-4 rounded-2xl border border-brand-border bg-brand-black p-4 md:grid-cols-[1fr_1fr_0.8fr_auto] md:items-center"
+                class="grid gap-4 rounded-2xl border border-brand-border bg-brand-black p-4 md:grid-cols-[1.1fr_1.1fr_0.8fr_auto] md:items-center"
               >
                 <div>
+                  <p class="text-[0.62rem] font-semibold uppercase tracking-[0.14em] text-brand-gold">
+                    New member
+                  </p>
                   <p
-                    class="font-semibold text-brand-cream"
+                    class="mt-1 font-semibold text-brand-cream"
                     x-text="record.referredName"
                   ></p>
                   <p
                     class="mt-1 text-xs text-brand-muted"
-                    x-text="record.id"
+                    x-text="record.referredEmail || record.id"
                   ></p>
                 </div>
+
                 <div>
+                  <p class="text-[0.62rem] font-semibold uppercase tracking-[0.14em] text-brand-gold">
+                    Invited by
+                  </p>
                   <p
-                    class="text-sm text-brand-cream"
+                    class="mt-1 font-semibold text-brand-cream"
                     x-text="record.referrerName"
                   ></p>
                   <p
-                    class="mt-1 text-xs text-brand-gold"
-                    x-text="record.referralCode"
-                  ></p>
+                    class="mt-1 text-xs text-brand-muted"
+                  >
+                    Referral code:
+                    <span
+                      class="font-semibold text-brand-gold"
+                      x-text="record.referralCode"
+                    ></span>
+                  </p>
                 </div>
+
                 <div>
+                  <p class="text-[0.62rem] font-semibold uppercase tracking-[0.14em] text-brand-gold">
+                    Reward
+                  </p>
                   <p
-                    class="text-sm text-brand-cream"
+                    class="mt-1 text-sm font-semibold text-brand-cream"
                     x-text="record.source"
                   ></p>
                   <p
@@ -915,6 +984,7 @@ import {
                     x-text="record.createdAt"
                   ></p>
                 </div>
+
                 <span
                   class="w-fit rounded-full border border-brand-border px-3 py-1.5 text-[0.62rem] font-semibold uppercase tracking-[0.08em] text-brand-muted"
                   x-text="record.status"
@@ -926,4 +996,3 @@ import {
       </section>
     `
   }
-

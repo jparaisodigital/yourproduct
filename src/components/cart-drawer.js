@@ -1,4 +1,79 @@
-export function renderCartDrawer() {
+export function renderCartDrawer({
+  requireAccountGate = true,
+} = {}) {
+  const checkoutButtonMarkup = requireAccountGate
+    ? `
+            <div x-data="{ checkoutGateOpen: false }">
+              <button
+                type="button"
+                class="mt-5 flex w-full items-center justify-center rounded-full bg-brand-gold px-6 py-3.5 text-sm font-semibold text-brand-black transition hover:bg-brand-gold-light active:scale-[0.99]"
+                @click="checkoutGateOpen = true"
+              >
+                Proceed to Checkout
+              </button>
+
+              <div
+                x-cloak
+                x-show="checkoutGateOpen"
+                x-transition.opacity
+                class="fixed inset-0 z-[10000] grid place-items-center bg-black/80 px-5"
+                role="dialog"
+                aria-modal="true"
+                aria-label="Choose account action"
+                @keydown.escape.window="checkoutGateOpen = false"
+              >
+                <div
+                  class="w-full max-w-md rounded-[1.75rem] border border-brand-border bg-brand-panel p-6 shadow-panel"
+                  @click.outside="checkoutGateOpen = false"
+                >
+                  <div class="mx-auto grid size-16 place-items-center rounded-full border border-brand-gold/30 bg-brand-gold/10">
+                    <span class="text-2xl">🛒</span>
+                  </div>
+
+                  <h3 class="mt-5 text-center font-display text-3xl text-brand-cream">
+                    Continue to checkout
+                  </h3>
+
+                  <p class="mt-3 text-center text-sm leading-6 text-brand-muted">
+                    Do you already have a YOUR PRODUCT account? Your cart will stay saved while you log in or create an account.
+                  </p>
+
+                  <div class="mt-6 grid gap-3">
+                    <a
+                      href="/login/?redirect=create-order"
+                      class="flex min-h-12 items-center justify-center rounded-full bg-brand-gold px-5 text-sm font-semibold text-brand-black transition hover:bg-brand-gold-light"
+                    >
+                      Login
+                    </a>
+
+                    <a
+                      href="/register/?redirect=create-order"
+                      class="flex min-h-12 items-center justify-center rounded-full border border-brand-border px-5 text-sm font-semibold text-brand-cream transition hover:border-brand-gold hover:text-brand-gold"
+                    >
+                      Create Account
+                    </a>
+
+                    <button
+                      type="button"
+                      class="pt-2 text-xs font-semibold uppercase tracking-[0.16em] text-brand-muted transition hover:text-brand-cream"
+                      @click="checkoutGateOpen = false"
+                    >
+                      Keep Shopping
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+      `
+    : `
+            <a
+              href="/checkout/"
+              class="mt-5 flex w-full items-center justify-center rounded-full bg-brand-gold px-6 py-3.5 text-sm font-semibold text-brand-black transition hover:bg-brand-gold-light active:scale-[0.99]"
+            >
+              Proceed to Checkout
+            </a>
+      `
+
   return `
     <div
       x-data="{ open: false }"
@@ -186,14 +261,14 @@ export function renderCartDrawer() {
                     </p>
 
                     <p
-  class="mt-0.5 text-sm font-semibold text-brand-gold"
-  x-text="
-    '₱' +
-    Number(
-      item.unitPrice || 0
-    ).toLocaleString('en-PH')
-  "
-></p>
+                      class="mt-0.5 text-sm font-semibold text-brand-gold"
+                      x-text="
+                        '₱' +
+                        Number(
+                          item.unitPrice || 0
+                        ).toLocaleString('en-PH')
+                      "
+                    ></p>
                   </div>
 
                   <div
@@ -321,12 +396,7 @@ export function renderCartDrawer() {
               Delivery fees are reviewed during checkout.
             </p>
 
-            <a
-              href="/checkout/"
-              class="mt-5 flex w-full items-center justify-center rounded-full bg-brand-gold px-6 py-3.5 text-sm font-semibold text-brand-black transition hover:bg-brand-gold-light active:scale-[0.99]"
-            >
-              Proceed to Checkout
-            </a>
+            ${checkoutButtonMarkup}
 
             <button
               type="button"

@@ -9,7 +9,7 @@ export function renderFooter(siteConfig) {
           href="${item.href}"
           class="text-sm text-brand-muted transition hover:text-brand-gold"
         >
-          ${item.label}
+        ${item.href === '/videos/' ? 'YOUR PRODUCT Videos' : item.label}
         </a>
       `,
     )

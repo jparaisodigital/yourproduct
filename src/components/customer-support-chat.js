@@ -39,44 +39,7 @@ export function registerCustomerSupportChat(
 
     init() {
       this.$nextTick(() => {
-        const element = this.$refs.chatHead
-
-        if (!element) {
-          return
-        }
-
-        const defaultPosition =
-          element.getBoundingClientRect()
-
-        let savedPosition = null
-
-        try {
-          savedPosition = JSON.parse(
-            localStorage.getItem(
-              POSITION_STORAGE_KEY,
-            ),
-          )
-        } catch {
-          savedPosition = null
-        }
-
-        const savedX = Number(
-          savedPosition?.x,
-        )
-
-        const savedY = Number(
-          savedPosition?.y,
-        )
-
-        this.setPosition(
-          Number.isFinite(savedX)
-            ? savedX
-            : defaultPosition.left,
-
-          Number.isFinite(savedY)
-            ? savedY
-            : defaultPosition.top,
-        )
+        this.resetToDefaultPosition()
       })
     },
 
@@ -312,7 +275,23 @@ export function registerCustomerSupportChat(
         // is unavailable.
       }
     },
-
+    
+    resetToDefaultPosition() {
+      const element = this.$refs.chatHead
+    
+      if (!element) {
+        return
+      }
+    
+      const elementBounds =
+        element.getBoundingClientRect()
+    
+      this.setPosition(
+        window.innerWidth - elementBounds.width - 20,
+        window.innerHeight - elementBounds.height - 20,
+      )
+    },
+    
     keepInsideScreen() {
       if (
         this.x === null ||
@@ -320,13 +299,11 @@ export function registerCustomerSupportChat(
       ) {
         return
       }
-
+    
       this.setPosition(
         this.x,
         this.y,
       )
-
-      this.savePosition()
     },
   }))
 }

@@ -1526,10 +1526,40 @@ function renderApplicationDetailsDrawer() {
               class="mt-1 text-sm text-brand-muted"
               x-text="'Sender: ' + (selectedApplication.sender_name || 'Not provided')"
             ></p>
-            <p
-              class="mt-1 break-all text-sm text-brand-muted"
-              x-text="'Reference: ' + (selectedApplication.reference_number || 'Not provided')"
-            ></p>
+            <div class="mt-4 rounded-xl border border-brand-border bg-brand-panel p-4">
+  <p class="text-xs font-semibold uppercase tracking-[0.12em] text-brand-gold">
+    Delivery address
+  </p>
+
+  <p
+    class="mt-2 text-sm text-brand-cream"
+    x-text="[
+      selectedApplication.delivery_details?.recipientFirstName,
+      selectedApplication.delivery_details?.recipientLastName
+    ].filter(Boolean).join(' ') || 'No recipient name provided'"
+  ></p>
+
+  <p
+    class="mt-1 text-sm text-brand-muted"
+    x-text="selectedApplication.delivery_details?.recipientMobile || 'No mobile number provided'"
+  ></p>
+
+  <p
+    class="mt-1 text-sm leading-6 text-brand-muted"
+    x-text="[
+      selectedApplication.delivery_details?.houseStreet,
+      selectedApplication.delivery_details?.barangay,
+      selectedApplication.delivery_details?.city,
+      selectedApplication.delivery_details?.province
+    ].filter(Boolean).join(', ') || 'No delivery address provided'"
+  ></p>
+
+  <p
+    x-show="selectedApplication.delivery_details?.landmark"
+    class="mt-1 text-sm text-brand-muted"
+    x-text="'Landmark: ' + selectedApplication.delivery_details?.landmark"
+  ></p>
+</div>
             <p
               class="mt-3 break-all text-xs text-brand-muted"
               x-text="'Proof file: ' + (selectedApplication.payment_proof_file_name || 'Not submitted')"
@@ -2229,8 +2259,8 @@ Alpine.data('adminDashboard', () => ({
         .select(`
           id, customer_id, package_id, selected_package_option_id, amount, status,
           payment_method, payment_provider, sender_name,
-          reference_number, payment_proof_file_name,
-          payment_proof_path,
+          payment_proof_file_name, payment_proof_path,
+          delivery_details,
           cancellation_reason, refund_status, admin_note,
           approved_at, membership_activated_at,
           fulfillment_status, package_allocation,

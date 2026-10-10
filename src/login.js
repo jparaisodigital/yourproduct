@@ -6,6 +6,7 @@ import logoImage from './assets/logoyourproduct.webp'
 import { packages } from './config/packages-config.js'
 import { siteConfig } from './config/site-config.js'
 import { supabase } from './lib/supabase.js'
+import { navigateWithFade } from './lib/page-transition.js'
 
 window.Alpine = Alpine
 
@@ -88,14 +89,19 @@ Alpine.data('loginPage', () => ({
         throw profileError || new Error('Unable to load account.')
       }
 
+      const userRole = profile.role || 'customer'
+
       if (profile.account_status !== 'active') {
         await supabase.auth.signOut()
         throw new Error('Account unavailable.')
       }
 
-      const requestedPackageId = new URLSearchParams(
+      const loginParams = new URLSearchParams(
         window.location.search,
-      ).get('package')
+      )
+      
+      const requestedPackageId = loginParams.get('package')
+      const requestedRedirect = loginParams.get('redirect')
 
       const selectedPackage = packages.find(
         (packageItem) =>
@@ -104,16 +110,18 @@ Alpine.data('loginPage', () => ({
       )
 
       const customerDashboardUrl = selectedPackage
-        ? `/dashboard/?package=${encodeURIComponent(
-            selectedPackage.id,
-          )}&membership=awaiting-payment`
-        : '/dashboard/'
+  ? `/dashboard/?package=${encodeURIComponent(
+      selectedPackage.id,
+    )}&membership=awaiting-payment`
+  : requestedRedirect === 'create-order'
+    ? '/dashboard/?page=createOrder'
+    : '/dashboard/'
 
-      window.location.assign(
-        profile.role === 'admin'
-          ? '/admin/'
-          : customerDashboardUrl,
-      )
+    navigateWithFade(
+      userRole === 'admin'
+        ? '/admin/'
+        : customerDashboardUrl,
+    )
     } catch (error) {
       console.error('Unable to sign in:', error)
       this.loginError =

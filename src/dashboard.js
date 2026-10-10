@@ -4,6 +4,11 @@ import Alpine from 'alpinejs'
 
 import { supabase } from './lib/supabase.js'
 
+import {
+  bindFadeLinks,
+  navigateWithFade,
+} from './lib/page-transition.js'
+
 import logoImage from './assets/logoyourproduct.webp'
 
 import rewardJourneyImage from './assets/rewards/reward-journey.webp'
@@ -669,8 +674,8 @@ const membershipApplicationPageMarkup = hasPendingMembership
               <p
                 class="mt-3 max-w-2xl text-sm leading-7 text-brand-muted"
               >
-                Review your selected package and current application
-                status.
+                Review your selected package before submitting payment proof.
+                This application is not final yet while it is still awaiting payment.
               </p>
             </div>
 
@@ -793,7 +798,7 @@ selectedDashboardPackage.price,
                     : membershipApplicationStatus ===
                         'pending-verification'
                       ? 'Your payment proof is waiting for admin review.'
-                      : 'Complete your payment and submit the required proof.'
+                      : 'You can still cancel or change your package before submitting payment proof.'
                 "
               ></p>
             </div>
@@ -806,15 +811,13 @@ selectedDashboardPackage.price,
               </p>
 
               <p class="mt-2 text-sm leading-6 text-brand-muted">
-                Your account remains a free customer account until the
-                application and payment are approved by the admin.
+                Your account remains a free customer account until your payment proof is submitted, reviewed, and approved by the admin.
               </p>
             </div>
 
             <div
   x-show="
-    membershipApplicationStatus === 'awaiting-payment' ||
-    membershipApplicationStatus === 'pending-verification'
+    membershipApplicationStatus === 'awaiting-payment'
   "
   class="mt-6 border-t border-brand-border pt-5"
 >
@@ -1158,48 +1161,47 @@ selectedDashboardPackage.price,
     <p class="mt-2 text-sm leading-6 text-brand-muted">
       Official bank name, account name, and account number will be added after client confirmation.
     </p>
-  </div>
-
-  <div class="mt-5 grid gap-5 sm:grid-cols-2">
-    <div>
-      <label
-        for="membership-sender-name"
-        class="text-sm font-semibold text-brand-cream"
-      >
-        Sender or account name
-      </label>
-
-      <input
-        id="membership-sender-name"
-        type="text"
-        x-model.trim="membershipPaymentForm.senderName"
-        autocomplete="name"
-        placeholder="Name used for payment"
-        class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
-        required
-      >
     </div>
 
-    <div>
-      <label
-        for="membership-reference-number"
-        class="text-sm font-semibold text-brand-cream"
-      >
-        Reference number
-      </label>
+  <div class="mt-5">
+    <label
+     for="membership-sender-name"
+     class="text-sm font-semibold text-brand-cream"
+     >
+      Sender or account name
+    </label>
 
-      <input
-        id="membership-reference-number"
-        type="text"
-        x-model.trim="membershipPaymentForm.referenceNumber"
-        inputmode="text"
-        autocomplete="off"
-        placeholder="Transaction reference"
-        class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
-        required
-      >
-    </div>
+    <input
+      id="membership-sender-name"
+      type="text"
+      x-model.trim="membershipPaymentForm.senderName"
+      autocomplete="name"
+      placeholder="Name used for payment"
+      class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
+      required
+    >
   </div>
+
+  <section class="mt-6 rounded-2xl border border-brand-border bg-brand-black p-4">
+    <p class="text-sm font-semibold text-brand-cream">
+      Delivery details
+    </p>
+
+    <p class="mt-2 text-xs leading-5 text-brand-muted">
+      Please complete the delivery address for your package inclusions before submitting payment proof.
+    </p>
+
+    <div class="mt-4 grid gap-4 sm:grid-cols-2">
+      <input type="text" x-model.trim="membershipPaymentForm.deliveryDetails.recipientFirstName" placeholder="Recipient first name" maxlength="80" required class="h-12 rounded-xl border border-brand-border bg-brand-panel px-4 text-sm text-brand-cream outline-none focus:border-brand-gold">
+      <input type="text" x-model.trim="membershipPaymentForm.deliveryDetails.recipientLastName" placeholder="Recipient last name" maxlength="80" required class="h-12 rounded-xl border border-brand-border bg-brand-panel px-4 text-sm text-brand-cream outline-none focus:border-brand-gold">
+      <input type="tel" x-model.trim="membershipPaymentForm.deliveryDetails.recipientMobile" placeholder="Mobile number" maxlength="20" required class="h-12 rounded-xl border border-brand-border bg-brand-panel px-4 text-sm text-brand-cream outline-none focus:border-brand-gold sm:col-span-2">
+      <input type="text" x-model.trim="membershipPaymentForm.deliveryDetails.province" placeholder="Province" maxlength="100" required class="h-12 rounded-xl border border-brand-border bg-brand-panel px-4 text-sm text-brand-cream outline-none focus:border-brand-gold">
+      <input type="text" x-model.trim="membershipPaymentForm.deliveryDetails.city" placeholder="City / Municipality" maxlength="100" required class="h-12 rounded-xl border border-brand-border bg-brand-panel px-4 text-sm text-brand-cream outline-none focus:border-brand-gold">
+      <input type="text" x-model.trim="membershipPaymentForm.deliveryDetails.barangay" placeholder="Barangay" maxlength="100" required class="h-12 rounded-xl border border-brand-border bg-brand-panel px-4 text-sm text-brand-cream outline-none focus:border-brand-gold sm:col-span-2">
+      <input type="text" x-model.trim="membershipPaymentForm.deliveryDetails.houseStreet" placeholder="House no. and street" maxlength="180" required class="h-12 rounded-xl border border-brand-border bg-brand-panel px-4 text-sm text-brand-cream outline-none focus:border-brand-gold sm:col-span-2">
+      <input type="text" x-model.trim="membershipPaymentForm.deliveryDetails.landmark" placeholder="Landmark optional" maxlength="180" class="h-12 rounded-xl border border-brand-border bg-brand-panel px-4 text-sm text-brand-cream outline-none focus:border-brand-gold sm:col-span-2">
+    </div>
+  </section>
 
   <div class="mt-5">
     <label
@@ -1216,7 +1218,7 @@ selectedDashboardPackage.price,
       <span
         class="text-sm font-semibold text-brand-gold"
       >
-        Choose payment screenshot
+        Upload Payment Screenshot
       </span>
 
       <span
@@ -1254,6 +1256,12 @@ selectedDashboardPackage.price,
     >
   </div>
 
+  <div class="mt-5 rounded-2xl border border-amber-400/30 bg-amber-400/10 px-4 py-3">
+    <p class="text-xs leading-5 text-amber-100">
+      Submit payment proof only after sending payment. After proof is submitted, cancellation requests must be reviewed by admin.
+    </p>
+  </div>
+
   <label
     class="mt-5 mb-4 flex cursor-pointer items-start gap-3"
   >
@@ -1265,8 +1273,7 @@ selectedDashboardPackage.price,
     >
 
     <span class="text-xs leading-5 text-brand-muted">
-      I confirm that the package, amount, payment method,
-      transaction details, and uploaded screenshot are correct.
+      I confirm that I already sent the payment and the uploaded screenshot is correct.
     </span>
   </label>
 
@@ -1335,7 +1342,7 @@ selectedDashboardPackage.price,
         ? 'Submitting payment proof...'
         : membershipPaymentSubmissionUncertain
           ? 'Check application status'
-          : 'Submit Payment for Verification'
+          : 'Submit Payment Proof for Review'
   "
 ></button>
 </form>
@@ -2008,23 +2015,22 @@ function renderSidebar() {
 
           <div class="min-w-0 flex-1">
   <p
-    class="truncate text-sm font-semibold text-brand-cream"
-    x-text="[profile.first_name, profile.last_name].filter(Boolean).join(' ') || 'Customer'"
-  ></p>
-
-  <p
-  class="truncate text-xs text-brand-muted"
-  x-text="profile.customer_type === 'member' ? 'Member' : 'Free Customer'"
+  class="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-brand-gold"
+  x-text="[profile.first_name, profile.last_name].filter(Boolean).join(' ') || 'Customer'"
 ></p>
 
-  <p
-    class="truncate text-xs text-brand-muted"
-    x-text="profile.email || ''"
-  ></p>
+<p class="mt-2 text-sm font-semibold text-brand-cream">
+  Member Account
+</p>
 
-  <button
+<p
+  class="mt-3 truncate text-xs text-brand-muted"
+  x-text="profile.email || ''"
+></p>
+
+<button
   type="button"
-  class="mt-3 inline-flex min-h-10 items-center justify-center gap-2 rounded-full border border-brand-border px-4 text-xs font-semibold text-brand-cream transition hover:border-brand-gold hover:text-brand-gold disabled:opacity-50"
+  class="mt-4 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-xl border border-brand-border px-4 text-xs font-semibold text-brand-cream transition hover:border-red-400/60 hover:bg-red-500/10 hover:text-red-300 disabled:cursor-not-allowed disabled:opacity-50"
   :disabled="isLoggingOut"
   @click="logOut()"
 >
@@ -2037,19 +2043,21 @@ function renderSidebar() {
     aria-hidden="true"
   >
     <path
-      d="M10 6H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h4"
+      d="M10 17l5-5-5-5"
       stroke-linecap="round"
       stroke-linejoin="round"
-    />
+    ></path>
+
     <path
-      d="M14 16l4-4-4-4"
+      d="M15 12H3"
       stroke-linecap="round"
       stroke-linejoin="round"
-    />
+    ></path>
+
     <path
-      d="M18 12H9"
+      d="M21 4v16"
       stroke-linecap="round"
-    />
+    ></path>
   </svg>
 
   <span x-text="isLoggingOut ? 'Logging out...' : 'Log out'"></span>
@@ -2126,11 +2134,20 @@ Alpine.data('customerPortal', () => ({
   membershipPaymentForm: {
     paymentMethod: '',
     senderName: '',
-    referenceNumber: '',
     proofFile: null,
     proofFileName: '',
     proofPreviewUrl: '',
     acceptedConfirmation: false,
+    deliveryDetails: {
+      recipientFirstName: signedInProfile.first_name ?? '',
+      recipientLastName: signedInProfile.last_name ?? '',
+      recipientMobile: signedInProfile.mobile_number ?? '',
+      province: '',
+      city: '',
+      barangay: '',
+      houseStreet: '',
+      landmark: '',
+    },
   },
 
   membershipPaymentsReady: true,
@@ -2247,7 +2264,7 @@ previewTimer: null,
 
       if (error) throw error
 
-      window.location.replace('/login/')
+      navigateWithFade('/login/')
     } catch (error) {
       console.error('Unable to log out:', error)
       this.logoutError = 'Unable to log out. Please try again.'
@@ -2412,8 +2429,17 @@ previewTimer: null,
 
     const payment = this.membershipPaymentForm
     const senderName = payment.senderName.trim()
-    const referenceNumber = payment.referenceNumber.trim()
     const proofFile = payment.proofFile
+    const deliveryDetails = {
+  recipientFirstName: payment.deliveryDetails.recipientFirstName.trim(),
+  recipientLastName: payment.deliveryDetails.recipientLastName.trim(),
+  recipientMobile: payment.deliveryDetails.recipientMobile.trim(),
+  province: payment.deliveryDetails.province.trim(),
+  city: payment.deliveryDetails.city.trim(),
+  barangay: payment.deliveryDetails.barangay.trim(),
+  houseStreet: payment.deliveryDetails.houseStreet.trim(),
+  landmark: payment.deliveryDetails.landmark.trim(),
+}
 
     const allowedTypes = {
       'image/jpeg': 'jpg',
@@ -2426,14 +2452,23 @@ previewTimer: null,
       return
     }
 
+    if (!senderName || senderName.length > 120) {
+      this.membershipPaymentError =
+        'Enter the sender or account name used for payment.'
+      return
+    }
+
     if (
-      !senderName ||
-      senderName.length > 120 ||
-      !referenceNumber ||
-      referenceNumber.length > 120
+      !deliveryDetails.recipientFirstName ||
+      !deliveryDetails.recipientLastName ||
+      !deliveryDetails.recipientMobile ||
+      !deliveryDetails.province ||
+      !deliveryDetails.city ||
+      !deliveryDetails.barangay ||
+      !deliveryDetails.houseStreet
     ) {
       this.membershipPaymentError =
-        'Enter a sender name and reference number of up to 120 characters each.'
+        'Complete the delivery name, mobile number, and address.'
       return
     }
 
@@ -2450,9 +2485,15 @@ previewTimer: null,
 
     if (!payment.acceptedConfirmation) {
       this.membershipPaymentError =
-        'Confirm that your payment information is correct.'
+        'Confirm that you already sent the payment and the screenshot is correct.'
       return
     }
+
+    const confirmedSubmission = window.confirm(
+      'Submit payment proof for admin review? After this step, cancellation requests may require admin review.',
+    )
+
+    if (!confirmedSubmission) return
 
     this.membershipPaymentSubmitting = true
     let submissionStarted = false
@@ -2513,9 +2554,9 @@ previewTimer: null,
             p_application_id: application.id,
             p_payment_method: payment.paymentMethod,
             p_sender_name: senderName,
-            p_reference_number: referenceNumber,
             p_proof_path: proofPath,
             p_proof_file_name: proofFile.name,
+            p_delivery_details: deliveryDetails,
           },
         )
 
@@ -4643,14 +4684,16 @@ if (balancePointsError) {
       x-text="previewNotice"
     ></div>
 
-       ${renderCartDrawer()}
+    ${renderCartDrawer({
+      requireAccountGate: false,
+    })}
 
     ${renderProductDrawer()}
 
     ${renderCustomerSupportChat()}
   </div>
 `
-
+bindFadeLinks('a[href="/checkout/"]')
 Alpine.start()
 }
 

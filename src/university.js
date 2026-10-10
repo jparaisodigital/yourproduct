@@ -2,9 +2,6 @@ import './style.css'
 import Alpine from 'alpinejs'
 import logoImage from './assets/logoyourproduct.webp'
 import { siteConfig } from './config/site-config.js'
-import {
-  bindFadeLinks,
-} from './lib/page-transition.js'
 
 import uniImage1 from './assets/youuniversity/1.webp'
 import uniImage2 from './assets/youuniversity/2.webp'
@@ -180,4 +177,3 @@ document.querySelector('#university-app').innerHTML = `
 `
 
 Alpine.start()
-bindFadeLinks('a[href="/"]')

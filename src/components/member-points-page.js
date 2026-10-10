@@ -476,7 +476,6 @@ export function renderMemberPointsPage() {
             <li>Tester kits earn 10 points each.</li>
             <li>Approved membership packages also earn package points.</li>
             <li>Cancelled or refunded points may be reversed.</li>
-            <li>Cancelled or refunded points may be reversed.</li>
           </ul>
         </div>
       </div>

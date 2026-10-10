@@ -2,6 +2,7 @@ import './style.css'
 import Alpine from 'alpinejs'
 import { supabase } from './lib/supabase.js'
 import logoImage from './assets/logoyourproduct.webp'
+import { bindFadeLinks } from './lib/page-transition.js'
 import {
   products,
 } from './config/products-config.js'
@@ -18,6 +19,28 @@ const pesoFormatter = new Intl.NumberFormat('en-PH', {
 })
 window.Alpine = Alpine
 let checkoutProfile = null
+let checkoutPricingTier = 'regular'
+
+const metroManilaCities = [
+  'Caloocan',
+  'Las Piñas',
+  'Makati',
+  'Malabon',
+  'Mandaluyong',
+  'Manila',
+  'Marikina',
+  'Muntinlupa',
+  'Navotas',
+  'Parañaque',
+  'Pasay',
+  'Pasig',
+  'Pateros',
+  'Quezon City',
+  'San Juan',
+  'Taguig',
+  'Valenzuela',
+]
+
 // Keep final submission closed until the client confirms payment details.
 const checkoutPaymentsReady = true
 Alpine.data('checkoutPage', () => ({
@@ -30,7 +53,8 @@ Alpine.data('checkoutPage', () => ({
   delivery: {
     fulfillmentType: 'dropship',
     region: '',
-    sameAsCustomer: true,
+    deliveryMethod: 'spx',
+    sameAsCustomer: false,
     recipientFirstName: '',
     recipientLastName: '',
     recipientMobile: '',
@@ -46,6 +70,7 @@ Alpine.data('checkoutPage', () => ({
     proofFile: null,
     proofFileName: '',
     proofPreviewUrl: '',
+    proofModalOpen: false,
   },
   paymentError: '',
   orderCheckError: '',
@@ -58,7 +83,81 @@ Alpine.data('checkoutPage', () => ({
   formatMoney(value) {
     return pesoFormatter.format(value)
   },
-  recipientName() {
+  isPrestigeMember() {
+    return checkoutPricingTier === 'prestige'
+  },
+  isDropship() {
+    return this.delivery.fulfillmentType === 'dropship'
+  },
+  isPickup() {
+    return this.delivery.fulfillmentType === 'pickup'
+  },
+  isMetroManilaDelivery() {
+    return this.isDropship() && this.delivery.region === 'ncr'
+  },
+  requiresShippingConfirmation() {
+    return (
+      this.isDropship() &&
+      ['luzon', 'visayas', 'mindanao'].includes(this.delivery.region)
+    )
+  },
+  deliveryFee() {
+    if (this.isPickup()) return 0
+    if (!this.isDropship()) return 0
+    if (this.isPrestigeMember()) return 0
+    if (this.delivery.region !== 'ncr') return null
+
+    if (this.delivery.deliveryMethod === 'same-day') return 150
+    if (this.delivery.deliveryMethod === 'spx') return 120
+
+    return null
+  },
+  deliveryFeeLabel() {
+    const fee = this.deliveryFee()
+  
+    if (fee === null && !this.delivery.region) {
+      return 'Select delivery area'
+    }
+  
+    if (fee === null) {
+      return 'Contact first'
+    }
+  
+    return this.formatMoney(fee)
+  },
+  checkoutTotal() {
+    const subtotal = Number(Alpine.store('cart')?.subtotal ?? 0)
+    const fee = this.deliveryFee()
+
+    return subtotal + (fee ?? 0)
+  },
+  metroManilaCities,
+handleDeliveryRegionChange() {
+  this.checkoutPreviewComplete = false
+  this.paymentError = ''
+  this.orderCheckError = ''
+
+  if (this.delivery.region === 'ncr') {
+    this.delivery.province = 'Metro Manila'
+
+    if (!this.metroManilaCities.includes(this.delivery.city)) {
+      this.delivery.city = ''
+    }
+
+    if (!['spx', 'same-day'].includes(this.delivery.deliveryMethod)) {
+      this.delivery.deliveryMethod = 'spx'
+    }
+
+    return
+  }
+
+  if (this.delivery.province === 'Metro Manila') {
+    this.delivery.province = ''
+  }
+
+  this.delivery.city = ''
+},
+recipientName() {
     if (
       this.delivery.fulfillmentType === 'dropship' &&
       this.delivery.sameAsCustomer
@@ -117,8 +216,15 @@ Alpine.data('checkoutPage', () => ({
   },
   async completeCheckoutPreview() {
     if (this.isCheckingCart) return
-    this.orderCheckError = ''
-    if (this.checkoutPaymentsReady && !this.payment.proofFile) {
+this.orderCheckError = ''
+
+if (this.requiresShippingConfirmation()) {
+  this.orderCheckError =
+    'Shipping outside Metro Manila requires confirmation. Please message us before payment.'
+  return
+}
+
+if (this.checkoutPaymentsReady && !this.payment.proofFile) {
       this.paymentError =
       'Please select your proof of payment.'
       document.querySelector('#payment-proof')?.focus()
@@ -264,6 +370,7 @@ Alpine.data('checkoutPage', () => ({
           delivery_details: {
             fulfillmentType: this.delivery.fulfillmentType,
             region: this.delivery.region.trim(),
+            deliveryMethod: this.delivery.deliveryMethod,
             recipientFirstName: this.delivery.recipientFirstName.trim(),
             recipientLastName: this.delivery.recipientLastName.trim(),
             recipientMobile: this.delivery.recipientMobile.trim(),
@@ -286,6 +393,7 @@ Alpine.data('checkoutPage', () => ({
           deliveryDetails: {
             fulfillmentType: this.delivery.fulfillmentType,
             region: this.delivery.region.trim(),
+            deliveryMethod: this.delivery.deliveryMethod,
             recipientFirstName: this.delivery.recipientFirstName.trim(),
             recipientLastName: this.delivery.recipientLastName.trim(),
             recipientMobile: this.delivery.recipientMobile.trim(),
@@ -354,7 +462,7 @@ async function startCheckout() {
 
   checkoutProfile = profile
 
-  let checkoutPricingType = 'regular'
+  checkoutPricingTier = 'regular'
 
   if (
     profile.customer_type === 'member' &&
@@ -383,7 +491,7 @@ async function startCheckout() {
         'prestige',
       ].includes(approvedApplication?.package_id)
     ) {
-      checkoutPricingType = approvedApplication.package_id
+      checkoutPricingTier = approvedApplication.package_id
     }
   }
 
@@ -424,7 +532,7 @@ async function startCheckout() {
   })
 
   registerCartStore(Alpine, checkoutProducts, {
-    pricingType: checkoutPricingType,
+    pricingType: checkoutPricingTier,
   })
 
   const isMember =
@@ -517,12 +625,7 @@ async function startCheckout() {
           >
             Review your cart.
           </h1>
-          <p
-            class="mt-3 max-w-2xl text-sm leading-6 text-brand-muted sm:text-base"
-          >
-            Confirm your selected fragrances and quantities before
-            entering your checkout information.
-          </p>
+          
         </div>
         <section
           id="checkout-order-status"
@@ -589,232 +692,212 @@ async function startCheckout() {
         </section>
         <div
   x-show="$store.cart.itemCount > 0"
-  class="mt-8 grid gap-6 lg:grid-cols-[0.78fr_1.22fr] lg:items-start"
+  class="mt-8 grid min-w-0 gap-6 lg:grid-cols-[0.78fr_1.22fr] lg:items-start"
 >
   <aside
-    class="space-y-6 lg:sticky lg:top-6"
-    aria-label="Order items and summary"
-  >
-    <section
-            class="overflow-hidden rounded-[1.5rem] border border-brand-border bg-brand-panel shadow-panel"
-          >
-            <header
-              class="flex items-center justify-between gap-4 border-b border-brand-border px-5 py-5 sm:px-6"
-            >
-              <div>
-                <p
-                  class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
-                >
-                  Selected fragrances
-                </p>
-                <h2
-                  class="mt-1 font-display text-2xl text-brand-cream"
-                >
-                  Order items
-                </h2>
-              </div>
-              <span
-                class="text-sm font-semibold text-brand-muted"
-                x-text="
-                  $store.cart.itemCount === 1
-                    ? '1 item'
-                    : $store.cart.itemCount + ' items'
-                "
-              ></span>
-            </header>
-            <div class="divide-y divide-brand-border">
-              <template
-                x-for="item in $store.cart.detailedItems"
-                :key="item.productId"
-              >
-                <article
-                  class="grid grid-cols-[5rem_1fr] gap-4 p-5 sm:grid-cols-[6rem_1fr] sm:p-6"
-                >
-                  <div
-                    class="h-28 w-full overflow-hidden rounded-xl border border-brand-border bg-brand-black sm:h-32"
-                  >
-                    <img
-                      :src="item.product.image"
-                      :alt="item.product.name"
-                      class="size-full object-cover object-center"
-                    >
-                  </div>
-                  <div class="min-w-0">
-                    <div
-                      class="flex items-start justify-between gap-3"
-                    >
-                      <div class="min-w-0">
-  <p
-    class="text-[0.58rem] font-semibold uppercase tracking-[0.12em] text-brand-gold sm:text-[0.65rem]"
-    x-text="item.product.collectionLabel"
-  ></p>
-  <h3
-    class="mt-1 truncate font-display text-xl text-brand-cream sm:text-2xl"
-    x-text="item.product.name"
-  ></h3>
-</div>
-<strong
-  class="shrink-0 text-sm text-brand-cream sm:text-base"
-  x-text="formatMoney(item.lineTotal)"
-></strong>
-</div>
-<p
-  class="mt-1 text-xs text-brand-muted"
-  x-text="
-    $store.cart.priceLabel +
-    ' · ' +
-    formatMoney(item.unitPrice) +
-    ' each'
-  "
-></p>
-<div
-  class="mt-4 flex flex-wrap items-center justify-between gap-3"
+  class="min-w-0 lg:sticky lg:top-6"
+  aria-label="Order summary"
 >
-  <div
-    class="flex items-center rounded-full border border-brand-border"
+  <section
+    class="overflow-hidden rounded-[1.5rem] border border-brand-gold/30 bg-brand-panel shadow-gold-soft"
   >
-    <button
-      type="button"
-      class="grid size-9 place-items-center text-brand-cream transition hover:text-brand-gold"
-      aria-label="Decrease quantity"
-      @click="
-        $store.cart.decrease(item.productId)
-        checkoutPreviewComplete = false
-      "
+    <div class="p-5 sm:p-6">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <p class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold">
+            Order summary
+          </p>
+          <h2 class="mt-1 font-display text-2xl text-brand-cream">
+            Your order
+          </h2>
+        </div>
+
+        <span
+          class="rounded-full border border-brand-border px-3 py-1 text-xs font-semibold text-brand-muted"
+          x-text="
+            $store.cart.itemCount === 1
+              ? '1 item'
+              : $store.cart.itemCount + ' items'
+          "
+        ></span>
+      </div>
+
+      <div class="mt-5 rounded-2xl border border-brand-border bg-brand-black">
+  <div class="border-b border-brand-border px-4 py-3">
+    <p class="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-brand-gold">
+      Selected fragrances
+    </p>
+  </div>
+
+  <div class="divide-y divide-brand-border">
+    <template
+      x-for="item in $store.cart.detailedItems"
+      :key="item.productId"
     >
-      −
-    </button>
-                        <span
-                          class="min-w-8 text-center text-sm font-semibold text-brand-cream"
-                          x-text="item.quantity"
-                        ></span>
-                        <button
-                          type="button"
-                          class="grid size-9 place-items-center text-brand-cream transition hover:text-brand-gold disabled:cursor-not-allowed disabled:opacity-40"
-                          aria-label="Increase quantity"
-                          :disabled="
-                            item.quantity >=
-                            item.product.stockQuantity
-                          "
-                          @click="
-  $store.cart.increase(item.productId)
-  checkoutPreviewComplete = false
-"
-                        >
-                          +
-                        </button>
-                      </div>
-                      <button
-                        type="button"
-                        class="text-[0.65rem] font-semibold uppercase tracking-[0.1em] text-brand-muted transition hover:text-red-700"
-                        @click="
-  $store.cart.remove(item.productId)
-  checkoutPreviewComplete = false
-"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  </div>
-                </article>
-              </template>
+      <article class="grid grid-cols-[4.5rem_1fr] gap-4 p-4 sm:grid-cols-[5.5rem_1fr]">
+        <div class="h-24 w-full overflow-hidden rounded-xl border border-brand-border bg-brand-panel sm:h-28">
+          <img
+            :src="item.product.image"
+            :alt="item.product.name"
+            class="size-full object-cover object-center"
+          >
+        </div>
+
+        <div class="min-w-0">
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <p
+                class="text-[0.58rem] font-semibold uppercase tracking-[0.12em] text-brand-gold sm:text-[0.65rem]"
+                x-text="item.product.collectionLabel"
+              ></p>
+              <h3
+                class="mt-1 truncate font-display text-xl text-brand-cream sm:text-2xl"
+                x-text="item.product.name"
+              ></h3>
             </div>
-          </section>
-          <section
-  class="rounded-[1.5rem] border border-brand-gold/30 bg-brand-panel p-5 shadow-gold-soft sm:p-6"
->
-            <p
-              class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
-            >
-              Order summary
-            </p>
-            <div
-              class="mt-5 flex items-center justify-between gap-4"
-            >
-              <span class="text-sm text-brand-muted">
-                Items
-              </span>
+
+            <span
+              class="shrink-0 text-xs font-semibold text-brand-muted"
+              x-text="formatMoney(item.unitPrice) + ' each'"
+            ></span>
+          </div>
+
+          <p
+            class="mt-1 text-xs text-brand-muted"
+            x-text="$store.cart.priceLabel"
+          ></p>
+
+          <div class="mt-4 flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center rounded-full border border-brand-border">
+              <button
+                type="button"
+                class="grid size-9 place-items-center text-brand-cream transition hover:text-brand-gold"
+                aria-label="Decrease quantity"
+                @click="
+                  $store.cart.decrease(item.productId)
+                  checkoutPreviewComplete = false
+                "
+              >
+                −
+              </button>
+
               <span
-                class="font-semibold text-brand-cream"
-                x-text="$store.cart.itemCount"
+                class="min-w-8 text-center text-sm font-semibold text-brand-cream"
+                x-text="item.quantity"
               ></span>
-            </div>
-            <div
-              class="mt-3 flex items-center justify-between gap-4"
-            >
-              <span class="text-sm text-brand-muted">
-                Subtotal
-              </span>
-              <span
-                class="font-semibold text-brand-cream"
-                x-text="formatMoney($store.cart.subtotal)"
-              ></span>
-            </div>
-            <div
-              class="mt-3 flex items-center justify-between gap-4"
-            >
-              <span class="text-sm text-brand-muted">
-                Delivery
-              </span>
-              <span
-                class="text-xs font-semibold text-brand-muted"
+
+              <button
+                type="button"
+                class="grid size-9 place-items-center text-brand-cream transition hover:text-brand-gold disabled:cursor-not-allowed disabled:opacity-40"
+                aria-label="Increase quantity"
+                :disabled="item.quantity >= item.product.stockQuantity"
+                @click="
+                  $store.cart.increase(item.productId)
+                  checkoutPreviewComplete = false
+                "
               >
-                To be confirmed
-              </span>
+                +
+              </button>
             </div>
-            <div
-              class="mt-5 flex items-end justify-between gap-4 border-t border-brand-border pt-5"
+
+            <button
+              type="button"
+              class="text-[0.65rem] font-semibold uppercase tracking-[0.1em] text-brand-muted transition hover:text-red-700"
+              @click="
+                $store.cart.remove(item.productId)
+                checkoutPreviewComplete = false
+              "
             >
-              <span
-                class="text-sm font-semibold uppercase tracking-[0.12em] text-brand-muted"
-              >
-                Products subtotal
-              </span>
-              <strong
-                class="font-display text-3xl text-brand-gold"
-                x-text="formatMoney($store.cart.subtotal)"
-              ></strong>
-            </div>
-            <p class="mt-4 text-xs leading-5 text-brand-muted">
-              Metro Manila standard delivery is ₱120 via J&amp;T.
-For addresses outside Metro Manila or same-day delivery,
-contact our Facebook page to arrange the fee and schedule.
-            </p>
-            <div
-              class="mt-6 flex items-center justify-center gap-2 border-t border-brand-border pt-5 text-xs text-brand-muted"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                class="size-4 text-brand-gold"
-                aria-hidden="true"
-              >
-                <rect
-                  x="5"
-                  y="10"
-                  width="14"
-                  height="10"
-                  rx="2"
-                  stroke="currentColor"
-                  stroke-width="1.6"
-                />
-                <path
-                  d="M8 10V7a4 4 0 0 1 8 0v3"
-                  stroke="currentColor"
-                  stroke-width="1.6"
-                  stroke-linecap="round"
-                />
-              </svg>
-              Manual payment verification
-                        </div>
-          </section>
-        </aside>
+              Remove
+            </button>
+          </div>
+        </div>
+      </article>
+    </template>
+  </div>
+</div>
+
+<div class="mt-5 space-y-3 border-t border-brand-border pt-5">
+  <div class="flex items-center justify-between gap-4">
+    <span class="text-sm text-brand-muted">
+      Items
+    </span>
+    <span
+      class="font-semibold text-brand-cream"
+      x-text="$store.cart.itemCount"
+    ></span>
+  </div>
+
+  <div class="flex items-center justify-between gap-4">
+    <span class="text-sm text-brand-muted">
+      Subtotal
+    </span>
+    <span
+      class="font-semibold text-brand-cream"
+      x-text="formatMoney($store.cart.subtotal)"
+    ></span>
+  </div>
+
+  <div class="flex items-center justify-between gap-4">
+    <span class="text-sm text-brand-muted">
+      Delivery
+    </span>
+    <span
+      class="text-xs font-semibold"
+      :class="deliveryFee() === null ? 'text-brand-muted' : 'text-brand-cream'"
+      x-text="deliveryFeeLabel()"
+    ></span>
+  </div>
+</div>
+
+<div class="mt-5 flex items-end justify-between gap-4 border-t border-brand-border pt-5">
+  <span class="text-sm font-semibold uppercase tracking-[0.12em] text-brand-muted">
+    Total payable
+  </span>
+  <strong
+    class="font-display text-3xl text-brand-gold"
+    x-text="formatMoney(checkoutTotal())"
+  ></strong>
+</div>
+
+<p class="mt-4 text-xs leading-5 text-brand-muted">
+  Metro Manila delivery: ₱120–₱150. For outside Metro Manila, message us first so we can confirm your shipping fee.
+</p>
+
+    <div class="flex items-center justify-center gap-2 border-t border-brand-border px-5 py-5 text-xs text-brand-muted sm:px-6">
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        class="size-4 text-brand-gold"
+        aria-hidden="true"
+      >
+        <rect
+          x="5"
+          y="10"
+          width="14"
+          height="10"
+          rx="2"
+          stroke="currentColor"
+          stroke-width="1.6"
+        />
+        <path
+          d="M8 10V7a4 4 0 0 1 8 0v3"
+          stroke="currentColor"
+          stroke-width="1.6"
+          stroke-linecap="round"
+        />
+      </svg>
+      Manual payment verification
+    </div>
+  </section>
+</aside>
         <form
-          class="space-y-6"
+  class="min-w-0 space-y-6"
           @submit.prevent="completeCheckoutPreview"
           @input="checkoutPreviewComplete = false"
           @change="checkoutPreviewComplete = false"
         >
+          
           <section
             class="overflow-hidden rounded-[1.5rem] border border-brand-border bg-brand-panel shadow-panel"
           >
@@ -822,118 +905,16 @@ contact our Facebook page to arrange the fee and schedule.
               class="border-b border-brand-border px-5 py-5 sm:px-6"
             >
               <p
-                class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
-              >
-                Customer
-              </p>
-              <h2
-                class="mt-1 font-display text-3xl text-brand-cream"
-              >
-                Account information
-              </h2>
-              <p class="mt-2 text-sm leading-6 text-brand-muted">
-                These details will come from the signed-in customer
-                account once authentication is connected.
-              </p>
-            </header>
-            <div class="p-5 sm:p-6">
-              <div class="grid gap-5 sm:grid-cols-2">
-                <div>
-                  <label
-                    for="first-name"
-                    class="text-sm font-semibold text-brand-cream"
-                  >
-                    First name
-                  </label>
-                  <input
-                    id="first-name"
-                    type="text"
-                    x-model.trim="customer.firstName"
-                    autocomplete="given-name"
-                    placeholder="Juan"
-                    class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
-                    required
-                  >
-                </div>
-                <div>
-                  <label
-                    for="last-name"
-                    class="text-sm font-semibold text-brand-cream"
-                  >
-                    Last name
-                  </label>
-                  <input
-                    id="last-name"
-                    type="text"
-                    x-model.trim="customer.lastName"
-                    autocomplete="family-name"
-                    placeholder="Dela Cruz"
-                    class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
-                    required
-                  >
-                </div>
-              </div>
-              <div class="mt-5 grid gap-5 sm:grid-cols-2">
-                <div>
-                  <label
-                    for="mobile-number"
-                    class="text-sm font-semibold text-brand-cream"
-                  >
-                    Mobile number
-                  </label>
-                  <input
-                    id="mobile-number"
-                    type="tel"
-                    x-model.trim="customer.mobileNumber"
-                    inputmode="tel"
-                    autocomplete="tel"
-                    minlength="10"
-                    maxlength="13"
-                    placeholder="09XXXXXXXXX"
-                    class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
-                    required
-                  >
-                </div>
-                <div>
-                  <label
-                    for="email-address"
-                    class="text-sm font-semibold text-brand-cream"
-                  >
-                    Email address
-                  </label>
-                  <input
-                    id="email-address"
-                    type="email"
-                    x-model.trim="customer.emailAddress"
-                    autocomplete="email"
-                    placeholder="name@example.com"
-                    class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
-                    required
-                  >
-                </div>
-              </div>
-            </div>
-          </section>
-          <section
-            class="overflow-hidden rounded-[1.5rem] border border-brand-border bg-brand-panel shadow-panel"
-          >
-            <header
-              class="border-b border-brand-border px-5 py-5 sm:px-6"
-            >
-              <p
-                class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
-              >
-                Order fulfillment
-              </p>
-              <h2
+  class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
+>
+  Checkout details
+</p>
+<h2
   class="mt-1 font-display text-3xl text-brand-cream"
 >
-  Delivery details
+  Delivery option
 </h2>
-<p class="mt-2 text-sm leading-6 text-brand-muted">
-  Confirm the recipient and address where the order should
-  be delivered.
-</p>
+
             </header>
             <div class="p-5 sm:p-6">
               <fieldset>
@@ -1003,7 +984,8 @@ contact our Facebook page to arrange the fee and schedule.
                 x-show="delivery.fulfillmentType === 'dropship'"
                 x-transition
               >
-              <div class="mt-5">
+              
+                            <div class="mt-5">
   <label
     for="delivery-region"
     class="text-sm font-semibold text-brand-cream"
@@ -1013,6 +995,7 @@ contact our Facebook page to arrange the fee and schedule.
   <select
   id="delivery-region"
   x-model="delivery.region"
+  @change="handleDeliveryRegionChange()"
   class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition focus:border-brand-gold"
   :required="delivery.fulfillmentType === 'dropship'"
   :disabled="delivery.fulfillmentType !== 'dropship'"
@@ -1021,68 +1004,128 @@ contact our Facebook page to arrange the fee and schedule.
       Select delivery region
     </option>
     <option value="ncr">
-      NCR
-    </option>
-    <option value="luzon">
-      Luzon
-    </option>
-    <option value="visayas">
-      Visayas
-    </option>
-    <option value="mindanao">
-      Mindanao
-    </option>
+  Metro Manila
+</option>
+<option value="luzon">
+  Luzon outside Metro Manila
+</option>
+<option value="visayas">
+  Visayas
+</option>
+<option value="mindanao">
+  Mindanao
+</option>
   </select>
-  <p class="mt-2 text-xs leading-5 text-brand-muted">
-    Metro Manila standard delivery is ₱150 via J&amp;T.
-For addresses outside Metro Manila or same-day delivery,
-contact our Facebook page to arrange the fee and schedule.
+  
+</div>
+
+<div
+  x-show="isMetroManilaDelivery()"
+  x-transition
+  class="mt-5"
+>
+  <p class="text-sm font-semibold text-brand-cream">
+    Delivery method
+  </p>
+
+  <div class="mt-3 grid gap-3 sm:grid-cols-2">
+    <label
+      class="flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition"
+      :class="
+        delivery.deliveryMethod === 'spx'
+          ? 'border-brand-gold bg-brand-gold/10'
+          : 'border-brand-border bg-brand-black'
+      "
+    >
+      <input
+        type="radio"
+        name="delivery-method"
+        value="spx"
+        x-model="delivery.deliveryMethod"
+        class="mt-0.5 size-4 accent-[#b78a32]"
+        :required="isMetroManilaDelivery() && !isPrestigeMember()"
+        :disabled="!isMetroManilaDelivery()"
+      >
+      <span>
+        <span class="block text-sm font-semibold text-brand-cream">
+          SPX 1 to 3 days
+        </span>
+        <span class="mt-1 block text-xs leading-5 text-brand-muted">
+          Standard Metro Manila delivery.
+        </span>
+        <span class="mt-2 block text-xs font-semibold text-brand-gold">
+          ₱120
+        </span>
+      </span>
+    </label>
+
+    <label
+      class="flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition"
+      :class="
+        delivery.deliveryMethod === 'same-day'
+          ? 'border-brand-gold bg-brand-gold/10'
+          : 'border-brand-border bg-brand-black'
+      "
+    >
+      <input
+        type="radio"
+        name="delivery-method"
+        value="same-day"
+        x-model="delivery.deliveryMethod"
+        class="mt-0.5 size-4 accent-[#b78a32]"
+        :required="isMetroManilaDelivery() && !isPrestigeMember()"
+        :disabled="!isMetroManilaDelivery()"
+      >
+      <span>
+        <span class="block text-sm font-semibold text-brand-cream">
+          Same-day delivery
+        </span>
+        <span class="mt-1 block text-xs leading-5 text-brand-muted">
+          For Metro Manila addresses only.
+        </span>
+        <span class="mt-2 block text-xs font-semibold text-brand-gold">
+          ₱150
+        </span>
+      </span>
+    </label>
+  </div>
+
+  <p
+    x-show="isPrestigeMember()"
+    class="mt-3 rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-xs leading-5 text-emerald-100"
+  >
+    Prestige member benefit: delivery fee is free for this order.
   </p>
 </div>
-              <label
-                class="mt-5 flex cursor-pointer items-start gap-3 rounded-xl border border-brand-border bg-brand-black p-4"
-              >
-                <input
-                  type="checkbox"
-                  x-model="delivery.sameAsCustomer"
-                  class="mt-0.5 size-4 accent-[#b78a32]"
-                >
-                <span>
-                  <span
-                    class="block text-sm font-semibold text-brand-cream"
-                  >
-                    Use my customer details
-                  </span>
-                  <span
-                    class="mt-1 block text-xs leading-5 text-brand-muted"
-                  >
-                    Recipient name and mobile number will match the
-                    account information above.
-                  </span>
-                </span>
-              </label>
+
+<div
+  x-show="requiresShippingConfirmation()"
+  x-transition
+  class="mt-5 rounded-xl border border-amber-400/35 bg-amber-400/10 px-4 py-4"
+>
+  <p class="text-sm font-semibold text-amber-100">
+    Shipping confirmation required
+  </p>
+  <p class="mt-2 text-xs leading-5 text-amber-100/80">
+    Delivery outside Metro Manila requires manual shipping confirmation.
+    Please message us first before payment so we can confirm the delivery fee and schedule.
+  </p>
+
+  <a
+    href="https://www.facebook.com/YourProduct2026"
+    target="_blank"
+    rel="noopener noreferrer"
+    class="mt-4 inline-flex h-11 w-full items-center justify-center rounded-full bg-brand-gold px-5 text-sm font-semibold text-brand-black transition hover:bg-brand-gold-light sm:w-auto"
+  >
+    Confirm Shipping on Messenger
+  </a>
+</div>
+
               <div
-                x-show="delivery.sameAsCustomer"
+                x-show="!requiresShippingConfirmation()"
                 x-transition
-                class="mt-4 rounded-xl border border-brand-gold/25 bg-brand-black px-4 py-3"
               >
-                <p class="text-xs uppercase tracking-[0.12em] text-brand-muted">
-                  Recipient
-                </p>
-                <p
-                  class="mt-1 text-sm font-semibold text-brand-cream"
-                  x-text="recipientName() || 'Complete your name above'"
-                ></p>
-                <p
-                  class="mt-1 text-xs text-brand-muted"
-                  x-text="customer.mobileNumber || 'Complete your mobile number above'"
-                ></p>
-              </div>
-              <div
-                x-show="!delivery.sameAsCustomer"
-                x-transition
-                class="mt-5 grid gap-5 sm:grid-cols-2"
-              >
+              <div class="mt-5 grid gap-5 sm:grid-cols-2">
                 <div>
                   <label
                     for="recipient-first-name"
@@ -1096,10 +1139,7 @@ contact our Facebook page to arrange the fee and schedule.
   x-model.trim="delivery.recipientFirstName"
   autocomplete="shipping given-name"
   placeholder="Recipient first name"
-  :required="
-    delivery.fulfillmentType === 'dropship' &&
-    !delivery.sameAsCustomer
-  "
+  :required="delivery.fulfillmentType === 'dropship'"
   :disabled="delivery.fulfillmentType !== 'dropship'"
   class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
 >
@@ -1117,10 +1157,7 @@ contact our Facebook page to arrange the fee and schedule.
   x-model.trim="delivery.recipientLastName"
   autocomplete="shipping family-name"
   placeholder="Recipient last name"
-  :required="
-    delivery.fulfillmentType === 'dropship' &&
-    !delivery.sameAsCustomer
-  "
+  :required="delivery.fulfillmentType === 'dropship'"
   :disabled="delivery.fulfillmentType !== 'dropship'"
   class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
 >
@@ -1141,10 +1178,7 @@ contact our Facebook page to arrange the fee and schedule.
   minlength="10"
   maxlength="13"
   placeholder="09XXXXXXXXX"
-  :required="
-    delivery.fulfillmentType === 'dropship' &&
-    !delivery.sameAsCustomer
-  "
+  :required="delivery.fulfillmentType === 'dropship'"
   :disabled="delivery.fulfillmentType !== 'dropship'"
   class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
 >
@@ -1163,11 +1197,17 @@ contact our Facebook page to arrange the fee and schedule.
   type="text"
   x-model.trim="delivery.province"
   autocomplete="shipping address-level1"
-  placeholder="Example: Cavite"
-  class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
-  :required="delivery.fulfillmentType === 'dropship'"
-  :disabled="delivery.fulfillmentType !== 'dropship'"
+  :placeholder="delivery.region === 'ncr' ? 'Metro Manila' : 'Example: Cavite'"
+  class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted disabled:cursor-not-allowed disabled:opacity-70 focus:border-brand-gold"
+  :required="delivery.fulfillmentType === 'dropship' && delivery.region !== 'ncr'"
+  :disabled="delivery.fulfillmentType !== 'dropship' || delivery.region === 'ncr'"
 >
+<p
+  x-show="delivery.region === 'ncr'"
+  class="mt-2 text-xs leading-5 text-brand-muted"
+>
+  Province is automatically set to Metro Manila.
+</p>
                 </div>
                 <div>
                   <label
@@ -1176,16 +1216,34 @@ contact our Facebook page to arrange the fee and schedule.
                   >
                     City or municipality
                   </label>
+
+                  <select
+                    id="city"
+                    x-show="delivery.region === 'ncr'"
+                    x-model="delivery.city"
+                    autocomplete="shipping address-level2"
+                    class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition focus:border-brand-gold"
+                    :required="delivery.fulfillmentType === 'dropship' && delivery.region === 'ncr'"
+                    :disabled="delivery.fulfillmentType !== 'dropship' || delivery.region !== 'ncr'"
+                  >
+                    <option value="" disabled>
+                      Select Metro Manila city
+                    </option>
+                    <template x-for="cityName in metroManilaCities" :key="cityName">
+                      <option :value="cityName" x-text="cityName"></option>
+                    </template>
+                  </select>
+
                   <input
-  id="city"
-  type="text"
-  x-model.trim="delivery.city"
-  autocomplete="shipping address-level2"
-  placeholder="Example: Bacoor"
-  class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
-  :required="delivery.fulfillmentType === 'dropship'"
-  :disabled="delivery.fulfillmentType !== 'dropship'"
->
+                    x-show="delivery.region !== 'ncr'"
+                    type="text"
+                    x-model.trim="delivery.city"
+                    autocomplete="shipping address-level2"
+                    placeholder="Example: Bacoor"
+                    class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
+                    :required="delivery.fulfillmentType === 'dropship' && delivery.region !== 'ncr'"
+                    :disabled="delivery.fulfillmentType !== 'dropship' || delivery.region === 'ncr'"
+                  >
                 </div>
               </div>
               <div class="mt-5 grid gap-5 sm:grid-cols-2">
@@ -1265,10 +1323,14 @@ contact our Facebook page to arrange the fee and schedule.
                   >
                 </div>
               </div>
-              </div>
+              </div> <!-- end of x-show="!requiresShippingConfirmation()" -->
+              </div> <!-- end of x-show="delivery.fulfillmentType === 'dropship'" -->
             </div>
           </section>
+
           <section
+            x-show="!requiresShippingConfirmation()"
+            x-transition
             class="overflow-hidden rounded-[1.5rem] border border-brand-border bg-brand-panel shadow-panel"
           >
             <header
@@ -1312,22 +1374,7 @@ contact our Facebook page to arrange the fee and schedule.
     Bank transfer
   </option>
 </select>
-              <div
-                class="mt-5 rounded-xl border border-brand-gold/30 bg-brand-black p-4"
-              >
-                <p
-                  class="text-xs font-semibold uppercase tracking-[0.16em] text-brand-gold"
-                >
-                  Payment instructions
-                </p>
-                <p class="mt-2 text-sm leading-6 text-brand-muted">
-                  Official account details and final instructions will
-                  appear here after confirmation from the client.
-                </p>
-                <p class="mt-3 text-xs font-semibold text-brand-cream">
-                  Do not send payment using unverified account details.
-                </p>
-              </div>
+              
               <div class="mt-5">
                 <label
                   for="payment-proof"
@@ -1335,58 +1382,131 @@ contact our Facebook page to arrange the fee and schedule.
                 >
                   Proof of payment
                 </label>
-                <label
-  for="payment-proof"
-  class="mt-2 flex cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-brand-border bg-brand-black px-5 py-7 text-center transition hover:border-brand-gold"
+                
+                <div
+  class="mt-2 rounded-xl border border-dashed border-brand-border bg-brand-black px-5 py-7 text-center transition hover:border-brand-gold"
 >
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    class="size-8 text-brand-gold"
-    aria-hidden="true"
+  <button
+    type="button"
+    x-show="payment.proofPreviewUrl"
+    x-transition
+    class="mx-auto block w-full overflow-hidden rounded-xl border border-brand-border bg-brand-panel"
+    @click="
+      payment.proofModalOpen = true
+      document.body.classList.add('overflow-hidden')
+    "
+    aria-label="View payment screenshot"
   >
-    <path
-      d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4"
-      stroke="currentColor"
-      stroke-width="1.7"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-    />
-  </svg>
-  <span
-    class="mt-3 text-sm font-semibold text-brand-cream"
+    <img
+      :src="payment.proofPreviewUrl"
+      alt="Selected payment proof preview"
+      class="mx-auto max-h-64 w-full object-contain"
+    >
+  </button>
+
+  <div
+    x-show="!payment.proofPreviewUrl"
+    x-transition
+    class="mx-auto grid size-12 place-items-center rounded-full border border-brand-border text-brand-gold"
   >
-    Select payment screenshot
-  </span>
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      class="size-7"
+      aria-hidden="true"
+    >
+      <path
+        d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4"
+        stroke="currentColor"
+        stroke-width="1.7"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+    </svg>
+  </div>
+
   <span
-    class="mt-1 text-xs leading-5 text-brand-muted"
+    class="mt-3 block text-sm font-semibold text-brand-cream"
+    x-text="payment.proofPreviewUrl ? 'Payment screenshot selected' : 'Select payment screenshot'"
+  ></span>
+
+  <span
+    class="mt-1 block text-xs leading-5 text-brand-muted"
   >
     JPG, PNG, or WebP — maximum 5 MB
   </span>
-  <input
-  id="payment-proof"
-  type="file"
-  accept="image/jpeg,image/png,image/webp"
-  class="mt-4 block w-full cursor-pointer rounded-lg border border-brand-border bg-brand-panel px-3 py-2 text-sm text-brand-cream file:mr-4 file:rounded-full file:border-0 file:bg-brand-gold file:px-4 file:py-2 file:text-sm file:font-semibold file:text-[#17130d]"
-  @change="handleProofFile($event)"
-  required
->
-</label>
-<div
-  x-show="payment.proofPreviewUrl"
-  x-transition
-  class="mt-3 overflow-hidden rounded-xl border border-brand-border bg-brand-black p-3"
->
-  <img
-    :src="payment.proofPreviewUrl"
-    alt="Selected payment proof preview"
-    class="mx-auto max-h-64 w-full rounded-lg object-contain"
-  >
+
   <p
-    class="mt-3 break-all text-center text-xs font-semibold text-brand-cream"
+    x-show="payment.proofFileName"
+    x-transition
+    class="mx-auto mt-3 max-w-full break-all text-xs font-semibold text-brand-cream"
     x-text="payment.proofFileName"
   ></p>
+
+  <input
+    id="payment-proof"
+    type="file"
+    accept="image/jpeg,image/png,image/webp"
+    class="mx-auto mt-4 block w-fit max-w-full cursor-pointer rounded-lg border border-brand-border bg-brand-panel px-3 py-2 text-center text-sm text-brand-cream file:mr-4 file:rounded-full file:border-0 file:bg-brand-gold file:px-4 file:py-2 file:text-sm file:font-semibold file:text-[#17130d]"
+    @change="handleProofFile($event)"
+    required
+  >
+
+  <button
+    type="button"
+    x-show="payment.proofPreviewUrl"
+    x-transition
+    class="mx-auto mt-4 inline-flex h-9 items-center justify-center rounded-full border border-brand-border px-4 text-xs font-semibold text-brand-muted transition hover:border-red-500 hover:text-red-400"
+    @click="
+      if (payment.proofPreviewUrl) URL.revokeObjectURL(payment.proofPreviewUrl)
+      payment.proofFile = null
+      payment.proofFileName = ''
+      payment.proofPreviewUrl = ''
+      payment.proofModalOpen = false
+      paymentError = ''
+      checkoutPreviewComplete = false
+      document.body.classList.remove('overflow-hidden')
+      const proofInput = document.querySelector('#payment-proof')
+      if (proofInput) proofInput.value = ''
+    "
+  >
+    Remove screenshot
+  </button>
 </div>
+
+<div
+  x-show="payment.proofModalOpen"
+  x-transition.opacity
+  class="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4"
+  role="dialog"
+  aria-modal="true"
+  aria-label="Payment screenshot preview"
+  @keydown.escape.window="
+    payment.proofModalOpen = false
+    document.body.classList.remove('overflow-hidden')
+  "
+>
+  <div class="relative max-h-full w-full max-w-4xl">
+    <button
+      type="button"
+      class="absolute right-2 top-2 z-10 grid size-10 place-items-center rounded-full bg-brand-black text-xl font-bold text-brand-cream shadow-lg transition hover:bg-brand-gold hover:text-brand-black"
+      @click="
+        payment.proofModalOpen = false
+        document.body.classList.remove('overflow-hidden')
+      "
+      aria-label="Close payment screenshot preview"
+    >
+      ×
+    </button>
+
+    <img
+      :src="payment.proofPreviewUrl"
+      alt="Enlarged payment proof preview"
+      class="mx-auto max-h-[85vh] w-full rounded-2xl border border-brand-border bg-brand-black object-contain"
+    >
+  </div>
+</div>
+
                 <p
                   x-show="paymentError"
                   x-text="paymentError"
@@ -1396,136 +1516,122 @@ contact our Facebook page to arrange the fee and schedule.
               </div>
             </div>
           </section>
+          
           <section
-            class="overflow-hidden rounded-[1.5rem] border border-brand-gold/30 bg-brand-panel p-5 shadow-gold-soft sm:p-6"
-          >
-            <div
-              class="flex flex-col gap-4 border-b border-brand-border pb-5 sm:flex-row sm:items-end sm:justify-between"
-            >
-              <div>
-                <p
-                  class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
-                >
-                  Final confirmation
-                </p>
-                <h2
-  class="mt-1 font-display text-3xl text-brand-cream"
-  x-text="checkoutPaymentsReady ? 'Submit for verification' : 'Review checkout details'"
-></h2>
-                <p class="mt-2 text-sm leading-6 text-brand-muted">
-  Review the customer, delivery, and payment information
-  before submitting the order.
-</p>
-              </div>
-              <div class="shrink-0 sm:text-right">
-                <p class="text-xs uppercase tracking-[0.12em] text-brand-muted">
-                  Products subtotal
-                </p>
-                <strong
-                  class="mt-1 block font-display text-3xl text-brand-gold"
-                  x-text="formatMoney($store.cart.subtotal)"
-                ></strong>
-              </div>
-            </div>
+  x-show="!requiresShippingConfirmation()"
+  x-transition
+  class="overflow-hidden rounded-[1.5rem] border border-brand-gold/30 bg-brand-panel p-5 shadow-gold-soft sm:p-6"
+>
 
-            <div
+  <div
   x-show="${isMember}"
-  class="mt-5 rounded-2xl border border-emerald-400/30 bg-emerald-400/10 p-4"
+  class="mt-5 mb-5 rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-3"
 >
   <p class="text-sm font-semibold text-emerald-200">
     Eligible member order points
   </p>
-
-  <p class="mt-2 text-xs leading-5 text-emerald-100/80">
-    Approved member product orders earn points automatically after admin payment approval:
-    5 points per perfume bottle and 10 points per tester kit.
+  <p class="mt-1 text-xs leading-5 text-emerald-100/80">
+    Approved member product orders earn points automatically after admin payment approval.
   </p>
 </div>
 
-            <label
-              class="mt-5 flex cursor-pointer items-start gap-3 rounded-xl border border-brand-border bg-brand-black p-4"
-            >
-              <input
-                type="checkbox"
-                class="mt-0.5 size-4 accent-[#b78a32]"
-                required
-              >
-              <span class="text-sm leading-6 text-brand-muted">
-                I confirm that the order, fulfillment, recipient (when
-                applicable), and payment information provided above is
-                correct.
-              </span>
-            </label>
-            <div
-  class="mt-5 rounded-xl border border-brand-border bg-brand-black px-4 py-3"
->
-  <p class="text-sm font-semibold text-brand-cream">
-    Manual payment verification
+  <div
+    id="checkout-preview-status"
+    x-show="checkoutPreviewComplete"
+    x-transition
+    class="mt-5 rounded-xl border border-emerald-400/35 bg-emerald-400/10 px-4 py-3 text-sm font-medium leading-6 text-emerald-100"
+    role="status"
+  >
+    Details checked. You can now submit this order for admin verification.
+  </div>
+
+  <div class="rounded-xl border border-brand-border bg-brand-black px-4 py-4">
+  <p class="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-brand-gold">
+    Amount to pay
   </p>
-  <p class="mt-1 text-xs leading-5 text-brand-muted">
-    Review your details first. After submitting, admin will verify the payment proof before processing the order.
-  </p>
+
+  <div class="mt-3 space-y-2 text-sm">
+    <div class="flex items-center justify-between gap-4 text-brand-muted">
+      <span>Subtotal</span>
+      <span
+        class="font-semibold text-brand-cream"
+        x-text="formatMoney($store.cart.subtotal)"
+      ></span>
+    </div>
+
+    <div class="flex items-center justify-between gap-4 text-brand-muted">
+      <span>Delivery</span>
+      <span
+        class="font-semibold"
+        :class="deliveryFee() === 0 ? 'text-emerald-200' : 'text-brand-cream'"
+        x-text="deliveryFee() === 0 ? 'Free' : deliveryFeeLabel()"
+      ></span>
+    </div>
+  </div>
+
+  <div class="mt-4 flex items-end justify-between gap-4 border-t border-brand-border pt-4">
+    <span class="text-sm font-semibold uppercase tracking-[0.12em] text-brand-muted">
+      Total payable
+    </span>
+    <strong
+      class="font-display text-3xl text-brand-gold"
+      x-text="formatMoney(checkoutTotal())"
+    ></strong>
+  </div>
 </div>
 
-<div
-  id="checkout-preview-status"
-  x-show="checkoutPreviewComplete"
-  x-transition
-  class="mt-4 rounded-xl border border-emerald-400/35 bg-emerald-400/10 px-4 py-3 text-sm font-medium leading-6 text-emerald-100"
-  role="status"
->
-  Details checked. You can now submit this order for admin verification.
-</div>
+  <button
+    type="submit"
+    x-show="!checkoutPreviewComplete"
+    class="mt-5 inline-flex h-12 w-full items-center justify-center rounded-full bg-brand-gold px-7 text-sm font-semibold text-brand-black transition hover:bg-brand-gold-light disabled:cursor-not-allowed disabled:opacity-60"
+    :disabled="!checkoutPaymentsReady || isCheckingCart"
+    x-text="
+      !checkoutPaymentsReady
+        ? 'Ordering not open yet'
+        : isCheckingCart
+          ? 'Reviewing order details...'
+          : 'Review Order Details'
+    "
+  ></button>
 
-<button
-  type="submit"
-  x-show="!checkoutPreviewComplete"
-  class="mt-5 inline-flex h-12 w-full items-center justify-center rounded-full bg-brand-gold px-7 text-sm font-semibold text-brand-black transition hover:bg-brand-gold-light disabled:cursor-not-allowed disabled:opacity-60"
-  :disabled="!checkoutPaymentsReady || isCheckingCart"
-  x-text="
-    !checkoutPaymentsReady
-      ? 'Ordering not open yet'
-      : isCheckingCart
-        ? 'Reviewing order details...'
-        : 'Review Order Details'
-  "
-></button>
+  <button
+    type="button"
+    x-show="checkoutPreviewComplete && !submittedOrderId"
+    @click="submitOrder()"
+    :disabled="!checkoutPaymentsReady || isSubmittingOrder || orderSubmissionUncertain"
+    class="mt-5 inline-flex h-12 w-full items-center justify-center rounded-full bg-brand-gold px-7 text-sm font-semibold text-brand-black transition hover:bg-brand-gold-light disabled:cursor-not-allowed disabled:opacity-50"
+    x-text="isSubmittingOrder ? 'Submitting order...' : 'Submit Order for Verification'"
+  ></button>
 
-<button
-  type="button"
-  x-show="checkoutPreviewComplete && !submittedOrderId"
-  @click="submitOrder()"
-  :disabled="!checkoutPaymentsReady || isSubmittingOrder || orderSubmissionUncertain"
-  class="mt-5 inline-flex h-12 w-full items-center justify-center rounded-full bg-brand-gold px-7 text-sm font-semibold text-brand-black transition hover:bg-brand-gold-light disabled:cursor-not-allowed disabled:opacity-50"
-  x-text="isSubmittingOrder ? 'Submitting order...' : 'Submit Order for Verification'"
-></button>
+  <button
+    type="button"
+    x-show="checkoutPreviewComplete && !submittedOrderId"
+    @click="checkoutPreviewComplete = false"
+    class="mt-3 inline-flex h-11 w-full items-center justify-center rounded-full border border-brand-border px-7 text-sm font-semibold text-brand-muted transition hover:border-brand-gold hover:text-brand-gold"
+  >
+    Edit Details
+  </button>
 
-<button
-  type="button"
-  x-show="checkoutPreviewComplete && !submittedOrderId"
-  @click="checkoutPreviewComplete = false"
-  class="mt-3 inline-flex h-11 w-full items-center justify-center rounded-full border border-brand-border px-7 text-sm font-semibold text-brand-muted transition hover:border-brand-gold hover:text-brand-gold"
->
-  Edit Details
-</button>
+  <p
+    x-show="orderCheckError"
+    x-text="orderCheckError"
+    class="mt-3 text-center text-sm text-red-400"
+    role="alert"
+  ></p>
 
-<p
-  x-show="orderCheckError"
-  x-text="orderCheckError"
-  class="mt-3 text-center text-sm text-red-400"
-  role="alert"
-></p>
+  <p class="mt-3 text-center text-xs leading-5 text-brand-muted">
+    Orders remain pending until the company verifies the payment screenshot.
+  </p>
+</section>
 
-<p class="mt-3 text-center text-xs leading-5 text-brand-muted">
-  Submitted orders remain pending until the company verifies the payment and order details.
-</p>
-          </section>
           </form>
         </div>
       </div>
     </main>
   </div>
 `
+
+bindFadeLinks('a[href="/dashboard/"]')
 Alpine.start()
 }
 startCheckout()

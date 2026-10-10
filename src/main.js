@@ -330,7 +330,9 @@ async function startStorefront() {
 
     ${renderFooter(siteConfig)}
 
-    ${renderCartDrawer()}
+    ${renderCartDrawer({
+      requireAccountGate: !isLoggedIn,
+    })}
 
     ${renderProductDrawer()}
 
@@ -361,14 +363,32 @@ async function startStorefront() {
       ></p>
 
       <p
-        class="mt-3 text-sm leading-6 text-brand-muted"
-        data-package-confirm-description
-      ></p>
+  class="mt-3 text-sm leading-6 text-brand-muted"
+  data-package-confirm-description
+></p>
 
-      <ul
-        class="mt-4 space-y-2 text-sm leading-6 text-brand-muted"
-        data-package-confirm-inclusions
-      ></ul>
+<ul
+  class="mt-4 space-y-2 text-sm leading-6 text-brand-muted"
+  data-package-confirm-inclusions
+></ul>
+
+<div
+  class="mt-4 rounded-xl border border-brand-gold/30 bg-brand-gold/10 px-4 py-3"
+  data-package-confirm-points-wrap
+>
+  <p class="text-[0.62rem] font-semibold uppercase tracking-[0.18em] text-brand-gold">
+    Member Points
+  </p>
+
+  <p
+    class="mt-1 font-display text-2xl text-brand-cream"
+    data-package-confirm-points
+  ></p>
+
+  <p class="mt-1 text-xs leading-5 text-brand-muted">
+    Points are credited after payment proof is approved by admin.
+  </p>
+</div>
 
       <p class="mt-5 rounded-xl border border-brand-border bg-brand-black px-4 py-3 text-xs leading-5 text-brand-muted">
         Your account stays free until payment proof is submitted and approved by admin.
@@ -469,6 +489,25 @@ async function startStorefront() {
           )
           .join('')
 
+          const pointsWrap = packageConfirmationModal.querySelector(
+            '[data-package-confirm-points-wrap]',
+          )
+          
+          const pointsText = packageConfirmationModal.querySelector(
+            '[data-package-confirm-points]',
+          )
+          
+          const packagePoints = Number(link.dataset.packagePoints || 0)
+          
+          if (packagePoints > 0) {
+            pointsWrap.classList.remove('hidden')
+            pointsText.textContent =
+              `${packagePoints.toLocaleString()} points`
+          } else {
+            pointsWrap.classList.add('hidden')
+            pointsText.textContent = ''
+          }
+
         packageConfirmationModal.classList.remove('hidden')
         packageConfirmationModal.classList.add('flex')
         document.body.classList.add('overflow-hidden')
@@ -478,6 +517,23 @@ async function startStorefront() {
   Alpine.start()
   initScrollReveal()
   bindFadeLinks()
+
+  document.querySelectorAll('a[href="#home"]').forEach((link) => {
+    link.addEventListener('click', (event) => {
+      event.preventDefault()
+  
+      window.history.replaceState(
+        null,
+        '',
+        `${window.location.pathname}${window.location.search}#home`,
+      )
+  
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth',
+      })
+    })
+  })
 
   requestAnimationFrame(() => {
     dismissSiteLoader()

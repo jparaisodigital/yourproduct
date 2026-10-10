@@ -213,6 +213,7 @@ function renderPackageCard(
           data-package-price="${pesoFormatter.format(packageItem.price)}"
           data-package-description="${packageItem.description}"
           data-package-inclusions="${packageItem.inclusions.join(' | ')}"
+          data-package-points="${packageItem.pointsReward || 0}"
         `
 
   const packageCtaClass =

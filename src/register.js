@@ -72,11 +72,15 @@ const selectedPackage =
   ? `/login/?package=${encodeURIComponent(selectedPackage.id)}`
   : '/login/'
 
-const dashboardPreviewUrl = selectedPackage
-  ? `/dashboard/?package=${encodeURIComponent(
-      selectedPackage.id,
-    )}&membership=awaiting-payment`
-  : '/dashboard/'
+  const requestedRedirect = registrationParams.get('redirect')
+
+  const dashboardPreviewUrl = selectedPackage
+    ? `/dashboard/?package=${encodeURIComponent(
+        selectedPackage.id,
+      )}&membership=awaiting-payment`
+    : requestedRedirect === 'create-order'
+      ? '/dashboard/?page=createOrder'
+      : '/dashboard/'
 
 const registrationWithoutReferralUrl = selectedPackage
   ? `/register/?package=${encodeURIComponent(

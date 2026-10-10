@@ -1,5 +1,6 @@
 import headerLogo from '../assets/logoyourproduct.webp'
 import { supabase } from '../lib/supabase.js'
+import { navigateWithFade } from '../lib/page-transition.js'
 
 window.yourProductSupabase = supabase
 
@@ -194,7 +195,7 @@ export function renderHeader(
 
             if (error) throw error
 
-            window.location.reload()
+            window.location.assign('/')
           } catch (error) {
             console.error('Unable to log out:', error)
             this.isLoggingOut = false
@@ -253,104 +254,65 @@ export function renderHeader(
         </nav>
 
         <div class="hidden items-center gap-2.5 lg:flex">
-
           ${
             isLoggedIn
-              ? ''
-              : `
-                  <a
-                    href="${accountHref}"
-                    class="premium-icon group grid size-11 place-items-center rounded-full border border-brand-border text-brand-muted hover:border-brand-gold hover:bg-brand-gold/10 hover:text-brand-gold"
-                    aria-label="${accountLabel}"
-                    title="${accountLabel}"
+              ? `
+                  <button
+                    type="button"
+                    class="premium-icon relative grid size-11 place-items-center rounded-full border border-brand-border text-brand-cream hover:border-brand-gold hover:bg-brand-gold/10 hover:text-brand-gold"
+                    :aria-label="'Open shopping cart with ' + $store.cart.itemCount + ' items'"
+                    data-cart-target
+                    @click="$dispatch('open-cart')"
                   >
                     <svg
                       class="size-5"
                       viewBox="0 0 24 24"
                       fill="none"
                       stroke="currentColor"
-                      stroke-width="1.65"
+                      stroke-width="1.7"
                       aria-hidden="true"
                     >
                       <path
-                        d="M20 21a8 8 0 0 0-16 0"
+                        d="M3.5 4.5h2l1.65 9.1a2 2 0 0 0 1.97 1.65h7.96a2 2 0 0 0 1.95-1.55L20.5 7.5H6.05"
                         stroke-linecap="round"
+                        stroke-linejoin="round"
                       />
                       <circle
-                        cx="12"
-                        cy="7"
-                        r="4"
+                        cx="9.25"
+                        cy="19"
+                        r="1.25"
+                        fill="currentColor"
+                        stroke="none"
+                      />
+                      <circle
+                        cx="17.25"
+                        cy="19"
+                        r="1.25"
+                        fill="currentColor"
+                        stroke="none"
                       />
                     </svg>
 
-                    <span class="sr-only">
-                      ${accountLabel}
-                    </span>
+                    <span
+                      x-cloak
+                      x-show="$store.cart.itemCount > 0"
+                      x-text="
+                        $store.cart.itemCount > 99
+                          ? '99+'
+                          : $store.cart.itemCount
+                      "
+                      class="absolute -right-1.5 -top-1.5 grid min-h-5 min-w-5 place-items-center rounded-full bg-brand-gold px-1 text-[10px] font-bold leading-none text-[#17130d]"
+                      aria-hidden="true"
+                    ></span>
+                  </button>
+
+                  <a
+                    href="${accountCtaHref}"
+                    class="premium-cta group inline-flex h-11 items-center justify-center rounded-xl bg-brand-gold px-5 text-sm font-semibold text-[#17130d] hover:bg-brand-gold-light"
+                  >
+                    ${accountCtaLabel}
                   </a>
-                `
-          }
 
-          <button
-            type="button"
-            class="premium-icon relative grid size-11 place-items-center rounded-full border border-brand-border text-brand-cream hover:border-brand-gold hover:bg-brand-gold/10 hover:text-brand-gold"
-            :aria-label="'Open shopping cart with ' + $store.cart.itemCount + ' items'"
-            data-cart-target
-            @click="$dispatch('open-cart')"
-          >
-            <svg
-              class="size-5"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.7"
-              aria-hidden="true"
-            >
-              <path
-                d="M3.5 4.5h2l1.65 9.1a2 2 0 0 0 1.97 1.65h7.96a2 2 0 0 0 1.95-1.55L20.5 7.5H6.05"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-
-              <circle
-                cx="9.25"
-                cy="19"
-                r="1.25"
-                fill="currentColor"
-                stroke="none"
-              />
-
-              <circle
-                cx="17.25"
-                cy="19"
-                r="1.25"
-                fill="currentColor"
-                stroke="none"
-              />
-            </svg>
-
-            <span
-              x-cloak
-              x-show="$store.cart.itemCount > 0"
-              x-text="
-                $store.cart.itemCount > 99
-                  ? '99+'
-                  : $store.cart.itemCount
-              "
-              class="absolute -right-1.5 -top-1.5 grid min-h-5 min-w-5 place-items-center rounded-full bg-brand-gold px-1 text-[10px] font-bold leading-none text-[#17130d]"
-              aria-hidden="true"
-            ></span>
-          </button>
-
-          <a
-            href="${accountCtaHref}"
-            class="premium-cta group inline-flex h-11 items-center justify-center rounded-xl bg-brand-gold px-5 text-sm font-semibold text-[#17130d] hover:bg-brand-gold-light"
-          >
-            ${accountCtaLabel}
-          </a>
-
-          ${
-            isLoggedIn
-              ? `
                   <button
                     type="button"
                     class="premium-outline inline-flex h-11 items-center justify-center rounded-xl border border-brand-border px-4 text-sm font-semibold text-brand-cream transition hover:border-brand-gold hover:text-brand-gold"
@@ -359,7 +321,70 @@ export function renderHeader(
                     x-text="isLoggingOut ? 'Logging out...' : 'Logout'"
                   ></button>
                 `
-              : ''
+              : `
+                  <a
+                    href="${accountCtaHref}"
+                    class="premium-cta group inline-flex h-11 items-center justify-center rounded-xl bg-brand-gold px-5 text-sm font-semibold text-[#17130d] hover:bg-brand-gold-light"
+                  >
+                    ${accountCtaLabel}
+                  </a>
+
+                  <a
+                    href="${accountHref}"
+                    class="premium-outline inline-flex h-11 items-center justify-center rounded-xl border border-brand-border px-5 text-sm font-semibold text-brand-cream transition hover:border-brand-gold hover:text-brand-gold"
+                  >
+                    Login
+                  </a>
+
+                  <button
+                    type="button"
+                    class="premium-icon relative grid size-11 place-items-center rounded-full border border-brand-border text-brand-cream hover:border-brand-gold hover:bg-brand-gold/10 hover:text-brand-gold"
+                    :aria-label="'Open shopping cart with ' + $store.cart.itemCount + ' items'"
+                    data-cart-target
+                    @click="$dispatch('open-cart')"
+                  >
+                    <svg
+                      class="size-5"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.7"
+                      aria-hidden="true"
+                    >
+                      <path
+                        d="M3.5 4.5h2l1.65 9.1a2 2 0 0 0 1.97 1.65h7.96a2 2 0 0 0 1.95-1.55L20.5 7.5H6.05"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                      <circle
+                        cx="9.25"
+                        cy="19"
+                        r="1.25"
+                        fill="currentColor"
+                        stroke="none"
+                      />
+                      <circle
+                        cx="17.25"
+                        cy="19"
+                        r="1.25"
+                        fill="currentColor"
+                        stroke="none"
+                      />
+                    </svg>
+
+                    <span
+                      x-cloak
+                      x-show="$store.cart.itemCount > 0"
+                      x-text="
+                        $store.cart.itemCount > 99
+                          ? '99+'
+                          : $store.cart.itemCount
+                      "
+                      class="absolute -right-1.5 -top-1.5 grid min-h-5 min-w-5 place-items-center rounded-full bg-brand-gold px-1 text-[10px] font-bold leading-none text-[#17130d]"
+                      aria-hidden="true"
+                    ></span>
+                  </button>
+                `
           }
         </div>
 
@@ -472,41 +497,55 @@ export function renderHeader(
         >
           ${mobileLinks}
 
-          <a
-            href="${accountHref}"
-            class="premium-outline mt-5 inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-brand-gold px-5 text-sm font-semibold text-brand-gold hover:bg-brand-gold/10"
-            @click="menuOpen = false"
-          >
-            <svg
-              class="size-[1.1rem]"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.65"
-              aria-hidden="true"
-            >
-              <circle
-                cx="12"
-                cy="8"
-                r="3.25"
-              />
-
-              <path
-                d="M5.5 20c.55-4.05 2.95-6.1 6.5-6.1s5.95 2.05 6.5 6.1"
-                stroke-linecap="round"
-              />
-            </svg>
-
-            ${accountLabel}
-          </a>
-
-          <a
-            href="${accountCtaHref}"
-            class="premium-cta mt-2.5 inline-flex h-11 items-center justify-center rounded-xl bg-brand-gold px-5 text-sm font-semibold text-[#17130d] hover:bg-brand-gold-light"
-            @click="menuOpen = false"
-          >
-            ${accountCtaLabel}
-          </a>
+          ${
+            isLoggedIn
+              ? `
+                  <a
+                    href="${accountCtaHref}"
+                    class="premium-cta mt-5 inline-flex h-11 items-center justify-center rounded-xl bg-brand-gold px-5 text-sm font-semibold text-[#17130d] transition hover:bg-brand-gold-light"
+                    @click="menuOpen = false"
+                  >
+                    ${accountCtaLabel}
+                  </a>
+                `
+              : `
+                  <a
+                    href="${accountHref}"
+                    class="premium-outline mt-5 inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-brand-gold px-5 text-sm font-semibold text-brand-gold transition hover:bg-brand-gold/10"
+                    @click="menuOpen = false"
+                  >
+                    <svg
+                      class="size-[1.1rem]"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.65"
+                      aria-hidden="true"
+                    >
+                      <circle
+                        cx="12"
+                        cy="8"
+                        r="3.25"
+                      />
+          
+                      <path
+                        d="M5.5 20c.55-4.05 2.95-6.1 6.5-6.1s5.95 2.05 6.5 6.1"
+                        stroke-linecap="round"
+                      />
+                    </svg>
+          
+                    ${accountLabel}
+                  </a>
+          
+                  <a
+                    href="${accountCtaHref}"
+                    class="premium-cta mt-2.5 inline-flex h-11 items-center justify-center rounded-xl bg-brand-gold px-5 text-sm font-semibold text-[#17130d] transition hover:bg-brand-gold-light"
+                    @click="menuOpen = false"
+                  >
+                    ${accountCtaLabel}
+                  </a>
+                `
+          }
 
           ${
             isLoggedIn
