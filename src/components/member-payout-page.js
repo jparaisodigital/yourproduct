@@ -3,6 +3,9 @@ import { supabase } from '../lib/supabase.js'
 export function registerMemberPayoutPage(Alpine) {
   Alpine.data('memberPayoutPage', () => ({
     availableIncome: 0,
+    pendingIncome: 0,
+    paidIncome: 0,
+    minimumPayoutAmount: 500,
     payoutRequests: [],
     loading: true,
     submitting: false,
@@ -21,6 +24,8 @@ export function registerMemberPayoutPage(Alpine) {
 
     errorMessage: '',
     successMessage: '',
+    selectedProofUrl: '',
+    selectedProofName: '',
 
     async init() {
       await this.loadPayoutData()
@@ -31,22 +36,20 @@ export function registerMemberPayoutPage(Alpine) {
       this.errorMessage = ''
 
       try {
-        const [commissionsResult, payoutsResult] =
-          await Promise.all([
-            supabase
-              .from('referral_commissions')
-              .select('commission_amount')
-              .eq('status', 'earned'),
-            supabase
-              .from('payout_requests')
-              .select(`
-                id, amount, payment_method, payment_provider,
-account_name, account_number, qr_code_path,
-qr_code_file_name, note, status, reference_number,
-proof_url, requested_at, reviewed_at, paid_at
-              `)
-              .order('requested_at', { ascending: false }),
-          ])
+        const [commissionsResult, payoutsResult] = await Promise.all([
+          supabase
+            .from('referral_commissions')
+            .select('commission_amount, status'),
+          supabase
+            .from('payout_requests')
+            .select(`
+              id, amount, payment_method, payment_provider,
+              account_name, account_number, qr_code_path,
+              qr_code_file_name, note, status, reference_number,
+              proof_url, requested_at, reviewed_at, paid_at
+            `)
+            .order('requested_at', { ascending: false }),
+        ])
 
         if (commissionsResult.error) {
           throw commissionsResult.error
@@ -56,36 +59,76 @@ proof_url, requested_at, reviewed_at, paid_at
           throw payoutsResult.error
         }
 
-        this.availableIncome = (commissionsResult.data ?? [])
+        const commissionRows = commissionsResult.data ?? []
+
+        this.availableIncome = commissionRows
+          .filter((commission) => commission.status === 'earned')
           .reduce(
             (total, commission) =>
-              total +
-              Number(commission.commission_amount || 0),
+              total + Number(commission.commission_amount || 0),
             0,
           )
 
-        this.payoutRequests = (payoutsResult.data ?? [])
-          .map((request) => ({
-            id: request.id,
-            amount: Number(request.amount || 0),
-            paymentMethod: request.payment_method,
-            paymentProvider: request.payment_provider || '',
-            qrCodePath: request.qr_code_path || '',
-            qrCodeFileName: request.qr_code_file_name || '',
-            accountName: request.account_name,
-            accountNumber: request.account_number,
-            note: request.note || '',
-            status: request.status || 'pending',
-            requestedAt: request.requested_at,
-            referenceNumber: request.reference_number || '',
-            proofUrl: request.proof_url || '',
-            paidAt: request.paid_at || '',
-          }))
+        this.pendingIncome = commissionRows
+          .filter((commission) =>
+            ['requested', 'approved'].includes(commission.status),
+          )
+          .reduce(
+            (total, commission) =>
+              total + Number(commission.commission_amount || 0),
+            0,
+          )
+
+        this.paidIncome = commissionRows
+          .filter((commission) => commission.status === 'paid')
+          .reduce(
+            (total, commission) =>
+              total + Number(commission.commission_amount || 0),
+            0,
+          )
+
+          this.form.amount =
+          this.availableIncome >= this.minimumPayoutAmount
+            ? String(this.minimumPayoutAmount)
+            : ''
+
+        this.payoutRequests = await Promise.all(
+          (payoutsResult.data ?? []).map(async (request) => {
+            let proofUrl = ''
+
+            if (request.proof_url) {
+              const { data: signedProof } = await supabase.storage
+                .from('payout-proofs')
+                .createSignedUrl(request.proof_url, 60 * 5)
+
+              proofUrl = signedProof?.signedUrl || ''
+            }
+
+            return {
+              id: request.id,
+              amount: Number(request.amount || 0),
+              paymentMethod: request.payment_method,
+              paymentProvider: request.payment_provider || '',
+              qrCodePath: request.qr_code_path || '',
+              qrCodeFileName: request.qr_code_file_name || '',
+              accountName: request.account_name,
+              accountNumber: request.account_number,
+              note: request.note || '',
+              status: request.status || 'pending',
+              requestedAt: request.requested_at,
+              referenceNumber: request.reference_number || '',
+              proofUrl,
+              paidAt: request.paid_at || '',
+            }
+          }),
+        )
       } catch (error) {
         console.error('Unable to load payout data:', error)
         this.errorMessage =
           'Unable to load payout details. Please refresh.'
         this.availableIncome = 0
+        this.pendingIncome = 0
+        this.paidIncome = 0
         this.payoutRequests = []
       } finally {
         this.loading = false
@@ -142,9 +185,7 @@ proof_url, requested_at, reviewed_at, paid_at
       const file = event.target.files?.[0]
 
       if (this.form.qrCodePreviewUrl) {
-        URL.revokeObjectURL(
-          this.form.qrCodePreviewUrl,
-        )
+        URL.revokeObjectURL(this.form.qrCodePreviewUrl)
       }
 
       this.form.qrCodeFile = null
@@ -154,15 +195,10 @@ proof_url, requested_at, reviewed_at, paid_at
 
       if (!file) return
 
-      const allowedTypes = [
-        'image/jpeg',
-        'image/png',
-        'image/webp',
-      ]
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/webp']
 
       if (!allowedTypes.includes(file.type)) {
-        this.errorMessage =
-          'Upload a JPG, PNG, or WEBP QR code.'
+        this.errorMessage = 'Upload a JPG, PNG, or WEBP QR code.'
         event.target.value = ''
         return
       }
@@ -176,15 +212,12 @@ proof_url, requested_at, reviewed_at, paid_at
 
       this.form.qrCodeFile = file
       this.form.qrCodeFileName = file.name
-      this.form.qrCodePreviewUrl =
-        URL.createObjectURL(file)
+      this.form.qrCodePreviewUrl = URL.createObjectURL(file)
     },
 
     resetForm() {
       if (this.form.qrCodePreviewUrl) {
-        URL.revokeObjectURL(
-          this.form.qrCodePreviewUrl,
-        )
+        URL.revokeObjectURL(this.form.qrCodePreviewUrl)
       }
 
       this.form = {
@@ -200,6 +233,18 @@ proof_url, requested_at, reviewed_at, paid_at
       }
     },
 
+    openPaymentProof(request) {
+      if (!request?.proofUrl) return
+
+      this.selectedProofUrl = request.proofUrl
+      this.selectedProofName = request.referenceNumber || 'Payout proof'
+    },
+
+    closePaymentProof() {
+      this.selectedProofUrl = ''
+      this.selectedProofName = ''
+    },
+
     async submitPayoutRequest() {
       if (this.submitting) return
 
@@ -208,12 +253,13 @@ proof_url, requested_at, reviewed_at, paid_at
 
       const requestedAmount = Number(this.form.amount)
 
-      if (
-        !Number.isFinite(requestedAmount) ||
-        requestedAmount <= 0
-      ) {
-        this.errorMessage =
-          'Enter a valid payout amount.'
+      if (!Number.isFinite(requestedAmount) || requestedAmount <= 0) {
+        this.errorMessage = 'Enter a valid payout amount.'
+        return
+      }
+
+      if (requestedAmount < this.minimumPayoutAmount) {
+        this.errorMessage = `Minimum payout request is ${this.formatMoney(this.minimumPayoutAmount)}.`
         return
       }
 
@@ -229,20 +275,17 @@ proof_url, requested_at, reviewed_at, paid_at
       }
 
       if (!this.form.paymentProvider.trim()) {
-        this.errorMessage =
-          'Select or enter the payout provider.'
+        this.errorMessage = 'Select or enter the payout provider.'
         return
       }
 
       if (!this.form.accountName.trim()) {
-        this.errorMessage =
-          'Enter the payout account name.'
+        this.errorMessage = 'Enter the payout account name.'
         return
       }
 
       if (!this.form.accountNumber.trim()) {
-        this.errorMessage =
-          'Enter the payout account number.'
+        this.errorMessage = 'Enter the payout account number.'
         return
       }
 
@@ -265,25 +308,17 @@ proof_url, requested_at, reviewed_at, paid_at
         }
 
         const fileExtension =
-          this.form.qrCodeFileName
-            .split('.')
-            .pop()
-            ?.toLowerCase() || 'png'
+          this.form.qrCodeFileName.split('.').pop()?.toLowerCase() ||
+          'png'
 
-        const qrCodePath =
-          `${user.id}/${Date.now()}.${fileExtension}`
+        const qrCodePath = `${user.id}/${Date.now()}.${fileExtension}`
 
-        const { error: uploadError } =
-          await supabase.storage
-            .from('payout-qr-codes')
-            .upload(
-              qrCodePath,
-              this.form.qrCodeFile,
-              {
-                cacheControl: '3600',
-                upsert: false,
-              },
-            )
+        const { error: uploadError } = await supabase.storage
+          .from('payout-qr-codes')
+          .upload(qrCodePath, this.form.qrCodeFile, {
+            cacheControl: '3600',
+            upsert: false,
+          })
 
         if (uploadError) throw uploadError
 
@@ -292,17 +327,13 @@ proof_url, requested_at, reviewed_at, paid_at
           {
             p_amount: requestedAmount,
             p_payment_method: this.form.paymentMethod,
-            p_payment_provider:
-              this.form.paymentProvider.trim(),
-            p_account_name:
-              this.form.accountName.trim(),
-            p_account_number:
-              this.form.accountNumber.trim(),
+            p_payment_provider: this.form.paymentProvider.trim(),
+            p_account_name: this.form.accountName.trim(),
+            p_account_number: this.form.accountNumber.trim(),
             p_qr_code_path: qrCodePath,
-            p_qr_code_file_name:
-              this.form.qrCodeFileName || null,
+            p_qr_code_file_name: this.form.qrCodeFileName || null,
             p_note: this.form.note.trim() || null,
-          }
+          },
         )
 
         if (error) throw error
@@ -378,7 +409,7 @@ export function renderMemberPayoutPage() {
 
       <div x-show="!loading">
         <div class="mt-6 grid gap-6 xl:grid-cols-[0.8fr_1.2fr]">
-                    <aside class="rounded-[1.5rem] border border-brand-border bg-brand-panel p-5 shadow-panel sm:p-6">
+          <aside class="rounded-[1.5rem] border border-brand-border bg-brand-panel p-5 shadow-panel sm:p-6">
             <p class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold">
               Payouts
             </p>
@@ -414,11 +445,7 @@ export function renderMemberPayoutPage() {
 
                 <strong
                   class="mt-2 block font-display text-3xl text-brand-cream"
-                  x-text="formatMoney(
-                    payoutRequests
-                      .filter((request) => request.status === 'pending')
-                      .reduce((total, request) => total + Number(request.amount || 0), 0)
-                  )"
+                  x-text="formatMoney(pendingIncome)"
                 ></strong>
 
                 <p class="mt-2 text-xs leading-5 text-brand-muted">
@@ -433,11 +460,7 @@ export function renderMemberPayoutPage() {
 
                 <strong
                   class="mt-2 block font-display text-3xl text-brand-cream"
-                  x-text="formatMoney(
-                    payoutRequests
-                      .filter((request) => request.status === 'paid')
-                      .reduce((total, request) => total + Number(request.amount || 0), 0)
-                  )"
+                  x-text="formatMoney(paidIncome)"
                 ></strong>
 
                 <p class="mt-2 text-xs leading-5 text-brand-muted">
@@ -454,34 +477,35 @@ export function renderMemberPayoutPage() {
           >
             <div>
               <p class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold">
-              Request Payout
+                Request Payout
               </p>
 
               <h2 class="mt-1 font-display text-3xl text-brand-cream">
-               Payout Destination
+                Payout Destination
               </h2>
 
               <p class="mt-2 text-xs leading-5 text-brand-muted">
-              Enter the account where admin should send your approved payout.
+              Enter the account where admin should send your approved payout. Minimum payout request is ₱500.
               </p>
             </div>
 
             <div class="mt-5 grid gap-4 sm:grid-cols-2">
-              <label class="grid gap-2">
-                <span class="text-xs font-semibold uppercase tracking-[0.12em] text-brand-muted">
-                  Amount
-                </span>
+  <label class="grid gap-2">
+  <span class="text-xs font-semibold uppercase tracking-[0.12em] text-brand-muted">
+    Amount
+  </span>
 
-                <input
-                  type="number"
-                  min="1"
-                  step="1"
-                  inputmode="decimal"
-                  x-model="form.amount"
-                  placeholder="0"
-                  class="min-h-12 rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
-                >
-              </label>
+  <input
+  type="number"
+  min="500"
+  step="1"
+  inputmode="decimal"
+  x-model="form.amount"
+  :max="availableIncome"
+  placeholder="Enter payout amount"
+  class="min-h-12 rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
+  >
+</label>
 
               <label class="grid gap-2">
                 <span class="text-xs font-semibold uppercase tracking-[0.12em] text-brand-muted">
@@ -500,32 +524,32 @@ export function renderMemberPayoutPage() {
               </label>
 
               <label class="grid gap-2">
-  <span class="text-xs font-semibold uppercase tracking-[0.12em] text-brand-muted">
-    Provider / Bank
-  </span>
+                <span class="text-xs font-semibold uppercase tracking-[0.12em] text-brand-muted">
+                  Provider / Bank
+                </span>
 
-  <select
-    x-model="form.paymentProvider"
-    class="min-h-12 rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition focus:border-brand-gold"
-  >
-<option value="">Select provider</option>
-<option value="GCash">GCash</option>
-<option value="Maya">Maya</option>
-<option value="GoTyme">GoTyme</option>
-<option value="Maya Bank">Maya Bank</option>
-<option value="Maribank">Maribank</option>
-<option value="CIMB">CIMB</option>
-<option value="UnionBank">UnionBank</option>
-<option value="BDO">BDO</option>
-<option value="PSBank">PSBank</option>
-<option value="BPI">BPI</option>
-<option value="Metrobank">Metrobank</option>
-<option value="RCBC">RCBC</option>
-<option value="EastWest Bank">EastWest Bank</option>
-<option value="Security Bank">Security Bank</option>
-<option value="China Bank">China Bank</option>
-  </select>
-</label>
+                <select
+                  x-model="form.paymentProvider"
+                  class="min-h-12 rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition focus:border-brand-gold"
+                >
+                  <option value="">Select provider</option>
+                  <option value="GCash">GCash</option>
+                  <option value="Maya">Maya</option>
+                  <option value="GoTyme">GoTyme</option>
+                  <option value="Maya Bank">Maya Bank</option>
+                  <option value="Maribank">Maribank</option>
+                  <option value="CIMB">CIMB</option>
+                  <option value="UnionBank">UnionBank</option>
+                  <option value="BDO">BDO</option>
+                  <option value="PSBank">PSBank</option>
+                  <option value="BPI">BPI</option>
+                  <option value="Metrobank">Metrobank</option>
+                  <option value="RCBC">RCBC</option>
+                  <option value="EastWest Bank">EastWest Bank</option>
+                  <option value="Security Bank">Security Bank</option>
+                  <option value="China Bank">China Bank</option>
+                </select>
+              </label>
 
               <label class="grid gap-2">
                 <span class="text-xs font-semibold uppercase tracking-[0.12em] text-brand-muted">
@@ -556,24 +580,24 @@ export function renderMemberPayoutPage() {
                 >
               </label>
 
-              <label class="mt-4 grid gap-2">
-  <span class="text-xs font-semibold uppercase tracking-[0.12em] text-brand-muted">
-    QR Code Screenshot
-  </span>
+              <label class="mt-4 grid gap-2 sm:col-span-2">
+                <span class="text-xs font-semibold uppercase tracking-[0.12em] text-brand-muted">
+                  QR Code Screenshot
+                </span>
 
-  <input
-    type="file"
-    accept="image/jpeg,image/png,image/webp"
-    class="min-h-12 rounded-xl border border-brand-border bg-brand-black px-3 py-2 text-xs text-brand-muted file:mr-3 file:rounded-full file:border-0 file:bg-brand-gold file:px-3 file:py-2 file:font-semibold file:text-[#17130d]"
-    @change="handleQrCodeUpload($event)"
-  >
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  class="min-h-12 rounded-xl border border-brand-border bg-brand-black px-3 py-2 text-xs text-brand-muted file:mr-3 file:rounded-full file:border-0 file:bg-brand-gold file:px-3 file:py-2 file:font-semibold file:text-[#17130d]"
+                  @change="handleQrCodeUpload($event)"
+                >
 
-  <span
-    x-show="form.qrCodeFileName"
-    x-text="'Selected: ' + form.qrCodeFileName"
-    class="text-xs text-brand-gold"
-  ></span>
-</label>
+                <span
+                  x-show="form.qrCodeFileName"
+                  x-text="'Selected: ' + form.qrCodeFileName"
+                  class="text-xs text-brand-gold"
+                ></span>
+              </label>
             </div>
 
             <label class="mt-4 grid gap-2">
@@ -608,11 +632,11 @@ export function renderMemberPayoutPage() {
               type="submit"
               class="mt-5 inline-flex min-h-12 w-full items-center justify-center rounded-full px-6 text-sm font-semibold transition"
               :class="
-                availableIncome > 0 && !submitting
+                availableIncome >= minimumPayoutAmount && !submitting
                   ? 'bg-brand-gold text-[#17130d] hover:bg-brand-gold-light'
                   : 'cursor-not-allowed border border-brand-border bg-brand-black text-brand-muted'
               "
-              :disabled="availableIncome <= 0 || submitting"
+              :disabled="availableIncome < minimumPayoutAmount || submitting"
               x-text="submitting ? 'Submitting request...' : 'Submit Payout Request'"
             ></button>
           </form>
@@ -684,12 +708,12 @@ export function renderMemberPayoutPage() {
                       class="mt-2 text-xs leading-5 text-brand-muted"
                       x-text="
                         request.paymentMethod +
-                      ' · ' +
-                      (request.paymentProvider || 'No provider') +
-                      ' · ' +
-                      request.accountName +
-                      ' · ' +
-                      request.accountNumber
+                        ' · ' +
+                        (request.paymentProvider || 'No provider') +
+                        ' · ' +
+                        request.accountName +
+                        ' · ' +
+                        request.accountNumber
                       "
                     ></p>
 
@@ -712,21 +736,61 @@ export function renderMemberPayoutPage() {
                       x-text="request.referenceNumber || 'Unavailable'"
                     ></p>
 
-                    <a
+                    <button
+                      type="button"
                       x-show="request.proofUrl"
-                      :href="request.proofUrl"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      class="mt-2 inline-flex text-xs font-semibold text-brand-gold hover:text-brand-gold-light"
+                      @click="openPaymentProof(request)"
+                      class="mt-3 inline-flex min-h-10 items-center justify-center rounded-full border border-brand-gold/50 px-4 text-xs font-semibold text-brand-gold transition hover:bg-brand-gold hover:text-[#17130d]"
                     >
                       View Payment Proof
-                    </a>
+                    </button>
                   </div>
                 </div>
               </article>
             </template>
           </div>
         </section>
+      </div>
+
+      <!-- Payment Proof Modal -->
+      <div
+        x-show="selectedProofUrl"
+        x-transition.opacity
+        class="fixed inset-0 z-[80] flex items-center justify-center bg-black/80 p-4"
+        @click.self="closePaymentProof()"
+        @keydown.escape.window="closePaymentProof()"
+      >
+        <div class="max-h-[90vh] w-full max-w-3xl overflow-hidden rounded-[1.5rem] border border-brand-border bg-brand-panel shadow-panel">
+          <div class="flex items-center justify-between gap-4 border-b border-brand-border px-5 py-4">
+            <div>
+              <p class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold">
+                Payment Proof
+              </p>
+
+              <h3
+                class="mt-1 font-display text-xl text-brand-cream"
+                x-text="selectedProofName"
+              ></h3>
+            </div>
+
+            <button
+              type="button"
+              class="inline-flex size-10 items-center justify-center rounded-full border border-brand-border text-brand-muted transition hover:border-brand-gold hover:text-brand-gold"
+              @click="closePaymentProof()"
+              aria-label="Close payment proof"
+            >
+              ×
+            </button>
+          </div>
+
+          <div class="max-h-[75vh] overflow-auto p-4">
+            <img
+              :src="selectedProofUrl"
+              alt="Payout payment proof"
+              class="mx-auto max-h-[70vh] w-auto rounded-xl border border-brand-border object-contain"
+            >
+          </div>
+        </div>
       </div>
     </section>
   `
