@@ -564,6 +564,16 @@ function renderMembershipApplicationsPage() {
     ></span>
   </span>
 
+  <p
+  x-show="
+    application.status === 'approved' &&
+    application.fulfillment_status === 'not-ready'
+  "
+  class="mt-2 text-xs font-semibold text-brand-gold"
+>
+  Next step: Allocate assorted perfumes.
+</p>
+
   <!-- Application reference -->
   <span
     class="text-[0.65rem] uppercase tracking-[0.12em] text-brand-muted"
@@ -1692,7 +1702,7 @@ function renderApplicationDetailsDrawer() {
               "
               class="mt-4 rounded-xl border border-brand-border bg-brand-panel p-3 text-xs leading-5 text-brand-muted"
             >
-              This application has already been reviewed or closed.
+              Payment approved. Continue with package fulfillment below.
             </p>
 
             <form
@@ -4049,18 +4059,6 @@ async confirmPackageAllocation() {
     )
 
     if (error) throw error
-
-    this.inventoryFeedback =
-  'Package inventory deducted and marked ready for packing.'
-
-window.setTimeout(() => {
-  if (
-    this.inventoryFeedback ===
-    'Package inventory deducted and marked ready for packing.'
-  ) {
-    this.inventoryFeedback = ''
-  }
-}, 3500)
 
     if (typeof this.loadMembershipApplications === 'function') {
       await this.loadMembershipApplications()
