@@ -4127,7 +4127,7 @@ closePackageFulfillmentAction() {
   this.packageFulfillmentError = ''
 },
 
-confirmPackageFulfillmentAction() {
+async confirmPackageFulfillmentAction() {
   const application = this.selectedApplication
 
   if (!application) {
@@ -4178,29 +4178,51 @@ confirmPackageFulfillmentAction() {
 
   const updatedAt = new Date().toISOString()
 
-  this.applications[applicationIndex] = {
-    ...this.applications[applicationIndex],
+this.packageFulfillmentSubmitting = true
+this.packageFulfillmentError = ''
 
-    fulfillment_status: nextStatus,
-
-    package_shipped_at:
-    action === 'ship'
-    ? updatedAt
-    : action === 'unship'
-    ? null
-    : this.applications[applicationIndex]
-    .package_shipped_at || null,
-
-    package_completed_at:
-    action === 'complete'
-    ? updatedAt
-    : this.applications[applicationIndex]
-    .package_completed_at || null,
-
-    updated_at: updatedAt,
+try {
+  const { data: updatedApplication, error } = await supabase.rpc(
+    'admin_update_membership_package_fulfillment',
+    {
+      p_application_id: application.id,
+      p_next_status: nextStatus,
+    },
+  )
+  
+  if (error) {
+    throw error
   }
 
+  this.applications[applicationIndex] = {
+    ...this.applications[applicationIndex],
+    fulfillment_status:
+  updatedApplication?.fulfillment_status || nextStatus,
+updated_at:
+  updatedApplication?.updated_at || updatedAt,
+  }
+
+  Object.assign(this.selectedApplication, {
+    fulfillment_status:
+      updatedApplication?.fulfillment_status || nextStatus,
+    updated_at:
+      updatedApplication?.updated_at || updatedAt,
+  })
+
   this.closePackageFulfillmentAction()
+} catch (error) {
+  console.error('Unable to update package fulfillment status:', error)
+
+  const errorMessage =
+    error?.message ||
+    error?.details ||
+    error?.hint ||
+    'Could not update package fulfillment status. Please try again.'
+
+  this.packageFulfillmentError = errorMessage
+} finally {
+  this.packageFulfillmentSubmitting = false
+}
 },
 
 get reviewActionTitle() {

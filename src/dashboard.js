@@ -3183,7 +3183,7 @@ if (balancePointsError) {
       updated_at
     `)
     .eq('customer_id', user.id)
-    .eq('status', 'approved')
+    .in('status', ['awaiting-payment', 'pending-review', 'approved'])
     .order('submitted_at', { ascending: false })
   
   signedInMembershipPackages = (membershipPackageRows ?? []).map(
@@ -4997,25 +4997,28 @@ if (balancePointsError) {
   class="mt-3 inline-flex rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em]"
   :class="{
     'border-amber-300/40 bg-amber-400/10 text-amber-200':
-      membershipPackage.fulfillment_status === 'pending-allocation',
+      ['pending-review', 'approved'].includes(membershipPackage.status) &&
+      !['ready-for-packing', 'shipped', 'completed'].includes(membershipPackage.fulfillment_status),
     'border-emerald-300/40 bg-emerald-400/10 text-emerald-200':
       ['ready-for-packing', 'completed'].includes(membershipPackage.fulfillment_status),
     'border-blue-300/40 bg-blue-400/10 text-blue-200':
       membershipPackage.fulfillment_status === 'shipped',
     'border-brand-border bg-brand-panel text-brand-muted':
-      ![
-        'pending-allocation',
-        'ready-for-packing',
-        'shipped',
-        'completed',
-      ].includes(membershipPackage.fulfillment_status),
+      membershipPackage.status === 'awaiting-payment',
   }"
-  x-text="{
-    'pending-allocation': 'Payment Approved',
-    'ready-for-packing': 'Ready for Packing',
-    shipped: 'Shipped',
-    completed: 'Delivered',
-  }[membershipPackage.fulfillment_status] || 'Payment Approved'"
+  x-text="
+    membershipPackage.status === 'awaiting-payment'
+      ? 'Awaiting Payment'
+      : membershipPackage.status === 'pending-review'
+        ? 'Pending Verification'
+        : {
+            'pending-allocation': 'Payment Approved',
+            'not-ready': 'Payment Approved',
+            'ready-for-packing': 'Ready for Packing',
+            shipped: 'Shipped',
+            completed: 'Delivered',
+          }[membershipPackage.fulfillment_status] || 'Payment Approved'
+  "
 ></span>
           </div>
 
@@ -5083,11 +5086,16 @@ if (balancePointsError) {
         </div>
 
         <p
-          x-show="membershipPackage.packageAllocation.length === 0"
-          class="mt-4 rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-xs leading-5 text-amber-100"
-        >
-          Your payment has been approved. The company is preparing the assorted perfume allocation.
-        </p>
+  x-show="membershipPackage.packageAllocation.length === 0"
+  class="mt-4 rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-xs leading-5 text-amber-100"
+  x-text="
+    membershipPackage.status === 'awaiting-payment'
+      ? 'Please submit your payment proof to continue this package purchase.'
+      : membershipPackage.status === 'pending-review'
+        ? 'Your payment proof has been submitted. Please wait while admin reviews your package payment.'
+        : 'Your payment has been approved. The company is preparing the assorted perfume allocation.'
+  "
+></p>
       </article>
     </template>
   </div>
