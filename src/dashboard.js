@@ -3298,9 +3298,12 @@ if (balancePointsError) {
       const isRepeatOrLower =
         hasPreviousApprovedPackage && !isUpgrade
   
-      signedInMembershipCelebration = {
-        storageKey,
-        title: isFirstMembership
+        signedInMembershipCelebration = {
+          storageKey,
+          eyebrow: isRepeatOrLower
+            ? 'Package Approved'
+            : 'Reward Unlocked',
+          title: isFirstMembership
           ? 'Congratulations!'
           : isUpgrade
             ? 'Package upgrade approved!'
@@ -5207,10 +5210,9 @@ if (balancePointsError) {
 </div>
 
     <p
-      class="mt-5 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
-    >
-      Reward Unlocked
-    </p>
+  class="mt-5 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
+  x-text="membershipCelebration?.eyebrow || 'Reward Unlocked'"
+></p>
 
     <h2
       id="membership-celebration-title"
