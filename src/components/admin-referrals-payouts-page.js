@@ -151,7 +151,8 @@ import {
               id, customer_id, amount, payment_method,
               account_name, account_number, note, status,
               admin_note, reference_number, proof_file_name,
-              proof_url, requested_at, reviewed_at, paid_at,
+              proof_url, qr_code_path, qr_code_file_name,
+              requested_at, reviewed_at, paid_at,
               customer:profiles!payout_requests_customer_id_fkey(
                 first_name, last_name, email
               )
@@ -183,6 +184,25 @@ import {
                 proofUrl = signedProof?.signedUrl || ''
               }
 
+              if (request.qr_code_path) {
+                const { data: signedQrCode, error: signedQrCodeError } =
+                  await supabase.storage
+                    .from('payout-qr-codes')
+                    .createSignedUrl(
+                      request.qr_code_path,
+                      60 * 10,
+                    )
+              
+                if (signedQrCodeError) {
+                  console.error(
+                    'Unable to create payout QR signed URL:',
+                    signedQrCodeError,
+                  )
+                }
+              
+                qrCodeUrl = signedQrCode?.signedUrl || ''
+              }
+
               return {
                 id: request.id,
                 memberId: request.customer_id,
@@ -202,6 +222,8 @@ import {
                 referenceNumber: request.reference_number || '',
                 proofUrl,
                 proofFileName: request.proof_file_name || '',
+                qrCodeUrl,
+                qrCodeFileName: request.qr_code_file_name || '',
                 adminNote: request.admin_note || '',
               }
             }),
@@ -385,11 +407,20 @@ import {
         this.actionError = ''
       },
 
-      openPayoutProof(request) {
+      openPayoutProof(request, type = 'payment-proof') {
+        if (type === 'payout-qr') {
+          if (!request?.qrCodeUrl) return
+      
+          this.selectedProofUrl = request.qrCodeUrl
+          this.selectedProofName = request.qrCodeFileName || 'Payout QR screenshot'
+          document.body.classList.add('overflow-hidden')
+          return
+        }
+      
         if (!request?.proofUrl) return
-
+      
         this.selectedProofUrl = request.proofUrl
-        this.selectedProofName = request.proofFileName || 'Payout proof'
+        this.selectedProofName = request.proofFileName || 'Payout payment proof'
         document.body.classList.add('overflow-hidden')
       },
 
@@ -737,17 +768,26 @@ import {
                     ></p>
                   </div>
 
-                  <div
-                    class="mt-4 grid gap-2 sm:grid-cols-2 lg:flex lg:flex-wrap lg:justify-end"
-                  >
-                    <button
-                      x-show="request.status === 'pending'"
-                      type="button"
-                      class="inline-flex min-h-10 items-center justify-center rounded-full bg-brand-gold px-4 text-xs font-semibold text-[#17130d]"
-                      @click="openPayoutAction(request.id, 'approve')"
-                    >
-                      Approve
-                    </button>
+                  <div 
+  class="mt-4 grid gap-2 sm:grid-cols-2 lg:flex lg:flex-wrap lg:justify-end" 
+> 
+  <button 
+    x-show="request.qrCodeUrl" 
+    type="button" 
+    class="inline-flex min-h-10 items-center justify-center rounded-full border border-brand-gold/40 px-4 text-xs font-semibold text-brand-gold transition hover:border-brand-gold hover:bg-brand-gold/10" 
+    @click="openPayoutProof(request, 'payout-qr')" 
+  > 
+    View Payout QR 
+  </button>
+
+  <button 
+    x-show="request.status === 'pending'" 
+    type="button" 
+    class="inline-flex min-h-10 items-center justify-center rounded-full bg-brand-gold px-4 text-xs font-semibold text-[#17130d]"    
+    @click="openPayoutAction(request.id, 'approve')" 
+  > 
+    Approve 
+  </button>
 
                     <button
                       x-show="request.status === 'pending'"
