@@ -331,7 +331,7 @@ const membershipUpgradeMarkup =
                 'Option A: 4 assorted bottles, 60ml each',
                 'Option B: 1 Starter Tester Kit with 20 pcs 5ml testers + 2 Assorted Bottles 60ml each',
                 '30% reseller bottle pricing',
-                '20 package points after approval',
+                '20 package points for incentives',
               ],
             },
             builder: {
@@ -345,7 +345,7 @@ const membershipUpgradeMarkup =
                 '25 assorted bottles, 85ml',
                 '1 tester kit',
                 '35% reseller bottle pricing',
-                '125 package points after approval',
+                '125 package points for incentives',
               ],
             },
             leader: {
@@ -360,25 +360,25 @@ const membershipUpgradeMarkup =
                 '1 tester kit',
                 '1 tarpaulin',
                 '40% reseller bottle pricing',
-                '250 package points after approval',
+                '250 package points for incentives',
               ],
             },
             prestige: {
-              id: 'prestige',
-              name: 'Your Prestige',
-              label: 'Prestige',
-              price: '₱50,000',
-              image: '${prestigePackageImage}',
-              description: 'Maximize today. Multiply tomorrow.',
-              inclusions: [
-                '240 assorted bottles, 85ml',
-                '2 tester kits',
-                '1 tarpaulin',
-                '1 mini stall',
-                '50% reseller bottle pricing',
-                '1,200 package points after approval',
-              ],
-            },
+  id: 'prestige',
+  name: 'Your Prestige',
+  label: 'Prestige',
+  price: '₱50,000',
+  image: '${prestigePackageImage}',
+  description: 'Maximize today. Multiply tomorrow.',
+  inclusions: [
+    '240 assorted bottles, 85ml',
+    '2 tester kits',
+    '1 tarpaulin',
+    '1 mini stall',
+    '50% reseller bottle pricing',
+    '1,200 package points for incentives',
+  ],
+},
           },
           openPackageModal(packageId) {
             this.selectedPackageModal = this.packages[packageId]
@@ -437,87 +437,100 @@ window.setTimeout(() => {
 },
         }"
         x-show="true"
-        x-transition.opacity
-        class="mt-6 relative isolate overflow-hidden rounded-[1.5rem] border border-brand-gold/35 bg-brand-charcoal p-5 shadow-panel sm:p-6"
-      >
-        <div
-          class="pointer-events-none absolute -right-20 -top-20 size-56 rounded-full bg-brand-gold/10 blur-3xl"
-          aria-hidden="true"
-        ></div>
-
-        <div class="relative">
-          <p
-  class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
-  x-text="isMember ? 'Member Packages' : 'Optional Membership'"
-          ></p>
-
-          <h2
-  class="mt-1 max-w-xl font-display text-3xl text-brand-cream"
-  x-text="isMember ? 'Upgrade or purchase another package.' : 'Choose your reseller package.'"
-          ></h2>
-
-          <p
-  class="mt-3 max-w-2xl text-sm leading-6 text-brand-muted"
-  x-text="isMember
-    ? 'Select a package to upgrade your tier or purchase another package. Your highest approved tier remains active.'
-    : 'Select a package to view inclusions and start your membership application. Your account stays free until payment is submitted and approved.'
-  "
-          ></p>
-
-          <div class="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <template x-for="packageItem in Object.values(packages)" :key="packageItem.id">
-              <article
-  class="group flex h-full flex-col overflow-hidden rounded-2xl border border-brand-border bg-brand-black/70 text-left transition hover:-translate-y-0.5 hover:border-brand-gold/70"
+x-transition.opacity
+class="mt-6 relative isolate overflow-hidden rounded-[1.75rem] border border-brand-gold/35 bg-brand-charcoal p-4 shadow-panel sm:p-6"
 >
-                <button
+  <div
+    class="pointer-events-none absolute -right-20 -top-20 size-56 rounded-full bg-brand-gold/10 blur-3xl"
+    aria-hidden="true"
+  ></div>
+
+  <div class="relative">
+    <div class="grid gap-5 lg:grid-cols-[0.85fr_1.15fr] lg:items-end">
+      <div>
+        <p
+          class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
+          x-text="isMember ? 'Member Packages' : 'Choose Your Package'"
+        ></p>
+
+        <h2
+          class="mt-2 max-w-xl font-display text-3xl leading-tight text-brand-cream sm:text-4xl"
+          x-text="isMember ? 'Upgrade or purchase another package.' : 'Start your reseller journey.'"
+        ></h2>
+      </div>
+
+      <p
+        class="max-w-2xl text-sm leading-6 text-brand-muted lg:justify-self-end lg:text-right"
+        x-text="isMember
+          ? 'Select a package to upgrade your tier or purchase another package. Your highest approved tier remains active.'
+          : 'Choose from Starter, Builder, Leader, or Prestige. Your account stays free until payment is submitted and approved.'
+        "
+      ></p>
+    </div>
+
+    <div class="mt-7 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <template x-for="packageItem in Object.values(packages)" :key="packageItem.id">
+        <article
+          class="group flex h-full flex-col overflow-hidden rounded-[1.35rem] border border-brand-border bg-brand-black/80 text-left shadow-[0_18px_50px_rgb(74_57_27_/_0.08)] transition hover:-translate-y-1 hover:border-brand-gold/70 hover:shadow-gold-soft"
+        >
+          <button
+            type="button"
+            class="relative aspect-[4/5] w-full cursor-zoom-in overflow-hidden bg-brand-black"
+            @click="openImagePreview(packageItem.id)"
+            aria-label="Preview package image"
+          >
+            <img
+              :src="packageItem.image"
+              :alt="packageItem.name"
+              class="size-full object-contain object-center p-2 transition duration-500 group-hover:scale-[1.02]"
+              loading="lazy"
+              decoding="async"
+            >
+
+            <span
+              class="pointer-events-none absolute right-3 top-3 rounded-full border border-brand-gold/40 bg-black/60 px-3 py-1 text-[0.6rem] font-semibold uppercase tracking-[0.12em] text-brand-gold opacity-0 backdrop-blur-sm transition group-hover:opacity-100"
+            >
+              Preview
+            </span>
+          </button>
+
+          <div class="flex flex-1 flex-col p-4">
+            <div>
+              <p
+                class="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-brand-gold"
+                x-text="packageItem.label"
+              ></p>
+
+              <div class="mt-1 flex items-start justify-between gap-3">
+                <h3
+                  class="font-display text-2xl leading-tight text-brand-cream"
+                  x-text="packageItem.name"
+                ></h3>
+
+                <strong
+                  class="shrink-0 font-display text-xl text-brand-gold"
+                  x-text="packageItem.price"
+                ></strong>
+              </div>
+            </div>
+
+            <p
+              class="mb-5 mt-3 text-sm leading-6 text-brand-muted"
+              x-text="packageItem.description"
+            ></p>
+
+            <button
   type="button"
-  class="aspect-square w-full cursor-zoom-in overflow-hidden bg-brand-black p-3"
-  @click="openImagePreview(packageItem.id)"
-  aria-label="Preview package image"
->
-  <img
-    :src="packageItem.image"
-    :alt="packageItem.name"
-    class="size-full object-contain transition duration-500 group-hover:scale-105"
-  >
-</button>
-
-                <div class="flex flex-1 flex-col p-4">
-                  <div class="flex items-start justify-between gap-3">
-                    <div>
-                      <p
-                        class="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-brand-gold"
-                        x-text="packageItem.label"
-                      ></p>
-                      <h3
-                        class="mt-1 font-display text-2xl text-brand-cream"
-                        x-text="packageItem.name"
-                      ></h3>
-                    </div>
-
-                    <strong
-                      class="shrink-0 font-display text-xl text-brand-gold"
-                      x-text="packageItem.price"
-                    ></strong>
-                  </div>
-
-                  <p
-                    class="mt-3 text-sm leading-6 text-brand-muted"
-                    x-text="packageItem.description"
-                  ></p>
-
-                  <button
-  type="button"
-  class="premium-cta mt-auto inline-flex min-h-10 w-full items-center justify-center rounded-full bg-brand-gold px-4 text-xs font-semibold uppercase tracking-[0.12em] text-[#17130d] transition hover:bg-brand-gold-light"
+  class="premium-cta mt-auto inline-flex min-h-11 w-full items-center justify-center rounded-full bg-brand-gold px-4 text-xs font-semibold uppercase tracking-[0.12em] text-[#17130d] transition hover:bg-brand-gold-light"
   @click="openPackageModal(packageItem.id)"
 >
   View inclusions
 </button>
-                </div>
-              </article>
-            </template>
           </div>
-        </div>
+        </article>
+      </template>
+    </div>
+  </div>
         <template x-teleport="body">
           <div
             x-show="selectedImagePreview"
@@ -2042,6 +2055,37 @@ function renderSidebar() {
   <span>Points & Rewards</span>
 </button>
 
+<div
+  class="mt-3 border-t border-brand-border pt-3"
+>
+  <p class="px-3 text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-brand-muted">
+    Member Resources
+  </p>
+
+  <a
+    href="/university/?from=dashboard"
+    class="mt-2 flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold text-brand-cream transition hover:bg-brand-charcoal hover:text-brand-gold"
+  >
+    <span>Your University</span>
+  </a>
+
+  <a
+    href="/videos/?from=dashboard"
+    class="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold text-brand-cream transition hover:bg-brand-charcoal hover:text-brand-gold"
+  >
+    <span>YP Videos</span>
+  </a>
+
+  <span
+    class="mt-1 flex w-full items-center justify-between gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold text-brand-muted"
+  >
+    <span>Business Center</span>
+    <small class="rounded-full border border-brand-gold/30 px-2 py-0.5 text-[0.6rem] font-semibold uppercase tracking-[0.12em] text-brand-gold">
+      Soon
+    </small>
+  </span>
+</div>
+
         <button
   type="button"
   class="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold transition"
@@ -2096,9 +2140,10 @@ function renderSidebar() {
   x-text="[profile.first_name, profile.last_name].filter(Boolean).join(' ') || 'Customer'"
 ></p>
 
-<p class="mt-2 text-sm font-semibold text-brand-cream">
-  Member Account
-</p>
+<p
+  class="mt-2 text-sm font-semibold text-brand-cream"
+  x-text="isMember ? 'Member Account' : 'Free Customer'"
+></p>
 
 <p
   class="mt-3 truncate text-xs text-brand-muted"

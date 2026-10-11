@@ -12,8 +12,10 @@ export function renderProductCard(product, options = {}) {
     product.isActive &&
     Number(product.stockQuantity || 0) > 0
 
-  const isAdminPreview =
+    const isAdminPreview =
     options.isAdminPreview === true
+  const imageLoadingAttribute = 'eager'
+  const imageFetchPriorityAttribute = 'auto'
 
   const addToCartAttributes =
     isAdminPreview
@@ -180,14 +182,14 @@ export function renderProductCard(product, options = {}) {
         activeCategory === 'all' ||
         activeCategory === '${product.category}'
       "
-      class="group flex h-full flex-col overflow-hidden rounded-[1.1rem] border border-brand-border bg-brand-panel shadow-[0_18px_50px_rgb(74_57_27_/_0.08)] transition duration-300 hover:border-brand-gold/50 hover:shadow-[0_24px_65px_rgb(183_138_50_/_0.14)] sm:rounded-[1.5rem]"
+      class="group relative flex h-full flex-col overflow-hidden rounded-[1.1rem] border border-brand-border bg-brand-panel opacity-100 sm:rounded-[1.5rem] md:transition md:duration-300 md:hover:border-brand-gold/50 md:hover:shadow-[0_24px_65px_rgb(183_138_50_/_0.14)]"
       data-product-card
       data-product-id="${product.id}"
       data-product-category="${product.category}"
     >
       <button
         type="button"
-        class="group/image relative block aspect-[4/5] w-full cursor-zoom-in overflow-hidden bg-brand-black text-left"
+        class="relative block aspect-[4/5] w-full cursor-zoom-in overflow-hidden bg-brand-black text-left"
         data-action="quick-view"
         data-product-id="${product.id}"
         aria-label="View details for ${product.name}"
@@ -195,11 +197,13 @@ export function renderProductCard(product, options = {}) {
         ${product.isActive ? '' : 'disabled'}
       >
         <img
-          src="${product.image}"
-          alt="${product.name}"
-          class="size-full object-contain object-center p-2 sm:p-3"
-          loading="lazy"
-        >
+  src="${product.image}"
+  alt="${product.name}"
+  class="relative z-10 size-full opacity-100 object-contain object-center p-2 sm:p-3"
+  loading="${imageLoadingAttribute}"
+  decoding="async"
+  fetchpriority="${imageFetchPriorityAttribute}"
+>
       </button>
 
       <div class="flex flex-1 flex-col p-4 sm:p-6">

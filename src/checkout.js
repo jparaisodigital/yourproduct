@@ -238,8 +238,19 @@ if (this.checkoutPaymentsReady && !this.payment.proofFile) {
       this.delivery.recipientMobile =
       this.customer.mobileNumber
     }
+
     const cart = Alpine.store('cart')
+    const totalCartQuantity = Number(cart?.itemCount || 0)
+    const isMemberCheckout = checkoutPricingTier !== 'regular'
+
+    if (isMemberCheckout && totalCartQuantity < 5) {
+      this.orderCheckError =
+        'Members must order at least 5 products.'
+      return
+    }
+
     this.isCheckingCart = true
+
     try {
       const { data: quote, error } = await supabase.rpc(
         'quote_order_cart',

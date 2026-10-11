@@ -765,6 +765,82 @@ function renderOrdersPage() {
         </div>
 
         <div
+          x-show="
+            !liveOrdersLoading &&
+            !liveOrdersError &&
+            liveOrders.length > 0
+          "
+          class="mt-6 rounded-[1.5rem] border border-brand-border bg-brand-panel p-5 shadow-panel"
+        >
+          <div class="grid gap-3 lg:grid-cols-[1.4fr_1fr_1fr_auto] lg:items-end">
+            <label class="block">
+              <span class="text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-brand-muted">
+                Search orders
+              </span>
+
+              <input
+                type="search"
+                x-model.debounce.250ms="orderSearch"
+                placeholder="Search name, email, order ID, product..."
+                class="mt-2 h-11 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
+              />
+            </label>
+
+            <label class="block">
+              <span class="text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-brand-muted">
+                Status
+              </span>
+
+              <select
+                x-model="orderStatusFilter"
+                class="mt-2 h-11 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition focus:border-brand-gold"
+              >
+                <option value="all">All statuses</option>
+                <option value="pending-verification">Pending verification</option>
+                <option value="approved">Approved</option>
+                <option value="processing">Processing</option>
+                <option value="shipped">Shipped</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
+                <option value="rejected">Rejected</option>
+              </select>
+            </label>
+
+            <label class="block">
+              <span class="text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-brand-muted">
+                Customer Type
+              </span>
+
+              <select
+                x-model="orderCustomerTypeFilter"
+                class="mt-2 h-11 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition focus:border-brand-gold"
+              >
+                <option value="all">All customers</option>
+                <option value="regular">Free Customer</option>
+                <option value="member">Member</option>
+              </select>
+            </label>
+
+            <button
+              type="button"
+              class="inline-flex h-11 items-center justify-center rounded-xl border border-brand-border px-4 text-sm font-semibold text-brand-cream transition hover:border-brand-gold hover:text-brand-gold"
+              @click="
+                orderSearch = '';
+                orderStatusFilter = 'all';
+                orderCustomerTypeFilter = 'all';
+              "
+            >
+              Reset
+            </button>
+          </div>
+
+          <p
+            class="mt-4 text-xs text-brand-muted"
+            x-text="filteredLiveOrders.length + ' of ' + liveOrders.length + ' orders shown'"
+          ></p>
+        </div>
+
+        <div
           x-show="liveOrdersLoading"
           class="mt-6 rounded-[1.5rem] border border-brand-border bg-brand-panel px-6 py-14 text-center"
         >
@@ -801,11 +877,29 @@ function renderOrdersPage() {
           x-show="
             !liveOrdersLoading &&
             !liveOrdersError &&
-            liveOrders.length > 0
+            liveOrders.length > 0 &&
+            filteredLiveOrders.length === 0
+          "
+          class="mt-6 rounded-[1.5rem] border border-dashed border-brand-border bg-brand-panel px-6 py-14 text-center"
+        >
+          <h2 class="font-display text-2xl text-brand-cream">
+            No matching orders
+          </h2>
+
+          <p class="mt-2 text-sm leading-6 text-brand-muted">
+            Try changing the search or filters.
+          </p>
+        </div>
+
+        <div
+          x-show="
+            !liveOrdersLoading &&
+            !liveOrdersError &&
+            filteredLiveOrders.length > 0
           "
           class="mt-6 space-y-4"
         >
-          <template x-for="order in liveOrders" :key="order.id">
+          <template x-for="order in filteredLiveOrders" :key="order.id">
             <article
               class="rounded-[1.5rem] border border-brand-border bg-brand-panel p-5 shadow-panel sm:p-6"
             >
@@ -1925,8 +2019,8 @@ Alpine.data('adminDashboard', () => ({
   orderProofError: '',
 
   orderSearch: '',
-
   orderStatusFilter: 'all',
+  orderCustomerTypeFilter: 'all',
 
   orderReviewPanelOpen: false,
   orderReviewAction: '',
@@ -2261,6 +2355,61 @@ Alpine.data('adminDashboard', () => ({
     })
   },
 
+  get filteredLiveOrders() {
+    const normalizedSearch =
+      this.orderSearch.trim().toLowerCase()
+
+    const sourceOrders = Array.isArray(this.liveOrders)
+      ? this.liveOrders
+      : []
+
+    return sourceOrders.filter((order) => {
+      const matchesStatus =
+        this.orderStatusFilter === 'all' ||
+        order.status === this.orderStatusFilter
+
+      const matchesCustomerType =
+        this.orderCustomerTypeFilter === 'all' ||
+        order.customer_type === this.orderCustomerTypeFilter
+
+      const orderItems = Array.isArray(order.items)
+        ? order.items
+        : Array.isArray(order.order_items)
+          ? order.order_items
+          : []
+
+      const searchableContent = [
+        order.id,
+        order.order_number,
+        order.customer_name,
+        order.customer_email,
+        order.customer_mobile,
+        order.reference_number,
+        order.delivery_region,
+        order.delivery_city,
+        order.delivery_barangay,
+        order.delivery_address,
+        ...orderItems.map((item) =>
+          [
+            item.product_name,
+            item.name,
+            item.product?.name,
+            item.sku,
+          ].filter(Boolean).join(' '),
+        ),
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase()
+
+      const matchesSearch =
+        !normalizedSearch ||
+        searchableContent.includes(normalizedSearch)
+
+      return matchesStatus && matchesCustomerType && matchesSearch
+    })
+  },
+
   get selectedOrder() {
     return (
       this.liveOrders.find(
@@ -2427,7 +2576,51 @@ Alpine.data('adminDashboard', () => ({
 
       if (error) throw error
 
-      this.liveProducts = sortAdminProducts(data ?? [])
+      const fallbackProductsById = new Map(
+        adminInventoryProducts.map((product) => [
+          String(product.id || '').trim(),
+          product,
+        ]),
+      )
+
+      const fallbackProductsBySku = new Map(
+        adminInventoryProducts.map((product) => [
+          String(product.sku || '').trim().toUpperCase(),
+          product,
+        ]),
+      )
+
+      this.liveProducts = sortAdminProducts(
+        (data ?? []).map((liveProduct) => {
+          const normalizedLiveId = String(liveProduct.id || '').trim()
+          const normalizedLiveSku = String(liveProduct.sku || '')
+            .trim()
+            .toUpperCase()
+
+          const fallbackProduct =
+            fallbackProductsById.get(normalizedLiveId) ||
+            fallbackProductsBySku.get(normalizedLiveSku)
+
+          const liveProductName = String(liveProduct.name || '').trim()
+          const liveProductSku = String(
+            liveProduct.sku || fallbackProduct?.sku || '',
+          )
+            .trim()
+            .toUpperCase()
+
+          const shouldUseFallbackName =
+            !liveProductName ||
+            liveProductName.toUpperCase() === liveProductSku
+
+          return {
+            ...liveProduct,
+            sku: liveProductSku,
+            name: shouldUseFallbackName
+              ? fallbackProduct?.name || liveProductSku || 'Unnamed product'
+              : liveProductName,
+          }
+        }),
+      )
 
       const liveProductsById = new Map(
         this.liveProducts.map((product) => [
@@ -2453,7 +2646,7 @@ Alpine.data('adminDashboard', () => ({
             ...product,
             id: liveProduct.id,
             sku: liveProduct.sku,
-            name: liveProduct.name,
+            name: String(liveProduct.name || '').trim() || product.name,
             regularPrice: Number(
               liveProduct.regular_price || 0,
             ),

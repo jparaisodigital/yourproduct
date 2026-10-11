@@ -7,6 +7,11 @@ import uniImage1 from './assets/youuniversity/1.webp'
 import uniImage2 from './assets/youuniversity/2.webp'
 import uniImage3 from './assets/youuniversity/3.webp'
 
+const universityParams = new URLSearchParams(window.location.search)
+const fromDashboard = universityParams.get('from') === 'dashboard'
+const backHref = fromDashboard ? '/dashboard/' : '/'
+const backLabel = fromDashboard ? 'Back to Dashboard' : 'Back to store'
+
 window.Alpine = Alpine
 
 const images = [
@@ -41,10 +46,10 @@ document.querySelector('#university-app').innerHTML = `
           </span>
         </a>
         <a
-          href="/"
+          href="${backHref}"
           class="premium-outline inline-flex h-10 items-center justify-center rounded-full border border-brand-border px-5 text-sm font-semibold text-brand-cream transition hover:border-brand-gold hover:text-brand-gold"
         >
-          Back to store
+          ${backLabel}
         </a>
       </div>
     </header>
@@ -64,32 +69,54 @@ document.querySelector('#university-app').innerHTML = `
         program develops.
       </p>
 
-      <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        ${images.map(({ src, alt }) => `
-          <button
-            type="button"
-            class="group relative aspect-[3/4] overflow-hidden rounded-[1.4rem] border border-brand-border bg-brand-panel text-left transition hover:border-brand-gold/50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-gold"
-            @click="openImage('${src}')"
-            aria-label="View larger: ${alt}"
-          >
-            <img
-              src="${src}"
-              alt="${alt}"
-              class="size-full object-cover transition duration-700 ease-out group-hover:scale-[1.04]"
-              loading="lazy"
-            >
-            <span
-              class="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 transition group-hover:opacity-100"
-              aria-hidden="true"
-            ></span>
-            <span
-              class="pointer-events-none absolute bottom-4 left-4 rounded-full border border-white/20 bg-black/40 px-3 py-1 text-[0.62rem] font-semibold uppercase tracking-[0.12em] text-white opacity-0 backdrop-blur-sm transition group-hover:opacity-100"
-            >
-              View
-            </span>
-          </button>
-        `).join('')}
-      </div>
+      <div class="mt-10 grid gap-4">
+  <button
+    type="button"
+    class="group relative overflow-hidden rounded-[1.4rem] border border-brand-border bg-brand-panel p-2 text-left transition hover:border-brand-gold/50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-gold"
+    @click="openImage('${uniImage1}')"
+    aria-label="View larger: YOUR PRODUCT University session 1"
+  >
+    <img
+      src="${uniImage1}"
+      alt="YOUR PRODUCT University session 1"
+      class="h-auto w-full rounded-[1rem] object-contain transition duration-500 ease-out group-hover:scale-[1.01]"
+      loading="eager"
+      decoding="async"
+    >
+  </button>
+
+  <div class="grid gap-4 md:grid-cols-2">
+    <button
+      type="button"
+      class="group relative overflow-hidden rounded-[1.4rem] border border-brand-border bg-brand-panel p-2 text-left transition hover:border-brand-gold/50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-gold"
+      @click="openImage('${uniImage2}')"
+      aria-label="View larger: YOUR PRODUCT University session 2"
+    >
+      <img
+        src="${uniImage2}"
+        alt="YOUR PRODUCT University session 2"
+        class="h-auto w-full rounded-[1rem] object-contain transition duration-500 ease-out group-hover:scale-[1.01]"
+        loading="lazy"
+        decoding="async"
+      >
+    </button>
+
+    <button
+      type="button"
+      class="group relative overflow-hidden rounded-[1.4rem] border border-brand-border bg-brand-panel p-2 text-left transition hover:border-brand-gold/50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-gold"
+      @click="openImage('${uniImage3}')"
+      aria-label="View larger: YOUR PRODUCT University session 3"
+    >
+      <img
+        src="${uniImage3}"
+        alt="YOUR PRODUCT University session 3"
+        class="h-auto w-full rounded-[1rem] object-contain transition duration-500 ease-out group-hover:scale-[1.01]"
+        loading="lazy"
+        decoding="async"
+      >
+    </button>
+  </div>
+</div>
 
       <p class="mt-10 text-center text-xs leading-5 text-brand-muted">
         Program details remain subject to final company confirmation.

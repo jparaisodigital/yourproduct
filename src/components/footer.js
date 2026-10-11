@@ -2,18 +2,29 @@ export function renderFooter(siteConfig) {
   const currentYear = new Date().getFullYear()
 
   const footerLinks = siteConfig.navigation
-    .filter((item) => !['Home', 'Discover'].includes(item.label))
-    .map(
-      (item) => `
+  .filter((item) => !['Home', 'Discover'].includes(item.label))
+  .map((item) => {
+    const linkLabel = item.footerLabel || item.label
+
+    return item.comingSoon
+      ? `
+        <span class="text-sm text-brand-muted">
+          ${linkLabel}
+          <small class="ml-1 text-xs text-brand-gold">
+            Coming soon
+          </small>
+        </span>
+      `
+      : `
         <a
           href="${item.href}"
           class="text-sm text-brand-muted transition hover:text-brand-gold"
         >
-        ${item.href === '/videos/' ? 'YOUR PRODUCT Videos' : item.label}
+          ${linkLabel}
         </a>
-      `,
-    )
-    .join('')
+      `
+  })
+  .join('')
 
   return `
     <footer class="border-t border-brand-border bg-brand-charcoal">
@@ -58,13 +69,6 @@ export function renderFooter(siteConfig) {
   aria-label="Footer navigation"
 >
   ${footerLinks}
-
-  <a
-  href="/university/"
-  class="text-sm text-brand-muted transition hover:text-brand-gold"
->
-  YOUR PRODUCT University
-</a>
 
   <span class="text-sm text-brand-muted">
     Events

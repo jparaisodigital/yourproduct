@@ -27,10 +27,13 @@ export function renderProductsSection(
     .join('')
 
     const productCards = products
-    .map((product) =>
-      renderProductCard(product, productCardOptions),
-    )
-    .join('')
+  .map((product, productIndex) =>
+    renderProductCard(product, {
+      ...productCardOptions,
+      productIndex,
+    }),
+  )
+  .join('')
 
   return `
     <section

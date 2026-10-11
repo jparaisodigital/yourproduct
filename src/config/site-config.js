@@ -13,9 +13,27 @@ export const siteConfig = {
     { label: 'Home', href: '#home' },
     { label: 'Perfumes', href: '#shop' },
     { label: 'Packages', href: '#packages' },
-    { label: 'Ways to Earn', href: '#ways-to-earn' },
-    { label: 'University', href: '/university/' },
-    { label: 'Videos', href: '/videos/' },
+    {
+      label: 'Ways to Earn',
+      footerLabel: 'Ways to Earn',
+      href: '#ways-to-earn',
+    },
+    {
+      label: 'University',
+      footerLabel: 'Your University',
+      href: '/university/',
+    },
+    {
+      label: 'YP Videos',
+      footerLabel: 'YP Videos',
+      href: '/videos/',
+    },
+    {
+      label: 'Business Center',
+      footerLabel: 'Business Center',
+      href: '/business-center/',
+      comingSoon: true,
+    },
   ],
   
   contact: {

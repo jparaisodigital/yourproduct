@@ -67,6 +67,14 @@ import {
 } from './components/packages-section.js'
 
 import {
+  renderSixWaysSection,
+} from './components/six-ways-section.js'
+
+import {
+  renderYouPointsSection,
+} from './components/you-points-section.js'
+
+import {
   renderAccountCtaSection,
 } from './components/account-cta-section.js'
 
@@ -315,9 +323,13 @@ async function startStorefront() {
         storefrontProductCardOptions,
       )}
 
+      ${renderSixWaysSection()}
+
       ${renderPackagesSection(packages, {
-        isAdminPreview,
+       isAdminPreview,
       })}
+
+      ${renderYouPointsSection()}
 
       ${renderAccountCtaSection()}
 
@@ -514,9 +526,64 @@ async function startStorefront() {
       })
     })
 
+    if (window.matchMedia('(max-width: 767px)').matches) {
+      window.requestAnimationFrame(() => {
+        window.dispatchEvent(new Event('resize'))
+    
+        window.setTimeout(() => {
+          document
+            .querySelectorAll('[data-product-card] img')
+            .forEach((image) => {
+              image.style.transform = 'translateZ(0)'
+            })
+    
+          window.dispatchEvent(new Event('resize'))
+        }, 150)
+      })
+    }
+
   Alpine.start()
   initScrollReveal()
   bindFadeLinks()
+
+  function forceMobileProductPaint() {
+    if (!window.matchMedia('(max-width: 767px)').matches) return
+  
+    const productGrid = document.querySelector('[data-products-grid]')
+    const productCards = document.querySelectorAll('[data-product-card]')
+    const productImages = document.querySelectorAll('[data-product-card] img')
+  
+    if (!productGrid || productCards.length === 0) return
+  
+    productGrid.style.transform = 'translateZ(0)'
+    productGrid.style.backfaceVisibility = 'hidden'
+    productGrid.style.willChange = 'transform'
+  
+    productCards.forEach((card) => {
+      card.style.transform = 'translateZ(0)'
+      card.style.backfaceVisibility = 'hidden'
+      card.style.willChange = 'transform'
+    })
+  
+    productImages.forEach((image) => {
+      image.style.transform = 'translateZ(0)'
+      image.style.backfaceVisibility = 'hidden'
+      image.style.opacity = '1'
+      image.style.visibility = 'visible'
+  
+      if (image.complete && image.naturalWidth > 0) {
+        const currentSrc = image.currentSrc || image.src
+        image.src = ''
+        image.src = currentSrc
+      }
+    })
+  
+    productGrid.style.opacity = '0.99'
+    productGrid.offsetHeight
+    productGrid.style.opacity = '1'
+  
+    window.dispatchEvent(new Event('resize'))
+  }
 
   document.querySelectorAll('a[href="#home"]').forEach((link) => {
     link.addEventListener('click', (event) => {
@@ -537,6 +604,18 @@ async function startStorefront() {
 
   requestAnimationFrame(() => {
     dismissSiteLoader()
+  })
+
+  requestAnimationFrame(() => {
+    forceMobileProductPaint()
+  })
+  
+  window.setTimeout(forceMobileProductPaint, 300)
+  window.setTimeout(forceMobileProductPaint, 900)
+  
+  window.addEventListener('load', () => {
+    forceMobileProductPaint()
+    window.setTimeout(forceMobileProductPaint, 300)
   })
 }
 

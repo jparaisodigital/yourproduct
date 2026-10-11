@@ -728,27 +728,38 @@ export function renderMemberPayoutPage() {
                   </div>
 
                   <div
-                    x-show="request.status === 'paid'"
-                    class="lg:text-right"
-                  >
-                    <p class="text-[0.6rem] font-semibold uppercase tracking-[0.12em] text-brand-muted">
-                      Payment Reference
-                    </p>
+  x-show="request.status === 'paid'"
+  class="rounded-2xl border border-emerald-400/30 bg-emerald-400/10 p-4 lg:text-right"
+>
+  <p class="text-[0.6rem] font-semibold uppercase tracking-[0.12em] text-emerald-200">
+    Congrats
+  </p>
 
-                    <p
-                      class="mt-1 text-sm font-semibold text-brand-gold"
-                      x-text="request.referenceNumber || 'Unavailable'"
-                    ></p>
+  <p
+    class="mt-1 text-sm font-semibold text-brand-cream"
+    x-text="'Your payout amount of ' + formatMoney(request.amount) + ' has been released.'"
+  ></p>
 
-                    <button
-                      type="button"
-                      x-show="request.proofUrl"
-                      @click="openPaymentProof(request)"
-                      class="mt-3 inline-flex min-h-10 items-center justify-center rounded-full border border-brand-gold/50 px-4 text-xs font-semibold text-brand-gold transition hover:bg-brand-gold hover:text-[#17130d]"
-                    >
-                      View Payment Proof
-                    </button>
-                  </div>
+  <div class="mt-3 border-t border-emerald-400/20 pt-3">
+    <p class="text-[0.6rem] font-semibold uppercase tracking-[0.12em] text-brand-muted">
+      Payment Reference
+    </p>
+
+    <p
+      class="mt-1 text-sm font-semibold text-brand-gold"
+      x-text="request.referenceNumber || 'Unavailable'"
+    ></p>
+  </div>
+
+  <button
+    type="button"
+    x-show="request.proofUrl"
+    @click="openPaymentProof(request)"
+    class="mt-3 inline-flex min-h-10 items-center justify-center rounded-full border border-brand-gold/50 px-4 text-xs font-semibold text-brand-gold transition hover:bg-brand-gold hover:text-[#17130d]"
+  >
+    View Payment Proof
+  </button>
+</div>
                 </div>
               </article>
             </template>
