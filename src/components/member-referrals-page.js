@@ -88,9 +88,7 @@ export function registerMemberReferralsPage(Alpine) {
     },
 
     get pendingCount() {
-      return this.referrals.filter((referral) =>
-        ['requested', 'approved'].includes(referral.status),
-      ).length
+      return 0
     },
 
     get availableCount() {
@@ -101,10 +99,10 @@ export function registerMemberReferralsPage(Alpine) {
 
     statusLabel(status) {
       const labels = {
-        earned: 'Available',
-        requested: 'Payout Requested',
-        approved: 'Payout Approved',
-        paid: 'Paid',
+        earned: 'Earned',
+        requested: 'Earned',
+        approved: 'Earned',
+        paid: 'Earned',
         cancelled: 'Cancelled',
       }
 

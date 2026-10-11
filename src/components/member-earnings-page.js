@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase.js'
 export function registerMemberEarningsPage(Alpine) {
   Alpine.data('memberEarningsPage', () => ({
     transactions: [],
+    payoutRequests: [],
     loading: true,
     error: '',
 
@@ -15,18 +16,26 @@ export function registerMemberEarningsPage(Alpine) {
       this.error = ''
 
       try {
-        const { data, error } = await supabase
-          .from('referral_commissions')
-          .select(`
-            id, referred_customer_id, membership_application_id,
-            referral_code, package_id, package_amount,
-            commission_amount, status, created_at
-          `)
-          .order('created_at', { ascending: false })
+        const [commissionsResult, payoutsResult] = await Promise.all([
+          supabase
+            .from('referral_commissions')
+            .select(`
+              id, referred_customer_id, membership_application_id,
+              referral_code, package_id, package_amount,
+              commission_amount, status, created_at
+            `)
+            .order('created_at', { ascending: false }),
 
-        if (error) throw error
+          supabase
+            .from('payout_requests')
+            .select('id, amount, status, requested_at, paid_at')
+            .order('requested_at', { ascending: false }),
+        ])
 
-        this.transactions = (data ?? []).map((commission) => ({
+        if (commissionsResult.error) throw commissionsResult.error
+        if (payoutsResult.error) throw payoutsResult.error
+
+        this.transactions = (commissionsResult.data ?? []).map((commission) => ({
           id: commission.id,
           description:
             `${this.packageLabel(commission.package_id)} direct referral commission`,
@@ -36,10 +45,19 @@ export function registerMemberEarningsPage(Alpine) {
           referralCode: commission.referral_code || '',
           createdAt: commission.created_at,
         }))
+
+        this.payoutRequests = (payoutsResult.data ?? []).map((request) => ({
+          id: request.id,
+          amount: Number(request.amount || 0),
+          status: request.status || 'pending',
+          requestedAt: request.requested_at,
+          paidAt: request.paid_at,
+        }))
       } catch (error) {
         console.error('Unable to load member earnings:', error)
         this.error = 'Unable to load earnings history. Please refresh.'
         this.transactions = []
+        this.payoutRequests = []
       } finally {
         this.loading = false
       }
@@ -73,56 +91,47 @@ export function registerMemberEarningsPage(Alpine) {
       return labels[packageId] || 'Membership'
     },
 
-    amountForStatus(statuses) {
-      const statusList = Array.isArray(statuses)
-        ? statuses
-        : [statuses]
+    amountForPayoutStatus(statuses) {
+      const statusList = Array.isArray(statuses) ? statuses : [statuses]
 
-      return this.transactions
-        .filter((transaction) =>
-          statusList.includes(transaction.status),
-        )
-        .reduce(
-          (total, transaction) =>
-            total + Number(transaction.amount || 0),
-          0,
-        )
+      return this.payoutRequests
+        .filter((request) => statusList.includes(request.status))
+        .reduce((total, request) => total + Number(request.amount || 0), 0)
     },
 
     get availableIncome() {
-      return this.amountForStatus('earned')
+      const reservedOrPaid = this.amountForPayoutStatus([
+        'pending',
+        'approved',
+        'paid',
+      ])
+
+      return Math.max(this.totalRecordedIncome - reservedOrPaid, 0)
     },
 
     get pendingIncome() {
-      return this.amountForStatus([
-        'requested',
-        'approved',
-      ])
+      return this.amountForPayoutStatus(['pending', 'approved'])
     },
 
     get paidIncome() {
-      return this.amountForStatus('paid')
+      return this.amountForPayoutStatus('paid')
     },
 
     get totalRecordedIncome() {
       return this.transactions
-        .filter(
-          (transaction) =>
-            transaction.status !== 'cancelled',
-        )
+        .filter((transaction) => transaction.status !== 'cancelled')
         .reduce(
-          (total, transaction) =>
-            total + Number(transaction.amount || 0),
+          (total, transaction) => total + Number(transaction.amount || 0),
           0,
         )
     },
 
     statusLabel(status) {
       const labels = {
-        earned: 'Available',
-        requested: 'Payout Requested',
-        approved: 'Payout Approved',
-        paid: 'Paid',
+        earned: 'Earned',
+        requested: 'Earned',
+        approved: 'Earned',
+        paid: 'Earned',
         cancelled: 'Cancelled',
       }
 

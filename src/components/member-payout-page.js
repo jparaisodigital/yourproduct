@@ -60,37 +60,41 @@ export function registerMemberPayoutPage(Alpine) {
         }
 
         const commissionRows = commissionsResult.data ?? []
+const payoutRows = payoutsResult.data ?? []
 
-        this.availableIncome = commissionRows
-          .filter((commission) => commission.status === 'earned')
-          .reduce(
-            (total, commission) =>
-              total + Number(commission.commission_amount || 0),
-            0,
-          )
+const totalCommissionIncome = commissionRows
+  .filter((commission) => commission.status !== 'cancelled')
+  .reduce(
+    (total, commission) =>
+      total + Number(commission.commission_amount || 0),
+    0,
+  )
 
-        this.pendingIncome = commissionRows
-          .filter((commission) =>
-            ['requested', 'approved'].includes(commission.status),
-          )
-          .reduce(
-            (total, commission) =>
-              total + Number(commission.commission_amount || 0),
-            0,
-          )
+this.pendingIncome = payoutRows
+  .filter((request) => ['pending', 'approved'].includes(request.status))
+  .reduce(
+    (total, request) =>
+      total + Number(request.amount || 0),
+    0,
+  )
 
-        this.paidIncome = commissionRows
-          .filter((commission) => commission.status === 'paid')
-          .reduce(
-            (total, commission) =>
-              total + Number(commission.commission_amount || 0),
-            0,
-          )
+this.paidIncome = payoutRows
+  .filter((request) => request.status === 'paid')
+  .reduce(
+    (total, request) =>
+      total + Number(request.amount || 0),
+    0,
+  )
 
-          this.form.amount =
-          this.availableIncome >= this.minimumPayoutAmount
-            ? String(this.minimumPayoutAmount)
-            : ''
+this.availableIncome = Math.max(
+  totalCommissionIncome - this.pendingIncome - this.paidIncome,
+  0,
+)
+
+this.form.amount =
+  this.availableIncome >= this.minimumPayoutAmount
+    ? String(this.minimumPayoutAmount)
+    : ''
 
         this.payoutRequests = await Promise.all(
           (payoutsResult.data ?? []).map(async (request) => {
