@@ -49,7 +49,7 @@ export function renderAdminSalesInventoryPage() {
           </article>
         </div>
 
-          <div class="mt-4 grid gap-3 sm:flex sm:flex-wrap">
+        <div class="mt-4 grid gap-3 sm:flex sm:flex-wrap">
           <button
             type="button"
             class="inline-flex min-h-10 items-center justify-center rounded-full bg-brand-gold px-5 text-sm font-semibold text-[#17130d] transition hover:bg-brand-gold-light"
@@ -72,56 +72,56 @@ export function renderAdminSalesInventoryPage() {
         </p>
 
         <div
-  x-cloak
-  x-show="salesExportConfirmOpen"
-  x-transition.opacity
-  class="fixed inset-0 z-[90] grid place-items-center bg-black/75 px-4 py-6 backdrop-blur-sm"
-  role="dialog"
-  aria-modal="true"
-  aria-labelledby="sales-export-confirm-title"
-  @keydown.escape.window="closeSalesExportConfirm()"
->
-  <button
-    type="button"
-    class="absolute inset-0 cursor-default"
-    aria-label="Cancel sales export"
-    @click="closeSalesExportConfirm()"
-  ></button>
+          x-cloak
+          x-show="salesExportConfirmOpen"
+          x-transition.opacity
+          class="fixed inset-0 z-[90] grid place-items-center bg-black/75 px-4 py-6 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="sales-export-confirm-title"
+          @keydown.escape.window="closeSalesExportConfirm()"
+        >
+          <button
+            type="button"
+            class="absolute inset-0 cursor-default"
+            aria-label="Cancel sales export"
+            @click="closeSalesExportConfirm()"
+          ></button>
 
-  <div class="relative z-10 w-full max-w-md rounded-2xl border border-brand-gold/35 bg-brand-panel p-6 shadow-gold-soft">
-    <p class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold">
-      Export CSV
-    </p>
+          <div class="relative z-10 w-full max-w-md rounded-2xl border border-brand-gold/35 bg-brand-panel p-6 shadow-gold-soft">
+            <p class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold">
+              Export CSV
+            </p>
 
-    <h2
-      id="sales-export-confirm-title"
-      class="mt-2 font-display text-3xl text-brand-cream"
-      x-text="salesExportConfirmType === 'summary' ? 'Download sales summary?' : 'Download sales details?'"
-    ></h2>
+            <h2
+              id="sales-export-confirm-title"
+              class="mt-2 font-display text-3xl text-brand-cream"
+              x-text="salesExportConfirmType === 'summary' ? 'Download sales summary?' : 'Download sales details?'"
+            ></h2>
 
-    <p class="mt-3 text-sm leading-6 text-brand-muted">
-      This will download a CSV file that can be opened in Excel or Google Sheets.
-    </p>
+            <p class="mt-3 text-sm leading-6 text-brand-muted">
+              This will download a CSV file that can be opened in Excel or Google Sheets.
+            </p>
 
-    <div class="mt-6 grid gap-3 sm:grid-cols-2">
-      <button
-        type="button"
-        class="inline-flex min-h-11 items-center justify-center rounded-full border border-brand-border px-5 text-sm font-semibold text-brand-cream transition hover:border-brand-gold hover:text-brand-gold"
-        @click="closeSalesExportConfirm()"
-      >
-        Cancel
-      </button>
+            <div class="mt-6 grid gap-3 sm:grid-cols-2">
+              <button
+                type="button"
+                class="inline-flex min-h-11 items-center justify-center rounded-full border border-brand-border px-5 text-sm font-semibold text-brand-cream transition hover:border-brand-gold hover:text-brand-gold"
+                @click="closeSalesExportConfirm()"
+              >
+                Cancel
+              </button>
 
-      <button
-        type="button"
-        class="premium-cta inline-flex min-h-11 items-center justify-center rounded-full bg-brand-gold px-5 text-sm font-semibold text-[#17130d]"
-        @click="confirmSalesExport()"
-      >
-        Download CSV
-      </button>
-    </div>
-  </div>
-</div>
+              <button
+                type="button"
+                class="premium-cta inline-flex min-h-11 items-center justify-center rounded-full bg-brand-gold px-5 text-sm font-semibold text-[#17130d]"
+                @click="confirmSalesExport()"
+              >
+                Download CSV
+              </button>
+            </div>
+          </div>
+        </div>
 
         <div class="mt-6 flex flex-wrap gap-3">
           <div class="rounded-xl border border-brand-border bg-brand-black px-5 py-3">
@@ -170,47 +170,45 @@ export function renderAdminSalesInventoryPage() {
       >
         <template x-for="product in liveProducts.filter(product => product.id !== 'tester-kit')" :key="product.id">
           <article class="rounded-2xl border border-brand-border bg-brand-panel p-5">
-            <div class="flex flex-wrap items-start justify-between gap-3">
-              <div class="min-w-0">
-                <p class="text-xs text-brand-gold" x-text="product.sku"></p>
-                <h2
-                  class="mt-1 text-lg font-semibold text-brand-cream"
-                  x-text="product.name"
-                ></h2>
+            <div class="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-center sm:gap-4">
+              <div class="flex min-w-0 items-center justify-between gap-3 sm:justify-start">
+                <div class="min-w-0">
+                  <div class="flex items-center gap-2">
+                    <span
+                      class="inline-flex h-7 items-center text-xs font-semibold uppercase tracking-[0.14em] text-brand-gold"
+                      x-text="product.sku"
+                    ></span>
+
+                    <h2
+                      class="hidden min-w-0 truncate text-lg font-semibold text-brand-cream sm:block"
+                      x-text="product.name"
+                    ></h2>
+                  </div>
+
+                  <h2
+                    class="mt-1 min-w-0 text-lg font-semibold text-brand-cream sm:hidden"
+                    x-text="product.name"
+                  ></h2>
+                </div>
+
+                <span
+                  class="inline-flex h-8 shrink-0 items-center rounded-full border border-brand-border px-3 text-[0.65rem] font-semibold text-brand-cream sm:hidden"
+                  x-text="'Stock ' + product.stock_quantity"
+                ></span>
               </div>
 
               <span
-                class="rounded-full border border-brand-border px-3 py-1 text-xs text-brand-cream"
-                x-text="product.is_active ? 'Active' : 'Inactive'"
+                class="font-semibold text-brand-gold sm:justify-self-center"
+                x-text="formatMoney(product.regular_price)"
+              ></span>
+
+              <span
+                class="hidden h-8 items-center rounded-full border border-brand-border px-3 text-[0.65rem] font-semibold text-brand-cream sm:inline-flex sm:justify-self-end"
+                x-text="'Stock ' + product.stock_quantity"
               ></span>
             </div>
 
-            <div class="mt-5 grid grid-cols-3 gap-3 border-t border-brand-border pt-4 text-sm">
-              <div>
-                <p class="text-xs text-brand-muted">Regular</p>
-                <p
-                  class="mt-1 font-semibold text-brand-cream"
-                  x-text="formatMoney(product.regular_price)"
-                ></p>
-              </div>
-
-              <div>
-                <p class="text-xs text-brand-muted">Reseller</p>
-                <p class="mt-1 font-semibold text-brand-cream">
-                  ₱245–₱175
-                </p>
-              </div>
-
-              <div>
-                <p class="text-xs text-brand-muted">Stock</p>
-                <p
-                  class="mt-1 font-semibold text-brand-cream"
-                  x-text="product.stock_quantity"
-                ></p>
-              </div>
-            </div>
-
-                        <div class="mt-5 space-y-3 border-t border-brand-border pt-4">
+            <div class="mt-5 space-y-3 border-t border-brand-border pt-4">
               <div class="grid gap-3 sm:grid-cols-[10rem_minmax(0,1fr)]">
                 <label class="text-xs text-brand-muted">
                   Action
