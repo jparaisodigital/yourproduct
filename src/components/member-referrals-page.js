@@ -28,18 +28,67 @@ export function registerMemberReferralsPage(Alpine) {
 
         if (error) throw error
 
-        this.referrals = (data ?? []).map((commission) => ({
-          id: commission.id,
-          referredCustomerId: commission.referred_customer_id,
-          applicationId: commission.membership_application_id,
-          packageId: commission.package_id,
-          packageLabel: this.packageLabel(commission.package_id),
-          packageAmount: Number(commission.package_amount || 0),
-          commissionAmount: Number(commission.commission_amount || 0),
-          status: commission.status || 'earned',
-          referralCode: commission.referral_code || '',
-          createdAt: commission.created_at,
-        }))
+        const commissions = data ?? []
+const referredCustomerIds = [
+  ...new Set(
+    commissions
+      .map((commission) => commission.referred_customer_id)
+      .filter(Boolean),
+  ),
+]
+
+let referredProfilesById = new Map()
+
+if (referredCustomerIds.length > 0) {
+  const { data: referredProfiles, error: profilesError } =
+    await supabase
+      .from('profiles')
+      .select('id, first_name, last_name, email')
+      .in('id', referredCustomerIds)
+
+  if (profilesError) {
+    console.error('Unable to load referred profiles:', profilesError)
+  } else {
+    referredProfilesById = new Map(
+      (referredProfiles ?? []).map((profile) => [
+        profile.id,
+        profile,
+      ]),
+    )
+  }
+}
+
+this.referrals = commissions.map((commission) => {
+  const referredProfile = referredProfilesById.get(
+    commission.referred_customer_id,
+  )
+
+  const referredName = [
+    referredProfile?.first_name,
+    referredProfile?.last_name,
+  ]
+    .filter(Boolean)
+    .join(' ')
+
+  return {
+    id: commission.id,
+    referredCustomerId: commission.referred_customer_id,
+    referredName:
+      referredName ||
+      referredProfile?.email ||
+      commission.referred_customer_id ||
+      'Referred customer',
+    referredEmail: referredProfile?.email || '',
+    applicationId: commission.membership_application_id,
+    packageId: commission.package_id,
+    packageLabel: this.packageLabel(commission.package_id),
+    packageAmount: Number(commission.package_amount || 0),
+    commissionAmount: Number(commission.commission_amount || 0),
+    status: commission.status || 'earned',
+    referralCode: commission.referral_code || '',
+    createdAt: commission.created_at,
+  }
+})
       } catch (error) {
         console.error('Unable to load referral records:', error)
         this.error = 'Unable to load referral records. Please refresh.'
@@ -270,10 +319,12 @@ export function renderMemberReferralsPage() {
                 </div>
 
                 <p class="mt-2 text-sm leading-6 text-brand-muted">
-                  <span x-text="'Package amount: ' + formatMoney(referral.packageAmount)"></span>
-                  <span aria-hidden="true"> · </span>
-                  <span x-text="'Referral code: ' + (referral.referralCode || 'N/A')"></span>
-                </p>
+  <span x-text="'Referred: ' + (referral.referredName || 'Referred customer')"></span>
+  <span aria-hidden="true"> · </span>
+  <span x-text="'Package amount: ' + formatMoney(referral.packageAmount)"></span>
+  <span aria-hidden="true"> · </span>
+  <span x-text="'Referral code: ' + (referral.referralCode || 'N/A')"></span>
+</p>
 
                 <p class="mt-1 text-xs text-brand-muted">
                   <span x-text="'Record ' + String(referral.id).slice(0, 8)"></span>

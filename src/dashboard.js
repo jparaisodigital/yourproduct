@@ -3162,8 +3162,10 @@ registerProductViewStore(
     .order('created_at', { ascending: false })
 
     const orderIds = (orderRows ?? []).map((order) => order.id)
-let pointsByOrderId = new Map()
-let signedInPointsBalance = 0
+    let pointsByOrderId = new Map()
+    let signedInPointsBalance = 0
+    let hasConfirmedMembershipPoints = false
+    let signedInDirectReferrals = 0
 
 if (orderIds.length > 0) {
   const { data: pointRows, error: pointsError } = await supabase
@@ -3190,17 +3192,35 @@ if (orderIds.length > 0) {
 const { data: balancePointRows, error: balancePointsError } =
   await supabase
     .from('points_transactions')
-    .select('points')
+    .select('points, type')
     .eq('customer_id', user.id)
     .eq('status', 'confirmed')
 
 if (balancePointsError) {
   console.error('Unable to load points balance:', balancePointsError)
 } else {
-  signedInPointsBalance = (balancePointRows ?? []).reduce(
-    (total, row) => total + Number(row.points || 0),
-    0,
-  )
+  const confirmedBalanceRows = balancePointRows ?? []
+
+hasConfirmedMembershipPoints = confirmedBalanceRows.some(
+  (row) => row.type === 'membership_award',
+)
+
+signedInPointsBalance = confirmedBalanceRows.reduce(
+  (total, row) => total + Number(row.points || 0),
+  0,
+)
+}
+
+const { data: directReferralRows, error: directReferralsError } =
+  await supabase
+    .from('referral_commissions')
+    .select('id')
+    .eq('referrer_customer_id', user.id)
+
+if (directReferralsError) {
+  console.error('Unable to load direct referral count:', directReferralsError)
+} else {
+  signedInDirectReferrals = directReferralRows?.length || 0
 }
 
   signedInOrders = (orderRows ?? []).map((order) => ({
@@ -3293,6 +3313,20 @@ if (balancePointsError) {
     )
   
   const latestApprovedMembership = approvedMembershipRows[0] || null
+
+  const approvedMembershipPointsBalance =
+  approvedMembershipRows.reduce(
+    (total, application) =>
+      total + Number(application.package?.pointsReward || 0),
+    0,
+  )
+
+if (
+  !hasConfirmedMembershipPoints &&
+  approvedMembershipPointsBalance > 0
+) {
+  signedInPointsBalance += approvedMembershipPointsBalance
+}
   
   if (latestApprovedMembership) {
     const storageKey =
@@ -3380,6 +3414,7 @@ if (balancePointsError) {
   }
 
   previewAccount.pointsBalance = signedInPointsBalance
+  previewAccount.directReferrals = signedInDirectReferrals
 
   if (ordersError) {
     console.error('Unable to load orders:', ordersError)
