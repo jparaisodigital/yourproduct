@@ -2142,7 +2142,7 @@ function renderSidebar() {
 
 <p
   class="mt-2 text-sm font-semibold text-brand-cream"
-  x-text="isMember ? 'Member Account' : 'Free Customer'"
+  x-text="isMember ? '${previewAccount.membershipLabel}' : 'Free Customer'"
 ></p>
 
 <p
@@ -3314,6 +3314,12 @@ if (directReferralsError) {
   
   const latestApprovedMembership = approvedMembershipRows[0] || null
 
+  const activeMembershipLabel = latestApprovedMembership?.packageName
+  ? latestApprovedMembership.packageName.replace(/^Your\s+/i, '') + ' Member'
+  : isApprovedMember
+    ? 'Member Account'
+    : 'Free Customer'
+
   const approvedMembershipPointsBalance =
   approvedMembershipRows.reduce(
     (total, application) =>
@@ -3415,6 +3421,7 @@ if (
 
   previewAccount.pointsBalance = signedInPointsBalance
   previewAccount.directReferrals = signedInDirectReferrals
+  previewAccount.membershipLabel = activeMembershipLabel
 
   if (ordersError) {
     console.error('Unable to load orders:', ordersError)
@@ -3660,7 +3667,7 @@ if (
 
                 <span
                   class="text-xs font-semibold uppercase tracking-[0.12em] text-brand-gold"
-                  x-text="profile.customer_type === 'member' ? 'Member Account' : 'Free Customer'"
+                  x-text="profile.customer_type === 'member' ? '${previewAccount.membershipLabel}' : 'Free Customer'"
                 ></span>
               </div>
             </div>
