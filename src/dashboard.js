@@ -5363,7 +5363,14 @@ if (
     ${renderCustomerSupportChat()}
   </div>
 `
-bindFadeLinks('a[href="/checkout/"]')
+bindFadeLinks(
+  [
+    'a[href="/checkout/"]',
+    'a[href="/university/?from=dashboard"]',
+    'a[href="/videos/?from=dashboard"]',
+    'a[href="/business-center/?from=dashboard"]',
+  ].join(', '),
+)
 Alpine.start()
 }
 

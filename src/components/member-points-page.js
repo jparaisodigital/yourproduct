@@ -211,7 +211,7 @@ export function registerMemberPointsPage(Alpine) {
     typeLabel(type) {
       const labels = {
         order_award: 'Product Order Points',
-        membership_award: 'Membership Package Points',
+        membership_award: 'Package Points',
         order_purchase: 'Product Order',
         order: 'Product Order',
         manual_adjustment: 'Manual Adjustment',
@@ -375,41 +375,40 @@ export function renderMemberPointsPage() {
         x-for="transaction in filteredTransactions"
         :key="transaction.id"
       >
-        <article class="grid gap-4 rounded-2xl border border-brand-border bg-brand-black p-4 sm:grid-cols-[1fr_auto] sm:items-center">
-          <div class="min-w-0">
-            <div class="flex flex-wrap items-center gap-2">
-              <strong
-                class="text-sm text-brand-cream"
-                x-text="transaction.source"
-              ></strong>
-              <span
-                class="rounded-full border px-2.5 py-1 text-[0.58rem] font-semibold uppercase tracking-[0.1em]"
-                :class="statusClass(transaction.status)"
-                x-text="statusLabel(transaction.status)"
-              ></span>
-            </div>
+        <article class="relative grid gap-4 rounded-2xl border border-brand-border bg-brand-black p-4 pr-28 sm:grid-cols-[1fr_auto_5.75rem] sm:items-center sm:pr-4">
+  <div class="min-w-0">
+    <strong
+      class="block pr-2 text-sm text-brand-cream"
+      x-text="transaction.source"
+    ></strong>
 
-            <p
-              class="mt-2 text-sm leading-6 text-brand-muted"
-              x-text="transaction.description"
-            ></p>
+    <p
+      class="mt-2 text-sm leading-6 text-brand-muted"
+      x-text="transaction.description"
+    ></p>
 
-            <p class="mt-1 text-xs text-brand-muted">
-              <span x-text="transaction.reference"></span>
-              <span aria-hidden="true"> · </span>
-              <span x-text="formatDate(transaction.date)"></span>
-            </p>
-          </div>
+    <p class="mt-1 text-xs text-brand-muted">
+      <span x-text="transaction.reference"></span>
+      <span aria-hidden="true"> · </span>
+      <span x-text="formatDate(transaction.date)"></span>
+    </p>
+  </div>
 
-          <strong
-            class="font-display text-3xl"
-            :class="transaction.points < 0 ? 'text-red-300' : 'text-brand-gold'"
-            x-text="
-              (transaction.points > 0 ? '+' : '') +
-              transaction.points.toLocaleString('en-PH')
-            "
-          ></strong>
-        </article>
+  <strong
+    class="font-display text-3xl sm:text-right"
+    :class="transaction.points < 0 ? 'text-red-300' : 'text-brand-gold'"
+    x-text="
+      (transaction.points > 0 ? '+' : '') +
+      transaction.points.toLocaleString('en-PH')
+    "
+  ></strong>
+
+  <span
+    class="absolute right-4 top-4 inline-flex justify-center rounded-full border px-2.5 py-1 text-[0.58rem] font-semibold uppercase tracking-[0.1em] sm:static sm:w-full"
+    :class="statusClass(transaction.status)"
+    x-text="statusLabel(transaction.status)"
+  ></span>
+</article>
       </template>
     </div>
 

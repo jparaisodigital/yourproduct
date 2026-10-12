@@ -92,8 +92,11 @@ export function navigateWithFade(url) {
 export function bindFadeLinks(
   selector = [
     'a[href="/university/"]',
+    'a[href="/university/?from=dashboard"]',
     'a[href="/videos/"]',
+    'a[href="/videos/?from=dashboard"]',
     'a[href="/business-center/"]',
+    'a[href="/business-center/?from=dashboard"]',
     'a[href="/faq/"]',
     'a[href="/terms/"]',
     'a[href="/login/"]',

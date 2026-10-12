@@ -1,6 +1,7 @@
 import './style.css'
 import logoImage from './assets/logoyourproduct.webp'
 import { siteConfig } from './config/site-config.js'
+import { bindFadeLinks } from './lib/page-transition.js'
 
 const videosParams = new URLSearchParams(window.location.search)
 const fromDashboard = videosParams.get('from') === 'dashboard'
@@ -13,7 +14,7 @@ document.querySelector('#videos-app').innerHTML = `
   <div class="min-h-screen bg-brand-black text-brand-cream">
     <header class="border-b border-brand-border bg-brand-panel">
       <div class="mx-auto flex w-[min(1120px,90%)] items-center justify-between gap-4 py-4">
-        <a href="/" class="flex min-w-0 items-center gap-3" aria-label="Return to ${siteConfig.brand.name}">
+        <a href="/" data-fade-link class="flex min-w-0 items-center gap-3" aria-label="Return to ${siteConfig.brand.name}">
           <img src="${logoImage}" alt="${siteConfig.brand.name} logo" class="size-12 shrink-0 object-contain sm:size-14">
           <span class="min-w-0">
             <span class="block truncate text-sm font-semibold uppercase tracking-[0.18em] text-brand-cream sm:text-base">
@@ -26,9 +27,10 @@ document.querySelector('#videos-app').innerHTML = `
         </a>
 
         <a
-          href="${backHref}"
-          class="premium-outline inline-flex h-10 items-center justify-center rounded-full border border-brand-border px-5 text-sm font-semibold text-brand-cream transition hover:border-brand-gold hover:text-brand-gold"
-        >
+  href="${backHref}"
+  data-fade-link
+  class="premium-outline inline-flex h-10 items-center justify-center rounded-full border border-brand-border px-5 text-sm font-semibold text-brand-cream transition hover:border-brand-gold hover:text-brand-gold"
+>
           ${backLabel}
         </a>
       </div>
@@ -91,3 +93,5 @@ document.querySelector('#videos-app').innerHTML = `
     </footer>
   </div>
 `
+
+bindFadeLinks('a[data-fade-link]')
