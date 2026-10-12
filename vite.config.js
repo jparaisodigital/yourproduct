@@ -65,6 +65,16 @@ export default defineConfig({
           'university/index.html',
         ),
         
+        videos: resolve(
+          import.meta.dirname,
+          'videos/index.html',
+        ),
+        
+        businessCenter: resolve(
+          import.meta.dirname,
+          'business-center/index.html',
+        ),
+        
       },
     },
   },

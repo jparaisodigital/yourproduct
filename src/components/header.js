@@ -16,7 +16,7 @@ export function renderHeader(
       (item) => `
         <a
           href="${item.href}"
-          class="header-nav-link text-sm text-brand-muted hover:text-brand-gold"
+          class="header-nav-link whitespace-nowrap text-sm text-brand-muted hover:text-brand-gold"
         >
           ${item.label}
         </a>
@@ -247,7 +247,7 @@ export function renderHeader(
         </a>
 
         <nav
-          class="hidden items-center gap-7 lg:flex"
+          class="hidden items-center gap-4 xl:gap-6 lg:flex"
           aria-label="Main navigation"
         >
           ${desktopLinks}

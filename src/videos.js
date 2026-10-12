@@ -45,8 +45,15 @@ document.querySelector('#videos-app').innerHTML = `
         </h1>
 
         <div class="mx-auto mt-7 grid h-20 w-20 place-items-center rounded-full border border-brand-gold/40 bg-brand-black text-brand-gold shadow-lg shadow-black/30">
-          <span class="translate-x-0.5 text-3xl">▶</span>
-        </div>
+  <svg
+    class="size-8 translate-x-0.5"
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    aria-hidden="true"
+  >
+    <path d="M8 5.75c0-.7.76-1.13 1.36-.77l9.08 5.45c.58.35.58 1.19 0 1.54l-9.08 5.45A.9.9 0 0 1 8 16.65V5.75Z" />
+  </svg>
+</div>
 
         <h2 class="mt-7 font-display text-3xl text-brand-cream sm:text-4xl">
           Coming Soon

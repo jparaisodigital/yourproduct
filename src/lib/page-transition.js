@@ -93,6 +93,9 @@ export function bindFadeLinks(
   selector = [
     'a[href="/university/"]',
     'a[href="/videos/"]',
+    'a[href="/business-center/"]',
+    'a[href="/faq/"]',
+    'a[href="/terms/"]',
     'a[href="/login/"]',
     'a[href="/register/"]',
     'a[href="/checkout/"]',

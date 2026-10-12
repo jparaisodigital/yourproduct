@@ -107,18 +107,11 @@ export function renderFooter(siteConfig) {
               </a>
 
               <a
-                href="#membership"
-                class="text-sm text-brand-muted transition hover:text-brand-gold"
-              >
-                View Membership
-              </a>
-
-              <a
-                href="#rewards"
-                class="text-sm text-brand-muted transition hover:text-brand-gold"
-              >
-                Rewards
-              </a>
+  href="/#you-points"
+  class="text-sm text-brand-muted transition hover:text-brand-gold"
+>
+  Rewards
+</a>
             </div>
           </div>
         </div>
