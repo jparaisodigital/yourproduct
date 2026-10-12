@@ -12,7 +12,7 @@ export function renderProductCard(product, options = {}) {
     product.isActive &&
     Number(product.stockQuantity || 0) > 0
 
-    const isAdminPreview =
+  const isAdminPreview =
     options.isAdminPreview === true
   const imageLoadingAttribute = 'eager'
   const imageFetchPriorityAttribute = 'auto'
@@ -51,69 +51,146 @@ export function renderProductCard(product, options = {}) {
     tierPrice > 0 &&
     !product.fixedPrice
 
+  const mobileCollectionLabel = product.fixedPrice
+    ? 'Premium Tester Kit'
+    : product.collectionLabel
+
+  const mobileProductName = product.fixedPrice
+    ? 'Tester Kit'
+    : product.name
+
+  const mobileProductCode = product.fixedPrice
+    ? ''
+    : product.sku || ''
+
+  const mobilePriceInfoPopupClass =
+    Number(options.productIndex || 0) % 2 === 0
+      ? 'absolute left-0 top-full z-30 mt-2 w-40 rounded-xl'
+      : 'absolute right-0 top-full z-30 mt-2 w-40 rounded-xl'
+
   const priceMarkup = hasTierPrice
     ? `
-        <div
-          class="flex items-end justify-between gap-3"
-        >
-          <div>
-            <p
-              class="text-[0.55rem] font-semibold uppercase tracking-[0.08em] text-brand-gold sm:text-[0.68rem] sm:tracking-[0.14em]"
-            >
-              ${tierLabel || 'Your reseller price'}
-            </p>
+        <div class="sm:hidden">
+          <div class="flex items-center justify-between gap-3">
+            <div class="relative min-w-0">
+              <div class="inline-flex items-center gap-1.5">
+                <span class="text-sm font-medium text-brand-muted line-through">
+                  ${pesoFormatter.format(product.regularPrice)}
+                </span>
 
-            <p
-              class="mt-1 text-xs font-medium text-brand-muted line-through"
-            >
-              ${pesoFormatter.format(product.regularPrice)}
+                <button
+                  type="button"
+                  class="inline-flex size-5 items-center justify-center rounded-full border border-brand-gold/45 text-[0.65rem] font-bold text-brand-gold transition active:scale-95"
+                  aria-label="Show retail price note"
+                  @click.stop="openPriceInfo('tier')"
+                >
+                  i
+                </button>
+              </div>
+
+              <div
+                x-show="activePriceInfo === 'tier'"
+                x-transition.opacity
+                class="${mobilePriceInfoPopupClass} border border-brand-gold/45 bg-brand-black px-3 py-3 text-[0.68rem] leading-5 text-brand-cream shadow-panel"
+              >
+                Retail price ${pesoFormatter.format(product.regularPrice)}. Tier pricing is based on your approved package.
+              </div>
+            </div>
+
+            <p class="shrink-0 text-right font-display text-2xl leading-none text-brand-gold">
+              ${pesoFormatter.format(tierPrice)}
             </p>
           </div>
-
-          <p
-            class="shrink-0 text-right font-display text-2xl leading-none text-brand-gold sm:text-3xl"
-          >
-            ${pesoFormatter.format(tierPrice)}
-          </p>
         </div>
 
-        <p
-          class="mt-2 text-xs leading-5 text-brand-muted"
-        >
-          Retail ${pesoFormatter.format(product.regularPrice)}. Tier pricing is based on your approved package.
-        </p>
-      `
-    : product.fixedPrice
-      ? `
-          <div
-            class="flex items-end justify-between gap-3"
-          >
+        <div class="hidden sm:block">
+          <div class="flex items-end justify-between gap-3">
             <div>
               <p
-                class="text-[0.55rem] font-semibold uppercase tracking-[0.08em] text-brand-gold sm:text-[0.68rem] sm:tracking-[0.14em]"
+                class="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-brand-gold"
               >
-                Tester Kit Price
+                ${tierLabel || 'Your reseller price'}
               </p>
 
               <p
-                class="mt-1 text-xs font-medium text-brand-muted"
+                class="mt-1 text-xs font-medium text-brand-muted line-through"
               >
-                20 pcs 5ml assorted scents
+                ${pesoFormatter.format(product.regularPrice)}
               </p>
             </div>
 
             <p
-              class="shrink-0 text-right font-display text-2xl leading-none text-brand-gold sm:text-3xl"
+              class="shrink-0 text-right font-display text-3xl leading-none text-brand-gold"
             >
-              ${pesoFormatter.format(product.regularPrice)}
+              ${pesoFormatter.format(tierPrice)}
             </p>
           </div>
 
           <p
             class="mt-2 text-xs leading-5 text-brand-muted"
           >
-            Fixed price product. Reseller tier pricing does not apply.
+            Retail ${pesoFormatter.format(product.regularPrice)}. Tier pricing is based on your approved package.
           </p>
+        </div>
+      `
+    : product.fixedPrice
+      ? `
+          <div class="sm:hidden">
+            <div class="flex items-center justify-between gap-3">
+              <div class="relative min-w-0">
+                <button
+                  type="button"
+                  class="inline-flex size-5 items-center justify-center rounded-full border border-brand-gold/45 text-[0.65rem] font-bold text-brand-gold transition active:scale-95"
+                  aria-label="Show tester kit price note"
+                  @click.stop="openPriceInfo('fixed')"
+                >
+                  i
+                </button>
+
+                <div
+                  x-show="activePriceInfo === 'fixed'"
+                  x-transition.opacity
+                  class="${mobilePriceInfoPopupClass} border border-brand-gold/45 bg-brand-black px-3 py-3 text-[0.68rem] leading-5 text-brand-cream shadow-panel"
+                >
+                  Fixed price product. Member pricing does not apply.
+                </div>
+              </div>
+
+              <p class="shrink-0 text-right font-display text-2xl leading-none text-brand-gold">
+                ${pesoFormatter.format(product.regularPrice)}
+              </p>
+            </div>
+          </div>
+
+          <div class="hidden sm:block">
+            <div class="flex items-end justify-between gap-3">
+              <div>
+                <p
+                  class="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-brand-gold"
+                >
+                  Tester Kit Price
+                </p>
+
+                <p
+                  class="mt-1 text-xs font-medium text-brand-muted"
+                >
+                  20 pcs 5ml assorted scents
+                </p>
+              </div>
+
+              <p
+                class="shrink-0 text-right font-display text-3xl leading-none text-brand-gold"
+              >
+                ${pesoFormatter.format(product.regularPrice)}
+              </p>
+            </div>
+
+            <p
+              class="mt-2 text-xs leading-5 text-brand-muted"
+            >
+              Fixed price product. Reseller tier pricing does not apply.
+            </p>
+          </div>
         `
       : `
           <div
@@ -178,58 +255,100 @@ export function renderProductCard(product, options = {}) {
 
   return `
     <article
+      x-data="{
+        activePriceInfo: null,
+        priceInfoTimer: null,
+        openPriceInfo(type) {
+          this.activePriceInfo = this.activePriceInfo === type ? null : type
+
+          if (this.priceInfoTimer) {
+            clearTimeout(this.priceInfoTimer)
+          }
+
+          if (this.activePriceInfo) {
+            this.$dispatch('price-info-open', {
+              productId: '${product.id}',
+            })
+
+            this.priceInfoTimer = setTimeout(() => {
+              this.activePriceInfo = null
+            }, 5000)
+          }
+        },
+        closePriceInfo() {
+          this.activePriceInfo = null
+
+          if (this.priceInfoTimer) {
+            clearTimeout(this.priceInfoTimer)
+          }
+        },
+      }"
+      @click.outside="closePriceInfo()"
+      @price-info-open.window="if ($event.detail.productId !== '${product.id}') closePriceInfo()"
       x-show="
         activeCategory === 'all' ||
         activeCategory === '${product.category}'
       "
-      class="group relative flex h-full flex-col overflow-hidden rounded-[1.1rem] border border-brand-border bg-brand-panel opacity-100 sm:rounded-[1.5rem] md:transition md:duration-300 md:hover:border-brand-gold/50 md:hover:shadow-[0_24px_65px_rgb(183_138_50_/_0.14)]"
+      class="group relative flex h-full flex-col overflow-visible rounded-[1.1rem] border border-brand-border bg-brand-panel opacity-100 sm:overflow-hidden sm:rounded-[1.5rem] md:transition md:duration-300 md:hover:border-brand-gold/50 md:hover:shadow-[0_24px_65px_rgb(183_138_50_/_0.14)]"
       data-product-card
       data-product-id="${product.id}"
       data-product-category="${product.category}"
     >
       <button
-        type="button"
-        class="relative block aspect-[4/5] w-full cursor-zoom-in overflow-hidden bg-brand-black text-left"
-        data-action="quick-view"
-        data-product-id="${product.id}"
-        aria-label="View details for ${product.name}"
-        @click="$store.productView.open('${product.id}')"
-        ${product.isActive ? '' : 'disabled'}
-      >
-        <img
-  src="${product.image}"
-  alt="${product.name}"
-  class="relative z-10 size-full opacity-100 object-contain object-center p-2 sm:p-3"
-  loading="${imageLoadingAttribute}"
-  decoding="async"
-  fetchpriority="${imageFetchPriorityAttribute}"
+  type="button"
+  class="relative block aspect-[4/5] w-full cursor-zoom-in overflow-hidden bg-brand-black text-left"
+  data-action="quick-view"
+  data-product-id="${product.id}"
+  aria-label="View details for ${product.name}"
+  @click="$store.productView.open('${product.id}')"
+  ${product.isActive ? '' : 'disabled'}
 >
+        <img
+          src="${product.image}"
+          alt="${product.name}"
+          class="relative z-10 size-full opacity-100 object-contain object-center p-2 sm:p-3"
+          loading="${imageLoadingAttribute}"
+          decoding="async"
+          fetchpriority="${imageFetchPriorityAttribute}"
+        >
       </button>
 
       <div class="flex flex-1 flex-col p-4 sm:p-6">
         <div
-          class="flex flex-wrap items-center justify-between gap-2"
-        >
-          <span
-            class="text-[0.55rem] font-semibold uppercase tracking-[0.08em] text-brand-gold sm:text-[0.68rem] sm:tracking-[0.14em]"
-          >
-            ${product.collectionLabel}
-          </span>
+  class="grid gap-1.5 sm:flex sm:flex-wrap sm:items-center sm:justify-between sm:gap-2"
+>
+  <span
+    class="text-[0.55rem] font-semibold uppercase tracking-[0.08em] text-brand-gold sm:hidden"
+  >
+    ${mobileCollectionLabel}
+  </span>
 
-          ${pointsMarkup}
-        </div>
+  <span
+    class="hidden text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-brand-gold sm:inline"
+  >
+    ${product.collectionLabel}
+  </span>
+
+  ${pointsMarkup}
+</div>
 
         <div
           class="mt-3 flex items-center justify-between gap-3"
         >
           <h3
-            class="min-w-0 truncate font-display text-xl leading-tight text-brand-cream sm:text-2xl"
+            class="min-w-0 font-display text-xl leading-tight text-brand-cream sm:truncate sm:text-2xl"
           >
-            ${product.name}
+            <span class="sm:hidden">
+              ${mobileProductName}
+            </span>
+
+            <span class="hidden sm:inline">
+              ${product.name}
+            </span>
           </h3>
 
           <span
-            class="${stockTextClass} inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap text-[0.62rem] font-semibold sm:text-xs"
+            class="${stockTextClass} ${isAvailable ? 'hidden' : 'inline-flex'} shrink-0 items-center gap-1.5 whitespace-nowrap text-[0.62rem] font-semibold sm:text-xs"
             aria-label="${stockLabel}"
           >
             <span
@@ -246,14 +365,14 @@ export function renderProductCard(product, options = {}) {
         </div>
 
         <div
-  class="mt-4 min-h-[6.25rem] border-t border-brand-border pt-4"
->
-  ${priceMarkup}
-</div>
+          class="mt-4 border-t border-brand-border pt-4 sm:min-h-[6.25rem]"
+        >
+          ${priceMarkup}
+        </div>
 
         <div
-  class="mt-auto flex items-center gap-2.5 pt-4"
->
+          class="mt-3 flex items-center gap-2.5 sm:mt-auto sm:pt-4"
+        >
           <button
             type="button"
             class="group/view hidden size-11 shrink-0 place-items-center rounded-full border border-brand-border bg-transparent text-brand-muted transition duration-200 hover:border-brand-gold hover:bg-brand-gold/10 hover:text-brand-gold active:scale-95 sm:grid"

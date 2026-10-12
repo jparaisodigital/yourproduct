@@ -14,17 +14,6 @@ export function renderAdminSalesInventoryPage() {
           Sales Inventory
         </p>
 
-        <h1
-          id="sales-inventory-page-title"
-          class="mt-2 font-display text-4xl text-brand-cream sm:text-5xl"
-        >
-          Sales & Inventory
-        </h1>
-
-        <p class="mt-3 text-sm leading-7 text-brand-muted">
-          Product prices, availability, and stock from the database.
-        </p>
-
         <div class="mt-6 grid gap-3 sm:grid-cols-3">
           <article class="rounded-xl border border-brand-border bg-brand-black px-5 py-4">
             <p class="text-xs uppercase tracking-[0.13em] text-brand-muted">
@@ -173,13 +162,6 @@ export function renderAdminSalesInventoryPage() {
         class="mt-6 rounded-xl border border-brand-border bg-brand-panel p-5 text-sm text-brand-muted"
       >
         No products found.
-      </p>
-
-      <p
-        x-show="!liveProductsLoading && !liveProductsError && liveProducts.length > 0"
-        class="mt-6 rounded-xl border border-brand-border bg-brand-panel px-5 py-4 text-sm leading-6 text-brand-muted"
-      >
-        Use stock updates for restocks, manual corrections, or offsite inventory changes. Full add/deduct adjustment notes can be added after final inventory rules are confirmed.
       </p>
 
       <div

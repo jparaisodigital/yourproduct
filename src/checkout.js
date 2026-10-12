@@ -1556,7 +1556,7 @@ async function startCheckout() {
     Details checked. You can now submit this order for admin verification.
   </div>
 
-  <div class="rounded-xl border border-brand-border bg-brand-black px-4 py-4">
+  <div class="mt-5 rounded-xl border border-brand-border bg-brand-black p-4">
   <p class="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-brand-gold">
     Amount to pay
   </p>

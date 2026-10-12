@@ -360,7 +360,7 @@ function renderMembershipApplicationsPage() {
           class="mt-6 rounded-[1.5rem] border border-brand-border bg-brand-panel p-4 shadow-panel sm:p-5"
         >
           <div
-            class="grid gap-3 md:grid-cols-[minmax(0,1fr)_14rem]"
+            class="grid gap-3 md:grid-cols-[minmax(0,1fr)_14rem_12rem_12rem]"
           >
             <label class="relative block">
               <span class="sr-only">
@@ -429,6 +429,31 @@ function renderMembershipApplicationsPage() {
 </option>
               </select>
             </label>
+
+            <label class="block">
+  <span class="sr-only">
+    From date
+  </span>
+
+  <input
+    x-model="applicationDateFrom"
+    type="date"
+    class="min-h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition focus:border-brand-gold"
+  >
+</label>
+
+<label class="block">
+  <span class="sr-only">
+    To date
+  </span>
+
+  <input
+    x-model="applicationDateTo"
+    type="date"
+    class="min-h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition focus:border-brand-gold"
+  >
+</label>
+
           </div>
 
           <div
@@ -449,15 +474,19 @@ function renderMembershipApplicationsPage() {
 
             <button
               x-show="
-                applicationSearch ||
-                applicationStatusFilter !== 'all'
-              "
+  applicationSearch ||
+  applicationStatusFilter !== 'all' ||
+  applicationDateFrom ||
+  applicationDateTo
+"
               type="button"
               class="text-xs font-semibold text-brand-gold transition hover:text-brand-gold-light"
               @click="
-                applicationSearch = '';
-                applicationStatusFilter = 'all'
-              "
+  applicationSearch = '';
+  applicationStatusFilter = 'all';
+  applicationDateFrom = '';
+  applicationDateTo = '';
+"
             >
               Clear filters
             </button>
@@ -772,7 +801,7 @@ function renderOrdersPage() {
           "
           class="mt-6 rounded-[1.5rem] border border-brand-border bg-brand-panel p-5 shadow-panel"
         >
-          <div class="grid gap-3 lg:grid-cols-[1.4fr_1fr_1fr_auto] lg:items-end">
+          <div class="grid gap-3 lg:grid-cols-[1.4fr_1fr_1fr_1fr_1fr_auto] lg:items-end">
             <label class="block">
               <span class="text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-brand-muted">
                 Search orders
@@ -800,11 +829,35 @@ function renderOrdersPage() {
                 <option value="approved">Approved</option>
                 <option value="processing">Processing</option>
                 <option value="shipped">Shipped</option>
-                <option value="completed">Completed</option>
+                <option value="delivered">Delivered</option>
                 <option value="cancelled">Cancelled</option>
                 <option value="rejected">Rejected</option>
               </select>
             </label>
+
+<label class="block">
+  <span class="text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-brand-muted">
+    From date
+  </span>
+
+  <input
+    x-model="orderDateFrom"
+    type="date"
+    class="mt-2 h-11 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition focus:border-brand-gold"
+  />
+</label>
+
+<label class="block">
+  <span class="text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-brand-muted">
+    To date
+  </span>
+
+  <input
+    x-model="orderDateTo"
+    type="date"
+    class="mt-2 h-11 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition focus:border-brand-gold"
+  />
+</label>
 
             <label class="block">
               <span class="text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-brand-muted">
@@ -826,8 +879,10 @@ function renderOrdersPage() {
               class="inline-flex h-11 items-center justify-center rounded-xl border border-brand-border px-4 text-sm font-semibold text-brand-cream transition hover:border-brand-gold hover:text-brand-gold"
               @click="
                 orderSearch = '';
-                orderStatusFilter = 'all';
-                orderCustomerTypeFilter = 'all';
+orderStatusFilter = 'all';
+orderDateFrom = '';
+orderDateTo = '';
+orderCustomerTypeFilter = 'all';
               "
             >
               Reset
@@ -917,22 +972,61 @@ function renderOrdersPage() {
 ></span>
 
               <p
-                class="mt-2 text-xs text-brand-muted"
-                x-text="formatDate(order.created_at)"
-              ></p>
+  class="mt-2 text-xs text-brand-muted"
+  x-text="formatDate(order.created_at)"
+></p>
 
-              <p
-                class="mt-3 text-sm text-brand-cream"
-                x-text="'Subtotal: ' + formatMoney(order.subtotal)"
-              ></p>
+<div class="mt-4 grid gap-2 text-sm sm:grid-cols-2 lg:max-w-2xl">
+  <p class="text-brand-muted">
+  Customer name:
+  <span
+    class="font-semibold text-brand-cream"
+    x-text="[order.customer_details?.firstName, order.customer_details?.lastName].filter(Boolean).join(' ') || 'No name'"
+  ></span>
+</p>
 
-              <p
-                x-show="order.delivery_fee === null"
-                class="mt-1 text-xs text-brand-muted"
-              >
-                Delivery fee to be confirmed
-              </p>
-                          <button
+<p class="text-brand-muted">
+  Customer type:
+  <span
+    class="font-semibold text-brand-cream"
+    x-text="order.customer_type === 'member' ? 'Member' : 'Free Customer'"
+  ></span>
+</p>
+
+  <p class="text-brand-muted">
+    Items:
+    <span
+      class="font-semibold text-brand-cream"
+      x-text="formatMoney(order.subtotal)"
+    ></span>
+  </p>
+
+  <p class="text-brand-muted">
+    Delivery fee:
+    <span
+      class="font-semibold text-brand-cream"
+      x-text="order.delivery_fee === null ? 'To be confirmed' : formatMoney(order.delivery_fee)"
+    ></span>
+  </p>
+
+  <p class="text-brand-muted">
+    Points earned:
+    <span
+      class="font-semibold text-brand-gold"
+      x-text="'+' + Number(order.pointsAwarded || 0).toLocaleString('en-PH')"
+    ></span>
+  </p>
+
+  <p class="text-brand-muted sm:col-span-2">
+    Total:
+    <span
+      class="font-semibold text-brand-gold"
+      x-text="formatMoney(Number(order.subtotal || 0) + Number(order.delivery_fee || 0))"
+    ></span>
+  </p>
+</div>
+
+              <button
                 type="button"
                 @click="openOrderDetails(order.id)"
                 class="mt-4 rounded-full border border-brand-gold px-5 py-2 text-sm font-semibold text-brand-gold"
@@ -944,6 +1038,26 @@ function renderOrdersPage() {
         </div>
       </section>
     `
+}
+
+function getOrderItemImage(item) {
+  const productId = String(item.product_id || '').trim()
+  const productName = String(item.product_name || '').trim()
+  const productSku = productName.toUpperCase()
+
+  const matchedProduct = adminInventoryProducts.find((product) => {
+    const id = String(product.id || '').trim()
+    const sku = String(product.sku || '').trim().toUpperCase()
+    const name = String(product.name || '').trim()
+
+    return (
+      id === productId ||
+      sku === productSku ||
+      name === productName
+    )
+  })
+
+  return matchedProduct?.image || item.product_image_url || ''
 }
 
 function renderOrderDetailsDrawer() {
@@ -1063,12 +1177,12 @@ function renderOrderDetailsDrawer() {
               <div class="mt-3 flex items-center justify-between gap-4 border-t border-brand-border pt-3 text-sm">
   <div class="flex min-w-0 items-center gap-3">
     <div class="size-14 shrink-0 overflow-hidden rounded-xl border border-brand-border bg-brand-panel">
-      <img
-        x-show="item.product_image_url"
-        :src="item.product_image_url"
-        :alt="item.product_name"
-        class="size-full object-cover"
-      >
+    <img
+  x-show="item.imageUrl"
+  :src="item.imageUrl"
+  :alt="item.product_name"
+  class="size-full object-cover"
+    >
     </div>
 
     <div class="min-w-0">
@@ -1090,14 +1204,61 @@ function renderOrderDetailsDrawer() {
   ></span>
 </div>
             </template>
-            <p
-              class="mt-4 text-sm text-brand-cream"
-              x-text="'Subtotal: ' + formatMoney(selectedOrder.subtotal)"
-            ></p>
-            <p
-              class="mt-1 text-sm text-brand-muted"
-              x-text="selectedOrder.delivery_fee === null ? 'Delivery fee to be confirmed' : 'Delivery fee: ' + formatMoney(selectedOrder.delivery_fee)"
-            ></p>
+            <div class="mt-5 rounded-xl border border-brand-border bg-brand-panel p-4">
+  <h4 class="text-sm font-semibold text-brand-cream">
+    Order Summary
+  </h4>
+
+  <dl class="mt-3 space-y-2 text-sm">
+  <div class="flex items-center justify-between gap-4">
+    <dt class="text-brand-muted">Customer name</dt>
+    <dd
+      class="font-semibold text-brand-cream text-right"
+      x-text="[selectedOrder.customer_details?.firstName, selectedOrder.customer_details?.lastName].filter(Boolean).join(' ') || 'No name'"
+    ></dd>
+  </div>
+
+  <div class="flex items-center justify-between gap-4">
+    <dt class="text-brand-muted">Customer type</dt>
+    <dd
+      class="font-semibold text-brand-cream"
+      x-text="selectedOrder.customer_type === 'member' ? 'Member' : 'Free Customer'"
+    ></dd>
+  </div>
+
+  <div class="flex items-center justify-between gap-4">
+    <dt class="text-brand-muted">Items subtotal</dt>
+    <dd
+      class="font-semibold text-brand-cream"
+      x-text="formatMoney(selectedOrder.subtotal)"
+    ></dd>
+  </div>
+
+  <div class="flex items-center justify-between gap-4">
+    <dt class="text-brand-muted">Delivery fee</dt>
+    <dd
+      class="font-semibold text-brand-cream"
+      x-text="selectedOrder.delivery_fee === null ? 'To be confirmed' : formatMoney(selectedOrder.delivery_fee)"
+    ></dd>
+  </div>
+
+  <div class="flex items-center justify-between gap-4">
+    <dt class="text-brand-muted">Points earned</dt>
+    <dd
+      class="font-semibold text-brand-gold"
+      x-text="'+' + Number(selectedOrder.pointsAwarded || 0).toLocaleString('en-PH')"
+    ></dd>
+  </div>
+
+  <div class="border-t border-brand-border pt-2 flex items-center justify-between gap-4">
+    <dt class="font-semibold text-brand-cream">Total order amount</dt>
+    <dd
+      class="font-display text-lg text-brand-gold"
+      x-text="formatMoney(Number(selectedOrder.subtotal || 0) + Number(selectedOrder.delivery_fee || 0))"
+    ></dd>
+  </div>
+</dl>
+</div>
           </section>
 
           <section class="rounded-xl border border-brand-border bg-brand-black p-5">
@@ -2011,6 +2172,8 @@ Alpine.data('adminDashboard', () => ({
   applicationSearch: '',
 
   applicationStatusFilter: 'all',
+applicationDateFrom: '',
+applicationDateTo: '',
 
   selectedOrderId: null,
   orderDetailsOpen: false,
@@ -2020,6 +2183,8 @@ Alpine.data('adminDashboard', () => ({
 
   orderSearch: '',
   orderStatusFilter: 'all',
+  orderDateFrom: '',
+  orderDateTo: '',
   orderCustomerTypeFilter: 'all',
 
   orderReviewPanelOpen: false,
@@ -2071,6 +2236,22 @@ Alpine.data('adminDashboard', () => ({
       this.applicationStatusFilter === 'all' ||
       application.status === this.applicationStatusFilter
 
+      const applicationDate = new Date(
+        application.submitted_at || application.created_at,
+      )
+      
+      const fromDate = this.applicationDateFrom
+        ? new Date(`${this.applicationDateFrom}T00:00:00`)
+        : null
+      
+      const toDate = this.applicationDateTo
+        ? new Date(`${this.applicationDateTo}T23:59:59`)
+        : null
+      
+      const matchesDate =
+        (!fromDate || applicationDate >= fromDate) &&
+        (!toDate || applicationDate <= toDate)
+
       const searchableContent = [
         application.customer_name,
         application.customer_email,
@@ -2087,7 +2268,7 @@ Alpine.data('adminDashboard', () => ({
       !normalizedSearch ||
       searchableContent.includes(normalizedSearch)
 
-      return matchesStatus && matchesSearch
+      return matchesStatus && matchesDate && matchesSearch
     })
   },
 
@@ -2368,22 +2549,40 @@ Alpine.data('adminDashboard', () => ({
         this.orderStatusFilter === 'all' ||
         order.status === this.orderStatusFilter
 
-      const matchesCustomerType =
+        const matchesCustomerType =
         this.orderCustomerTypeFilter === 'all' ||
         order.customer_type === this.orderCustomerTypeFilter
-
+      
+      const orderDate = new Date(order.created_at)
+      
+      const fromDate = this.orderDateFrom
+        ? new Date(`${this.orderDateFrom}T00:00:00`)
+        : null
+      
+      const toDate = this.orderDateTo
+        ? new Date(`${this.orderDateTo}T23:59:59`)
+        : null
+      
+      const matchesDate =
+        (!fromDate || orderDate >= fromDate) &&
+        (!toDate || orderDate <= toDate)
+      
       const orderItems = Array.isArray(order.items)
         ? order.items
         : Array.isArray(order.order_items)
           ? order.order_items
           : []
 
-      const searchableContent = [
-        order.id,
-        order.order_number,
-        order.customer_name,
-        order.customer_email,
-        order.customer_mobile,
+          const searchableContent = [
+            order.id,
+            order.order_number,
+            order.customer_name,
+            order.customer_email,
+            order.customer_mobile,
+            order.customer_details?.firstName,
+            order.customer_details?.lastName,
+            order.customer_details?.emailAddress,
+            order.customer_details?.mobileNumber,
         order.reference_number,
         order.delivery_region,
         order.delivery_city,
@@ -2406,7 +2605,7 @@ Alpine.data('adminDashboard', () => ({
         !normalizedSearch ||
         searchableContent.includes(normalizedSearch)
 
-      return matchesStatus && matchesCustomerType && matchesSearch
+        return matchesStatus && matchesCustomerType && matchesDate && matchesSearch
     })
   },
 
@@ -5293,7 +5492,7 @@ async loadLiveOrders() {
         reviewed_at, shipped_at, delivered_at,
         customer_details, delivery_details,
         payment_method, payment_proof_path,
-        order_items(id, product_name, quantity, unit_price, product_image_url)
+        order_items(id, product_id, product_name, quantity, unit_price, product_image_url)
       `)
       .order('created_at', { ascending: false })
 
@@ -5322,10 +5521,53 @@ async loadLiveOrders() {
       }
     }
 
-    this.liveOrders = (data ?? []).map((order) => ({
-      ...order,
-      pointsAwarded: pointsByOrderId.get(order.id) ?? 0,
-    }))
+    const customerEmails = [
+      ...new Set(
+        (data ?? [])
+          .map((order) => order.customer_details?.emailAddress)
+          .filter(Boolean)
+          .map((email) => String(email).trim().toLowerCase()),
+      ),
+    ]
+    
+    let customerTypeByEmail = new Map()
+    
+    if (customerEmails.length > 0) {
+      const { data: profileRows, error: profilesError } = await supabase
+        .from('profiles')
+        .select('email, customer_type')
+        .in('email', customerEmails)
+    
+      if (profilesError) {
+        console.error('Unable to load order customer types:', profilesError)
+      } else {
+        customerTypeByEmail = new Map(
+          (profileRows ?? []).map((profile) => [
+            String(profile.email || '').trim().toLowerCase(),
+            profile.customer_type,
+          ]),
+        )
+      }
+    }
+
+    this.liveOrders = (data ?? []).map((order) => {
+      const customerEmail = String(
+        order.customer_details?.emailAddress || '',
+      )
+        .trim()
+        .toLowerCase()
+    
+      return {
+        ...order,
+        customer_type:
+          customerTypeByEmail.get(customerEmail) || 'regular',
+        order_items: (order.order_items ?? []).map((item) => ({
+          ...item,
+          imageUrl: getOrderItemImage(item),
+        })),
+        pointsAwarded: pointsByOrderId.get(order.id) ?? 0,
+      }
+    })
     this.overviewPendingOrders = this.pendingOrderCount
   } catch (error) {
     console.error('Unable to load live orders:', error)

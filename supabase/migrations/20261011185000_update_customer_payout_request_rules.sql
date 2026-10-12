@@ -18,7 +18,9 @@ declare
   total_commission_amount numeric(12, 2) := 0;
   reserved_payout_amount numeric(12, 2) := 0;
   available_amount numeric(12, 2) := 0;
-  minimum_payout_amount numeric(12, 2) := 500;
+  minimum_payout_amount numeric(12, 2) := 100;
+  manila_day integer := extract(isodow from now() at time zone 'Asia/Manila');
+  manila_time time := (now() at time zone 'Asia/Manila')::time;
   new_payout_request_id uuid;
 begin
   if current_user_id is null then
@@ -37,12 +39,19 @@ begin
     raise exception 'Only active members can request payout.';
   end if;
 
+  if manila_day <> 6
+     or manila_time < time '10:00'
+     or manila_time > time '20:00'
+  then
+    raise exception 'Payout requests are only accepted every Saturday from 10:00 AM to 8:00 PM.';
+  end if;
+
   if p_amount is null or p_amount <= 0 then
     raise exception 'Enter a valid payout amount.';
   end if;
 
   if p_amount < minimum_payout_amount then
-    raise exception 'Minimum payout request is ?500.';
+    raise exception 'Minimum payout request is PHP 100.';
   end if;
 
   if p_payment_method is null
@@ -112,7 +121,7 @@ begin
   available_amount := total_commission_amount - reserved_payout_amount;
 
   if available_amount < minimum_payout_amount then
-    raise exception 'Minimum payout request is ?500.';
+    raise exception 'Minimum payout request is PHP 100.';
   end if;
 
   if p_amount > available_amount then

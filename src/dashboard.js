@@ -328,11 +328,11 @@ const membershipUpgradeMarkup =
               image: '${starterPackageImage}',
               description: 'Perfect for beginners who want to start small.',
               inclusions: [
-                'Option A: 4 assorted bottles, 60ml each',
-                'Option B: 1 Starter Tester Kit with 20 pcs 5ml testers + 2 Assorted Bottles 60ml each',
-                '30% reseller bottle pricing',
-                '20 package points for incentives',
-              ],
+  'Choose 1 starter option below',
+  'Each perfume comes with its own box',
+  '30% reseller pricing: ₱245 per perfume',
+  '20 package points for incentives',
+],
             },
             builder: {
               id: 'builder',
@@ -342,11 +342,12 @@ const membershipUpgradeMarkup =
               image: '${builderPackageImage}',
               description: 'Build today. A stronger tomorrow.',
               inclusions: [
-                '25 assorted bottles, 85ml',
-                '1 tester kit',
-                '35% reseller bottle pricing',
-                '125 package points for incentives',
-              ],
+  '25 assorted bottles, 85ml',
+  'Each perfume comes with its own box',
+  '1 tester kit',
+  '35% reseller pricing: ₱227 per perfume',
+  '125 package points for incentives',
+],
             },
             leader: {
               id: 'leader',
@@ -356,12 +357,13 @@ const membershipUpgradeMarkup =
               image: '${leaderPackageImage}',
               description: 'Lead your way to greater success.',
               inclusions: [
-                '55 assorted bottles, 85ml',
-                '1 tester kit',
-                '1 tarpaulin',
-                '40% reseller bottle pricing',
-                '250 package points for incentives',
-              ],
+  '55 assorted bottles, 85ml',
+  'Each perfume comes with its own box',
+  '1 tester kit',
+  '1 tarpaulin',
+  '40% reseller pricing: ₱209 per perfume',
+  '250 package points for incentives',
+],
             },
             prestige: {
   id: 'prestige',
@@ -371,13 +373,14 @@ const membershipUpgradeMarkup =
   image: '${prestigePackageImage}',
   description: 'Maximize today. Multiply tomorrow.',
   inclusions: [
-    '240 assorted bottles, 85ml',
-    '2 tester kits',
-    '1 tarpaulin',
-    '1 mini stall',
-    '50% reseller bottle pricing',
-    '1,200 package points for incentives',
-  ],
+  '240 assorted bottles, 85ml',
+  'Each perfume comes with its own box',
+  '2 tester kits',
+  '1 tarpaulin',
+  '1 mini stall',
+  '50% reseller pricing: ₱175 per perfume',
+  '1,200 package points for incentives',
+],
 },
           },
           openPackageModal(packageId) {
@@ -677,7 +680,7 @@ class="mt-6 relative isolate overflow-hidden rounded-[1.75rem] border border-bra
                                   Option B: Tester Kit + 2 Bottles
                                 </span>
                                 <span class="mt-1 block text-xs leading-5 text-brand-muted">
-                                  1 tester kit with 20 pcs 5ml testers plus 2 assorted bottles.
+                                  1 Starter Tester Kit with 20 pcs 5ml testers + 2 Assorted Bottles 60ml each.
                                 </span>
                               </span>
                             </label>
@@ -3316,7 +3319,7 @@ if (directReferralsError) {
 
   const activeMembershipLabel = latestApprovedMembership?.packageName
   ? latestApprovedMembership.packageName.replace(/^Your\s+/i, '') + ' Member'
-  : isApprovedMember
+  : signedInProfile?.membership_status === 'active'
     ? 'Member Account'
     : 'Free Customer'
 
@@ -4733,7 +4736,7 @@ if (
             : ''}
 
           <div
-            class="mt-6 grid grid-cols-2 gap-3 sm:gap-5 xl:grid-cols-3"
+            class="mt-6 grid grid-cols-2 gap-3 sm:gap-5 xl:grid-cols-4"
             aria-live="polite"
           >
             ${dashboardProductCards()}

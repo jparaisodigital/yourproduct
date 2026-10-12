@@ -5,7 +5,7 @@ export function registerMemberPayoutPage(Alpine) {
     availableIncome: 0,
     pendingIncome: 0,
     paidIncome: 0,
-    minimumPayoutAmount: 500,
+    minimumPayoutAmount: 100,
     payoutRequests: [],
     loading: true,
     submitting: false,
@@ -156,6 +156,43 @@ this.form.amount =
       }).format(new Date(value))
     },
 
+    getManilaTimeParts() {
+      const parts = new Intl.DateTimeFormat('en-PH', {
+        timeZone: 'Asia/Manila',
+        weekday: 'short',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+      }).formatToParts(new Date())
+    
+      const values = Object.fromEntries(
+        parts.map((part) => [part.type, part.value]),
+      )
+    
+      return {
+        weekday: values.weekday,
+        minutes:
+          Number(values.hour || 0) * 60 +
+          Number(values.minute || 0),
+      }
+    },
+    
+    isPayoutRequestWindowOpen() {
+      const { weekday, minutes } = this.getManilaTimeParts()
+      const saturdayStart = 10 * 60
+      const saturdayEnd = 20 * 60
+    
+      return (
+        weekday === 'Sat' &&
+        minutes >= saturdayStart &&
+        minutes <= saturdayEnd
+      )
+    },
+    
+    payoutRequestWindowText() {
+      return 'Payout requests are open every Saturday, 10:00 AM to 8:00 PM. Approved payouts are released every Sunday, 1:00 PM to 10:00 PM.'
+    },
+
     statusLabel(status) {
       const labels = {
         pending: 'Pending Review',
@@ -257,6 +294,12 @@ this.form.amount =
 
       const requestedAmount = Number(this.form.amount)
 
+      if (!this.isPayoutRequestWindowOpen()) {
+        this.errorMessage =
+          'Payout requests are only accepted every Saturday from 10:00 AM to 8:00 PM.'
+        return
+      }
+
       if (!Number.isFinite(requestedAmount) || requestedAmount <= 0) {
         this.errorMessage = 'Enter a valid payout amount.'
         return
@@ -343,7 +386,7 @@ this.form.amount =
         if (error) throw error
 
         this.successMessage =
-          'Payout request submitted for admin review.'
+  'Payout request submitted for admin review. Approved payouts are released every Sunday from 1:00 PM to 10:00 PM.'
         this.resetForm()
         await this.loadPayoutData()
       } catch (error) {
@@ -390,7 +433,7 @@ export function renderMemberPayoutPage() {
             </h1>
 
             <p class="mt-3 max-w-2xl text-sm leading-7 text-brand-muted">
-              Submit payout details for manual admin review and monitor previous payout requests.
+              Submit payout details every Saturday from 10:00 AM to 8:00 PM. Approved payouts are released every Sunday from 1:00 PM to 10:00 PM.
             </p>
           </div>
 
@@ -489,9 +532,14 @@ export function renderMemberPayoutPage() {
               </h2>
 
               <p class="mt-2 text-xs leading-5 text-brand-muted">
-              Enter the account where admin should send your approved payout. Minimum payout request is ₱500.
+              Enter the account where admin should send your approved payout. Minimum payout request is ₱100.
               </p>
             </div>
+
+            <p
+  class="mt-3 rounded-xl border border-brand-gold/30 bg-brand-gold/10 px-4 py-3 text-xs leading-5 text-brand-muted"
+  x-text="payoutRequestWindowText()"
+></p>
 
             <div class="mt-5 grid gap-4 sm:grid-cols-2">
   <label class="grid gap-2">
@@ -501,7 +549,7 @@ export function renderMemberPayoutPage() {
 
   <input
   type="number"
-  min="500"
+  min="100"
   step="1"
   inputmode="decimal"
   x-model="form.amount"
@@ -636,11 +684,11 @@ export function renderMemberPayoutPage() {
               type="submit"
               class="mt-5 inline-flex min-h-12 w-full items-center justify-center rounded-full px-6 text-sm font-semibold transition"
               :class="
-                availableIncome >= minimumPayoutAmount && !submitting
+                isPayoutRequestWindowOpen() && availableIncome >= minimumPayoutAmount && !submitting
                   ? 'bg-brand-gold text-[#17130d] hover:bg-brand-gold-light'
                   : 'cursor-not-allowed border border-brand-border bg-brand-black text-brand-muted'
               "
-              :disabled="availableIncome < minimumPayoutAmount || submitting"
+              :disabled="!isPayoutRequestWindowOpen() || availableIncome < minimumPayoutAmount || submitting"
               x-text="submitting ? 'Submitting request...' : 'Submit Payout Request'"
             ></button>
           </form>

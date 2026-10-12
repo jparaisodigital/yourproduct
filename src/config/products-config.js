@@ -223,7 +223,7 @@ function createProduct({
       ? `Inspired by ${perfumeDetails.inspiredBy}.`
       : '',
     scentProfile: perfumeDetails.notes,
-    scentCharacter: perfumeDetails.notes,
+    scentCharacter: '',
     bestFor: perfumeDetails.inspiredBy
       ? `For customers who enjoy ${perfumeDetails.inspiredBy}.`
       : '',

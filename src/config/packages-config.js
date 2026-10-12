@@ -53,7 +53,9 @@ export const packages = [
     inclusions: [
       'Option A: 4 Assorted Bottles (60ml each)',
       'Option B: 1 Starter Tester Kit + 2 Assorted Bottles',
-      'Business Access',
+      'Each perfume comes with its own box',
+      '30% reseller bottle pricing',
+      'Earn 20 points for incentives',
     ],
 
     isFeatured: false,
@@ -87,6 +89,7 @@ export const packages = [
     inclusions: [
       '1 Tester Kit',
       '25 Assorted Bottles (85ml)',
+      'Each perfume comes with its own box',
       'Business Programs',
     ],
 
@@ -126,6 +129,7 @@ export const packages = [
     inclusions: [
       '1 Tester Kit',
       '55 Assorted Bottles (85ml)',
+      'Each perfume comes with its own box',
       '1 Tarpaulin',
       'Business Programs',
     ],
@@ -171,6 +175,7 @@ export const packages = [
     inclusions: [
       '2 Tester Kits',
       '240 Assorted Bottles (85ml)',
+      'Each perfume comes with its own box',
       '1 Tarpaulin',
       '1 Mini Stall',
       'Business Programs',
