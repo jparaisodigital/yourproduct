@@ -29,7 +29,7 @@ export function renderSixWaysSection() {
       (item) => `
         <button
           type="button"
-          class="${item.className} group overflow-hidden border border-brand-border bg-brand-panel shadow-panel transition hover:border-brand-gold/60"
+          class="${item.className} group overflow-hidden border border-brand-border bg-brand-panel transition hover:border-brand-gold/45 hover:bg-brand-charcoal"
           @click="selectedSixWaysImage = {
             src: '${item.image}',
             alt: '${item.label}',
@@ -39,7 +39,7 @@ export function renderSixWaysSection() {
           <img
             src="${item.image}"
             alt="${item.label}"
-            class="h-auto w-full object-contain transition duration-300 group-hover:scale-[1.01]"
+            class="h-auto w-full object-contain transition duration-300"
             loading="lazy"
           >
         </button>
@@ -50,7 +50,7 @@ export function renderSixWaysSection() {
   return `
     <section
       id="six-ways"
-      class="bg-brand-dark px-0 py-10 sm:py-12"
+      class="bg-brand-black px-0 py-10 sm:py-12"
       x-data="{
         selectedSixWaysImage: null,
         closeSixWaysImage() {
@@ -65,6 +65,7 @@ export function renderSixWaysSection() {
         </div>
       </div>
 
+      <!-- Image Preview Modal -->
       <div
         x-show="selectedSixWaysImage"
         x-transition.opacity
@@ -74,10 +75,10 @@ export function renderSixWaysSection() {
         role="dialog"
         aria-label="Six ways image preview"
       >
-        <div class="relative max-h-[92vh] w-full max-w-5xl">
+        <div class="relative inline-block max-h-[92vh] max-w-[92vw]">
           <button
             type="button"
-            class="absolute right-3 top-3 z-10 inline-flex size-10 items-center justify-center rounded-full border border-brand-gold/50 bg-brand-black/90 text-xl text-brand-gold transition hover:bg-brand-gold hover:text-[#17130d]"
+            class="absolute right-3 top-3 z-10 inline-flex size-10 items-center justify-center rounded-full border border-brand-border bg-brand-black/90 text-xl text-brand-gold transition hover:border-brand-gold hover:text-brand-gold"
             @click="closeSixWaysImage()"
             aria-label="Close image preview"
           >
@@ -87,7 +88,7 @@ export function renderSixWaysSection() {
           <img
             :src="selectedSixWaysImage?.src"
             :alt="selectedSixWaysImage?.alt"
-            class="mx-auto max-h-[90vh] w-auto rounded-[1.5rem] border border-brand-border bg-brand-panel object-contain shadow-panel"
+            class="max-h-[90vh] max-w-[92vw] rounded-[1.5rem] border border-brand-border bg-brand-panel object-contain"
           >
         </div>
       </div>

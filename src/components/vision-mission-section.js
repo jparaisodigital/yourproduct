@@ -176,13 +176,6 @@ export function renderVisionMissionSection() {
             </figure>
           </div>
         </div>
-
-        <p
-          class="mt-5 text-center text-xs leading-5 text-brand-muted"
-        >
-          Vision and mission wording remains temporary pending the
-          official content from Your Product.
-        </p>
       </div>
     </section>
   `

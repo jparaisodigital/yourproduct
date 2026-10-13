@@ -44,7 +44,7 @@ export function renderYouPointsSection() {
       (reward) => `
         <button
           type="button"
-          class="group overflow-hidden rounded-2xl border border-brand-border bg-brand-panel p-1.5 shadow-panel transition hover:-translate-y-0.5 hover:border-brand-gold/60"
+          class="group overflow-hidden rounded-2xl border border-brand-border bg-brand-panel p-1.5 transition hover:border-brand-gold/45 hover:bg-brand-charcoal"
           @click="selectedYouPointsImage = {
             src: '${reward.image}',
             alt: '${reward.label}',
@@ -54,7 +54,7 @@ export function renderYouPointsSection() {
           <img
             src="${reward.image}"
             alt="${reward.label}"
-            class="mx-auto h-full max-h-[17rem] w-full rounded-xl object-contain transition duration-300 group-hover:scale-[1.015]"
+            class="mx-auto h-full max-h-[17rem] w-full rounded-xl object-contain transition duration-300"
             loading="lazy"
           >
         </button>
@@ -65,7 +65,7 @@ export function renderYouPointsSection() {
   return `
     <section
       id="you-points"
-      class="border-y border-brand-border bg-brand-dark px-5 py-14 sm:px-8 lg:px-12"
+      class="border-y border-brand-border bg-brand-black px-5 py-14 sm:px-8 lg:px-12"
       x-data="{
         selectedYouPointsImage: null,
         closeYouPointsImage() {
@@ -103,22 +103,22 @@ export function renderYouPointsSection() {
         role="dialog"
         aria-label="YOU POINTS reward preview"
       >
-        <div class="relative max-h-[92vh] w-full max-w-4xl">
-          <button
-            type="button"
-            class="absolute right-3 top-3 z-10 inline-flex size-10 items-center justify-center rounded-full border border-brand-gold/50 bg-brand-black/90 text-xl text-brand-gold transition hover:bg-brand-gold hover:text-[#17130d]"
-            @click="closeYouPointsImage()"
-            aria-label="Close reward preview"
-          >
-            ×
-          </button>
+        <div class="relative inline-block max-h-[92vh] max-w-[92vw]">
+  <button
+    type="button"
+    class="absolute right-3 top-3 z-10 inline-flex size-10 items-center justify-center rounded-full border border-brand-border bg-brand-black/90 text-xl text-brand-gold transition hover:border-brand-gold hover:text-brand-gold"
+    @click="closeYouPointsImage()"
+    aria-label="Close reward preview"
+  >
+    ×
+  </button>
 
-          <img
-            :src="selectedYouPointsImage?.src"
-            :alt="selectedYouPointsImage?.alt"
-            class="mx-auto max-h-[90vh] w-auto rounded-[1.5rem] border border-brand-border bg-brand-panel object-contain shadow-panel"
-          >
-        </div>
+  <img
+    :src="selectedYouPointsImage?.src"
+    :alt="selectedYouPointsImage?.alt"
+    class="max-h-[90vh] max-w-[92vw] rounded-[1.5rem] border border-brand-border bg-brand-panel object-contain"
+  >
+</div>
       </div>
     </section>
   `

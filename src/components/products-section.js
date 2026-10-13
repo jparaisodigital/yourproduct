@@ -75,7 +75,7 @@ export function renderProductsSection(
 
           <button
             type="button"
-            class="rounded-full border border-brand-gold/60 px-4 py-2 text-xs font-semibold text-brand-gold transition duration-300 hover:border-brand-gold hover:bg-brand-gold hover:text-brand-black sm:px-5 sm:py-2.5 sm:text-sm"
+            class="rounded-full border border-brand-border px-4 py-2 text-xs font-semibold text-brand-gold transition duration-300 hover:border-brand-gold hover:bg-brand-panel hover:text-brand-gold sm:px-5 sm:py-2.5 sm:text-sm"
             @click="
               document
                 .querySelector('#packages')
@@ -109,11 +109,6 @@ export function renderProductsSection(
         >
           ${productCards}
         </div>
-
-        <p class="mt-8 text-xs leading-6 text-brand-muted">
-          Product details are being finalized. Ordering becomes
-          available only when a product is active and in stock.
-        </p>
       </div>
     </section>
   `

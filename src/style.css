@@ -10,25 +10,25 @@
 ======================================== */
 
 @theme {
-  /* Default: Black and Gold */
-  --color-brand-black: #0d0905;
-  --color-brand-charcoal: #171008;
-  --color-brand-panel: #21170d;
-  --color-brand-cream: #f5e6c8;
-  --color-brand-gold: #c79332;
-  --color-brand-gold-light: #e2b75a;
-  --color-brand-bronze: #9a6b31;
-  --color-brand-muted: #b9aa91;
-  --color-brand-border: #4b351e;
+  /* Default: Quiet Luxury Black & Champagne */
+  --color-brand-black: #080604;
+  --color-brand-charcoal: #100c08;
+  --color-brand-panel: #15100b;
+  --color-brand-cream: #f4e7cf;
+  --color-brand-gold: #c99a35;
+  --color-brand-gold-light: #e2b95b;
+  --color-brand-bronze: #7d5a24;
+  --color-brand-muted: #aa9c87;
+  --color-brand-border: #322615;
 
   --font-display: "Cormorant Garamond", Georgia, serif;
   --font-body: "DM Sans", Arial, sans-serif;
 
   --shadow-gold-soft:
-    0 20px 60px rgb(199 147 50 / 18%);
+    0 18px 44px rgb(201 154 53 / 10%);
 
   --shadow-panel:
-    0 24px 70px rgb(0 0 0 / 32%);
+    0 22px 54px rgb(0 0 0 / 26%);
 }
 
 
@@ -123,7 +123,7 @@ html[data-theme="ivory"] {
 
 /* Warm product-image background in Black and Gold mode */
 [data-product-card] .bg-brand-cream {
-  background-color: #ead6ae;
+  background-color: #d8c49a;
 }
 
 /* Original product-image background in Ivory and Gold mode */

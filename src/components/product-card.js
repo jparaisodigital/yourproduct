@@ -289,14 +289,14 @@ export function renderProductCard(product, options = {}) {
         activeCategory === 'all' ||
         activeCategory === '${product.category}'
       "
-      class="group relative flex h-full flex-col overflow-visible rounded-[1.1rem] border border-brand-border bg-brand-panel opacity-100 sm:overflow-hidden sm:rounded-[1.5rem] md:transition md:duration-300 md:hover:border-brand-gold/50 md:hover:shadow-[0_24px_65px_rgb(183_138_50_/_0.14)]"
+      class="group relative flex h-full flex-col overflow-visible rounded-[1.1rem] border border-brand-border bg-brand-panel opacity-100 sm:overflow-hidden sm:rounded-[1.5rem] md:transition md:duration-300 md:hover:border-brand-gold/35 md:hover:bg-brand-charcoal"
       data-product-card
       data-product-id="${product.id}"
       data-product-category="${product.category}"
     >
       <button
   type="button"
-  class="relative block aspect-[4/5] w-full cursor-zoom-in overflow-hidden bg-brand-black text-left"
+  class="relative block aspect-[4/5] w-full cursor-zoom-in overflow-hidden bg-brand-charcoal text-left"
   data-action="quick-view"
   data-product-id="${product.id}"
   aria-label="View details for ${product.name}"
@@ -375,7 +375,7 @@ export function renderProductCard(product, options = {}) {
         >
           <button
             type="button"
-            class="group/view hidden size-11 shrink-0 place-items-center rounded-full border border-brand-border bg-transparent text-brand-muted transition duration-200 hover:border-brand-gold hover:bg-brand-gold/10 hover:text-brand-gold active:scale-95 sm:grid"
+            class="group/view hidden size-11 shrink-0 place-items-center rounded-full border border-brand-border bg-brand-black/30 text-brand-muted transition duration-200 hover:border-brand-gold hover:text-brand-gold active:scale-95 sm:grid"
             data-action="quick-view"
             data-product-id="${product.id}"
             aria-label="Quick view ${product.name}"

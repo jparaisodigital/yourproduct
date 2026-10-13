@@ -91,6 +91,7 @@ export function navigateWithFade(url) {
 
 export function bindFadeLinks(
   selector = [
+    'a[data-fade-link]',
     'a[href="/university/"]',
     'a[href="/university/?from=dashboard"]',
     'a[href="/videos/"]',
@@ -103,6 +104,7 @@ export function bindFadeLinks(
     'a[href="/register/"]',
     'a[href="/checkout/"]',
     'a[href="/dashboard/"]',
+    'a[href="/admin/"]',
   ].join(', '),
 ) {
   document.querySelectorAll(selector).forEach((link) => {

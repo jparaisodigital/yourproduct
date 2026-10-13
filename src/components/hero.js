@@ -227,12 +227,12 @@ export function renderHero(
       ></div>
 
       <div
-        class="pointer-events-none absolute inset-0 z-[1] hidden bg-gradient-to-r from-[#080603] via-[#080603]/90 via-45% to-transparent lg:block"
+        class="pointer-events-none absolute inset-0 z-[1] hidden bg-[linear-gradient(90deg,#080604_0%,#080604_34%,rgb(8_6_4_/_0.88)_52%,rgb(8_6_4_/_0.18)_78%,transparent_100%)] lg:block"
         aria-hidden="true"
       ></div>
 
       <div
-        class="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-b from-black/10 via-transparent to-black/45"
+        class="pointer-events-none absolute inset-0 z-[1] bg-[linear-gradient(180deg,rgb(8_6_4_/_0.08)_0%,transparent_46%,rgb(8_6_4_/_0.55)_100%)]"
         aria-hidden="true"
       ></div>
 
@@ -278,7 +278,7 @@ export function renderHero(
           >
             <button
               type="button"
-              class="grid size-9 place-items-center rounded-full border border-brand-border bg-brand-black/30 text-brand-muted backdrop-blur-sm transition hover:border-brand-gold hover:text-brand-gold"
+              class="grid size-9 place-items-center rounded-full border border-brand-border bg-brand-panel/80 text-brand-muted transition hover:border-brand-gold hover:text-brand-gold"
               aria-label="Previous hero slide"
               @click="previousManually()"
             >
@@ -348,7 +348,7 @@ export function renderHero(
               href="${escapeHtml(
                 hero.primaryAction.href,
               )}"
-              class="inline-flex min-h-12 items-center justify-center rounded-full bg-brand-gold px-6 py-3 text-sm font-semibold text-brand-black shadow-[0_12px_32px_rgb(183_138_50_/_0.22)] transition duration-300 hover:-translate-y-1 hover:bg-brand-gold-light"
+              class="inline-flex min-h-12 items-center justify-center rounded-full bg-brand-gold px-6 py-3 text-sm font-semibold text-brand-black transition duration-300 hover:bg-brand-gold-light"
             >
               ${escapeHtml(
                 hero.primaryAction.label,
@@ -357,7 +357,7 @@ export function renderHero(
 
             <a
               href="#packages"
-              class="inline-flex min-h-12 items-center justify-center rounded-full border border-brand-border bg-brand-black/25 px-6 py-3 text-sm font-semibold text-brand-cream backdrop-blur-sm transition duration-300 hover:border-brand-gold hover:text-brand-gold"
+              class="inline-flex min-h-12 items-center justify-center rounded-full border border-brand-border bg-brand-panel/75 px-6 py-3 text-sm font-semibold text-brand-cream transition duration-300 hover:border-brand-gold hover:text-brand-gold"
             >
               View Membership Packages
             </a>

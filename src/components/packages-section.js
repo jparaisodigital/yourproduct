@@ -186,13 +186,13 @@ function renderPackageCard(
       `
     : ''
 
-  const cardClass = packageItem.isFeatured
-    ? 'border-brand-gold/60 bg-brand-panel shadow-gold-soft'
-    : 'border-brand-border bg-brand-panel shadow-panel'
+    const cardClass = packageItem.isFeatured
+    ? 'border-brand-gold/45 bg-brand-panel'
+    : 'border-brand-border bg-brand-panel'
 
-  const buttonClass = packageItem.isFeatured
+    const buttonClass = packageItem.isFeatured
     ? 'bg-brand-gold text-[#17130d] hover:bg-brand-gold-light'
-    : 'border border-brand-border text-brand-cream hover:border-brand-gold hover:bg-brand-gold/5 hover:text-brand-gold'
+    : 'border border-brand-border text-brand-cream hover:border-brand-gold hover:bg-brand-panel hover:text-brand-gold'
 
   const packageCtaHref =
     isAdminPreview
@@ -228,7 +228,7 @@ function renderPackageCard(
       data-package-index="${index}"
     >
       <div
-        class="pointer-events-none absolute -right-16 -top-16 size-36 rounded-full bg-brand-gold/10 blur-3xl"
+        class="pointer-events-none absolute -right-16 -top-16 size-36 rounded-full bg-brand-gold/5 blur-3xl"
         aria-hidden="true"
       ></div>
 
@@ -310,12 +310,12 @@ export function renderPackagesSection(
       @keydown.escape.window="packagePreviewOpen = false"
     >
       <div
-        class="pointer-events-none absolute -left-40 top-1/3 size-80 rounded-full bg-brand-gold/10 blur-3xl"
+        class="pointer-events-none absolute -left-40 top-1/3 size-80 rounded-full bg-brand-gold/5 blur-3xl"
         aria-hidden="true"
       ></div>
 
       <div
-        class="pointer-events-none absolute -right-40 bottom-0 size-80 rounded-full bg-brand-bronze/10 blur-3xl"
+        class="pointer-events-none absolute -right-40 bottom-0 size-80 rounded-full bg-brand-bronze/5 blur-3xl"
         aria-hidden="true"
       ></div>
 

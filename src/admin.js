@@ -5713,17 +5713,43 @@ document.querySelector('#admin-app').innerHTML = `
           </div>
 
           <div class="flex items-center gap-3">
-            <span
-              class="hidden rounded-full border border-brand-gold/30 bg-brand-gold/10 px-3 py-1.5 text-[0.62rem] font-semibold uppercase tracking-[0.12em] text-brand-gold sm:inline-flex"
-            >
-              In Development
-            </span>
-
+    
             <a
   href="/"
-  class="text-xs font-semibold text-brand-muted transition hover:text-brand-gold sm:text-sm"
+  data-fade-link
+  class="inline-flex items-center gap-2 text-xs font-semibold text-brand-muted transition hover:text-brand-gold sm:text-sm"
 >
-  View Store
+  <svg
+    class="size-4"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.7"
+    aria-hidden="true"
+  >
+    <path
+      d="M3.75 9.5h16.5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <path
+      d="M5 9.5 6.1 5.8A1.25 1.25 0 0 1 7.3 4.9h9.4a1.25 1.25 0 0 1 1.2.9L19 9.5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <path
+      d="M5.25 9.5v8.35A1.15 1.15 0 0 0 6.4 19h11.2a1.15 1.15 0 0 0 1.15-1.15V9.5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <path
+      d="M9 19v-4.25a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1V19"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  </svg>
+
+  <span>View Store</span>
 </a>
 
 <p

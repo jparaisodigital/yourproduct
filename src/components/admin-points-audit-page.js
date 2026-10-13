@@ -5,6 +5,8 @@ export function registerAdminPointsAuditPage(Alpine) {
     entries: [],
     search: '',
     statusFilter: 'all',
+    dateFrom: '',
+    dateTo: '',
     loading: true,
     error: '',
     selectedEntry: null,
@@ -65,17 +67,30 @@ export function registerAdminPointsAuditPage(Alpine) {
     },
 
     get filteredEntries() {
-      const normalizedSearch =
-        this.search.trim().toLowerCase()
+      const normalizedSearch = this.search.trim().toLowerCase()
+
+      const fromDate = this.dateFrom
+        ? new Date(`${this.dateFrom}T00:00:00`)
+        : null
+
+      const toDate = this.dateTo
+        ? new Date(`${this.dateTo}T23:59:59`)
+        : null
 
       return this.entries.filter((entry) => {
         const matchesStatus =
-        this.statusFilter === 'all' ||
-        (this.statusFilter === 'reversed'
-          ? entry.rawType === 'reversal' ||
-            Number(entry.points || 0) < 0 ||
-            entry.status === 'reversed'
-          : entry.status === this.statusFilter)
+          this.statusFilter === 'all' ||
+          (this.statusFilter === 'reversed'
+            ? entry.rawType === 'reversal' ||
+              Number(entry.points || 0) < 0 ||
+              entry.status === 'reversed'
+            : entry.status === this.statusFilter)
+
+        const entryDate = entry.date ? new Date(entry.date) : null
+
+        const matchesDate =
+          (!fromDate || (entryDate && entryDate >= fromDate)) &&
+          (!toDate || (entryDate && entryDate <= toDate))
 
         const searchableContent = [
           entry.memberName,
@@ -89,6 +104,7 @@ export function registerAdminPointsAuditPage(Alpine) {
 
         return (
           matchesStatus &&
+          matchesDate &&
           (!normalizedSearch ||
             searchableContent.includes(normalizedSearch))
         )
@@ -119,7 +135,7 @@ export function registerAdminPointsAuditPage(Alpine) {
       return Math.abs(
         this.entries.reduce((total, entry) => {
           const points = Number(entry.points || 0)
-    
+
           if (
             entry.rawType === 'reversal' ||
             points < 0 ||
@@ -127,7 +143,7 @@ export function registerAdminPointsAuditPage(Alpine) {
           ) {
             return total + points
           }
-    
+
           return total
         }, 0),
       )
@@ -395,12 +411,27 @@ export function renderAdminPointsAuditPage() {
         <section
           class="mt-6 rounded-[1.5rem] border border-brand-border bg-brand-panel p-5 shadow-panel sm:p-6"
         >
-          <div class="grid gap-3 sm:grid-cols-[1fr_auto]">
+          <!-- FILTER BAR -->
+          <div class="grid gap-3 lg:grid-cols-[1fr_auto_auto_auto]">
             <input
               type="search"
               x-model.debounce.250ms="search"
               placeholder="Search member, email, order, or source"
               class="h-11 rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none placeholder:text-brand-muted focus:border-brand-gold"
+            >
+
+            <input
+              type="date"
+              x-model="dateFrom"
+              aria-label="Filter from date"
+              class="h-11 rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none focus:border-brand-gold"
+            >
+
+            <input
+              type="date"
+              x-model="dateTo"
+              aria-label="Filter to date"
+              class="h-11 rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none focus:border-brand-gold"
             >
 
             <select

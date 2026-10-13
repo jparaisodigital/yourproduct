@@ -307,11 +307,12 @@ export function renderHeader(
                   </button>
 
                   <a
-                    href="${accountCtaHref}"
-                    class="premium-cta group inline-flex h-11 items-center justify-center rounded-xl bg-brand-gold px-5 text-sm font-semibold text-[#17130d] hover:bg-brand-gold-light"
-                  >
-                    ${accountCtaLabel}
-                  </a>
+  href="${accountCtaHref}"
+  data-fade-link
+  class="premium-cta group inline-flex h-11 items-center justify-center rounded-xl bg-brand-gold px-5 text-sm font-semibold text-[#17130d] hover:bg-brand-gold-light"
+>
+  ${accountCtaLabel}
+</a>
 
                   <button
                     type="button"
@@ -323,18 +324,20 @@ export function renderHeader(
                 `
               : `
                   <a
-                    href="${accountCtaHref}"
-                    class="premium-cta group inline-flex h-11 items-center justify-center rounded-xl bg-brand-gold px-5 text-sm font-semibold text-[#17130d] hover:bg-brand-gold-light"
-                  >
-                    ${accountCtaLabel}
-                  </a>
+  href="${accountCtaHref}"
+  data-fade-link
+  class="premium-cta group inline-flex h-11 items-center justify-center rounded-xl bg-brand-gold px-5 text-sm font-semibold text-[#17130d] hover:bg-brand-gold-light"
+>
+  ${accountCtaLabel}
+</a>
 
                   <a
-                    href="${accountHref}"
-                    class="premium-outline inline-flex h-11 items-center justify-center rounded-xl border border-brand-border px-5 text-sm font-semibold text-brand-cream transition hover:border-brand-gold hover:text-brand-gold"
-                  >
-                    Login
-                  </a>
+  href="${accountHref}"
+  data-fade-link
+  class="premium-outline inline-flex h-11 items-center justify-center rounded-xl border border-brand-border px-5 text-sm font-semibold text-brand-cream transition hover:border-brand-gold hover:text-brand-gold"
+>
+  Login
+</a>
 
                   <button
                     type="button"

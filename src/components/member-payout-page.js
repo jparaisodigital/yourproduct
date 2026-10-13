@@ -737,7 +737,7 @@ export function renderMemberPayoutPage() {
             class="mt-5 grid gap-3"
           >
             <template
-              x-for="request in payoutRequests"
+              x-for="request in filteredPayoutRequests"
               :key="request.id"
             >
               <article class="rounded-2xl border border-brand-border bg-brand-black p-4 sm:p-5">

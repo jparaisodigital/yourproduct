@@ -216,13 +216,6 @@ export function renderWaysToEarnSection() {
               </div>
             </div>
           </div>
-  
-          <p
-            class="mt-5 text-center text-xs leading-5 text-brand-muted"
-          >
-            Exact earning calculations, payout limits, and schedules
-            remain subject to official client confirmation.
-          </p>
         </div>
       </section>
     `

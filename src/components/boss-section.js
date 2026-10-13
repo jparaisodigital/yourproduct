@@ -148,12 +148,6 @@ export function renderBossSection() {
               </span>
             </a>
 
-            <p
-              class="mt-4 max-w-lg text-xs leading-5 text-brand-muted"
-            >
-              Package details and program mechanics remain subject to
-              final client confirmation.
-            </p>
           </div>
         </div>
       </div>

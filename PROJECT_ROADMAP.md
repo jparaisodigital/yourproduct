@@ -880,3 +880,34 @@ Main blockers before launch:
 - Test data cleanup decision.
 - Cloudflare deployment verification.
 - Client handoff notes.
+
+
+## Theme Upgrade Safety Notes
+
+### Current Original Theme Backup
+Before applying the Quiet Luxury Black & Champagne upgrade, the current website theme was saved in Git.
+
+Backup commit message:
+`chore: save current theme before luxury refresh`
+
+This commit represents the original working color/theme state before the global theme upgrade.
+
+### Original Theme Intent
+The original theme uses:
+- Black and gold luxury direction
+- Brand gold accents
+- Dark panel backgrounds
+- Existing gradients/glows/shadows
+- Current dashboard/admin/member styling
+
+### New Theme Direction
+Upgrade target:
+`Quiet Luxury Black & Champagne`
+
+Goal:
+Make the whole website look more premium, less gradient-heavy, less template/vibe-coded, and more editorial/luxury perfume brand.
+
+### Rollback Plan
+If the new theme does not work, revert to the backup commit before the luxury refresh.
+
+Do not delete this note until the new theme is fully approved.

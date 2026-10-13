@@ -163,13 +163,6 @@ export function renderAccountCtaSection() {
             </div>
           </article>
         </div>
-
-        <p
-          class="mt-5 text-center text-xs leading-5 text-brand-muted"
-        >
-          Secure account creation and member authentication will be
-          connected during the backend development stage.
-        </p>
       </div>
     </section>
   `
