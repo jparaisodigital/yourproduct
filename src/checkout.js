@@ -104,12 +104,11 @@ Alpine.data('checkoutPage', () => ({
   deliveryFee() {
     if (this.isPickup()) return 0
     if (!this.isDropship()) return 0
-    if (this.isPrestigeMember()) return 0
     if (this.delivery.region !== 'ncr') return null
-
+  
     if (this.delivery.deliveryMethod === 'same-day') return 150
     if (this.delivery.deliveryMethod === 'spx') return 120
-
+  
     return null
   },
   deliveryFeeLabel() {
@@ -629,7 +628,7 @@ async function startCheckout() {
           <h2 class="font-display text-3xl">Order submitted</h2>
           <p class="mt-2">Waiting for payment verification.</p>
           <p class="mt-2 font-semibold" x-text="'Order ID: ' + submittedOrderId"></p>
-          <a href="/dashboard/" class="mt-4 inline-block underline">View Order History</a>
+          <a href="/dashboard/?page=orderHistory" class="mt-4 inline-block underline">View Order History</a>
         </section>
         <section
           x-show="!submittedOrderId && $store.cart.itemCount === 0"
@@ -1082,13 +1081,6 @@ async function startCheckout() {
       </span>
     </label>
   </div>
-
-  <p
-    x-show="isPrestigeMember()"
-    class="mt-3 rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-xs leading-5 text-emerald-100"
-  >
-    Prestige member benefit: delivery fee is free for this order.
-  </p>
 </div>
 
 <div
@@ -1624,7 +1616,7 @@ async function startCheckout() {
   </div>
 `
 
-bindFadeLinks('a[href="/dashboard/"]')
+bindFadeLinks('a[href^="/dashboard/"]')
 Alpine.start()
 }
 startCheckout()
