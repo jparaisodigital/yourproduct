@@ -2468,6 +2468,15 @@ previewTimer: null,
   viewMembershipCelebrationHistory() {
     this.closeMembershipCelebration()
     this.openPage('orderHistory')
+  
+    window.setTimeout(() => {
+      document
+        .querySelector('#membership-package-records-title')
+        ?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+        })
+    }, 150)
   },
 
   async savePersonalInfo() {
