@@ -460,7 +460,7 @@ async function startCheckout() {
 
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
-    .select('first_name, last_name, mobile_number, email, customer_type, membership_status')
+    .select('first_name, last_name, mobile_number, email, customer_type, membership_status, selected_package_id')
     .eq('id', user.id)
     .single()
 
@@ -477,33 +477,15 @@ async function startCheckout() {
 
   if (
     profile.customer_type === 'member' &&
-    profile.membership_status === 'active'
+    profile.membership_status === 'active' &&
+    [
+      'starter',
+      'builder',
+      'leader',
+      'prestige',
+    ].includes(profile.selected_package_id)
   ) {
-    const { data: approvedApplication, error: tierError } =
-      await supabase
-        .from('membership_applications')
-        .select('package_id')
-        .eq('customer_id', user.id)
-        .eq('status', 'approved')
-        .not('membership_activated_at', 'is', null)
-        .order('membership_activated_at', { ascending: false })
-        .limit(1)
-        .maybeSingle()
-
-    if (tierError) {
-      console.error('Unable to load member pricing tier:', tierError)
-    }
-
-    if (
-      [
-        'starter',
-        'builder',
-        'leader',
-        'prestige',
-      ].includes(approvedApplication?.package_id)
-    ) {
-      checkoutPricingTier = approvedApplication.package_id
-    }
+    checkoutPricingTier = profile.selected_package_id
   }
 
   const { data: liveProducts, error: productsError } = await supabase

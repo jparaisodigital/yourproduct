@@ -46,46 +46,39 @@ export function renderAdminCustomersPage() {
 
         <label>
           <span class="text-xs font-semibold uppercase tracking-[0.12em] text-brand-muted">
-            Type
-          </span>
-          <select
-            x-model="adminCustomerTypeFilter"
-            class="mt-2 min-h-11 w-full rounded-xl border border-brand-border bg-brand-black px-3 text-sm text-brand-cream outline-none focus:border-brand-gold"
-          >
-            <option value="all">All</option>
-            <option value="regular">Regular</option>
-            <option value="member">Member</option>
-          </select>
-        </label>
-
-        <label>
-          <span class="text-xs font-semibold uppercase tracking-[0.12em] text-brand-muted">
-            Membership
+            Membership Status
           </span>
           <select
             x-model="adminCustomerMembershipFilter"
             class="mt-2 min-h-11 w-full rounded-xl border border-brand-border bg-brand-black px-3 text-sm text-brand-cream outline-none focus:border-brand-gold"
           >
             <option value="all">All</option>
-            <option value="none">None</option>
-            <option value="active">Active</option>
+            <option value="none">No Membership</option>
+            <option value="active">Active Member</option>
           </select>
         </label>
 
         <label>
-          <span class="text-xs font-semibold uppercase tracking-[0.12em] text-brand-muted">
-            Joined
-          </span>
-          <select
-            x-model="adminCustomerJoinedFilter"
-            class="mt-2 min-h-11 w-full rounded-xl border border-brand-border bg-brand-black px-3 text-sm text-brand-cream outline-none focus:border-brand-gold"
-          >
-            <option value="all">All</option>
-            <option value="today">Today</option>
-            <option value="week">Last 7 days</option>
-            <option value="month">This month</option>
-          </select>
-        </label>
+  <span class="text-xs font-semibold uppercase tracking-[0.12em] text-brand-muted">
+    Joined From
+  </span>
+  <input
+    type="date"
+    x-model="adminCustomerJoinedFrom"
+    class="mt-2 min-h-11 w-full rounded-xl border border-brand-border bg-brand-black px-3 text-sm text-brand-cream outline-none focus:border-brand-gold"
+  >
+</label>
+
+<label>
+  <span class="text-xs font-semibold uppercase tracking-[0.12em] text-brand-muted">
+    Joined To
+  </span>
+  <input
+    type="date"
+    x-model="adminCustomerJoinedTo"
+    class="mt-2 min-h-11 w-full rounded-xl border border-brand-border bg-brand-black px-3 text-sm text-brand-cream outline-none focus:border-brand-gold"
+  >
+</label>
       </div>
 
       <p
@@ -117,14 +110,10 @@ export function renderAdminCustomersPage() {
             ></p>
 
             <div class="mt-4 flex flex-wrap gap-2">
-              <span
-                class="inline-flex items-center rounded-full border border-brand-gold/30 bg-brand-gold/10 px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-brand-gold"
-                x-text="'Type: ' + (customer.customer_type || '—')"
-              ></span>
 
               <span
                 class="inline-flex items-center rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-emerald-300"
-                x-text="'Membership: ' + (customer.membership_status || '—')"
+                x-text="'Membership: ' + (customer.membership_status === 'none' ? 'No Membership' : customer.membership_status === 'active' ? 'Active Member' : customer.membership_status || '—')"
               ></span>
 
               <span

@@ -144,7 +144,7 @@ async function startStorefront() {
   if (signedInUser) {
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('role, customer_type, membership_status')
+      .select('role, customer_type, membership_status, selected_package_id')
       .eq('id', signedInUser.id)
       .maybeSingle()
 

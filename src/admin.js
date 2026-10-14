@@ -2072,11 +2072,8 @@ Alpine.data('adminDashboard', () => ({
   overviewActiveMembers: null,
   overviewMetricsError: '',
 
-  applicationStatusLabels:
-    membershipStatusLabels,
-
+  applicationStatusLabels: membershipStatusLabels,
   membershipFulfillmentStatusLabels,
-
   paymentMethodLabels,
 
   isLoggingOut: false,
@@ -2085,14 +2082,14 @@ Alpine.data('adminDashboard', () => ({
   orders: [],
 
   adminCustomers: [],
-  adminCustomersLoading: true,
-  adminCustomersError: '',
-  adminCustomerSearch: '',
-  adminCustomerTypeFilter: 'all',
-  adminCustomerMembershipFilter: 'all',
-  adminCustomerAccountFilter: 'all',
-  adminCustomerJoinedFilter: 'all',
-  savingAvailabilityProductId: null,
+adminCustomersLoading: true,
+adminCustomersError: '',
+adminCustomerSearch: '',
+adminCustomerMembershipFilter: 'all',
+adminCustomerAccountFilter: 'all',
+adminCustomerJoinedFrom: '',
+adminCustomerJoinedTo: '',
+savingAvailabilityProductId: null,
   availabilitySaveError: '',
   availabilitySaveMessage: '',
   liveProducts: [],
@@ -2108,40 +2105,31 @@ Alpine.data('adminDashboard', () => ({
   stockHistory: [],
   stockHistoryLoading: true,
   stockHistoryError: '',
+  stockHistoryDateFrom: '',
+  stockHistoryDateTo: '',
+  salesDateFrom: '',
+  salesDateTo: '',
 
   liveOrders: [],
-
   liveOrdersLoading: true,
-
   liveOrdersError: '',
 
   inventoryProducts: adminInventoryProducts,
-
   packageSupplies: adminPackageSupplies,
-
   inventorySearch: '',
-
   inventoryStatusFilter: 'all',
-
   selectedInventoryProductId: null,
-
   inventoryAdjustmentOpen: false,
-
   inventoryAdjustmentType: 'restock',
-
   inventoryAdjustmentQuantity: '',
-
   inventoryAdjustmentReason: '',
-
   inventoryAdjustmentError: '',
-
   inventoryFeedback: '',
 
   salesExportConfirmOpen: false,
   salesExportConfirmType: '',
 
   inventoryMovements: [],
-
   inventoryMovementFilter: 'all',
 
   salesDateFilter: 'all',
@@ -2155,13 +2143,10 @@ Alpine.data('adminDashboard', () => ({
   ],
 
   orderStatusLabels,
-
   fulfillmentTypeLabels,
-
   orderPaymentMethodLabels,
 
   selectedApplicationId: null,
-
   applicationDetailsOpen: false,
   applicationProofUrl: '',
   applicationProofPreviewOpen: false,
@@ -2170,10 +2155,9 @@ Alpine.data('adminDashboard', () => ({
   applicationProofRequestId: 0,
 
   applicationSearch: '',
-
   applicationStatusFilter: 'all',
-applicationDateFrom: '',
-applicationDateTo: '',
+  applicationDateFrom: '',
+  applicationDateTo: '',
 
   selectedOrderId: null,
   orderDetailsOpen: false,
@@ -2205,27 +2189,21 @@ applicationDateTo: '',
   orderPointsAwarded: false,
 
   reviewPanelOpen: false,
-
   reviewAction: '',
-
   reviewNote: '',
-
   reviewError: '',
 
   reviewPaymentVerified: false,
   reviewSubmitting: false,
 
   packageAllocationQuantities: {},
-
   packageAllocationError: '',
-
   packageFulfillmentAction: '',
-
   packageFulfillmentError: '',
 
   activePage: 'overview',
-
   mobileMenuOpen: false,
+
 
   get filteredApplications() {
     const normalizedSearch =
@@ -2353,15 +2331,21 @@ applicationDateTo: '',
     const search = this.adminCustomerSearch
       .trim()
       .toLowerCase()
-
-    const now = new Date()
-
+  
+    const joinedFromDate = this.adminCustomerJoinedFrom
+      ? new Date(`${this.adminCustomerJoinedFrom}T00:00:00`)
+      : null
+  
+    const joinedToDate = this.adminCustomerJoinedTo
+      ? new Date(`${this.adminCustomerJoinedTo}T23:59:59`)
+      : null
+  
     return this.adminCustomers.filter((customer) => {
       const fullName = [
         customer.first_name,
         customer.last_name,
       ].filter(Boolean).join(' ')
-
+  
       const matchesSearch =
         !search ||
         [
@@ -2371,53 +2355,30 @@ applicationDateTo: '',
         ].some((value) =>
           String(value || '').toLowerCase().includes(search),
         )
-
-      const matchesType =
-        this.adminCustomerTypeFilter === 'all' ||
-        customer.customer_type === this.adminCustomerTypeFilter
-
+  
       const matchesMembership =
         this.adminCustomerMembershipFilter === 'all' ||
         customer.membership_status ===
           this.adminCustomerMembershipFilter
-
+  
       const matchesAccount =
         this.adminCustomerAccountFilter === 'all' ||
         customer.account_status === this.adminCustomerAccountFilter
-
-      let matchesJoined = true
-
-      if (
-        this.adminCustomerJoinedFilter !== 'all' &&
-        customer.created_at
-      ) {
-        const createdAt = new Date(customer.created_at)
-
-        if (this.adminCustomerJoinedFilter === 'today') {
-          matchesJoined =
-            createdAt.toDateString() === now.toDateString()
-        }
-
-        if (this.adminCustomerJoinedFilter === 'week') {
-          const sevenDaysAgo = new Date(now)
-          sevenDaysAgo.setDate(now.getDate() - 7)
-          matchesJoined = createdAt >= sevenDaysAgo
-        }
-
-        if (this.adminCustomerJoinedFilter === 'month') {
-          matchesJoined =
-            createdAt.getFullYear() === now.getFullYear() &&
-            createdAt.getMonth() === now.getMonth()
-        }
-      }
-
-      return (
-        matchesSearch &&
-        matchesType &&
-        matchesMembership &&
-        matchesAccount &&
-        matchesJoined
-      )
+  
+      const joinedDate = customer.created_at
+        ? new Date(customer.created_at)
+        : null
+  
+      const matchesJoined =
+        (!joinedFromDate || (joinedDate && joinedDate >= joinedFromDate)) &&
+        (!joinedToDate || (joinedDate && joinedDate <= joinedToDate))
+  
+        return (
+          matchesSearch &&
+          matchesMembership &&
+          matchesAccount &&
+          matchesJoined
+        )
     })
   },
 
@@ -3070,6 +3031,87 @@ applicationDateTo: '',
     )
   },
 
+  get salesRangeStartDate() {
+    if (this.salesDateFrom) {
+      const startDate = new Date(`${this.salesDateFrom}T00:00:00`)
+  
+      if (!Number.isNaN(startDate.getTime())) {
+        return startDate
+      }
+    }
+  
+    const fallbackStartDate = new Date()
+    fallbackStartDate.setDate(fallbackStartDate.getDate() - 6)
+    fallbackStartDate.setHours(0, 0, 0, 0)
+  
+    return fallbackStartDate
+  },
+  
+  get salesRangeEndDate() {
+    if (this.salesDateTo) {
+      const endDate = new Date(`${this.salesDateTo}T23:59:59`)
+  
+      if (!Number.isNaN(endDate.getTime())) {
+        return endDate
+      }
+    }
+  
+    return new Date()
+  },
+  
+  get selectedRangeApprovedSales() {
+    return this.approvedSalesBetween(
+      this.salesRangeStartDate,
+      this.salesRangeEndDate,
+    )
+  },
+  
+  get salesChartData() {
+    const chartDays = []
+    const startDate = new Date(this.salesRangeStartDate)
+    const endDate = new Date(this.salesRangeEndDate)
+  
+    startDate.setHours(0, 0, 0, 0)
+    endDate.setHours(23, 59, 59, 999)
+  
+    if (
+      Number.isNaN(startDate.getTime()) ||
+      Number.isNaN(endDate.getTime()) ||
+      startDate > endDate
+    ) {
+      return []
+    }
+  
+    const cursorDate = new Date(startDate)
+  
+    while (cursorDate <= endDate && chartDays.length < 31) {
+      const dayStart = new Date(cursorDate)
+      dayStart.setHours(0, 0, 0, 0)
+  
+      const dayEnd = new Date(cursorDate)
+      dayEnd.setHours(23, 59, 59, 999)
+  
+      chartDays.push({
+        label: dayStart.toLocaleDateString('en-PH', {
+          month: 'short',
+          day: 'numeric',
+        }),
+        sales: this.approvedSalesBetween(dayStart, dayEnd),
+      })
+  
+      cursorDate.setDate(cursorDate.getDate() + 1)
+    }
+  
+    return chartDays
+  },
+  
+  get salesChartMaxValue() {
+    return Math.max(
+      ...this.salesChartData.map((day) => Number(day.sales || 0)),
+      1,
+    )
+  },
+
   get approvedSalesTotal() {
     return this.approvedOrders.reduce(
       (total, order) =>
@@ -3325,6 +3367,27 @@ inventoryStatusDotClass(status) {
     statusClasses[status] ||
     'bg-brand-muted'
   )
+},
+
+get filteredStockHistory() {
+  const fromDate = this.stockHistoryDateFrom
+    ? new Date(`${this.stockHistoryDateFrom}T00:00:00`)
+    : null
+
+  const toDate = this.stockHistoryDateTo
+    ? new Date(`${this.stockHistoryDateTo}T23:59:59`)
+    : null
+
+  return this.stockHistory.filter((movement) => {
+    const movementDate = movement.created_at
+      ? new Date(movement.created_at)
+      : null
+
+    return (
+      (!fromDate || (movementDate && movementDate >= fromDate)) &&
+      (!toDate || (movementDate && movementDate <= toDate))
+    )
+  })
 },
 
 get filteredInventoryMovements() {
@@ -5111,8 +5174,26 @@ validatePackageAllocation() {
   return true
 },
 
+getOrderItemImage(item) {
+  return getOrderItemImage(item)
+},
+
 formatMoney(amount) {
   return adminPesoFormatter.format(amount || 0)
+},
+
+formatCompactMoney(value) {
+  const amount = Number(value || 0)
+
+  if (amount >= 1000000) {
+    return `₱${(amount / 1000000).toFixed(1)}M`
+  }
+
+  if (amount >= 1000) {
+    return `₱${(amount / 1000).toFixed(amount >= 10000 ? 0 : 1)}K`
+  }
+
+  return `₱${amount.toLocaleString('en-PH')}`
 },
 
 formatOptionalMoney(

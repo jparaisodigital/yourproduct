@@ -146,8 +146,7 @@ const isApprovedMemberPreview =
 
   const allowedMembershipStatuses = [
   'awaiting-payment',
-  'pending-verification',
-  'cancellation-requested',
+'pending-verification',
 ]
 
 const hasPendingMembership =
@@ -426,11 +425,12 @@ closeImagePreview() {
       ? '&option=' + encodeURIComponent(this.selectedStarterOption)
       : ''
 
-  const nextUrl =
+ const nextUrl =
   '/dashboard/?package=' +
   encodeURIComponent(packageId) +
   '&membership=awaiting-payment' +
-  optionQuery
+  optionQuery +
+  '&page=membershipApplication'
 
 window.yourProductNavigateWithFade(nextUrl)
 
@@ -2252,7 +2252,14 @@ let signedInMembershipPackagesError = false
 let signedInMembershipCelebration = null
 
 Alpine.data('customerPortal', () => ({
-  activePage: initialDashboardPage,
+  activePage:
+  (
+    initialDashboardPage === 'membershipApplication' ||
+    initialDashboardPage === 'membershipPayment'
+  ) &&
+  !hasPendingMembership
+    ? 'general'
+    : initialDashboardPage,
   profile: signedInProfile,
   orders: signedInOrders,
   ordersError: signedInOrdersError,
@@ -2667,7 +2674,6 @@ previewTimer: null,
           .in('status', [
             'awaiting-payment',
             'pending-verification',
-            'cancellation-requested',
           ])
           .order('submitted_at', { ascending: false })
           .limit(1)
@@ -2878,7 +2884,7 @@ async function startDashboard() {
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
     .select(
-      'id, first_name, last_name, email, mobile_number, username, customer_type, membership_status, role, account_status',
+      'id, first_name, last_name, email, mobile_number, username, customer_type, membership_status, selected_package_id, role, account_status',
     )
     .eq('id', user.id)
     .single()
@@ -2924,11 +2930,10 @@ previewAccount.lastName =
 previewAccount.referralCode =
   profile.username || previewAccount.referralCode
 
-const openApplicationStatuses = [
-  'awaiting-payment',
-  'pending-verification',
-  'cancellation-requested',
-]
+  const openApplicationStatuses = [
+    'awaiting-payment',
+    'pending-verification',
+  ]
 
 let { data: membershipApplication, error: membershipError } =
   await supabase
@@ -2954,38 +2959,20 @@ const shouldCreateApplication =
   Boolean(selectedDashboardPackage) &&
   canStartPackageApplication
 
-if (shouldCreateApplication) {
-  const { data: newApplication, error: insertError } =
-    await supabase
-      .from('membership_applications')
-      .insert({
-        customer_id: user.id,
-        package_id: selectedDashboardPackage.id,
-        selected_package_option_id:
-          selectedDashboardPackageOption?.id || null,
-        amount: selectedDashboardPackage.price,
-      })
-      .select('package_id, selected_package_option_id, status')
-      .single()
-
-  if (insertError?.code === '23505') {
-    // Another tab may have created an open application first.
-    const { data: existingApplication, error: reloadError } =
+  if (shouldCreateApplication) {
+    const { data: restartedApplication, error: restartError } =
       await supabase
-        .from('membership_applications')
-        .select('package_id, selected_package_option_id, status')
-        .eq('customer_id', user.id)
-        .in('status', openApplicationStatuses)
-        .limit(1)
+        .rpc('restart_membership_application', {
+          p_package_id: selectedDashboardPackage.id,
+          p_selected_package_option_id:
+            selectedDashboardPackageOption?.id || null,
+          p_amount: selectedDashboardPackage.price,
+        })
         .maybeSingle()
-
-    membershipApplication = existingApplication
-    membershipError = reloadError
-  } else {
-    membershipApplication = newApplication
-    membershipError = insertError
+  
+    membershipApplication = restartedApplication
+    membershipError = restartError
   }
-}
 
 if (membershipError) {
   console.error(
@@ -3036,11 +3023,13 @@ if (
   if (expectedStatus) {
     dashboardUrl.searchParams.set('membership', expectedStatus)
     dashboardUrl.searchParams.set('package', expectedPackageId)
+    dashboardUrl.searchParams.set('page', 'membershipApplication')
   } else {
     dashboardUrl.searchParams.delete('membership')
     dashboardUrl.searchParams.delete('package')
+    dashboardUrl.searchParams.delete('option')
+    dashboardUrl.searchParams.delete('page')
   }
-
   window.location.replace(dashboardUrl.toString())
   return
 }
@@ -3090,33 +3079,15 @@ let dashboardPricingType = 'regular'
 
 if (
   profile.customer_type === 'member' &&
-  profile.membership_status === 'active'
+  profile.membership_status === 'active' &&
+  [
+    'starter',
+    'builder',
+    'leader',
+    'prestige',
+  ].includes(profile.selected_package_id)
 ) {
-  const { data: approvedApplication, error: tierError } =
-    await supabase
-      .from('membership_applications')
-      .select('package_id')
-      .eq('customer_id', profile.id)
-      .eq('status', 'approved')
-      .not('membership_activated_at', 'is', null)
-      .order('membership_activated_at', { ascending: false })
-      .limit(1)
-      .maybeSingle()
-
-  if (tierError) {
-    console.error('Unable to load dashboard pricing tier:', tierError)
-  }
-
-  if (
-    [
-      'starter',
-      'builder',
-      'leader',
-      'prestige',
-    ].includes(approvedApplication?.package_id)
-  ) {
-    dashboardPricingType = approvedApplication.package_id
-  }
+  dashboardPricingType = profile.selected_package_id
 }
 
 const tierPriceByType = {
@@ -3318,11 +3289,20 @@ if (directReferralsError) {
   
   const latestApprovedMembership = approvedMembershipRows[0] || null
 
-  const activeMembershipLabel = latestApprovedMembership?.packageName
-  ? latestApprovedMembership.packageName.replace(/^Your\s+/i, '') + ' Member'
-  : signedInProfile?.membership_status === 'active'
-    ? 'Member Account'
-    : 'Free Customer'
+  const activeMembershipLabelByPackage = {
+    starter: 'Starter Member',
+    builder: 'Builder Member',
+    leader: 'Leader Member',
+    prestige: 'Prestige Member',
+  }
+  
+  const activeMembershipLabel =
+    signedInProfile?.membership_status === 'active' &&
+    activeMembershipLabelByPackage[signedInProfile?.selected_package_id]
+      ? activeMembershipLabelByPackage[signedInProfile.selected_package_id]
+      : signedInProfile?.membership_status === 'active'
+        ? 'Member Account'
+        : 'Free Customer'
 
   const approvedMembershipPointsBalance =
   approvedMembershipRows.reduce(

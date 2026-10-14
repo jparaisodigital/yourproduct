@@ -462,10 +462,10 @@ class="mt-5 rounded-2xl border border-brand-border bg-brand-panel p-4"
           class="grid size-11 shrink-0 place-items-center overflow-hidden rounded-lg border border-brand-border bg-brand-cream"
         >
           <img
-            :src="allocation.product_image_url"
-            :alt="allocation.product_name"
-            class="size-full object-contain p-1.5"
-          >
+  :src="getOrderItemImage(allocation)"
+  :alt="allocation.product_name"
+  class="size-full object-contain p-1.5"
+>
         </div>
 
         <div class="min-w-0">

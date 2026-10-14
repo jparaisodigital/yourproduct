@@ -7,6 +7,11 @@ export function registerMemberPayoutPage(Alpine) {
     paidIncome: 0,
     minimumPayoutAmount: 100,
     payoutRequests: [],
+
+    get filteredPayoutRequests() {
+      return this.payoutRequests
+    },
+
     loading: true,
     submitting: false,
 
