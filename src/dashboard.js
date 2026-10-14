@@ -89,6 +89,26 @@ const dashboardParams = new URLSearchParams(
   window.location.search,
 )
 
+const METRO_MANILA_CITIES = [
+  'Caloocan',
+  'Las Piñas',
+  'Makati',
+  'Malabon',
+  'Mandaluyong',
+  'Manila',
+  'Marikina',
+  'Muntinlupa',
+  'Navotas',
+  'Parañaque',
+  'Pasay',
+  'Pasig',
+  'Pateros',
+  'Quezon City',
+  'San Juan',
+  'Taguig',
+  'Valenzuela',
+]
+
 const requestedPackageId =
 dashboardParams.get('package')?.trim() || ''
 
@@ -1295,8 +1315,20 @@ selectedDashboardPackage.price,
       <input type="text" x-model.trim="membershipPaymentForm.deliveryDetails.recipientFirstName" placeholder="Recipient first name" maxlength="80" required class="h-12 rounded-xl border border-brand-border bg-brand-panel px-4 text-sm text-brand-cream outline-none focus:border-brand-gold">
       <input type="text" x-model.trim="membershipPaymentForm.deliveryDetails.recipientLastName" placeholder="Recipient last name" maxlength="80" required class="h-12 rounded-xl border border-brand-border bg-brand-panel px-4 text-sm text-brand-cream outline-none focus:border-brand-gold">
       <input type="tel" x-model.trim="membershipPaymentForm.deliveryDetails.recipientMobile" placeholder="Mobile number" maxlength="20" required class="h-12 rounded-xl border border-brand-border bg-brand-panel px-4 text-sm text-brand-cream outline-none focus:border-brand-gold sm:col-span-2">
-      <input type="text" x-model.trim="membershipPaymentForm.deliveryDetails.province" placeholder="Province" maxlength="100" required class="h-12 rounded-xl border border-brand-border bg-brand-panel px-4 text-sm text-brand-cream outline-none focus:border-brand-gold">
-      <input type="text" x-model.trim="membershipPaymentForm.deliveryDetails.city" placeholder="City / Municipality" maxlength="100" required class="h-12 rounded-xl border border-brand-border bg-brand-panel px-4 text-sm text-brand-cream outline-none focus:border-brand-gold">
+      <input type="text" x-model.trim="membershipPaymentForm.deliveryDetails.province" readonly required class="h-12 rounded-xl border border-brand-border bg-brand-panel px-4 text-sm text-brand-muted outline-none">
+
+<select
+  x-model="membershipPaymentForm.deliveryDetails.city"
+  required
+  class="h-12 rounded-xl border border-brand-border bg-brand-panel px-4 text-sm text-brand-cream outline-none focus:border-brand-gold"
+>
+  <option value="">
+    Select Metro Manila city
+  </option>
+  <template x-for="city in metroManilaCities" :key="city">
+    <option :value="city" x-text="city"></option>
+  </template>
+</select>
       <input type="text" x-model.trim="membershipPaymentForm.deliveryDetails.barangay" placeholder="Barangay" maxlength="100" required class="h-12 rounded-xl border border-brand-border bg-brand-panel px-4 text-sm text-brand-cream outline-none focus:border-brand-gold sm:col-span-2">
       <input type="text" x-model.trim="membershipPaymentForm.deliveryDetails.houseStreet" placeholder="House no. and street" maxlength="180" required class="h-12 rounded-xl border border-brand-border bg-brand-panel px-4 text-sm text-brand-cream outline-none focus:border-brand-gold sm:col-span-2">
       <input type="text" x-model.trim="membershipPaymentForm.deliveryDetails.landmark" placeholder="Landmark optional" maxlength="180" class="h-12 rounded-xl border border-brand-border bg-brand-panel px-4 text-sm text-brand-cream outline-none focus:border-brand-gold sm:col-span-2">
@@ -2273,7 +2305,8 @@ Alpine.data('customerPortal', () => ({
   selectedPackage: selectedDashboardPackage,
   activeCategory: 'all',
   productSearch: '',
-  membershipPaymentForm: {
+metroManilaCities: METRO_MANILA_CITIES,
+membershipPaymentForm: {
     paymentMethod: '',
     senderName: '',
     proofFile: null,
@@ -2284,8 +2317,8 @@ Alpine.data('customerPortal', () => ({
       recipientFirstName: signedInProfile.first_name ?? '',
       recipientLastName: signedInProfile.last_name ?? '',
       recipientMobile: signedInProfile.mobile_number ?? '',
-      province: '',
-      city: '',
+      province: 'Metro Manila',
+city: '',
       barangay: '',
       houseStreet: '',
       landmark: '',
