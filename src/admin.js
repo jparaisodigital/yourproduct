@@ -5566,16 +5566,17 @@ async loadLiveOrders() {
 
   try {
     const { data, error } = await supabase
-      .from('orders')
-      .select(`
-        id, status, subtotal, delivery_fee, created_at,
-        payment_approved_at, payment_rejected_at,
-        reviewed_at, shipped_at, delivered_at,
-        customer_details, delivery_details,
-        payment_method, payment_proof_path,
-        order_items(id, product_id, product_name, quantity, unit_price, product_image_url)
-      `)
-      .order('created_at', { ascending: false })
+  .from('orders')
+  .select(`
+    id, status, subtotal, delivery_fee, created_at,
+    payment_approved_at, payment_rejected_at,
+    reviewed_at, shipped_at, delivered_at,
+    admin_note,
+    customer_details, delivery_details,
+    payment_method, payment_proof_path,
+    order_items(id, product_id, product_name, quantity, unit_price, product_image_url)
+  `)
+  .order('created_at', { ascending: false })
 
     if (error) throw error
 
