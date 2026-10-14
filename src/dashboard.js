@@ -2313,7 +2313,8 @@ Alpine.data('customerPortal', () => ({
   isLoggingOut: false,
   logoutError: '',
   ordersOpen: true,
-  walletOpen: true,
+walletOpen: true,
+defaultAddressEnabled: Boolean(signedInProfile.default_address_enabled),
 
   profileForm: {
     firstName: signedInProfile.first_name ?? '',
@@ -2322,11 +2323,11 @@ Alpine.data('customerPortal', () => ({
     mobileNumber: signedInProfile.mobile_number ?? '',
 
     address: {
-      province: '',
-      cityMunicipality: '',
-      barangay: '',
-      houseStreet: '',
-      landmark: '',
+      province: signedInProfile.default_province ?? '',
+      cityMunicipality: signedInProfile.default_city_municipality ?? '',
+      barangay: signedInProfile.default_barangay ?? '',
+      houseStreet: signedInProfile.default_house_street ?? '',
+      landmark: signedInProfile.default_landmark ?? '',
     },
   },
 
@@ -2489,9 +2490,42 @@ previewTimer: null,
     const lastName = this.profileForm.lastName.trim()
     const mobileNumber = this.profileForm.mobileNumber.trim()
 
+    const defaultAddressEnabled = Boolean(this.defaultAddressEnabled)
+const address = this.profileForm.address
+
+const defaultProvince = defaultAddressEnabled
+  ? address.province.trim()
+  : null
+const defaultCityMunicipality = defaultAddressEnabled
+  ? address.cityMunicipality.trim()
+  : null
+const defaultBarangay = defaultAddressEnabled
+  ? address.barangay.trim()
+  : null
+const defaultHouseStreet = defaultAddressEnabled
+  ? address.houseStreet.trim()
+  : null
+const defaultLandmark = defaultAddressEnabled
+  ? address.landmark.trim()
+  : null
+
     if (!firstName || !lastName || !mobileNumber) {
       this.profileFormError =
         'Enter your first name, last name, and mobile number.'
+      return
+    }
+
+    if (
+      defaultAddressEnabled &&
+      (
+        !defaultProvince ||
+        !defaultCityMunicipality ||
+        !defaultBarangay ||
+        !defaultHouseStreet
+      )
+    ) {
+      this.profileFormError =
+        'Complete your default address or turn it off before saving.'
       return
     }
 
@@ -2507,15 +2541,23 @@ previewTimer: null,
       }
 
       const { data, error } = await supabase
-        .from('profiles')
-        .update({
-          first_name: firstName,
-          last_name: lastName,
-          mobile_number: mobileNumber,
-        })
-        .eq('id', user.id)
-        .select('first_name, last_name, mobile_number')
-        .single()
+  .from('profiles')
+  .update({
+    first_name: firstName,
+    last_name: lastName,
+    mobile_number: mobileNumber,
+    default_address_enabled: defaultAddressEnabled,
+    default_province: defaultProvince,
+    default_city_municipality: defaultCityMunicipality,
+    default_barangay: defaultBarangay,
+    default_house_street: defaultHouseStreet,
+    default_landmark: defaultLandmark,
+  })
+  .eq('id', user.id)
+  .select(
+    'first_name, last_name, mobile_number, default_address_enabled, default_province, default_city_municipality, default_barangay, default_house_street, default_landmark',
+  )
+  .single()
 
       if (error) throw error
 
@@ -2893,7 +2935,7 @@ async function startDashboard() {
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
     .select(
-      'id, first_name, last_name, email, mobile_number, username, customer_type, membership_status, selected_package_id, role, account_status',
+      'id, first_name, last_name, email, mobile_number, username, customer_type, membership_status, selected_package_id, role, account_status, default_address_enabled, default_province, default_city_municipality, default_barangay, default_house_street, default_landmark',
     )
     .eq('id', user.id)
     .single()
@@ -4434,14 +4476,37 @@ if (
                 Delivery Details
               </p>
 
-              <h2
-                id="default-address-title"
-                class="mt-1 font-display text-3xl text-brand-cream"
-              >
-                Default address
-              </h2>
+              <div class="mt-4 rounded-2xl border border-brand-border bg-brand-black/40 p-4">
+  <label class="flex items-start justify-between gap-4">
+    <span>
+      <span class="block text-sm font-semibold text-brand-cream">
+        Save a default address
+      </span>
+      <span class="mt-1 block text-xs leading-5 text-brand-muted">
+        Optional. Keep this off if you prefer to fill delivery details during checkout.
+      </span>
+    </span>
 
-              <div class="mt-6 grid gap-5 sm:grid-cols-2">
+    <input
+      type="checkbox"
+      x-model="defaultAddressEnabled"
+      class="mt-1 size-5 rounded border-brand-border bg-brand-black text-brand-gold focus:ring-brand-gold/30"
+    >
+  </label>
+</div>
+
+<p
+  x-show="!defaultAddressEnabled"
+  class="mt-4 rounded-xl border border-brand-border bg-brand-black/30 px-4 py-3 text-sm leading-6 text-brand-muted"
+>
+  No default address saved. You can enter delivery details during checkout.
+</p>
+
+              <div
+  x-show="defaultAddressEnabled"
+  x-transition.opacity
+  class="mt-6 grid gap-5 sm:grid-cols-2"
+>
                 <label class="block">
                   <span
                     class="text-xs font-semibold uppercase tracking-[0.1em] text-brand-muted"
