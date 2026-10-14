@@ -85,7 +85,7 @@ export function renderMembershipModal() {
         x-transition:leave="transition duration-150 ease-in"
         x-transition:leave-start="translate-y-0 scale-100 opacity-100"
         x-transition:leave-end="translate-y-2 scale-[0.99] opacity-0"
-        class="relative w-full max-w-lg overflow-hidden rounded-[1.5rem] border border-brand-gold/35 bg-brand-panel px-5 py-8 text-center shadow-2xl sm:px-10 sm:py-10"
+        class="relative w-full max-w-md overflow-hidden rounded-[1.35rem] border border-brand-gold/35 bg-brand-panel px-5 py-5 text-center shadow-2xl sm:px-8 sm:py-6"
       >
         <img
           src="${modalLogo}"
@@ -138,94 +138,86 @@ export function renderMembershipModal() {
           <p
             class="text-[0.65rem] font-semibold uppercase tracking-[0.24em] text-brand-gold"
           >
-            Member Pricing Is Live
+            Premium Fragrances
           </p>
 
           <h2
             id="membership-modal-title"
-            class="mx-auto mt-4 max-w-md font-display text-3xl font-semibold leading-none text-brand-cream sm:text-5xl"
+            class="mx-auto mt-3 max-w-md font-display text-3xl font-semibold leading-none text-brand-cream sm:text-4xl"
           >
-            From PHP 349 to as low as
+            Luxury Scents
 
-            <span class="mt-2 block italic text-brand-gold">
-              PHP 175 per bottle.
+            <span class="mt-1.5 block text-xl italic text-brand-gold sm:text-2xl">
+              For Every You.
             </span>
           </h2>
 
-          <p
-            class="mx-auto mt-5 max-w-md text-sm leading-6 text-brand-muted sm:text-base sm:leading-7"
+          <div
+            class="mx-auto mt-5 grid max-w-sm grid-cols-2 gap-3 text-left"
           >
-            Become a YOUR PRODUCT member and unlock
-            reseller pricing, referral rewards, and member
-            dashboard access after approval.
-          </p>
+            <div class="rounded-2xl border border-brand-border bg-brand-black/30 p-4">
+              <p class="text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-brand-muted">
+                Perfumes
+              </p>
+              <p class="mt-2 text-2xl font-bold text-brand-cream">
+                ₱349
+              </p>
+              <p class="mt-1 text-xs text-brand-muted">
+                per bottle
+              </p>
+            </div>
+
+            <div class="rounded-2xl border border-brand-gold/50 bg-brand-gold/10 p-4">
+              <p class="text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-brand-gold">
+                Member Price
+              </p>
+              <p class="mt-2 text-2xl font-bold text-brand-gold">
+                ₱175
+              </p>
+              <p class="mt-1 text-xs text-brand-muted">
+                per bottle
+              </p>
+            </div>
+          </div>
 
           <div
-            class="mx-auto mt-7 grid max-w-sm gap-2 rounded-2xl border border-brand-border bg-brand-black/25 p-3 text-left"
+            class="mx-auto mt-5 max-w-sm rounded-2xl border border-brand-border bg-brand-black/25 p-4"
           >
-            <p class="flex items-center justify-between gap-4 text-xs text-brand-muted">
-              <span>Starter member</span>
-              <strong class="font-semibold text-brand-cream">
-                PHP 245 / bottle
-              </strong>
+            <p class="text-sm font-semibold text-brand-cream">
+              Become a Member
             </p>
-
-            <p class="flex items-center justify-between gap-4 text-xs text-brand-muted">
-              <span>Builder member</span>
-              <strong class="font-semibold text-brand-cream">
-                PHP 227 / bottle
-              </strong>
-            </p>
-
-            <p class="flex items-center justify-between gap-4 text-xs text-brand-muted">
-              <span>Leader member</span>
-              <strong class="font-semibold text-brand-cream">
-                PHP 210 / bottle
-              </strong>
-            </p>
-
-            <p class="flex items-center justify-between gap-4 text-xs text-brand-muted">
-              <span>Prestige member</span>
-              <strong class="font-semibold text-brand-cream">
-                PHP 175 / bottle
-              </strong>
+            <p class="mt-2 text-sm leading-6 text-brand-muted">
+              Get as low as ₱175 per bottle and start your business today.
             </p>
           </div>
 
           <div
-            class="mx-auto mt-7 flex max-w-sm flex-col gap-3 sm:flex-row sm:justify-center"
+            class="mx-auto mt-5 flex max-w-sm flex-col gap-3"
           >
             <a
-              href="#packages"
-              class="inline-flex min-h-12 flex-1 items-center justify-center rounded-full bg-brand-gold px-6 text-sm font-semibold text-brand-black transition hover:-translate-y-0.5 hover:bg-brand-gold-light"
+              href="#shop"
+              class="inline-flex min-h-12 items-center justify-center rounded-full bg-brand-gold px-6 text-sm font-bold uppercase tracking-[0.08em] text-brand-black transition hover:-translate-y-0.5 hover:bg-brand-gold-light"
               @click="close()"
             >
-              View Packages
+              Buy Now
             </a>
 
             <a
-              href="/register/"
-              class="inline-flex min-h-12 flex-1 items-center justify-center rounded-full border border-brand-border bg-brand-panel/60 px-6 text-sm font-semibold text-brand-cream transition hover:border-brand-gold hover:text-brand-gold"
+              href="#packages"
+              class="inline-flex min-h-12 items-center justify-center rounded-full border border-brand-gold/50 bg-brand-panel/60 px-6 text-sm font-semibold uppercase tracking-[0.08em] text-brand-cream transition hover:border-brand-gold hover:text-brand-gold"
               @click="close()"
             >
-              Create Account
+              View Member Packages
             </a>
           </div>
 
           <button
             type="button"
-            class="mt-6 text-xs text-brand-muted underline decoration-brand-border underline-offset-4 transition hover:text-brand-gold"
+            class="mt-4 text-xs text-brand-muted underline decoration-brand-border underline-offset-4 transition hover:text-brand-gold"
             @click="close()"
           >
             Continue Shopping
           </button>
-
-          <p
-            class="mx-auto mt-4 max-w-sm text-[0.65rem] leading-5 text-brand-muted"
-          >
-            Membership applications are manually reviewed
-            before benefits activate.
-          </p>
         </div>
       </section>
     </div>
