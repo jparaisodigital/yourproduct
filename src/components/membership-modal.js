@@ -2,9 +2,6 @@ import modalLogo from '../assets/logoyourproduct.webp'
 import modalOrnament from '../assets/modal-ornament.webp'
 
 const OPEN_DELAY = 1400
-const MODAL_COOLDOWN_MS = 24 * 60 * 60 * 1000
-const MODAL_LAST_SEEN_KEY =
-  'your-product-membership-modal-last-seen'
 
 export function registerMembershipModal(
   Alpine,
@@ -14,30 +11,7 @@ export function registerMembershipModal(
     timer: null,
 
     init() {
-      if (this.wasRecentlySeen()) {
-        return
-      }
-    
       this.scheduleOpen(OPEN_DELAY)
-    },
-
-    wasRecentlySeen() {
-      const lastSeen = Number(
-        window.localStorage.getItem(MODAL_LAST_SEEN_KEY) || 0,
-      )
-    
-      if (!lastSeen) {
-        return false
-      }
-    
-      return Date.now() - lastSeen < MODAL_COOLDOWN_MS
-    },
-    
-    markAsSeen() {
-      window.localStorage.setItem(
-        MODAL_LAST_SEEN_KEY,
-        String(Date.now()),
-      )
     },
 
     scheduleOpen(delay) {
@@ -49,11 +23,6 @@ export function registerMembershipModal(
     },
 
     tryOpen() {
-
-      if (this.wasRecentlySeen()) {
-        return
-      }
-
       const anotherDialogIsOpen = Array.from(
         document.querySelectorAll(
           '[role="dialog"]',
@@ -75,9 +44,8 @@ export function registerMembershipModal(
     },
 
     close() {
-  this.open = false
-  this.markAsSeen()
-},
+      this.open = false
+    },
 
     destroy() {
       window.clearTimeout(this.timer)
