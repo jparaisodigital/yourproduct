@@ -4616,8 +4616,8 @@ if (
                   <p
                     class="mt-2 max-w-2xl text-sm leading-6 text-brand-muted"
                   >
-                    Saves your first name, last name, and mobile number.
-                    Email and delivery address are not changed.
+                    Saves your first name, last name, mobile number, and optional default address.
+Email is not changed.
                   </p>
                 </div>
 
