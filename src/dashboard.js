@@ -3141,7 +3141,7 @@ registerProductViewStore(
 
   const { data: orderRows, error: ordersError } = await supabase
     .from('orders')
-    .select('id, status, subtotal, delivery_fee, delivery_details, created_at')
+    .select('id, status, subtotal, delivery_fee, delivery_details, admin_note, reviewed_at, created_at')
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
 
@@ -4209,6 +4209,18 @@ if (
 ></span>
       </div>
 
+      <div
+  class="mt-3 rounded-xl border border-red-400/30 bg-red-400/10 px-4 py-3"
+>
+        <p class="text-xs font-semibold uppercase tracking-[0.12em] text-red-200">
+          Admin note
+        </p>
+        <p
+          class="mt-1 text-sm leading-6 text-red-100"
+          x-text="'DEBUG NOTE: ' + (order.admin_note || 'NO ADMIN NOTE IN CUSTOMER DATA')"
+        ></p>
+      </div>
+
       <p
         class="mt-3 text-sm text-brand-cream"
         x-text="'Items: ' + formatMoney(order.subtotal)"
@@ -4239,6 +4251,7 @@ if (
         class="mt-2 text-xs text-brand-muted"
         x-text="'Delivery fee: ' + formatMoney(order.delivery_fee)"
       ></p>
+
         </article>
         </template>
        </div>
@@ -4953,7 +4966,7 @@ if (
             class="mt-6 space-y-3"
           >
             <template x-for="order in orders" :key="order.id">
-              <article class="rounded-2xl border border-brand-border bg-brand-panel p-5">
+              <article class="relative rounded-2xl border border-brand-border bg-brand-panel p-5">
                 <p
                   class="font-semibold text-brand-cream"
                   x-text="'Order ' + order.id.slice(0, 8).toUpperCase()"
@@ -5026,6 +5039,30 @@ if (
   class="mt-1 text-xs text-brand-muted"
   x-text="'Delivery fee: ' + formatMoney(order.delivery_fee)"
 ></p>
+
+<div
+  x-show="order.admin_note"
+  class="mt-3 rounded-xl border border-red-400/25 bg-red-400/5 px-4 py-3 md:absolute md:right-5 md:top-5 md:mt-0 md:w-[240px] md:px-3 md:py-2.5"
+>
+  <div class="flex items-start gap-3">
+    <span
+      class="mt-0.5 inline-flex size-5 shrink-0 items-center justify-center rounded-full border border-red-300/40 text-[0.65rem] font-bold text-red-200 md:size-4 md:text-[0.55rem]"
+      aria-hidden="true"
+    >
+      !
+    </span>
+
+    <div>
+      <p class="text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-red-200">
+        Payment note
+      </p>
+      <p
+        class="mt-1 text-sm leading-6 text-brand-cream md:text-xs md:leading-5"
+        x-text="order.admin_note"
+      ></p>
+    </div>
+  </div>
+</div>
               </article>
             </template>
           </div>
