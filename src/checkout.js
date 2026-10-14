@@ -52,17 +52,36 @@ Alpine.data('checkoutPage', () => ({
   },
   delivery: {
     fulfillmentType: 'dropship',
-    region: '',
+    region:
+      checkoutProfile?.default_address_enabled &&
+      checkoutProfile?.default_province?.trim().toLowerCase() === 'metro manila'
+        ? 'ncr'
+        : '',
     deliveryMethod: 'spx',
     sameAsCustomer: false,
-    recipientFirstName: '',
-    recipientLastName: '',
-    recipientMobile: '',
-    province: '',
-    city: '',
-    barangay: '',
-    houseStreet: '',
-    landmark: '',
+    recipientFirstName: checkoutProfile?.first_name ?? '',
+recipientLastName: checkoutProfile?.last_name ?? '',
+recipientMobile: checkoutProfile?.mobile_number ?? '',
+    province:
+      checkoutProfile?.default_address_enabled
+        ? checkoutProfile?.default_province ?? ''
+        : '',
+    city:
+      checkoutProfile?.default_address_enabled
+        ? checkoutProfile?.default_city_municipality ?? ''
+        : '',
+    barangay:
+      checkoutProfile?.default_address_enabled
+        ? checkoutProfile?.default_barangay ?? ''
+        : '',
+    houseStreet:
+      checkoutProfile?.default_address_enabled
+        ? checkoutProfile?.default_house_street ?? ''
+        : '',
+    landmark:
+      checkoutProfile?.default_address_enabled
+        ? checkoutProfile?.default_landmark ?? ''
+        : '',
     notes: '',
   },
   payment: {
@@ -459,7 +478,7 @@ async function startCheckout() {
 
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
-    .select('first_name, last_name, mobile_number, email, customer_type, membership_status, selected_package_id')
+    .select('first_name, last_name, mobile_number, email, customer_type, membership_status, selected_package_id, default_address_enabled, default_province, default_city_municipality, default_barangay, default_house_street, default_landmark')
     .eq('id', user.id)
     .single()
 
