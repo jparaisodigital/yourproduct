@@ -546,7 +546,7 @@ async function startCheckout() {
         class="mx-auto flex w-[min(1120px,90%)] items-center justify-between gap-4 py-4"
       >
         <a
-  href="/"
+  href="/dashboard/?page=createOrder"
   class="flex min-w-0 items-center gap-3"
   aria-label="Return to ${siteConfig.brand.name}"
 >
@@ -600,12 +600,12 @@ async function startCheckout() {
     <main class="px-5 py-10 sm:py-14">
       <div class="mx-auto w-full max-w-6xl">
                 <a
-          href="/dashboard/"
-          class="inline-flex items-center gap-2 text-sm font-semibold text-brand-gold transition hover:text-brand-gold-light"
-        >
-          <span aria-hidden="true">←</span>
-          Back to dashboard
-        </a>
+  href="/dashboard/?page=createOrder"
+  class="inline-flex items-center gap-2 text-sm font-semibold text-brand-gold transition hover:text-brand-gold-light"
+>
+  <span aria-hidden="true">â†</span>
+  Back to dashboard
+</a>
         <div class="mt-8">
           <p
             class="text-xs font-semibold uppercase tracking-[0.3em] text-brand-gold"
@@ -676,11 +676,11 @@ async function startCheckout() {
             checkout.
           </p>
           <a
-            href="/#shop"
-            class="mt-6 inline-flex h-11 items-center justify-center rounded-full bg-brand-gold px-6 text-sm font-semibold text-brand-black transition hover:bg-brand-gold-light"
-          >
-            Browse fragrances
-          </a>
+  href="/dashboard/?page=createOrder"
+  class="mt-6 inline-flex h-11 items-center justify-center rounded-full bg-brand-gold px-6 text-sm font-semibold text-brand-black transition hover:bg-brand-gold-light"
+>
+  Back to products
+</a>
         </section>
         <div
   x-show="$store.cart.itemCount > 0"
