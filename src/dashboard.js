@@ -1708,10 +1708,14 @@ selectedDashboardPackage.price,
         Your payment proof has been submitted.
       </p>
 
-      <p class="mt-1 text-sm leading-6 text-emerald-50/80">
-        Your membership remains inactive while the admin
-        reviews your payment details.
-      </p>
+      <p
+  class="mt-1 text-sm leading-6 text-emerald-50/80"
+  x-text="
+    isMember
+      ? 'Your current membership remains active while the admin reviews this package payment.'
+      : 'Your membership will be activated after the admin approves your payment.'
+  "
+></p>
 
     </div>
 
