@@ -2831,7 +2831,7 @@ previewTimer: null,
 const address = this.profileForm.address
 
 const defaultProvince = defaultAddressEnabled
-  ? address.province.trim()
+  ? 'Metro Manila'
   : null
 const defaultCityMunicipality = defaultAddressEnabled
   ? address.cityMunicipality.trim()
@@ -5063,7 +5063,8 @@ if (
   x-show="!defaultAddressEnabled"
   class="mt-4 rounded-xl border border-brand-border bg-brand-black/30 px-4 py-3 text-sm leading-6 text-brand-muted"
 >
-  No default address saved. You can enter delivery details during checkout.
+  No default address saved. You can enter your Metro Manila delivery details during checkout.
+  For deliveries outside Metro Manila, please message us on Facebook first to confirm shipping.
 </p>
 
               <div
@@ -5071,41 +5072,28 @@ if (
   x-transition.opacity
   class="mt-6 grid gap-5 sm:grid-cols-2"
 >
-                <label class="block">
-                  <span
-                    class="text-xs font-semibold uppercase tracking-[0.1em] text-brand-muted"
-                  >
-                    Province
-                  </span>
 
-                  <input
-                    type="text"
-                    name="province"
-                    autocomplete="address-level1"
-                    required
-                    maxlength="100"
-                    x-model.trim="profileForm.address.province"
-                    class="mt-2 min-h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition focus:border-brand-gold focus:ring-2 focus:ring-brand-gold/15"
-                  >
-                </label>
+                <label class="block sm:col-span-2">
+  <span
+    class="text-xs font-semibold uppercase tracking-[0.1em] text-brand-muted"
+  >
+    City / Municipality
+  </span>
 
-                <label class="block">
-                  <span
-                    class="text-xs font-semibold uppercase tracking-[0.1em] text-brand-muted"
-                  >
-                    City / Municipality
-                  </span>
+  <select
+    name="cityMunicipality"
+    autocomplete="address-level2"
+    required
+    x-model="profileForm.address.cityMunicipality"
+    class="mt-2 min-h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition focus:border-brand-gold focus:ring-2 focus:ring-brand-gold/15"
+  >
+    <option value="">Select Metro Manila city</option>
 
-                  <input
-                    type="text"
-                    name="cityMunicipality"
-                    autocomplete="address-level2"
-                    required
-                    maxlength="100"
-                    x-model.trim="profileForm.address.cityMunicipality"
-                    class="mt-2 min-h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition focus:border-brand-gold focus:ring-2 focus:ring-brand-gold/15"
-                  >
-                </label>
+    <template x-for="city in metroManilaCities" :key="city">
+      <option :value="city" x-text="city"></option>
+    </template>
+  </select>
+</label>
 
                 <label class="block sm:col-span-2">
                   <span
