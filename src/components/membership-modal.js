@@ -203,12 +203,21 @@ export function renderMembershipModal() {
             </a>
 
             <a
-              href="#packages"
-              class="inline-flex min-h-12 items-center justify-center rounded-full border border-brand-gold/50 bg-brand-panel/60 px-6 text-sm font-semibold uppercase tracking-[0.08em] text-brand-cream transition hover:border-brand-gold hover:text-brand-gold"
-              @click="close()"
-            >
-              View Member Packages
-            </a>
+  href="#packages"
+  class="inline-flex min-h-12 items-center justify-center rounded-full border border-brand-gold/50 bg-brand-panel/60 px-6 text-sm font-semibold uppercase tracking-[0.08em] text-brand-cream transition hover:border-brand-gold hover:text-brand-gold"
+  @click.prevent="
+    close()
+    document
+      .querySelector('#packages')
+      ?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      })
+  "
+>
+  View Member Packages
+</a>
+
           </div>
 
           <button

@@ -7,18 +7,24 @@ const sixWaysImages = [
     id: 'six-ways-one',
     label: 'YOUR PRODUCT six ways opportunity guide',
     image: sixWaysOneImage,
+    width: 2048,
+    height: 762,
     className: '',
   },
   {
     id: 'six-ways-three',
     label: 'YOUR PRODUCT mobile incentives guide',
     image: sixWaysThreeImage,
+    width: 1024,
+    height: 1536,
     className: 'lg:hidden',
   },
   {
     id: 'six-ways-two',
     label: 'YOUR PRODUCT incentives guide',
     image: sixWaysTwoImage,
+    width: 1536,
+    height: 1024,
     className: '',
   },
 ]
@@ -37,11 +43,13 @@ export function renderSixWaysSection() {
           aria-label="View ${item.label}"
         >
           <img
-            src="${item.image}"
-            alt="${item.label}"
-            class="h-auto w-full object-contain transition duration-300"
-            loading="lazy"
-          >
+  src="${item.image}"
+  alt="${item.label}"
+  width="${item.width}"
+  height="${item.height}"
+  class="h-auto w-full object-contain transition duration-300"
+  loading="lazy"
+>
         </button>
       `,
     )

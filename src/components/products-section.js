@@ -39,7 +39,7 @@ export function renderProductsSection(
     <section
       id="shop"
       x-data="{ activeCategory: 'all' }"
-      class="border-t border-brand-border bg-brand-black py-16 sm:py-24"
+      class="scroll-mt-[-200px] lg:scroll-mt-[-150px] border-t border-brand-border bg-brand-black py-16 sm:py-24"
     >
       <div class="mx-auto w-[min(1180px,90%)]">
         <div

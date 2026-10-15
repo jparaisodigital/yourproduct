@@ -306,7 +306,7 @@ export function renderPackagesSection(
         packagePreviewTitle: ''
       }"
       x-effect="document.documentElement.classList.toggle('overflow-hidden', packagePreviewOpen)"
-      class="scroll-mt-36 relative overflow-clip border-t border-brand-border bg-brand-black py-14 sm:py-16 lg:py-8"
+      class="scroll-mt-[-290px] lg:scroll-mt-[-170px] relative overflow-clip border-t border-brand-border bg-brand-black py-14 sm:py-16 lg:py-8"
       @keydown.escape.window="packagePreviewOpen = false"
     >
       <div
