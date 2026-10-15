@@ -1181,158 +1181,437 @@ selectedDashboardPackage.price,
     membershipPaymentTested = false
   "
 >
-  <fieldset>
-    <legend
-      class="text-sm font-semibold text-brand-cream"
-    >
-      Payment method
+  
+
+
+  <section class="mt-6 rounded-2xl border border-brand-border bg-brand-black p-4">
+  <p class="text-sm font-semibold text-brand-cream">
+    Delivery details
+  </p>
+
+  <p class="mt-2 text-xs leading-5 text-brand-muted">
+    Choose how you want to receive your membership package inclusions.
+  </p>
+
+  <fieldset class="mt-4">
+    <legend class="text-xs font-semibold text-brand-cream">
+      Fulfillment method
     </legend>
 
     <div class="mt-3 grid gap-3 sm:grid-cols-2">
       <label
         class="cursor-pointer rounded-2xl border p-4 transition"
         :class="
-          membershipPaymentForm.paymentMethod === 'e-wallet'
+          membershipPaymentForm.deliveryDetails.fulfillmentType === 'dropship'
             ? 'border-brand-gold bg-brand-gold/10'
-            : 'border-brand-border bg-brand-black hover:border-brand-gold/60'
+            : 'border-brand-border bg-brand-panel hover:border-brand-gold/60'
         "
       >
         <input
           type="radio"
-          name="membership-payment-method"
-          value="e-wallet"
-          x-model="membershipPaymentForm.paymentMethod"
+          name="membership-fulfillment"
+          value="dropship"
+          x-model="membershipPaymentForm.deliveryDetails.fulfillmentType"
+          @change="handleMembershipFulfillmentChange()"
           class="sr-only"
-          required
         >
 
-        <span
-          class="block text-sm font-semibold text-brand-cream"
-        >
-          E-wallet
+        <span class="block text-sm font-semibold text-brand-cream">
+          Dropship
         </span>
-
-        <span
-          class="mt-1 block text-xs leading-5 text-brand-muted"
-        >
-          GCash or Maya. Use the official company account provided by admin.
+        <span class="mt-1 block text-xs leading-5 text-brand-muted">
+          Deliver the package to your selected address.
         </span>
       </label>
 
       <label
         class="cursor-pointer rounded-2xl border p-4 transition"
         :class="
-          membershipPaymentForm.paymentMethod === 'bank-transfer'
+          membershipPaymentForm.deliveryDetails.fulfillmentType === 'pickup'
             ? 'border-brand-gold bg-brand-gold/10'
-            : 'border-brand-border bg-brand-black hover:border-brand-gold/60'
+            : 'border-brand-border bg-brand-panel hover:border-brand-gold/60'
         "
       >
         <input
           type="radio"
-          name="membership-payment-method"
-          value="bank-transfer"
-          x-model="membershipPaymentForm.paymentMethod"
+          name="membership-fulfillment"
+          value="pickup"
+          x-model="membershipPaymentForm.deliveryDetails.fulfillmentType"
+          @change="handleMembershipFulfillmentChange()"
           class="sr-only"
-          required
         >
 
-        <span
-          class="block text-sm font-semibold text-brand-cream"
-        >
-          Bank Transfer
+        <span class="block text-sm font-semibold text-brand-cream">
+          Pickup
         </span>
-
-        <span
-          class="mt-1 block text-xs leading-5 text-brand-muted"
-        >
-          Bank details pending. Official bank transfer details will be added after client confirmation.
+        <span class="mt-1 block text-xs leading-5 text-brand-muted">
+          Pickup at 1244 Gen. Jacinto St, Makati City, Metro Manila.
         </span>
       </label>
     </div>
   </fieldset>
 
+  <!-- Pickup info -->
   <div
-    x-show="membershipPaymentForm.paymentMethod === 'e-wallet'"
+    x-show="isMembershipPickup()"
     x-transition
-    class="mt-4 rounded-2xl border border-brand-gold/30 bg-brand-black p-4"
+    class="mt-4 rounded-2xl border border-brand-gold/30 bg-brand-gold/10 p-4"
   >
-    <p
-      class="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-brand-gold"
-    >
-            Official GCash / Maya Account
-    </p>
-
-    <p class="mt-2 text-sm leading-6 text-brand-muted">
-      Official GCash or Maya account details will be provided by admin before payment.
-    </p>
-  </div>
-
-  <div
-    x-show="membershipPaymentForm.paymentMethod === 'bank-transfer'"
-    x-transition
-    class="mt-4 rounded-2xl border border-brand-gold/30 bg-brand-black p-4"
-  >
-    <p
-      class="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-brand-gold"
-    >
-           Bank Details Pending
-    </p>
-
-    <p class="mt-2 text-sm leading-6 text-brand-muted">
-      Official bank name, account name, and account number will be added after client confirmation.
-    </p>
-    </div>
-
-  <div class="mt-5">
-    <label
-     for="membership-sender-name"
-     class="text-sm font-semibold text-brand-cream"
-     >
-      Sender or account name
-    </label>
-
-    <input
-      id="membership-sender-name"
-      type="text"
-      x-model.trim="membershipPaymentForm.senderName"
-      autocomplete="name"
-      placeholder="Name used for payment"
-      class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
-      required
-    >
-  </div>
-
-  <section class="mt-6 rounded-2xl border border-brand-border bg-brand-black p-4">
     <p class="text-sm font-semibold text-brand-cream">
-      Delivery details
+      Store pickup
     </p>
-
-    <p class="mt-2 text-xs leading-5 text-brand-muted">
-      Please complete the delivery address for your package inclusions before submitting payment proof.
+    <p class="mt-1 text-xs leading-5 text-brand-muted">
+      No delivery fee for pickup orders.
     </p>
+  </div>
 
-    <div class="mt-4 grid gap-4 sm:grid-cols-2">
-      <input type="text" x-model.trim="membershipPaymentForm.deliveryDetails.recipientFirstName" placeholder="Recipient first name" maxlength="80" required class="h-12 rounded-xl border border-brand-border bg-brand-panel px-4 text-sm text-brand-cream outline-none focus:border-brand-gold">
-      <input type="text" x-model.trim="membershipPaymentForm.deliveryDetails.recipientLastName" placeholder="Recipient last name" maxlength="80" required class="h-12 rounded-xl border border-brand-border bg-brand-panel px-4 text-sm text-brand-cream outline-none focus:border-brand-gold">
-      <input type="tel" x-model.trim="membershipPaymentForm.deliveryDetails.recipientMobile" placeholder="Mobile number" maxlength="20" required class="h-12 rounded-xl border border-brand-border bg-brand-panel px-4 text-sm text-brand-cream outline-none focus:border-brand-gold sm:col-span-2">
-      <input type="text" x-model.trim="membershipPaymentForm.deliveryDetails.province" readonly required class="h-12 rounded-xl border border-brand-border bg-brand-panel px-4 text-sm text-brand-muted outline-none">
+  <!-- Dropship fields -->
+  <div x-show="isMembershipDropship()" x-transition>
+    <div class="mt-5">
+      <label
+        for="membership-delivery-region"
+        class="text-xs font-semibold text-brand-cream"
+      >
+        Delivery area
+      </label>
 
-<select
-  x-model="membershipPaymentForm.deliveryDetails.city"
-  required
-  class="h-12 rounded-xl border border-brand-border bg-brand-panel px-4 text-sm text-brand-cream outline-none focus:border-brand-gold"
->
-  <option value="">
-    Select Metro Manila city
-  </option>
-  <template x-for="city in metroManilaCities" :key="city">
-    <option :value="city" x-text="city"></option>
-  </template>
-</select>
-      <input type="text" x-model.trim="membershipPaymentForm.deliveryDetails.barangay" placeholder="Barangay" maxlength="100" required class="h-12 rounded-xl border border-brand-border bg-brand-panel px-4 text-sm text-brand-cream outline-none focus:border-brand-gold sm:col-span-2">
-      <input type="text" x-model.trim="membershipPaymentForm.deliveryDetails.houseStreet" placeholder="House no. and street" maxlength="180" required class="h-12 rounded-xl border border-brand-border bg-brand-panel px-4 text-sm text-brand-cream outline-none focus:border-brand-gold sm:col-span-2">
-      <input type="text" x-model.trim="membershipPaymentForm.deliveryDetails.landmark" placeholder="Landmark optional" maxlength="180" class="h-12 rounded-xl border border-brand-border bg-brand-panel px-4 text-sm text-brand-cream outline-none focus:border-brand-gold sm:col-span-2">
+      <select
+        id="membership-delivery-region"
+        x-model="membershipPaymentForm.deliveryDetails.region"
+        @change="handleMembershipDeliveryRegionChange()"
+        class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-panel px-4 text-sm text-brand-cream outline-none focus:border-brand-gold"
+      >
+        <option value="">Select delivery area</option>
+        <option value="ncr">Metro Manila</option>
+        <option value="luzon">Luzon outside Metro Manila</option>
+        <option value="visayas">Visayas</option>
+        <option value="mindanao">Mindanao</option>
+      </select>
     </div>
+
+    <!-- Metro Manila delivery method -->
+    <fieldset
+      x-show="isMembershipMetroManilaDelivery()"
+      x-transition
+      class="mt-5"
+    >
+      <legend class="text-xs font-semibold text-brand-cream">
+        Delivery method
+      </legend>
+
+      <div class="mt-3 grid gap-3 sm:grid-cols-2">
+        <label
+          class="cursor-pointer rounded-2xl border p-4 transition"
+          :class="
+            membershipPaymentForm.deliveryDetails.deliveryMethod === 'spx'
+              ? 'border-brand-gold bg-brand-gold/10'
+              : 'border-brand-border bg-brand-panel hover:border-brand-gold/60'
+          "
+        >
+          <input
+            type="radio"
+            name="membership-delivery-method"
+            value="spx"
+            x-model="membershipPaymentForm.deliveryDetails.deliveryMethod"
+            class="sr-only"
+          >
+
+          <span class="block text-sm font-semibold text-brand-cream">
+            SPX 1 to 3 days
+          </span>
+          <span class="mt-1 block text-xs text-brand-muted">
+            ₱120 delivery fee
+          </span>
+        </label>
+
+        <label
+          class="cursor-pointer rounded-2xl border p-4 transition"
+          :class="
+            membershipPaymentForm.deliveryDetails.deliveryMethod === 'same-day'
+              ? 'border-brand-gold bg-brand-gold/10'
+              : 'border-brand-border bg-brand-panel hover:border-brand-gold/60'
+          "
+        >
+          <input
+            type="radio"
+            name="membership-delivery-method"
+            value="same-day"
+            x-model="membershipPaymentForm.deliveryDetails.deliveryMethod"
+            class="sr-only"
+          >
+
+          <span class="block text-sm font-semibold text-brand-cream">
+            Same-day delivery
+          </span>
+          <span class="mt-1 block text-xs text-brand-muted">
+            ₱150 delivery fee
+          </span>
+        </label>
+      </div>
+
+      <div class="mt-4 flex items-center justify-between border-t border-brand-border pt-4">
+        <span class="text-xs text-brand-muted">Delivery fee</span>
+        <span
+          class="text-sm font-semibold text-brand-gold"
+          x-text="membershipDeliveryFeeLabel()"
+        ></span>
+      </div>
+    </fieldset>
+
+    <!-- Outside Metro Manila warning -->
+    <div
+      x-show="membershipRequiresShippingConfirmation()"
+      x-transition
+      class="mt-5 rounded-2xl border border-amber-400/30 bg-amber-400/10 p-4"
+    >
+      <p class="text-sm font-semibold text-amber-100">
+        Shipping confirmation required
+      </p>
+      <p class="mt-2 text-xs leading-5 text-amber-100/80">
+        Delivery outside Metro Manila requires manual shipping confirmation.
+        Please message us first before payment so we can confirm the delivery
+        fee and schedule.
+      </p>
+      <a
+        href="https://www.facebook.com/YourProduct2026"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="premium-cta mt-4 inline-flex min-h-10 items-center justify-center rounded-full bg-brand-gold px-5 text-xs font-semibold text-[#17130d]"
+      >
+        Confirm Shipping on Messenger
+      </a>
+    </div>
+
+    <!-- Address fields (only for Metro Manila dropship) -->
+    <div
+      x-show="
+        isMembershipMetroManilaDelivery() &&
+        !membershipRequiresShippingConfirmation()
+      "
+      x-transition
+      class="mt-5 grid gap-4 sm:grid-cols-2"
+    >
+      <input
+        type="text"
+        x-model.trim="membershipPaymentForm.deliveryDetails.recipientFirstName"
+        placeholder="Recipient first name"
+        maxlength="80"
+        class="h-12 rounded-xl border border-brand-border bg-brand-panel px-4 text-sm text-brand-cream outline-none focus:border-brand-gold"
+      >
+
+      <input
+        type="text"
+        x-model.trim="membershipPaymentForm.deliveryDetails.recipientLastName"
+        placeholder="Recipient last name"
+        maxlength="80"
+        class="h-12 rounded-xl border border-brand-border bg-brand-panel px-4 text-sm text-brand-cream outline-none focus:border-brand-gold"
+      >
+
+      <input
+        type="tel"
+        x-model.trim="membershipPaymentForm.deliveryDetails.recipientMobile"
+        placeholder="Mobile number"
+        maxlength="20"
+        class="h-12 rounded-xl border border-brand-border bg-brand-panel px-4 text-sm text-brand-cream outline-none focus:border-brand-gold sm:col-span-2"
+      >
+
+      <input
+        type="text"
+        x-model.trim="membershipPaymentForm.deliveryDetails.province"
+        readonly
+        class="h-12 rounded-xl border border-brand-border bg-brand-panel px-4 text-sm text-brand-muted outline-none"
+      >
+
+      <select
+        x-model="membershipPaymentForm.deliveryDetails.city"
+        class="h-12 rounded-xl border border-brand-border bg-brand-panel px-4 text-sm text-brand-cream outline-none focus:border-brand-gold"
+      >
+        <option value="">Select Metro Manila city</option>
+        <template x-for="city in metroManilaCities" :key="city">
+          <option :value="city" x-text="city"></option>
+        </template>
+      </select>
+
+      <input
+        type="text"
+        x-model.trim="membershipPaymentForm.deliveryDetails.barangay"
+        placeholder="Barangay"
+        maxlength="100"
+        class="h-12 rounded-xl border border-brand-border bg-brand-panel px-4 text-sm text-brand-cream outline-none focus:border-brand-gold sm:col-span-2"
+      >
+
+      <input
+        type="text"
+        x-model.trim="membershipPaymentForm.deliveryDetails.houseStreet"
+        placeholder="House no. and street"
+        maxlength="180"
+        class="h-12 rounded-xl border border-brand-border bg-brand-panel px-4 text-sm text-brand-cream outline-none focus:border-brand-gold sm:col-span-2"
+      >
+
+      <input
+        type="text"
+        x-model.trim="membershipPaymentForm.deliveryDetails.landmark"
+        placeholder="Landmark optional"
+        maxlength="180"
+        class="h-12 rounded-xl border border-brand-border bg-brand-panel px-4 text-sm text-brand-cream outline-none focus:border-brand-gold sm:col-span-2"
+      >
+    </div>
+  </div>
+
+  <div
+  x-show="isMembershipPickup() || isMembershipMetroManilaDelivery()"
+  x-transition
+>
+  <section
+    class="mt-6 rounded-2xl border border-brand-border bg-brand-black p-4"
+  >
+    <p
+      class="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-brand-gold"
+    >
+      Order Summary
+    </p>
+
+    <div class="mt-4 space-y-3">
+      <div class="flex items-center justify-between gap-4">
+        <span
+          class="text-sm text-brand-muted"
+          x-text="selectedPackage?.name || 'Membership Package'"
+        ></span>
+
+        <span
+          class="text-sm font-semibold text-brand-cream"
+          x-text="formatMembershipMoney(membershipPackagePrice())"
+        ></span>
+      </div>
+
+      <div class="flex items-center justify-between gap-4">
+        <span
+          class="text-sm text-brand-muted"
+          x-text="membershipDeliverySummaryLabel()"
+        ></span>
+
+        <span
+          class="text-sm font-semibold text-brand-cream"
+          x-text="formatMembershipMoney(membershipDeliveryFee() ?? 0)"
+        ></span>
+      </div>
+
+      <div
+        class="flex items-center justify-between gap-4 border-t border-brand-border pt-4"
+      >
+        <span
+          class="text-sm font-semibold uppercase tracking-[0.12em] text-brand-cream"
+        >
+          Total to Pay
+        </span>
+
+        <span
+          class="font-display text-2xl text-brand-gold"
+          x-text="formatMembershipMoney(membershipPaymentTotal())"
+        ></span>
+      </div>
+    </div>
+  </section>
+
+  <section
+    class="mt-6 rounded-2xl border border-brand-border bg-brand-black p-4"
+  >
+    <p
+      class="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-brand-gold"
+    >
+      Payment Details
+    </p>
+
+    <fieldset class="mt-4">
+      <legend class="text-sm font-semibold text-brand-cream">
+        Payment method
+      </legend>
+
+      <div class="mt-3 grid gap-3 sm:grid-cols-2">
+        <label
+          class="cursor-pointer rounded-2xl border p-4 transition"
+          :class="
+            membershipPaymentForm.paymentMethod === 'e-wallet'
+              ? 'border-brand-gold bg-brand-gold/10'
+              : 'border-brand-border bg-brand-panel hover:border-brand-gold/60'
+          "
+        >
+          <input
+            type="radio"
+            name="membership-payment-method"
+            value="e-wallet"
+            x-model="membershipPaymentForm.paymentMethod"
+            class="sr-only"
+          >
+
+          <span class="block text-sm font-semibold text-brand-cream">
+            E-wallet
+          </span>
+
+          <span class="mt-1 block text-xs leading-5 text-brand-muted">
+            GCash or Maya. Use the official company account provided by admin.
+          </span>
+        </label>
+
+        <label
+          class="cursor-pointer rounded-2xl border p-4 transition"
+          :class="
+            membershipPaymentForm.paymentMethod === 'bank-transfer'
+              ? 'border-brand-gold bg-brand-gold/10'
+              : 'border-brand-border bg-brand-panel hover:border-brand-gold/60'
+          "
+        >
+          <input
+            type="radio"
+            name="membership-payment-method"
+            value="bank-transfer"
+            x-model="membershipPaymentForm.paymentMethod"
+            class="sr-only"
+          >
+
+          <span class="block text-sm font-semibold text-brand-cream">
+            Bank Transfer
+          </span>
+
+          <span class="mt-1 block text-xs leading-5 text-brand-muted">
+            Bank details pending. Official bank transfer details will be added after client confirmation.
+          </span>
+        </label>
+      </div>
+    </fieldset>
+
+    <div
+      x-show="membershipPaymentForm.paymentMethod === 'e-wallet'"
+      x-transition
+      class="mt-4 rounded-2xl border border-brand-gold/30 bg-brand-panel p-4"
+    >
+      <p
+        class="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-brand-gold"
+      >
+        Official GCash / Maya Account
+      </p>
+
+      <p class="mt-2 text-sm leading-6 text-brand-muted">
+        Official GCash or Maya account details will be provided by admin before payment.
+      </p>
+    </div>
+
+    <div
+      x-show="membershipPaymentForm.paymentMethod === 'bank-transfer'"
+      x-transition
+      class="mt-4 rounded-2xl border border-brand-gold/30 bg-brand-panel p-4"
+    >
+      <p
+        class="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-brand-gold"
+      >
+        Bank Details Pending
+      </p>
+
+      <p class="mt-2 text-sm leading-6 text-brand-muted">
+        Official bank name, account name, and account number will be added after client confirmation.
+      </p>
+    </div>
+
   </section>
 
   <div class="mt-5">
@@ -1470,6 +1749,8 @@ selectedDashboardPackage.price,
           : 'Submit Payment Proof for Review'
   "
 ></button>
+
+</div>
 </form>
           </section>
         </div>
@@ -2282,6 +2563,7 @@ let signedInOrdersError = false
 let signedInMembershipPackages = []
 let signedInMembershipPackagesError = false
 let signedInMembershipCelebration = null
+let signedInReferralCommissionNotification = null
 
 Alpine.data('customerPortal', () => ({
   activePage:
@@ -2299,8 +2581,12 @@ Alpine.data('customerPortal', () => ({
   membershipPackages: signedInMembershipPackages,
   membershipPackagesError: signedInMembershipPackagesError,
   membershipCelebration: signedInMembershipCelebration,
-  membershipCelebrationOpen: Boolean(signedInMembershipCelebration),
-  isMember: signedInProfile.membership_status === 'active',
+membershipCelebrationOpen: Boolean(signedInMembershipCelebration),
+referralCommissionNotification: signedInReferralCommissionNotification,
+referralCommissionNotificationOpen: Boolean(
+  signedInReferralCommissionNotification,
+),
+isMember: signedInProfile.membership_status === 'active',
   hasPendingMembership,
   selectedPackage: selectedDashboardPackage,
   activeCategory: 'all',
@@ -2308,17 +2594,19 @@ Alpine.data('customerPortal', () => ({
 metroManilaCities: METRO_MANILA_CITIES,
 membershipPaymentForm: {
     paymentMethod: '',
-    senderName: '',
     proofFile: null,
     proofFileName: '',
     proofPreviewUrl: '',
     acceptedConfirmation: false,
     deliveryDetails: {
+      fulfillmentType: 'dropship',
+      region: '',
+      deliveryMethod: '',
       recipientFirstName: signedInProfile.first_name ?? '',
       recipientLastName: signedInProfile.last_name ?? '',
       recipientMobile: signedInProfile.mobile_number ?? '',
-      province: 'Metro Manila',
-city: '',
+      province: '',
+      city: '',
       barangay: '',
       houseStreet: '',
       landmark: '',
@@ -2513,6 +2801,22 @@ previewTimer: null,
     }, 150)
   },
 
+  closeReferralCommissionNotification() {
+    if (this.referralCommissionNotification?.storageKey) {
+      localStorage.setItem(
+        this.referralCommissionNotification.storageKey,
+        'seen',
+      )
+    }
+  
+    this.referralCommissionNotificationOpen = false
+  },
+  
+  viewReferralCommissionEarnings() {
+    this.closeReferralCommissionNotification()
+    this.openPage('earnings')
+  },
+
   async savePersonalInfo() {
     if (this.isSavingProfile) return
 
@@ -2605,6 +2909,147 @@ const defaultLandmark = defaultAddressEnabled
     }
   },
 
+  isMembershipDropship() {
+    return (
+      this.membershipPaymentForm.deliveryDetails.fulfillmentType ===
+      'dropship'
+    )
+  },
+
+  isMembershipPickup() {
+    return (
+      this.membershipPaymentForm.deliveryDetails.fulfillmentType ===
+      'pickup'
+    )
+  },
+
+  isMembershipMetroManilaDelivery() {
+    return (
+      this.isMembershipDropship() &&
+      this.membershipPaymentForm.deliveryDetails.region === 'ncr'
+    )
+  },
+
+  membershipRequiresShippingConfirmation() {
+    return (
+      this.isMembershipDropship() &&
+      ['luzon', 'visayas', 'mindanao'].includes(
+        this.membershipPaymentForm.deliveryDetails.region,
+      )
+    )
+  },
+
+  membershipDeliveryFee() {
+    const delivery = this.membershipPaymentForm.deliveryDetails
+
+    if (this.isMembershipPickup()) return 0
+    if (!this.isMembershipDropship()) return 0
+    if (delivery.region !== 'ncr') return null
+
+    if (delivery.deliveryMethod === 'same-day') return 150
+    if (delivery.deliveryMethod === 'spx') return 120
+
+    return null
+  },
+
+  membershipDeliveryFeeLabel() {
+    const fee = this.membershipDeliveryFee()
+
+    if (
+      fee === null &&
+      !this.membershipPaymentForm.deliveryDetails.region
+    ) {
+      return 'Select delivery area'
+    }
+
+    if (fee === null) {
+      return 'Contact first'
+    }
+
+    return `₱${fee.toLocaleString('en-PH')}`
+  },
+
+  membershipPackagePrice() {
+    return Number(this.selectedPackage?.price || 0)
+  },
+  
+  membershipPaymentTotal() {
+    const packagePrice = this.membershipPackagePrice()
+    const deliveryFee = this.membershipDeliveryFee()
+  
+    return packagePrice + (deliveryFee ?? 0)
+  },
+  
+  membershipDeliverySummaryLabel() {
+    const delivery = this.membershipPaymentForm.deliveryDetails
+  
+    if (this.isMembershipPickup()) {
+      return 'Pickup'
+    }
+  
+    if (delivery.deliveryMethod === 'same-day') {
+      return 'Same-day Delivery'
+    }
+  
+    if (delivery.deliveryMethod === 'spx') {
+      return 'SPX Delivery'
+    }
+  
+    return 'Delivery'
+  },
+  
+  formatMembershipMoney(amount) {
+    return `₱${Number(amount || 0).toLocaleString('en-PH')}`
+  },
+
+  handleMembershipFulfillmentChange() {
+    const delivery = this.membershipPaymentForm.deliveryDetails
+
+    this.membershipPaymentError = ''
+    this.membershipPaymentTested = false
+
+    if (delivery.fulfillmentType === 'pickup') {
+      delivery.region = ''
+      delivery.deliveryMethod = ''
+      delivery.province = ''
+      delivery.city = ''
+      delivery.barangay = ''
+      delivery.houseStreet = ''
+      delivery.landmark = ''
+      return
+    }
+
+    delivery.deliveryMethod = 'spx'
+  },
+
+  handleMembershipDeliveryRegionChange() {
+    const delivery = this.membershipPaymentForm.deliveryDetails
+
+    this.membershipPaymentError = ''
+    this.membershipPaymentTested = false
+
+    if (delivery.region === 'ncr') {
+      delivery.province = 'Metro Manila'
+
+      if (!this.metroManilaCities.includes(delivery.city)) {
+        delivery.city = ''
+      }
+
+      if (!['spx', 'same-day'].includes(delivery.deliveryMethod)) {
+        delivery.deliveryMethod = 'spx'
+      }
+
+      return
+    }
+
+    if (delivery.province === 'Metro Manila') {
+      delivery.province = ''
+    }
+
+    delivery.city = ''
+    delivery.deliveryMethod = ''
+  },
+
   handleMembershipProof(event) {
     const file = event.target.files?.[0]
 
@@ -2671,17 +3116,21 @@ const defaultLandmark = defaultAddressEnabled
     }
 
     const payment = this.membershipPaymentForm
-    const senderName = payment.senderName.trim()
     const proofFile = payment.proofFile
-    const deliveryDetails = {
-  recipientFirstName: payment.deliveryDetails.recipientFirstName.trim(),
-  recipientLastName: payment.deliveryDetails.recipientLastName.trim(),
-  recipientMobile: payment.deliveryDetails.recipientMobile.trim(),
-  province: payment.deliveryDetails.province.trim(),
-  city: payment.deliveryDetails.city.trim(),
-  barangay: payment.deliveryDetails.barangay.trim(),
-  houseStreet: payment.deliveryDetails.houseStreet.trim(),
-  landmark: payment.deliveryDetails.landmark.trim(),
+    const delivery = payment.deliveryDetails
+
+const deliveryDetails = {
+  fulfillmentType: delivery.fulfillmentType,
+  region: delivery.region,
+  deliveryMethod: delivery.deliveryMethod,
+  recipientFirstName: delivery.recipientFirstName.trim(),
+  recipientLastName: delivery.recipientLastName.trim(),
+  recipientMobile: delivery.recipientMobile.trim(),
+  province: delivery.province.trim(),
+  city: delivery.city.trim(),
+  barangay: delivery.barangay.trim(),
+  houseStreet: delivery.houseStreet.trim(),
+  landmark: delivery.landmark.trim(),
 }
 
     const allowedTypes = {
@@ -2695,24 +3144,65 @@ const defaultLandmark = defaultAddressEnabled
       return
     }
 
-    if (!senderName || senderName.length > 120) {
+    if (
+      !['dropship', 'pickup'].includes(deliveryDetails.fulfillmentType)
+    ) {
       this.membershipPaymentError =
-        'Enter the sender or account name used for payment.'
+        'Select how you want to receive your membership package.'
       return
     }
-
+    
     if (
-      !deliveryDetails.recipientFirstName ||
-      !deliveryDetails.recipientLastName ||
-      !deliveryDetails.recipientMobile ||
-      !deliveryDetails.province ||
-      !deliveryDetails.city ||
-      !deliveryDetails.barangay ||
-      !deliveryDetails.houseStreet
+      deliveryDetails.fulfillmentType === 'dropship' &&
+      !deliveryDetails.region
+    ) {
+      this.membershipPaymentError = 'Select a delivery area.'
+      return
+    }
+    
+    if (this.membershipRequiresShippingConfirmation()) {
+      this.membershipPaymentError =
+        'Shipping outside Metro Manila requires confirmation. Please message us before payment.'
+      return
+    }
+    
+    if (
+      deliveryDetails.fulfillmentType === 'dropship' &&
+      deliveryDetails.region === 'ncr' &&
+      !['spx', 'same-day'].includes(deliveryDetails.deliveryMethod)
+    ) {
+      this.membershipPaymentError = 'Select a delivery method.'
+      return
+    }
+    
+    if (
+      deliveryDetails.fulfillmentType === 'dropship' &&
+      (
+        !deliveryDetails.recipientFirstName ||
+        !deliveryDetails.recipientLastName ||
+        !deliveryDetails.recipientMobile ||
+        !deliveryDetails.province ||
+        !deliveryDetails.city ||
+        !deliveryDetails.barangay ||
+        !deliveryDetails.houseStreet
+      )
     ) {
       this.membershipPaymentError =
         'Complete the delivery name, mobile number, and address.'
       return
+    }
+
+    if (deliveryDetails.fulfillmentType === 'pickup') {
+      deliveryDetails.region = ''
+      deliveryDetails.deliveryMethod = ''
+      deliveryDetails.recipientFirstName = ''
+      deliveryDetails.recipientLastName = ''
+      deliveryDetails.recipientMobile = ''
+      deliveryDetails.province = ''
+      deliveryDetails.city = ''
+      deliveryDetails.barangay = ''
+      deliveryDetails.houseStreet = ''
+      deliveryDetails.landmark = ''
     }
 
     if (
@@ -2796,7 +3286,6 @@ const defaultLandmark = defaultAddressEnabled
           {
             p_application_id: application.id,
             p_payment_method: payment.paymentMethod,
-            p_sender_name: senderName,
             p_proof_path: proofPath,
             p_proof_file_name: proofFile.name,
             p_delivery_details: deliveryDetails,
@@ -3222,9 +3711,10 @@ registerProductViewStore(
 
     const orderIds = (orderRows ?? []).map((order) => order.id)
     let pointsByOrderId = new Map()
-    let signedInPointsBalance = 0
-    let hasConfirmedMembershipPoints = false
-    let signedInDirectReferrals = 0
+let membershipPointsByApplicationId = new Map()
+let signedInPointsBalance = 0
+let hasConfirmedMembershipPoints = false
+let signedInDirectReferrals = 0
 
 if (orderIds.length > 0) {
   const { data: pointRows, error: pointsError } = await supabase
@@ -3251,7 +3741,7 @@ if (orderIds.length > 0) {
 const { data: balancePointRows, error: balancePointsError } =
   await supabase
     .from('points_transactions')
-    .select('points, type')
+    .select('points, type, membership_application_id')
     .eq('customer_id', user.id)
     .eq('status', 'confirmed')
 
@@ -3260,26 +3750,65 @@ if (balancePointsError) {
 } else {
   const confirmedBalanceRows = balancePointRows ?? []
 
-hasConfirmedMembershipPoints = confirmedBalanceRows.some(
-  (row) => row.type === 'membership_award',
-)
-
-signedInPointsBalance = confirmedBalanceRows.reduce(
-  (total, row) => total + Number(row.points || 0),
-  0,
-)
+  const confirmedMembershipPointRows = confirmedBalanceRows.filter(
+    (row) =>
+      row.type === 'membership_award' &&
+      row.membership_application_id,
+  )
+  
+  hasConfirmedMembershipPoints =
+    confirmedMembershipPointRows.length > 0
+  
+  membershipPointsByApplicationId = new Map(
+    confirmedMembershipPointRows.map((row) => [
+      row.membership_application_id,
+      Number(row.points || 0),
+    ]),
+  )
+  
+  signedInPointsBalance = confirmedBalanceRows.reduce(
+    (total, row) => total + Number(row.points || 0),
+    0,
+  )
 }
 
 const { data: directReferralRows, error: directReferralsError } =
   await supabase
     .from('referral_commissions')
-    .select('id')
+    .select(`
+      id,
+      commission_amount,
+      package_id,
+      created_at
+    `)
     .eq('referrer_customer_id', user.id)
+    .order('created_at', { ascending: false })
 
 if (directReferralsError) {
-  console.error('Unable to load direct referral count:', directReferralsError)
+  console.error('Unable to load direct referrals:', directReferralsError)
 } else {
   signedInDirectReferrals = directReferralRows?.length || 0
+
+  const latestReferralCommission = directReferralRows?.[0]
+
+  if (latestReferralCommission) {
+    const storageKey =
+      'your-product-seen-referral-commission-' +
+      latestReferralCommission.id
+
+    const commissionAlreadySeen =
+      localStorage.getItem(storageKey) === 'seen'
+
+    if (!commissionAlreadySeen) {
+      signedInReferralCommissionNotification = {
+        storageKey,
+        amount: Number(
+          latestReferralCommission.commission_amount || 0,
+        ),
+        packageId: latestReferralCommission.package_id,
+      }
+    }
+  }
 }
 
   signedInOrders = (orderRows ?? []).map((order) => ({
@@ -3322,10 +3851,12 @@ if (directReferralsError) {
             option.id === application.selected_package_option_id,
         ) || null
   
-      return {
-        ...application,
-        package: packageItem || null,
-        packageOption,
+        return {
+          ...application,
+          pointsEarned:
+            membershipPointsByApplicationId.get(application.id) ?? 0,
+          package: packageItem || null,
+          packageOption,
         packageName:
           packageItem?.name ||
           application.package_id ||
@@ -5249,7 +5780,17 @@ Email is not changed.
         <p
           class="mt-4 text-sm text-brand-cream"
           x-text="membershipPackage.packageQuantity.toLocaleString('en-PH') + ' assorted bottles included'"
-        ></p>
+        >
+        <div
+  x-show="Number(membershipPackage.pointsEarned || 0) > 0"
+  class="mt-4 inline-flex items-center gap-2 rounded-xl border border-brand-gold/30 bg-brand-gold/10 px-4 py-3"
+>
+  <span
+    class="text-sm font-semibold text-brand-gold"
+    x-text="'+' + Number(membershipPackage.pointsEarned || 0).toLocaleString('en-PH') + ' Points Earned'"
+  ></span>
+</div>
+        </p>
 
         <div
           x-show="membershipPackage.packageInclusions.length > 0"
@@ -5465,6 +6006,85 @@ Email is not changed.
         @click="viewMembershipCelebrationHistory()"
       >
         View Order History
+      </button>
+    </div>
+  </div>
+</div>
+
+<div
+  x-show="referralCommissionNotificationOpen"
+  x-cloak
+  x-transition.opacity
+  class="fixed inset-0 z-[135] grid place-items-center bg-black/85 px-4 backdrop-blur-sm"
+  @click.self="closeReferralCommissionNotification()"
+  @keydown.escape.window="closeReferralCommissionNotification()"
+>
+  <div
+    class="w-full max-w-md rounded-[1.75rem] border border-brand-gold/40 bg-brand-panel p-6 text-center shadow-gold-soft"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="referral-commission-title"
+  >
+    <div
+      class="mx-auto flex size-14 items-center justify-center rounded-full border border-brand-gold/40 bg-brand-gold/10"
+      aria-hidden="true"
+    >
+      <svg
+        class="size-7 text-brand-gold"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.7"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <circle cx="12" cy="12" r="8.5" />
+        <path d="M14.5 9.5c-.5-.7-1.3-1-2.4-1-1.4 0-2.4.7-2.4 1.7 0 1.1.9 1.5 2.5 1.9 1.6.4 2.4.8 2.4 1.9 0 1-.9 1.7-2.5 1.7-1.2 0-2.1-.4-2.7-1.2" />
+        <path d="M12 6.8v10.4" />
+      </svg>
+    </div>
+
+    <p
+      class="mt-5 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
+    >
+      Referral Reward
+    </p>
+
+    <h2
+      id="referral-commission-title"
+      class="mt-2 font-display text-3xl text-brand-cream"
+    >
+      You earned a commission!
+    </h2>
+
+    <p class="mt-3 text-sm leading-6 text-brand-muted">
+      Your direct referral's membership package has been approved.
+    </p>
+
+    <p
+      class="mx-auto mt-5 inline-flex rounded-full border border-brand-gold/35 bg-brand-gold/10 px-5 py-2 text-lg font-semibold text-brand-gold"
+      x-text="'₱' + Number(referralCommissionNotification?.amount || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })"
+    ></p>
+
+    <p class="mt-4 text-sm leading-6 text-brand-muted">
+      Your 10% direct referral commission has been added to your earnings.
+    </p>
+
+    <div class="mt-6 grid gap-3 sm:grid-cols-2">
+      <button
+        type="button"
+        class="inline-flex min-h-11 items-center justify-center rounded-full border border-brand-border px-5 text-sm font-semibold text-brand-cream transition hover:border-brand-gold hover:text-brand-gold"
+        @click="closeReferralCommissionNotification()"
+      >
+        Close
+      </button>
+
+      <button
+        type="button"
+        class="premium-cta inline-flex min-h-11 items-center justify-center rounded-full bg-brand-gold px-5 text-sm font-semibold text-[#17130d]"
+        @click="viewReferralCommissionEarnings()"
+      >
+        View Earnings
       </button>
     </div>
   </div>
