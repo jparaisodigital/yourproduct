@@ -849,7 +849,7 @@ document.querySelector('#register-app').innerHTML = `
               ></p>
 
               <div
-                x-show="registrationTested"
+                x-show="registrationSuccess"
                 x-transition
                 class="mt-5 rounded-xl border border-[#2f6b59] bg-[#234f42] px-4 py-4 text-sm font-medium leading-6 text-[#fff8e9] shadow-sm"
                 role="status"
