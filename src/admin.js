@@ -2111,8 +2111,11 @@ savingAvailabilityProductId: null,
   salesDateTo: '',
 
   liveOrders: [],
-  liveOrdersLoading: true,
-  liveOrdersError: '',
+liveOrdersLoading: true,
+liveOrdersError: '',
+
+newOrderNotificationOpen: false,
+newOrderNotificationOrders: [],
 
   inventoryProducts: adminInventoryProducts,
   packageSupplies: adminPackageSupplies,
@@ -4414,6 +4417,30 @@ async awardOrderPoints() {
   }
 },
 
+closeNewOrderNotification() {
+  this.newOrderNotificationOrders.forEach((order) => {
+    localStorage.setItem(`admin-seen-order-${order.id}`, 'seen')
+  })
+
+  this.newOrderNotificationOpen = false
+  this.newOrderNotificationOrders = []
+},
+
+async viewNewOrderNotification(orderId) {
+  if (!orderId) return
+
+  localStorage.setItem(`admin-seen-order-${orderId}`, 'seen')
+
+  this.newOrderNotificationOrders =
+    this.newOrderNotificationOrders.filter(
+      (order) => order.id !== orderId,
+    )
+
+  this.newOrderNotificationOpen = false
+
+  await this.openOrderDetails(orderId)
+},
+
 async openOrderDetails(orderId) {
   const order = this.liveOrders.find((item) => item.id === orderId)
   if (!order) return
@@ -5650,6 +5677,18 @@ async loadLiveOrders() {
         pointsAwarded: pointsByOrderId.get(order.id) ?? 0,
       }
     })
+
+    const unseenPendingOrders = this.liveOrders.filter((order) => {
+      if (!this.isPendingOrderStatus(order.status)) return false
+    
+      return (
+        localStorage.getItem(`admin-seen-order-${order.id}`) !== 'seen'
+      )
+    })
+    
+    this.newOrderNotificationOrders = unseenPendingOrders
+    this.newOrderNotificationOpen = unseenPendingOrders.length > 0
+
     this.overviewPendingOrders = this.pendingOrderCount
   } catch (error) {
     console.error('Unable to load live orders:', error)
@@ -6107,7 +6146,126 @@ ${adminNavigationItems
 
     ${renderApplicationDetailsDrawer()}
 
-    ${renderOrderDetailsDrawer()}
+    <div
+  x-show="newOrderNotificationOpen"
+  x-transition.opacity
+  class="fixed inset-0 z-[60] flex items-center justify-center bg-black/65 px-4 py-6"
+  @click.self="closeNewOrderNotification()"
+  @keydown.escape.window="newOrderNotificationOpen && closeNewOrderNotification()"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="new-order-notification-title"
+>
+  <div
+    class="flex max-h-[85vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-brand-border bg-brand-panel shadow-2xl"
+    @click.stop
+  >
+    <div
+      class="flex shrink-0 items-start justify-between gap-4 border-b border-brand-border px-5 py-5 sm:px-6"
+    >
+      <div>
+        <p
+          class="text-xs font-semibold uppercase tracking-[0.18em] text-brand-gold"
+        >
+          New Orders
+        </p>
+
+        <h2
+          id="new-order-notification-title"
+          class="mt-2 text-xl font-semibold text-brand-cream sm:text-2xl"
+          x-text="newOrderNotificationOrders.length === 1
+            ? '1 Order Awaiting Verification'
+            : newOrderNotificationOrders.length + ' Orders Awaiting Verification'"
+        ></h2>
+
+        <p class="mt-2 text-sm leading-6 text-brand-muted">
+          Review the latest customer orders that need payment verification.
+        </p>
+      </div>
+
+      <button
+        type="button"
+        class="shrink-0 rounded-lg border border-brand-border px-3 py-2 text-sm text-brand-muted transition hover:border-brand-gold/40 hover:text-brand-gold"
+        @click="closeNewOrderNotification()"
+      >
+        Mark All Seen
+      </button>
+    </div>
+
+    <div class="min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-6">
+      <div class="space-y-4">
+        <template
+          x-for="order in newOrderNotificationOrders"
+          :key="order.id"
+        >
+          <article
+            class="rounded-xl border border-brand-border bg-black/10 p-4 sm:p-5"
+          >
+            <div
+              class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between"
+            >
+              <div class="min-w-0">
+                <p
+                  class="text-xs font-semibold uppercase tracking-[0.14em] text-brand-gold"
+                >
+                  Order
+                </p>
+
+                <p
+                  class="mt-1 break-all text-sm font-semibold text-brand-cream"
+                  x-text="order.id"
+                ></p>
+              </div>
+
+              <p
+                class="shrink-0 text-sm text-brand-muted"
+                x-text="formatDate(order.created_at)"
+              ></p>
+            </div>
+
+            <div
+              class="mt-4 grid gap-3 border-t border-brand-border pt-4 sm:grid-cols-2"
+            >
+              <div>
+                <p class="text-xs text-brand-muted">Customer</p>
+                <p
+                  class="mt-1 text-sm font-medium text-brand-cream"
+                  x-text="((order.customer_details?.firstName || '') + ' ' + (order.customer_details?.lastName || '')).trim() || order.customer_details?.emailAddress || 'Customer'"
+                ></p>
+              </div>
+
+              <div class="sm:text-right">
+                <p class="text-xs text-brand-muted">Amount</p>
+                <p
+                  class="mt-1 text-base font-semibold text-brand-cream"
+                  x-text="formatCurrency(Number(order.subtotal || 0) + Number(order.delivery_fee || 0))"
+                ></p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              class="mt-4 w-full rounded-xl bg-brand-gold px-4 py-3 text-sm font-semibold text-[#17130d] transition hover:brightness-110"
+              @click="viewNewOrderNotification(order.id)"
+            >
+              View Order
+            </button>
+          </article>
+        </template>
+      </div>
+    </div>
+
+    <div
+      class="shrink-0 border-t border-brand-border px-5 py-4 sm:px-6"
+    >
+      <p class="text-center text-xs leading-5 text-brand-muted">
+        Viewed orders will not appear here again. New pending orders will appear on the next dashboard load.
+      </p>
+    </div>
+  </div>
+</div>
+
+${renderOrderDetailsDrawer()}
     ${renderAdminInventoryAdjustmentDrawer()}
   </div>
 `
