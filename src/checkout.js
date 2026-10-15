@@ -639,16 +639,61 @@ async function startCheckout() {
           
         </div>
         <section
-          id="checkout-order-status"
-          x-show="submittedOrderId"
-          class="mt-8 rounded-[1.5rem] border border-[#2f6b59] bg-[#234f42] px-6 py-8 text-[#fff8e9]"
-          role="status"
-        >
-          <h2 class="font-display text-3xl">Order submitted</h2>
-          <p class="mt-2">Waiting for payment verification.</p>
-          <p class="mt-2 font-semibold" x-text="'Order ID: ' + submittedOrderId"></p>
-          <a href="/dashboard/?page=orderHistory" class="mt-4 inline-block underline">View Order History</a>
-        </section>
+  id="checkout-order-status"
+  x-show="submittedOrderId"
+  class="mt-8 rounded-[1.5rem] border border-[#2f6b59] bg-[#234f42] px-6 py-8 text-[#fff8e9]"
+  role="status"
+>
+  <p class="text-xs font-semibold uppercase tracking-[0.2em] text-[#d8eadf]">
+    Order received
+  </p>
+
+  <h2 class="mt-2 font-display text-3xl">
+    Thank you for your order.
+  </h2>
+
+  <p class="mt-3 max-w-2xl text-sm leading-6 text-[#e8f3ed]">
+    Your payment proof has been submitted and is waiting for verification.
+  </p>
+
+  <div class="mt-5 rounded-xl border border-white/15 bg-black/10 px-4 py-3">
+    <p class="text-xs uppercase tracking-[0.12em] text-[#c7ddd1]">
+      Order ID
+    </p>
+
+    <p
+      class="mt-1 break-all font-semibold"
+      x-text="submittedOrderId"
+    ></p>
+  </div>
+
+  <div class="mt-4 rounded-xl border border-white/15 bg-black/10 px-4 py-4">
+    <p class="text-sm font-semibold">
+      Member Points
+    </p>
+
+    <p class="mt-1 text-sm leading-6 text-[#e8f3ed]">
+      Eligible product-order points will be added after admin payment approval.
+    </p>
+  </div>
+
+  <div class="mt-6 flex flex-col gap-3 sm:flex-row">
+    <a
+      href="/dashboard/?page=orderHistory"
+      class="inline-flex min-h-11 items-center justify-center rounded-full bg-[#fff8e9] px-6 text-sm font-semibold text-[#234f42] transition hover:bg-white"
+    >
+      View Order History
+    </a>
+
+    <a
+      href="/dashboard/?page=createOrder"
+      class="inline-flex min-h-11 items-center justify-center rounded-full border border-white/30 px-6 text-sm font-semibold text-[#fff8e9] transition hover:border-white/60"
+    >
+      Continue Shopping
+    </a>
+  </div>
+</section>
+
         <section
           x-show="!submittedOrderId && $store.cart.itemCount === 0"
           class="mt-8 rounded-[1.5rem] border border-brand-border bg-brand-panel px-6 py-14 text-center shadow-panel"
@@ -1378,6 +1423,41 @@ async function startCheckout() {
     Bank transfer
   </option>
 </select>
+
+<div class="mt-5 rounded-xl border border-brand-border bg-brand-black p-4">
+  <p class="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-brand-gold">
+    Amount to pay
+  </p>
+
+  <div class="mt-3 space-y-2 text-sm">
+    <div class="flex items-center justify-between gap-4 text-brand-muted">
+      <span>Subtotal</span>
+      <span
+        class="font-semibold text-brand-cream"
+        x-text="formatMoney($store.cart.subtotal)"
+      ></span>
+    </div>
+
+    <div class="flex items-center justify-between gap-4 text-brand-muted">
+      <span>Delivery</span>
+      <span
+        class="font-semibold"
+        :class="deliveryFee() === 0 ? 'text-emerald-200' : 'text-brand-cream'"
+        x-text="deliveryFee() === 0 ? 'Free' : deliveryFeeLabel()"
+      ></span>
+    </div>
+  </div>
+
+  <div class="mt-4 flex items-end justify-between gap-4 border-t border-brand-border pt-4">
+    <span class="text-sm font-semibold uppercase tracking-[0.12em] text-brand-muted">
+      Total payable
+    </span>
+    <strong
+      class="font-display text-3xl text-brand-gold"
+      x-text="formatMoney(checkoutTotal())"
+    ></strong>
+  </div>
+</div>
               
               <div class="mt-5">
                 <label
@@ -1549,40 +1629,7 @@ async function startCheckout() {
     Details checked. You can now submit this order for admin verification.
   </div>
 
-  <div class="mt-5 rounded-xl border border-brand-border bg-brand-black p-4">
-  <p class="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-brand-gold">
-    Amount to pay
-  </p>
-
-  <div class="mt-3 space-y-2 text-sm">
-    <div class="flex items-center justify-between gap-4 text-brand-muted">
-      <span>Subtotal</span>
-      <span
-        class="font-semibold text-brand-cream"
-        x-text="formatMoney($store.cart.subtotal)"
-      ></span>
-    </div>
-
-    <div class="flex items-center justify-between gap-4 text-brand-muted">
-      <span>Delivery</span>
-      <span
-        class="font-semibold"
-        :class="deliveryFee() === 0 ? 'text-emerald-200' : 'text-brand-cream'"
-        x-text="deliveryFee() === 0 ? 'Free' : deliveryFeeLabel()"
-      ></span>
-    </div>
-  </div>
-
-  <div class="mt-4 flex items-end justify-between gap-4 border-t border-brand-border pt-4">
-    <span class="text-sm font-semibold uppercase tracking-[0.12em] text-brand-muted">
-      Total payable
-    </span>
-    <strong
-      class="font-display text-3xl text-brand-gold"
-      x-text="formatMoney(checkoutTotal())"
-    ></strong>
-  </div>
-</div>
+  
 
   <button
     type="submit"

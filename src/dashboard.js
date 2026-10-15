@@ -4788,9 +4788,9 @@ if (
           ></p>
 
           <p
-            class="mt-1 text-xs text-brand-muted"
-            x-text="new Date(order.created_at).toLocaleDateString('en-PH')"
-          ></p>
+  class="mt-2 text-xs text-brand-muted"
+  x-text="new Date(order.created_at).toLocaleString('en-PH', { dateStyle: 'short', timeStyle: 'short' })"
+></p>
         </div>
 
         <span
@@ -5624,7 +5624,7 @@ Email is not changed.
 ></span>
                 <p
                   class="mt-2 text-xs text-brand-muted"
-                  x-text="new Date(order.created_at).toLocaleDateString('en-PH')"
+                  x-text="new Date(order.created_at).toLocaleString('en-PH', { dateStyle: 'short', timeStyle: 'short' })"
                 ></p>
                 <p
                   class="mt-3 text-sm text-brand-cream"
