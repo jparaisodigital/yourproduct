@@ -1395,7 +1395,7 @@ async function startCheckout() {
               <p
                 class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
               >
-                Manual payment
+                Payment
               </p>
               <h2
                 class="mt-1 font-display text-3xl text-brand-cream"
@@ -1408,28 +1408,97 @@ async function startCheckout() {
               </p>
             </header>
             <div class="p-5 sm:p-6">
-              <label
-                for="payment-method"
-                class="text-sm font-semibold text-brand-cream"
-              >
-                Payment method
-              </label>
-              <select
-  id="payment-method"
-  x-model="payment.method"
-  class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition focus:border-brand-gold"
-  required
+              <fieldset>
+  <legend class="text-sm font-semibold text-brand-cream">
+    Payment method
+  </legend>
+
+  <div class="mt-3 grid gap-3 sm:grid-cols-2">
+    <label
+      class="cursor-pointer rounded-2xl border p-4 transition"
+      :class="
+        payment.method === 'e-wallet'
+          ? 'border-brand-gold bg-brand-gold/10'
+          : 'border-brand-border bg-brand-black hover:border-brand-gold/60'
+      "
+    >
+      <input
+        type="radio"
+        name="payment-method"
+        value="e-wallet"
+        x-model="payment.method"
+        class="sr-only"
+        required
+      >
+
+      <span class="block text-sm font-semibold text-brand-cream">
+        E-wallet
+      </span>
+
+      <span class="mt-1 block text-xs leading-5 text-brand-muted">
+        GCash or Maya. Use the official company account provided by admin.
+      </span>
+    </label>
+
+    <label
+      class="cursor-pointer rounded-2xl border p-4 transition"
+      :class="
+        payment.method === 'bank-transfer'
+          ? 'border-brand-gold bg-brand-gold/10'
+          : 'border-brand-border bg-brand-black hover:border-brand-gold/60'
+      "
+    >
+      <input
+        type="radio"
+        name="payment-method"
+        value="bank-transfer"
+        x-model="payment.method"
+        class="sr-only"
+        required
+      >
+
+      <span class="block text-sm font-semibold text-brand-cream">
+        Bank Transfer
+      </span>
+
+      <span class="mt-1 block text-xs leading-5 text-brand-muted">
+        Bank details pending. Official bank transfer details will be added after client confirmation.
+      </span>
+    </label>
+  </div>
+</fieldset>
+
+<div
+  x-show="payment.method === 'e-wallet'"
+  x-transition
+  class="mt-4 rounded-2xl border border-brand-gold/30 bg-brand-black p-4"
 >
-  <option value="" disabled>
-    Select payment method
-  </option>
-  <option value="e-wallet">
-    E-wallet transfer
-  </option>
-  <option value="bank-transfer">
-    Bank transfer
-  </option>
-</select>
+  <p
+    class="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-brand-gold"
+  >
+    Official GCash / Maya Account
+  </p>
+
+  <p class="mt-2 text-sm leading-6 text-brand-muted">
+    Official GCash or Maya account details will be provided by admin before payment.
+  </p>
+</div>
+
+<div
+  x-show="payment.method === 'bank-transfer'"
+  x-transition
+  class="mt-4 rounded-2xl border border-brand-gold/30 bg-brand-black p-4"
+>
+  <p
+    class="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-brand-gold"
+  >
+    Bank Details Pending
+  </p>
+
+  <p class="mt-2 text-sm leading-6 text-brand-muted">
+    Official bank name, account name, and account number will be added after client confirmation.
+  </p>
+</div>
 
 <div class="mt-5 rounded-xl border border-brand-border bg-brand-black p-4">
   <p class="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-brand-gold">
