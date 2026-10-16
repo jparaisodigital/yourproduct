@@ -2,6 +2,7 @@ import './style.css'
 import Alpine from 'alpinejs'
 import { supabase } from './lib/supabase.js'
 import logoImage from './assets/logoyourproduct.webp'
+import maribankQrImage from './assets/maribank.jpg'
 import { bindFadeLinks } from './lib/page-transition.js'
 import {
   products,
@@ -60,8 +61,8 @@ Alpine.data('checkoutPage', () => ({
     deliveryMethod: 'spx',
     sameAsCustomer: false,
     recipientFirstName: checkoutProfile?.first_name ?? '',
-recipientLastName: checkoutProfile?.last_name ?? '',
-recipientMobile: checkoutProfile?.mobile_number ?? '',
+    recipientLastName: checkoutProfile?.last_name ?? '',
+    recipientMobile: checkoutProfile?.mobile_number ?? '',
     province:
       checkoutProfile?.default_address_enabled
         ? checkoutProfile?.default_province ?? ''
@@ -150,32 +151,32 @@ recipientMobile: checkoutProfile?.mobile_number ?? '',
     return subtotal + (fee ?? 0)
   },
   metroManilaCities,
-handleDeliveryRegionChange() {
-  this.checkoutPreviewComplete = false
-  this.paymentError = ''
-  this.orderCheckError = ''
+  handleDeliveryRegionChange() {
+    this.checkoutPreviewComplete = false
+    this.paymentError = ''
+    this.orderCheckError = ''
 
-  if (this.delivery.region === 'ncr') {
-    this.delivery.province = 'Metro Manila'
+    if (this.delivery.region === 'ncr') {
+      this.delivery.province = 'Metro Manila'
 
-    if (!this.metroManilaCities.includes(this.delivery.city)) {
-      this.delivery.city = ''
+      if (!this.metroManilaCities.includes(this.delivery.city)) {
+        this.delivery.city = ''
+      }
+
+      if (!['spx', 'same-day'].includes(this.delivery.deliveryMethod)) {
+        this.delivery.deliveryMethod = 'spx'
+      }
+
+      return
     }
 
-    if (!['spx', 'same-day'].includes(this.delivery.deliveryMethod)) {
-      this.delivery.deliveryMethod = 'spx'
+    if (this.delivery.province === 'Metro Manila') {
+      this.delivery.province = ''
     }
 
-    return
-  }
-
-  if (this.delivery.province === 'Metro Manila') {
-    this.delivery.province = ''
-  }
-
-  this.delivery.city = ''
-},
-recipientName() {
+    this.delivery.city = ''
+  },
+  recipientName() {
     if (
       this.delivery.fulfillmentType === 'dropship' &&
       this.delivery.sameAsCustomer
@@ -234,15 +235,15 @@ recipientName() {
   },
   async completeCheckoutPreview() {
     if (this.isCheckingCart) return
-this.orderCheckError = ''
+    this.orderCheckError = ''
 
-if (this.requiresShippingConfirmation()) {
-  this.orderCheckError =
-    'Shipping outside Metro Manila requires confirmation. Please message us before payment.'
-  return
-}
+    if (this.requiresShippingConfirmation()) {
+      this.orderCheckError =
+        'Shipping outside Metro Manila requires confirmation. Please message us before payment.'
+      return
+    }
 
-if (this.checkoutPaymentsReady && !this.payment.proofFile) {
+    if (this.checkoutPaymentsReady && !this.payment.proofFile) {
       this.paymentError =
       'Please select your proof of payment.'
       document.querySelector('#payment-proof')?.focus()
@@ -258,21 +259,21 @@ if (this.checkoutPaymentsReady && !this.payment.proofFile) {
     }
 
     const cart = Alpine.store('cart')
-const totalCartQuantity = Number(cart?.itemCount || 0)
-const isMemberCheckout = checkoutPricingTier !== 'regular'
-const hasTesterKit = cart.detailedItems.some(
-  (item) => item.productId === 'tester-kit',
-)
+    const totalCartQuantity = Number(cart?.itemCount || 0)
+    const isMemberCheckout = checkoutPricingTier !== 'regular'
+    const hasTesterKit = cart.detailedItems.some(
+      (item) => item.productId === 'tester-kit',
+    )
 
-if (
-  isMemberCheckout &&
-  !hasTesterKit &&
-  totalCartQuantity < 5
-) {
-  this.orderCheckError =
-    'Members must order at least 5 products, unless the order includes a Tester Kit.'
-  return
-}
+    if (
+      isMemberCheckout &&
+      !hasTesterKit &&
+      totalCartQuantity < 5
+    ) {
+      this.orderCheckError =
+        'Members must order at least 5 products, unless the order includes a Tester Kit.'
+      return
+    }
 
     this.isCheckingCart = true
 
@@ -629,7 +630,7 @@ async function startCheckout() {
   href="/dashboard/?page=createOrder"
   class="inline-flex items-center gap-2 text-sm font-semibold text-brand-gold transition hover:text-brand-gold-light"
 >
-  <span aria-hidden="true">â†</span>
+  <span aria-hidden="true">←</span>
   Back to dashboard
 </a>
         <div class="mt-8">
@@ -865,7 +866,7 @@ async function startCheckout() {
 
             <button
               type="button"
-              class="text-[0.65rem] font-semibold uppercase tracking-[0.1em] text-brand-muted transition hover:text-red-700"
+              class="text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-brand-muted transition hover:text-red-400"
               @click="
                 $store.cart.remove(item.productId)
                 checkoutPreviewComplete = false
@@ -874,882 +875,954 @@ async function startCheckout() {
               Remove
             </button>
           </div>
+
+          <p
+            class="mt-3 text-right text-sm font-semibold text-brand-cream"
+            x-text="formatMoney(item.lineTotal)"
+          ></p>
         </div>
       </article>
     </template>
   </div>
 </div>
 
-<div class="mt-5 space-y-3 border-t border-brand-border pt-5">
-  <div class="flex items-center justify-between gap-4">
-    <span class="text-sm text-brand-muted">
-      Items
-    </span>
-    <span
-      class="font-semibold text-brand-cream"
-      x-text="$store.cart.itemCount"
-    ></span>
-  </div>
-
-  <div class="flex items-center justify-between gap-4">
-    <span class="text-sm text-brand-muted">
-      Subtotal
-    </span>
-    <span
-      class="font-semibold text-brand-cream"
-      x-text="formatMoney($store.cart.subtotal)"
-    ></span>
-  </div>
-
-  <div class="flex items-center justify-between gap-4">
-    <span class="text-sm text-brand-muted">
-      Delivery
-    </span>
-    <span
-      class="text-xs font-semibold"
-      :class="deliveryFee() === null ? 'text-brand-muted' : 'text-brand-cream'"
-      x-text="deliveryFeeLabel()"
-    ></span>
-  </div>
-</div>
-
-<div class="mt-5 flex items-end justify-between gap-4 border-t border-brand-border pt-5">
-  <span class="text-sm font-semibold uppercase tracking-[0.12em] text-brand-muted">
-    Total payable
-  </span>
-  <strong
-    class="font-display text-3xl text-brand-gold"
-    x-text="formatMoney(checkoutTotal())"
-  ></strong>
-</div>
-
-<p class="mt-4 text-xs leading-5 text-brand-muted">
-  Metro Manila delivery: ₱120–₱150. For outside Metro Manila, message us first so we can confirm your shipping fee.
-</p>
-
-    <div class="flex items-center justify-center gap-2 border-t border-brand-border px-5 py-5 text-xs text-brand-muted sm:px-6">
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        class="size-4 text-brand-gold"
-        aria-hidden="true"
-      >
-        <rect
-          x="5"
-          y="10"
-          width="14"
-          height="10"
-          rx="2"
-          stroke="currentColor"
-          stroke-width="1.6"
-        />
-        <path
-          d="M8 10V7a4 4 0 0 1 8 0v3"
-          stroke="currentColor"
-          stroke-width="1.6"
-          stroke-linecap="round"
-        />
-      </svg>
-      Manual payment verification
+      <div class="mt-5 space-y-2 border-t border-brand-border pt-5">
+        <div class="flex items-center justify-between text-sm text-brand-muted">
+          <span>Subtotal</span>
+          <span
+            class="font-semibold text-brand-cream"
+            x-text="formatMoney($store.cart.subtotal)"
+          ></span>
+        </div>
+        <div class="flex items-center justify-between text-sm text-brand-muted">
+          <span>Delivery</span>
+          <span
+            class="font-semibold"
+            :class="deliveryFee() === 0 ? 'text-emerald-200' : 'text-brand-cream'"
+            x-text="deliveryFee() === 0 ? 'Free' : deliveryFeeLabel()"
+          ></span>
+        </div>
+        <div class="flex items-end justify-between gap-4 border-t border-brand-border pt-4">
+          <span class="text-sm font-semibold uppercase tracking-[0.12em] text-brand-muted">
+            Total
+          </span>
+          <strong
+            class="font-display text-3xl text-brand-gold"
+            x-text="formatMoney(checkoutTotal())"
+          ></strong>
+        </div>
+      </div>
     </div>
   </section>
 </aside>
-        <form
-  class="min-w-0 space-y-6"
-          @submit.prevent="completeCheckoutPreview"
-          @input="checkoutPreviewComplete = false"
-          @change="checkoutPreviewComplete = false"
-        >
-          
-          <section
-            class="overflow-hidden rounded-[1.5rem] border border-brand-border bg-brand-panel shadow-panel"
-          >
-            <header
-              class="border-b border-brand-border px-5 py-5 sm:px-6"
-            >
-              <p
-  class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
->
-  Checkout details
-</p>
-<h2
-  class="mt-1 font-display text-3xl text-brand-cream"
->
-  Delivery option
-</h2>
 
-            </header>
-            <div class="p-5 sm:p-6">
-              <fieldset>
-                <legend class="text-sm font-semibold text-brand-cream">
-                  Fulfillment method
-                </legend>
-                <div class="mt-3 grid gap-3 sm:grid-cols-2">
+          <form
+            class="min-w-0 space-y-6"
+            @submit.prevent="completeCheckoutPreview()"
+          >
+            <section
+              class="overflow-hidden rounded-[1.5rem] border border-brand-border bg-brand-panel shadow-panel"
+            >
+              <header
+                class="border-b border-brand-border px-5 py-5 sm:px-6"
+              >
+                <p
+                  class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
+                >
+                  Customer
+                </p>
+                <h2
+                  class="mt-1 font-display text-3xl text-brand-cream"
+                >
+                  Your details
+                </h2>
+              </header>
+              <div class="p-5 sm:p-6">
+                <div class="grid gap-5 sm:grid-cols-2">
+                  <div>
+                    <label
+                      for="first-name"
+                      class="text-sm font-semibold text-brand-cream"
+                    >
+                      First name
+                    </label>
+                    <input
+                      id="first-name"
+                      type="text"
+                      x-model.trim="customer.firstName"
+                      autocomplete="given-name"
+                      required
+                      class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition focus:border-brand-gold"
+                    >
+                  </div>
+                  <div>
+                    <label
+                      for="last-name"
+                      class="text-sm font-semibold text-brand-cream"
+                    >
+                      Last name
+                    </label>
+                    <input
+                      id="last-name"
+                      type="text"
+                      x-model.trim="customer.lastName"
+                      autocomplete="family-name"
+                      required
+                      class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition focus:border-brand-gold"
+                    >
+                  </div>
+                  <div>
+                    <label
+                      for="mobile-number"
+                      class="text-sm font-semibold text-brand-cream"
+                    >
+                      Mobile number
+                    </label>
+                    <input
+                      id="mobile-number"
+                      type="tel"
+                      x-model.trim="customer.mobileNumber"
+                      inputmode="tel"
+                      autocomplete="tel"
+                      minlength="10"
+                      maxlength="13"
+                      required
+                      class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition focus:border-brand-gold"
+                    >
+                  </div>
+                  <div>
+                    <label
+                      for="email-address"
+                      class="text-sm font-semibold text-brand-cream"
+                    >
+                      Email address
+                    </label>
+                    <input
+                      id="email-address"
+                      type="email"
+                      x-model.trim="customer.emailAddress"
+                      autocomplete="email"
+                      required
+                      class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition focus:border-brand-gold"
+                    >
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section
+              class="overflow-hidden rounded-[1.5rem] border border-brand-border bg-brand-panel shadow-panel"
+            >
+              <header
+                class="border-b border-brand-border px-5 py-5 sm:px-6"
+              >
+                <p
+                  class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
+                >
+                  Delivery
+                </p>
+                <h2
+                  class="mt-1 font-display text-3xl text-brand-cream"
+                >
+                  Fulfillment details
+                </h2>
+              </header>
+              <div class="p-5 sm:p-6">
+                <fieldset>
+                  <legend class="text-sm font-semibold text-brand-cream">
+                    Fulfillment method
+                  </legend>
+
+                  <div class="mt-3 grid gap-3 sm:grid-cols-2">
+                    <label
+                      class="flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition"
+                      :class="
+                        delivery.fulfillmentType === 'dropship'
+                          ? 'border-brand-gold bg-brand-gold/10'
+                          : 'border-brand-border bg-brand-black'
+                      "
+                    >
+                      <input
+                        type="radio"
+                        name="fulfillment-method"
+                        value="dropship"
+                        x-model="delivery.fulfillmentType"
+                        class="mt-0.5 size-4 accent-[#b78a32]"
+                      >
+                      <span>
+                        <span class="block text-sm font-semibold text-brand-cream">
+                          Dropship
+                        </span>
+                        <span class="mt-1 block text-xs leading-5 text-brand-muted">
+                          Send the order to the recipient's address.
+                        </span>
+                      </span>
+                    </label>
+
+                    <label
+                      class="flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition"
+                      :class="
+                        delivery.fulfillmentType === 'pickup'
+                          ? 'border-brand-gold bg-brand-gold/10'
+                          : 'border-brand-border bg-brand-black'
+                      "
+                    >
+                      <input
+                        type="radio"
+                        name="fulfillment-method"
+                        value="pickup"
+                        x-model="delivery.fulfillmentType"
+                        class="mt-0.5 size-4 accent-[#b78a32]"
+                      >
+
+                      <span>
+                        <span class="block text-sm font-semibold text-brand-cream">
+                          Pickup
+                        </span>
+
+                        <span class="mt-1 block text-xs leading-5 text-brand-muted">
+                          Pickup at 1244 Gen. Jacinto St, Makati City, Metro Manila.
+                        </span>
+
+                        <span class="mt-2 block text-xs font-semibold text-brand-gold">
+                          No delivery fee for pickup orders.
+                        </span>
+                      </span>
+                    </label>
+                  </div>
+                </fieldset>
+
+                <div
+                  x-show="delivery.fulfillmentType === 'dropship'"
+                  x-transition
+                >
+                  <div class="mt-5">
+                    <label
+                      for="delivery-region"
+                      class="text-sm font-semibold text-brand-cream"
+                    >
+                      Delivery region
+                    </label>
+                    <select
+                      id="delivery-region"
+                      x-model="delivery.region"
+                      @change="handleDeliveryRegionChange()"
+                      class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition focus:border-brand-gold"
+                      :required="delivery.fulfillmentType === 'dropship'"
+                      :disabled="delivery.fulfillmentType !== 'dropship'"
+                    >
+                      <option value="" disabled>
+                        Select delivery region
+                      </option>
+                      <option value="ncr">
+                        Metro Manila
+                      </option>
+                      <option value="luzon">
+                        Luzon outside Metro Manila
+                      </option>
+                      <option value="visayas">
+                        Visayas
+                      </option>
+                      <option value="mindanao">
+                        Mindanao
+                      </option>
+                    </select>
+                  </div>
+
+                  <div
+                    x-show="isMetroManilaDelivery()"
+                    x-transition
+                    class="mt-5"
+                  >
+                    <p class="text-sm font-semibold text-brand-cream">
+                      Delivery method
+                    </p>
+
+                    <div class="mt-3 grid gap-3 sm:grid-cols-2">
+                      <label
+                        class="flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition"
+                        :class="
+                          delivery.deliveryMethod === 'spx'
+                            ? 'border-brand-gold bg-brand-gold/10'
+                            : 'border-brand-border bg-brand-black'
+                        "
+                      >
+                        <input
+                          type="radio"
+                          name="delivery-method"
+                          value="spx"
+                          x-model="delivery.deliveryMethod"
+                          class="mt-0.5 size-4 accent-[#b78a32]"
+                          :required="isMetroManilaDelivery() && !isPrestigeMember()"
+                          :disabled="!isMetroManilaDelivery()"
+                        >
+                        <span>
+                          <span class="block text-sm font-semibold text-brand-cream">
+                            SPX 1 to 3 days
+                          </span>
+                          <span class="mt-1 block text-xs leading-5 text-brand-muted">
+                            Standard Metro Manila delivery.
+                          </span>
+                          <span class="mt-2 block text-xs font-semibold text-brand-gold">
+                            ₱120
+                          </span>
+                        </span>
+                      </label>
+
+                      <label
+                        class="flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition"
+                        :class="
+                          delivery.deliveryMethod === 'same-day'
+                            ? 'border-brand-gold bg-brand-gold/10'
+                            : 'border-brand-border bg-brand-black'
+                        "
+                      >
+                        <input
+                          type="radio"
+                          name="delivery-method"
+                          value="same-day"
+                          x-model="delivery.deliveryMethod"
+                          class="mt-0.5 size-4 accent-[#b78a32]"
+                          :required="isMetroManilaDelivery() && !isPrestigeMember()"
+                          :disabled="!isMetroManilaDelivery()"
+                        >
+                        <span>
+                          <span class="block text-sm font-semibold text-brand-cream">
+                            Same-day delivery
+                          </span>
+                          <span class="mt-1 block text-xs leading-5 text-brand-muted">
+                            For Metro Manila addresses only.
+                          </span>
+                          <span class="mt-2 block text-xs font-semibold text-brand-gold">
+                            ₱150
+                          </span>
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div
+                    x-show="requiresShippingConfirmation()"
+                    x-transition
+                    class="mt-5 rounded-xl border border-amber-400/35 bg-amber-400/10 px-4 py-4"
+                  >
+                    <p class="text-sm font-semibold text-amber-100">
+                      Shipping confirmation required
+                    </p>
+                    <p class="mt-2 text-xs leading-5 text-amber-100/80">
+                      Delivery outside Metro Manila requires manual shipping confirmation.
+                      Please message us first before payment so we can confirm the delivery fee and schedule.
+                    </p>
+
+                    <a
+                      href="https://www.facebook.com/YourProduct2026"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="mt-4 inline-flex h-11 w-full items-center justify-center rounded-full bg-brand-gold px-5 text-sm font-semibold text-brand-black transition hover:bg-brand-gold-light sm:w-auto"
+                    >
+                      Confirm Shipping on Messenger
+                    </a>
+                  </div>
+
+                  <div
+                    x-show="!requiresShippingConfirmation()"
+                    x-transition
+                  >
+                    <div class="mt-5 grid gap-5 sm:grid-cols-2">
+                      <div>
+                        <label
+                          for="recipient-first-name"
+                          class="text-sm font-semibold text-brand-cream"
+                        >
+                          Recipient first name
+                        </label>
+                        <input
+                          id="recipient-first-name"
+                          type="text"
+                          x-model.trim="delivery.recipientFirstName"
+                          autocomplete="shipping given-name"
+                          placeholder="Recipient first name"
+                          :required="delivery.fulfillmentType === 'dropship'"
+                          :disabled="delivery.fulfillmentType !== 'dropship'"
+                          class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
+                        >
+                      </div>
+                      <div>
+                        <label
+                          for="recipient-last-name"
+                          class="text-sm font-semibold text-brand-cream"
+                        >
+                          Recipient last name
+                        </label>
+                        <input
+                          id="recipient-last-name"
+                          type="text"
+                          x-model.trim="delivery.recipientLastName"
+                          autocomplete="shipping family-name"
+                          placeholder="Recipient last name"
+                          :required="delivery.fulfillmentType === 'dropship'"
+                          :disabled="delivery.fulfillmentType !== 'dropship'"
+                          class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
+                        >
+                      </div>
+                      <div class="sm:col-span-2">
+                        <label
+                          for="recipient-mobile"
+                          class="text-sm font-semibold text-brand-cream"
+                        >
+                          Recipient mobile number
+                        </label>
+                        <input
+                          id="recipient-mobile"
+                          type="tel"
+                          x-model.trim="delivery.recipientMobile"
+                          inputmode="tel"
+                          autocomplete="shipping tel"
+                          minlength="10"
+                          maxlength="13"
+                          placeholder="09XXXXXXXXX"
+                          :required="delivery.fulfillmentType === 'dropship'"
+                          :disabled="delivery.fulfillmentType !== 'dropship'"
+                          class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
+                        >
+                      </div>
+                    </div>
+                    <div class="mt-5 grid gap-5 sm:grid-cols-2">
+                      <div>
+                        <label
+                          for="province"
+                          class="text-sm font-semibold text-brand-cream"
+                        >
+                          Province
+                        </label>
+                        <input
+                          id="province"
+                          type="text"
+                          x-model.trim="delivery.province"
+                          autocomplete="shipping address-level1"
+                          :placeholder="delivery.region === 'ncr' ? 'Metro Manila' : 'Example: Cavite'"
+                          class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted disabled:cursor-not-allowed disabled:opacity-70 focus:border-brand-gold"
+                          :required="delivery.fulfillmentType === 'dropship' && delivery.region !== 'ncr'"
+                          :disabled="delivery.fulfillmentType !== 'dropship' || delivery.region === 'ncr'"
+                        >
+                        <p
+                          x-show="delivery.region === 'ncr'"
+                          class="mt-2 text-xs leading-5 text-brand-muted"
+                        >
+                          Province is automatically set to Metro Manila.
+                        </p>
+                      </div>
+                      <div>
+                        <label
+                          for="city"
+                          class="text-sm font-semibold text-brand-cream"
+                        >
+                          City or municipality
+                        </label>
+
+                        <select
+                          id="city"
+                          x-show="delivery.region === 'ncr'"
+                          x-model="delivery.city"
+                          autocomplete="shipping address-level2"
+                          class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition focus:border-brand-gold"
+                          :required="delivery.fulfillmentType === 'dropship' && delivery.region === 'ncr'"
+                          :disabled="delivery.fulfillmentType !== 'dropship' || delivery.region !== 'ncr'"
+                        >
+                          <option value="" disabled>
+                            Select Metro Manila city
+                          </option>
+                          <template x-for="cityName in metroManilaCities" :key="cityName">
+                            <option :value="cityName" x-text="cityName"></option>
+                          </template>
+                        </select>
+
+                        <input
+                          x-show="delivery.region !== 'ncr'"
+                          type="text"
+                          x-model.trim="delivery.city"
+                          autocomplete="shipping address-level2"
+                          placeholder="Example: Bacoor"
+                          class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
+                          :required="delivery.fulfillmentType === 'dropship' && delivery.region !== 'ncr'"
+                          :disabled="delivery.fulfillmentType !== 'dropship' || delivery.region === 'ncr'"
+                        >
+                      </div>
+                    </div>
+                    <div class="mt-5 grid gap-5 sm:grid-cols-2">
+                      <div>
+                        <label
+                          for="barangay"
+                          class="text-sm font-semibold text-brand-cream"
+                        >
+                          Barangay
+                        </label>
+                        <input
+                          id="barangay"
+                          type="text"
+                          x-model.trim="delivery.barangay"
+                          autocomplete="shipping address-level3"
+                          placeholder="Enter barangay"
+                          class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
+                          :required="delivery.fulfillmentType === 'dropship'"
+                          :disabled="delivery.fulfillmentType !== 'dropship'"
+                        >
+                      </div>
+                      <div>
+                        <label
+                          for="house-street"
+                          class="text-sm font-semibold text-brand-cream"
+                        >
+                          House number and street
+                        </label>
+                        <input
+                          id="house-street"
+                          type="text"
+                          x-model.trim="delivery.houseStreet"
+                          autocomplete="shipping street-address"
+                          placeholder="House no., street, subdivision"
+                          class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
+                          :required="delivery.fulfillmentType === 'dropship'"
+                          :disabled="delivery.fulfillmentType !== 'dropship'"
+                        >
+                      </div>
+                    </div>
+                    <div class="mt-5 grid gap-5 sm:grid-cols-2">
+                      <div>
+                        <label
+                          for="landmark"
+                          class="text-sm font-semibold text-brand-cream"
+                        >
+                          Landmark
+                          <span class="font-normal text-brand-muted">
+                            (Optional)
+                          </span>
+                        </label>
+                        <input
+                          id="landmark"
+                          type="text"
+                          x-model.trim="delivery.landmark"
+                          placeholder="Nearby landmark"
+                          class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
+                        >
+                      </div>
+                      <div>
+                        <label
+                          for="order-notes"
+                          class="text-sm font-semibold text-brand-cream"
+                        >
+                          Special instructions
+                          <span class="font-normal text-brand-muted">
+                            (Optional)
+                          </span>
+                        </label>
+                        <input
+                          id="order-notes"
+                          type="text"
+                          x-model.trim="delivery.notes"
+                          maxlength="300"
+                          placeholder="Optional delivery instructions"
+                          class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
+                        >
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section
+              x-show="!requiresShippingConfirmation()"
+              x-transition
+              class="overflow-hidden rounded-[1.5rem] border border-brand-border bg-brand-panel shadow-panel"
+            >
+              <header
+                class="border-b border-brand-border px-5 py-5 sm:px-6"
+              >
+                <p
+                  class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
+                >
+                  Payment
+                </p>
+                <h2
+                  class="mt-1 font-display text-3xl text-brand-cream"
+                >
+                  Payment details
+                </h2>
+                <p class="mt-2 text-sm leading-6 text-brand-muted">
+                  Select a payment method and attach a clear receipt or
+                  payment screenshot.
+                </p>
+              </header>
+              <div class="p-5 sm:p-6">
+                <fieldset>
+                  <legend class="text-sm font-semibold text-brand-cream">
+                    Payment method
+                  </legend>
+
+                  <div class="mt-3 grid gap-3 sm:grid-cols-2">
+                    <label
+                      class="cursor-pointer rounded-2xl border p-4 transition"
+                      :class="
+                        payment.method === 'e-wallet'
+                          ? 'border-brand-gold bg-brand-gold/10'
+                          : 'border-brand-border bg-brand-black hover:border-brand-gold/60'
+                      "
+                    >
+                      <input
+                        type="radio"
+                        name="payment-method"
+                        value="e-wallet"
+                        x-model="payment.method"
+                        class="sr-only"
+                        required
+                      >
+
+                      <span class="block text-sm font-semibold text-brand-cream">
+                        E-wallet
+                      </span>
+
+                      <span class="mt-1 block text-xs leading-5 text-brand-muted">
+                        E-wallet details pending. Official e-wallet details will be added after client confirmation.
+                      </span>
+                    </label>
+
+                    <label
+                      class="cursor-pointer rounded-2xl border p-4 transition"
+                      :class="
+                        payment.method === 'bank-transfer'
+                          ? 'border-brand-gold bg-brand-gold/10'
+                          : 'border-brand-border bg-brand-black hover:border-brand-gold/60'
+                      "
+                    >
+                      <input
+                        type="radio"
+                        name="payment-method"
+                        value="bank-transfer"
+                        x-model="payment.method"
+                        class="sr-only"
+                        required
+                      >
+
+                      <span class="block text-sm font-semibold text-brand-cream">
+                        Bank Transfer
+                      </span>
+
+                      <span class="mt-1 block text-xs leading-5 text-brand-muted">
+                        Pay securely through the official MariBank account below.
+                      </span>
+                    </label>
+                  </div>
+                </fieldset>
+
+                <div
+                  x-show="payment.method === 'e-wallet'"
+                  x-transition
+                  class="mt-4 rounded-2xl border border-brand-gold/30 bg-brand-black p-4"
+                >
+                  <p
+                    class="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-brand-gold"
+                  >
+                    E-wallet Details Pending
+                  </p>
+
+                  <p class="mt-2 text-sm leading-6 text-brand-muted">
+                    Official e-wallet account details will be added after client confirmation.
+                  </p>
+                </div>
+
+                <div
+                  x-show="payment.method === 'bank-transfer'"
+                  x-transition
+                  class="mt-4 overflow-hidden rounded-2xl border border-brand-gold/30 bg-brand-panel p-4 sm:p-5"
+                >
+                  <p
+                    class="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-brand-gold"
+                  >
+                    Official MariBank Account
+                  </p>
+
+                  <div class="mt-4 grid gap-5 sm:grid-cols-[minmax(0,1fr)_11rem] sm:items-center">
+                    <div>
+                      <p class="text-xs uppercase tracking-[0.12em] text-brand-muted">
+                        Account Name
+                      </p>
+
+                      <p class="mt-1 text-sm font-semibold text-brand-cream">
+                        Ian Tiangco
+                      </p>
+
+                      <p class="mt-4 text-xs uppercase tracking-[0.12em] text-brand-muted">
+                        Account Number
+                      </p>
+
+                      <p class="mt-1 break-all text-base font-semibold tracking-[0.04em] text-brand-cream">
+                        5294162952422063
+                      </p>
+
+                      <p class="mt-4 text-xs leading-5 text-brand-muted">
+                        Scan the QR code or transfer directly to the account above, then upload your payment screenshot below.
+                      </p>
+                    </div>
+
+                    <div class="overflow-hidden rounded-xl border border-brand-border bg-white p-2">
+                      <img
+                        src="${maribankQrImage}"
+                        alt="Official MariBank payment QR code"
+                        class="mx-auto aspect-square w-full object-contain"
+                      >
+                    </div>
+                  </div>
+                </div>
+
+                <div class="mt-5 rounded-xl border border-brand-border bg-brand-black p-4">
+                  <p class="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-brand-gold">
+                    Amount to pay
+                  </p>
+
+                  <div class="mt-3 space-y-2 text-sm">
+                    <div class="flex items-center justify-between gap-4 text-brand-muted">
+                      <span>Subtotal</span>
+                      <span
+                        class="font-semibold text-brand-cream"
+                        x-text="formatMoney($store.cart.subtotal)"
+                      ></span>
+                    </div>
+
+                    <div class="flex items-center justify-between gap-4 text-brand-muted">
+                      <span>Delivery</span>
+                      <span
+                        class="font-semibold"
+                        :class="deliveryFee() === 0 ? 'text-emerald-200' : 'text-brand-cream'"
+                        x-text="deliveryFee() === 0 ? 'Free' : deliveryFeeLabel()"
+                      ></span>
+                    </div>
+                  </div>
+
+                  <div class="mt-4 flex items-end justify-between gap-4 border-t border-brand-border pt-4">
+                    <span class="text-sm font-semibold uppercase tracking-[0.12em] text-brand-muted">
+                      Total payable
+                    </span>
+                    <strong
+                      class="font-display text-3xl text-brand-gold"
+                      x-text="formatMoney(checkoutTotal())"
+                    ></strong>
+                  </div>
+                </div>
+              
+                <div class="mt-5">
                   <label
-                    class="flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition"
-                    :class="
-                      delivery.fulfillmentType === 'dropship'
-                        ? 'border-brand-gold bg-brand-gold/10'
-                        : 'border-brand-border bg-brand-black'
+                    for="payment-proof"
+                    class="text-sm font-semibold text-brand-cream"
+                  >
+                    Proof of payment
+                  </label>
+                  
+                  <div
+                    class="mt-2 rounded-xl border border-dashed border-brand-border bg-brand-black px-5 py-7 text-center transition hover:border-brand-gold"
+                  >
+                    <button
+                      type="button"
+                      x-show="payment.proofPreviewUrl"
+                      x-transition
+                      class="mx-auto block w-full overflow-hidden rounded-xl border border-brand-border bg-brand-panel"
+                      @click="
+                        payment.proofModalOpen = true
+                        document.body.classList.add('overflow-hidden')
+                      "
+                      aria-label="View payment screenshot"
+                    >
+                      <img
+                        :src="payment.proofPreviewUrl"
+                        alt="Selected payment proof preview"
+                        class="mx-auto max-h-64 w-full object-contain"
+                      >
+                    </button>
+
+                    <div
+                      x-show="!payment.proofPreviewUrl"
+                      x-transition
+                      class="mx-auto grid size-12 place-items-center rounded-full border border-brand-border text-brand-gold"
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        class="size-7"
+                        aria-hidden="true"
+                      >
+                        <path
+                          d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4"
+                          stroke="currentColor"
+                          stroke-width="1.7"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        />
+                      </svg>
+                    </div>
+
+                    <span
+                      class="mt-3 block text-sm font-semibold text-brand-cream"
+                      x-text="payment.proofPreviewUrl ? 'Payment screenshot selected' : 'Select payment screenshot'"
+                    ></span>
+
+                    <span
+                      class="mt-1 block text-xs leading-5 text-brand-muted"
+                    >
+                      JPG, PNG, or WebP — maximum 5 MB
+                    </span>
+
+                    <p
+                      x-show="payment.proofFileName"
+                      x-transition
+                      class="mx-auto mt-3 max-w-full break-all text-xs font-semibold text-brand-cream"
+                      x-text="payment.proofFileName"
+                    ></p>
+
+                    <input
+                      id="payment-proof"
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      class="mx-auto mt-4 block w-fit max-w-full cursor-pointer rounded-lg border border-brand-border bg-brand-panel px-3 py-2 text-center text-sm text-brand-cream file:mr-4 file:rounded-full file:border-0 file:bg-brand-gold file:px-4 file:py-2 file:text-sm file:font-semibold file:text-[#17130d]"
+                      @change="handleProofFile($event)"
+                      required
+                    >
+
+                    <button
+                      type="button"
+                      x-show="payment.proofPreviewUrl"
+                      x-transition
+                      class="mx-auto mt-4 inline-flex h-9 items-center justify-center rounded-full border border-brand-border px-4 text-xs font-semibold text-brand-muted transition hover:border-red-500 hover:text-red-400"
+                      @click="
+                        if (payment.proofPreviewUrl) URL.revokeObjectURL(payment.proofPreviewUrl)
+                        payment.proofFile = null
+                        payment.proofFileName = ''
+                        payment.proofPreviewUrl = ''
+                        payment.proofModalOpen = false
+                        paymentError = ''
+                        checkoutPreviewComplete = false
+                        document.body.classList.remove('overflow-hidden')
+                        const proofInput = document.querySelector('#payment-proof')
+                        if (proofInput) proofInput.value = ''
+                      "
+                    >
+                      Remove screenshot
+                    </button>
+                  </div>
+
+                  <div
+                    x-show="payment.proofModalOpen"
+                    x-transition.opacity
+                    class="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label="Payment screenshot preview"
+                    @keydown.escape.window="
+                      payment.proofModalOpen = false
+                      document.body.classList.remove('overflow-hidden')
                     "
                   >
-                    <input
-                      type="radio"
-                      name="fulfillment-method"
-                      value="dropship"
-                      x-model="delivery.fulfillmentType"
-                      class="mt-0.5 size-4 accent-[#b78a32]"
-                    >
-                    <span>
-                      <span class="block text-sm font-semibold text-brand-cream">
-                        Dropship
-                      </span>
-                      <span class="mt-1 block text-xs leading-5 text-brand-muted">
-                        Send the order to the recipient's address.
-                      </span>
-                    </span>
-                  </label>
+                    <div class="relative max-h-full w-full max-w-4xl">
+                      <button
+                        type="button"
+                        class="absolute right-2 top-2 z-10 grid size-10 place-items-center rounded-full bg-brand-black text-xl font-bold text-brand-cream shadow-lg transition hover:bg-brand-gold hover:text-brand-black"
+                        @click="
+                          payment.proofModalOpen = false
+                          document.body.classList.remove('overflow-hidden')
+                        "
+                        aria-label="Close payment screenshot preview"
+                      >
+                        ×
+                      </button>
 
-                  <label
-  class="flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition"
-  :class="
-    delivery.fulfillmentType === 'pickup'
-      ? 'border-brand-gold bg-brand-gold/10'
-      : 'border-brand-border bg-brand-black'
-  "
->
-  <input
-    type="radio"
-    name="fulfillment-method"
-    value="pickup"
-    x-model="delivery.fulfillmentType"
-    class="mt-0.5 size-4 accent-[#b78a32]"
-  >
+                      <img
+                        :src="payment.proofPreviewUrl"
+                        alt="Enlarged payment proof preview"
+                        class="mx-auto max-h-[85vh] w-full rounded-2xl border border-brand-border bg-brand-black object-contain"
+                      >
+                    </div>
+                  </div>
 
-  <span>
-    <span class="block text-sm font-semibold text-brand-cream">
-      Pickup
-    </span>
-
-    <span class="mt-1 block text-xs leading-5 text-brand-muted">
-      Pickup at 1244 Gen. Jacinto St, Makati City, Metro Manila.
-    </span>
-
-    <span class="mt-2 block text-xs font-semibold text-brand-gold">
-      No delivery fee for pickup orders.
-    </span>
-  </span>
-</label>
-
-                </div>
-              </fieldset>
-              <div
-                x-show="delivery.fulfillmentType === 'dropship'"
-                x-transition
-              >
-              
-                            <div class="mt-5">
-  <label
-    for="delivery-region"
-    class="text-sm font-semibold text-brand-cream"
-  >
-    Delivery region
-  </label>
-  <select
-  id="delivery-region"
-  x-model="delivery.region"
-  @change="handleDeliveryRegionChange()"
-  class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition focus:border-brand-gold"
-  :required="delivery.fulfillmentType === 'dropship'"
-  :disabled="delivery.fulfillmentType !== 'dropship'"
->
-    <option value="" disabled>
-      Select delivery region
-    </option>
-    <option value="ncr">
-  Metro Manila
-</option>
-<option value="luzon">
-  Luzon outside Metro Manila
-</option>
-<option value="visayas">
-  Visayas
-</option>
-<option value="mindanao">
-  Mindanao
-</option>
-  </select>
-  
-</div>
-
-<div
-  x-show="isMetroManilaDelivery()"
-  x-transition
-  class="mt-5"
->
-  <p class="text-sm font-semibold text-brand-cream">
-    Delivery method
-  </p>
-
-  <div class="mt-3 grid gap-3 sm:grid-cols-2">
-    <label
-      class="flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition"
-      :class="
-        delivery.deliveryMethod === 'spx'
-          ? 'border-brand-gold bg-brand-gold/10'
-          : 'border-brand-border bg-brand-black'
-      "
-    >
-      <input
-        type="radio"
-        name="delivery-method"
-        value="spx"
-        x-model="delivery.deliveryMethod"
-        class="mt-0.5 size-4 accent-[#b78a32]"
-        :required="isMetroManilaDelivery() && !isPrestigeMember()"
-        :disabled="!isMetroManilaDelivery()"
-      >
-      <span>
-        <span class="block text-sm font-semibold text-brand-cream">
-          SPX 1 to 3 days
-        </span>
-        <span class="mt-1 block text-xs leading-5 text-brand-muted">
-          Standard Metro Manila delivery.
-        </span>
-        <span class="mt-2 block text-xs font-semibold text-brand-gold">
-          ₱120
-        </span>
-      </span>
-    </label>
-
-    <label
-      class="flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition"
-      :class="
-        delivery.deliveryMethod === 'same-day'
-          ? 'border-brand-gold bg-brand-gold/10'
-          : 'border-brand-border bg-brand-black'
-      "
-    >
-      <input
-        type="radio"
-        name="delivery-method"
-        value="same-day"
-        x-model="delivery.deliveryMethod"
-        class="mt-0.5 size-4 accent-[#b78a32]"
-        :required="isMetroManilaDelivery() && !isPrestigeMember()"
-        :disabled="!isMetroManilaDelivery()"
-      >
-      <span>
-        <span class="block text-sm font-semibold text-brand-cream">
-          Same-day delivery
-        </span>
-        <span class="mt-1 block text-xs leading-5 text-brand-muted">
-          For Metro Manila addresses only.
-        </span>
-        <span class="mt-2 block text-xs font-semibold text-brand-gold">
-          ₱150
-        </span>
-      </span>
-    </label>
-  </div>
-</div>
-
-<div
-  x-show="requiresShippingConfirmation()"
-  x-transition
-  class="mt-5 rounded-xl border border-amber-400/35 bg-amber-400/10 px-4 py-4"
->
-  <p class="text-sm font-semibold text-amber-100">
-    Shipping confirmation required
-  </p>
-  <p class="mt-2 text-xs leading-5 text-amber-100/80">
-    Delivery outside Metro Manila requires manual shipping confirmation.
-    Please message us first before payment so we can confirm the delivery fee and schedule.
-  </p>
-
-  <a
-    href="https://www.facebook.com/YourProduct2026"
-    target="_blank"
-    rel="noopener noreferrer"
-    class="mt-4 inline-flex h-11 w-full items-center justify-center rounded-full bg-brand-gold px-5 text-sm font-semibold text-brand-black transition hover:bg-brand-gold-light sm:w-auto"
-  >
-    Confirm Shipping on Messenger
-  </a>
-</div>
-
-              <div
-                x-show="!requiresShippingConfirmation()"
-                x-transition
-              >
-              <div class="mt-5 grid gap-5 sm:grid-cols-2">
-                <div>
-                  <label
-                    for="recipient-first-name"
-                    class="text-sm font-semibold text-brand-cream"
-                  >
-                    Recipient first name
-                  </label>
-                  <input
-  id="recipient-first-name"
-  type="text"
-  x-model.trim="delivery.recipientFirstName"
-  autocomplete="shipping given-name"
-  placeholder="Recipient first name"
-  :required="delivery.fulfillmentType === 'dropship'"
-  :disabled="delivery.fulfillmentType !== 'dropship'"
-  class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
->
-                </div>
-                <div>
-                  <label
-                    for="recipient-last-name"
-                    class="text-sm font-semibold text-brand-cream"
-                  >
-                    Recipient last name
-                  </label>
-                  <input
-  id="recipient-last-name"
-  type="text"
-  x-model.trim="delivery.recipientLastName"
-  autocomplete="shipping family-name"
-  placeholder="Recipient last name"
-  :required="delivery.fulfillmentType === 'dropship'"
-  :disabled="delivery.fulfillmentType !== 'dropship'"
-  class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
->
-                </div>
-                <div class="sm:col-span-2">
-                  <label
-                    for="recipient-mobile"
-                    class="text-sm font-semibold text-brand-cream"
-                  >
-                    Recipient mobile number
-                  </label>
-                  <input
-  id="recipient-mobile"
-  type="tel"
-  x-model.trim="delivery.recipientMobile"
-  inputmode="tel"
-  autocomplete="shipping tel"
-  minlength="10"
-  maxlength="13"
-  placeholder="09XXXXXXXXX"
-  :required="delivery.fulfillmentType === 'dropship'"
-  :disabled="delivery.fulfillmentType !== 'dropship'"
-  class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
->
+                  <p
+                    x-show="paymentError"
+                    x-text="paymentError"
+                    class="mt-3 text-sm text-red-400"
+                    role="alert"
+                  ></p>
                 </div>
               </div>
-              <div class="mt-5 grid gap-5 sm:grid-cols-2">
-                <div>
-                  <label
-                    for="province"
-                    class="text-sm font-semibold text-brand-cream"
-                  >
-                    Province
-                  </label>
-                  <input
-  id="province"
-  type="text"
-  x-model.trim="delivery.province"
-  autocomplete="shipping address-level1"
-  :placeholder="delivery.region === 'ncr' ? 'Metro Manila' : 'Example: Cavite'"
-  class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted disabled:cursor-not-allowed disabled:opacity-70 focus:border-brand-gold"
-  :required="delivery.fulfillmentType === 'dropship' && delivery.region !== 'ncr'"
-  :disabled="delivery.fulfillmentType !== 'dropship' || delivery.region === 'ncr'"
->
-<p
-  x-show="delivery.region === 'ncr'"
-  class="mt-2 text-xs leading-5 text-brand-muted"
->
-  Province is automatically set to Metro Manila.
-</p>
-                </div>
-                <div>
-                  <label
-                    for="city"
-                    class="text-sm font-semibold text-brand-cream"
-                  >
-                    City or municipality
-                  </label>
-
-                  <select
-                    id="city"
-                    x-show="delivery.region === 'ncr'"
-                    x-model="delivery.city"
-                    autocomplete="shipping address-level2"
-                    class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition focus:border-brand-gold"
-                    :required="delivery.fulfillmentType === 'dropship' && delivery.region === 'ncr'"
-                    :disabled="delivery.fulfillmentType !== 'dropship' || delivery.region !== 'ncr'"
-                  >
-                    <option value="" disabled>
-                      Select Metro Manila city
-                    </option>
-                    <template x-for="cityName in metroManilaCities" :key="cityName">
-                      <option :value="cityName" x-text="cityName"></option>
-                    </template>
-                  </select>
-
-                  <input
-                    x-show="delivery.region !== 'ncr'"
-                    type="text"
-                    x-model.trim="delivery.city"
-                    autocomplete="shipping address-level2"
-                    placeholder="Example: Bacoor"
-                    class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
-                    :required="delivery.fulfillmentType === 'dropship' && delivery.region !== 'ncr'"
-                    :disabled="delivery.fulfillmentType !== 'dropship' || delivery.region === 'ncr'"
-                  >
-                </div>
-              </div>
-              <div class="mt-5 grid gap-5 sm:grid-cols-2">
-                <div>
-                  <label
-                    for="barangay"
-                    class="text-sm font-semibold text-brand-cream"
-                  >
-                    Barangay
-                  </label>
-                  <input
-  id="barangay"
-  type="text"
-  x-model.trim="delivery.barangay"
-  autocomplete="shipping address-level3"
-  placeholder="Enter barangay"
-  class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
-  :required="delivery.fulfillmentType === 'dropship'"
-  :disabled="delivery.fulfillmentType !== 'dropship'"
->
-                </div>
-                <div>
-                  <label
-                    for="house-street"
-                    class="text-sm font-semibold text-brand-cream"
-                  >
-                    House number and street
-                  </label>
-                  <input
-  id="house-street"
-  type="text"
-  x-model.trim="delivery.houseStreet"
-  autocomplete="shipping street-address"
-  placeholder="House no., street, subdivision"
-  class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
-  :required="delivery.fulfillmentType === 'dropship'"
-  :disabled="delivery.fulfillmentType !== 'dropship'"
->
-                </div>
-              </div>
-              <div class="mt-5 grid gap-5 sm:grid-cols-2">
-                <div>
-                  <label
-                    for="landmark"
-                    class="text-sm font-semibold text-brand-cream"
-                  >
-                    Landmark
-                    <span class="font-normal text-brand-muted">
-                      (Optional)
-                    </span>
-                  </label>
-                  <input
-                    id="landmark"
-                    type="text"
-                    x-model.trim="delivery.landmark"
-                    placeholder="Nearby landmark"
-                    class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
-                  >
-                </div>
-                <div>
-                  <label
-                    for="order-notes"
-                    class="text-sm font-semibold text-brand-cream"
-                  >
-                    Special instructions
-                    <span class="font-normal text-brand-muted">
-                      (Optional)
-                    </span>
-                  </label>
-                  <input
-                    id="order-notes"
-                    type="text"
-                    x-model.trim="delivery.notes"
-                    maxlength="300"
-                    placeholder="Optional delivery instructions"
-                    class="mt-2 h-12 w-full rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
-                  >
-                </div>
-              </div>
-              </div> <!-- end of x-show="!requiresShippingConfirmation()" -->
-              </div> <!-- end of x-show="delivery.fulfillmentType === 'dropship'" -->
-            </div>
-          </section>
-
-          <section
-            x-show="!requiresShippingConfirmation()"
-            x-transition
-            class="overflow-hidden rounded-[1.5rem] border border-brand-border bg-brand-panel shadow-panel"
-          >
-            <header
-              class="border-b border-brand-border px-5 py-5 sm:px-6"
+            </section>
+            
+            <section
+              x-show="!requiresShippingConfirmation()"
+              x-transition
+              class="overflow-hidden rounded-[1.5rem] border border-brand-gold/30 bg-brand-panel p-5 shadow-gold-soft sm:p-6"
             >
-              <p
-                class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
+
+              <div
+                x-show="${isMember}"
+                class="mt-5 mb-5 rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-3"
               >
-                Payment
-              </p>
-              <h2
-                class="mt-1 font-display text-3xl text-brand-cream"
-              >
-                Payment details
-              </h2>
-              <p class="mt-2 text-sm leading-6 text-brand-muted">
-                Select a payment method and attach a clear receipt or
-                payment screenshot.
-              </p>
-            </header>
-            <div class="p-5 sm:p-6">
-              <fieldset>
-  <legend class="text-sm font-semibold text-brand-cream">
-    Payment method
-  </legend>
-
-  <div class="mt-3 grid gap-3 sm:grid-cols-2">
-    <label
-      class="cursor-pointer rounded-2xl border p-4 transition"
-      :class="
-        payment.method === 'e-wallet'
-          ? 'border-brand-gold bg-brand-gold/10'
-          : 'border-brand-border bg-brand-black hover:border-brand-gold/60'
-      "
-    >
-      <input
-        type="radio"
-        name="payment-method"
-        value="e-wallet"
-        x-model="payment.method"
-        class="sr-only"
-        required
-      >
-
-      <span class="block text-sm font-semibold text-brand-cream">
-        E-wallet
-      </span>
-
-      <span class="mt-1 block text-xs leading-5 text-brand-muted">
-        GCash or Maya. Use the official company account provided by admin.
-      </span>
-    </label>
-
-    <label
-      class="cursor-pointer rounded-2xl border p-4 transition"
-      :class="
-        payment.method === 'bank-transfer'
-          ? 'border-brand-gold bg-brand-gold/10'
-          : 'border-brand-border bg-brand-black hover:border-brand-gold/60'
-      "
-    >
-      <input
-        type="radio"
-        name="payment-method"
-        value="bank-transfer"
-        x-model="payment.method"
-        class="sr-only"
-        required
-      >
-
-      <span class="block text-sm font-semibold text-brand-cream">
-        Bank Transfer
-      </span>
-
-      <span class="mt-1 block text-xs leading-5 text-brand-muted">
-        Bank details pending. Official bank transfer details will be added after client confirmation.
-      </span>
-    </label>
-  </div>
-</fieldset>
-
-<div
-  x-show="payment.method === 'e-wallet'"
-  x-transition
-  class="mt-4 rounded-2xl border border-brand-gold/30 bg-brand-black p-4"
->
-  <p
-    class="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-brand-gold"
-  >
-    Official GCash / Maya Account
-  </p>
-
-  <p class="mt-2 text-sm leading-6 text-brand-muted">
-    Official GCash or Maya account details will be provided by admin before payment.
-  </p>
-</div>
-
-<div
-  x-show="payment.method === 'bank-transfer'"
-  x-transition
-  class="mt-4 rounded-2xl border border-brand-gold/30 bg-brand-black p-4"
->
-  <p
-    class="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-brand-gold"
-  >
-    Bank Details Pending
-  </p>
-
-  <p class="mt-2 text-sm leading-6 text-brand-muted">
-    Official bank name, account name, and account number will be added after client confirmation.
-  </p>
-</div>
-
-<div class="mt-5 rounded-xl border border-brand-border bg-brand-black p-4">
-  <p class="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-brand-gold">
-    Amount to pay
-  </p>
-
-  <div class="mt-3 space-y-2 text-sm">
-    <div class="flex items-center justify-between gap-4 text-brand-muted">
-      <span>Subtotal</span>
-      <span
-        class="font-semibold text-brand-cream"
-        x-text="formatMoney($store.cart.subtotal)"
-      ></span>
-    </div>
-
-    <div class="flex items-center justify-between gap-4 text-brand-muted">
-      <span>Delivery</span>
-      <span
-        class="font-semibold"
-        :class="deliveryFee() === 0 ? 'text-emerald-200' : 'text-brand-cream'"
-        x-text="deliveryFee() === 0 ? 'Free' : deliveryFeeLabel()"
-      ></span>
-    </div>
-  </div>
-
-  <div class="mt-4 flex items-end justify-between gap-4 border-t border-brand-border pt-4">
-    <span class="text-sm font-semibold uppercase tracking-[0.12em] text-brand-muted">
-      Total payable
-    </span>
-    <strong
-      class="font-display text-3xl text-brand-gold"
-      x-text="formatMoney(checkoutTotal())"
-    ></strong>
-  </div>
-</div>
-              
-              <div class="mt-5">
-                <label
-                  for="payment-proof"
-                  class="text-sm font-semibold text-brand-cream"
-                >
-                  Proof of payment
-                </label>
-                
-                <div
-  class="mt-2 rounded-xl border border-dashed border-brand-border bg-brand-black px-5 py-7 text-center transition hover:border-brand-gold"
->
-  <button
-    type="button"
-    x-show="payment.proofPreviewUrl"
-    x-transition
-    class="mx-auto block w-full overflow-hidden rounded-xl border border-brand-border bg-brand-panel"
-    @click="
-      payment.proofModalOpen = true
-      document.body.classList.add('overflow-hidden')
-    "
-    aria-label="View payment screenshot"
-  >
-    <img
-      :src="payment.proofPreviewUrl"
-      alt="Selected payment proof preview"
-      class="mx-auto max-h-64 w-full object-contain"
-    >
-  </button>
-
-  <div
-    x-show="!payment.proofPreviewUrl"
-    x-transition
-    class="mx-auto grid size-12 place-items-center rounded-full border border-brand-border text-brand-gold"
-  >
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      class="size-7"
-      aria-hidden="true"
-    >
-      <path
-        d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4"
-        stroke="currentColor"
-        stroke-width="1.7"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      />
-    </svg>
-  </div>
-
-  <span
-    class="mt-3 block text-sm font-semibold text-brand-cream"
-    x-text="payment.proofPreviewUrl ? 'Payment screenshot selected' : 'Select payment screenshot'"
-  ></span>
-
-  <span
-    class="mt-1 block text-xs leading-5 text-brand-muted"
-  >
-    JPG, PNG, or WebP — maximum 5 MB
-  </span>
-
-  <p
-    x-show="payment.proofFileName"
-    x-transition
-    class="mx-auto mt-3 max-w-full break-all text-xs font-semibold text-brand-cream"
-    x-text="payment.proofFileName"
-  ></p>
-
-  <input
-    id="payment-proof"
-    type="file"
-    accept="image/jpeg,image/png,image/webp"
-    class="mx-auto mt-4 block w-fit max-w-full cursor-pointer rounded-lg border border-brand-border bg-brand-panel px-3 py-2 text-center text-sm text-brand-cream file:mr-4 file:rounded-full file:border-0 file:bg-brand-gold file:px-4 file:py-2 file:text-sm file:font-semibold file:text-[#17130d]"
-    @change="handleProofFile($event)"
-    required
-  >
-
-  <button
-    type="button"
-    x-show="payment.proofPreviewUrl"
-    x-transition
-    class="mx-auto mt-4 inline-flex h-9 items-center justify-center rounded-full border border-brand-border px-4 text-xs font-semibold text-brand-muted transition hover:border-red-500 hover:text-red-400"
-    @click="
-      if (payment.proofPreviewUrl) URL.revokeObjectURL(payment.proofPreviewUrl)
-      payment.proofFile = null
-      payment.proofFileName = ''
-      payment.proofPreviewUrl = ''
-      payment.proofModalOpen = false
-      paymentError = ''
-      checkoutPreviewComplete = false
-      document.body.classList.remove('overflow-hidden')
-      const proofInput = document.querySelector('#payment-proof')
-      if (proofInput) proofInput.value = ''
-    "
-  >
-    Remove screenshot
-  </button>
-</div>
-
-<div
-  x-show="payment.proofModalOpen"
-  x-transition.opacity
-  class="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4"
-  role="dialog"
-  aria-modal="true"
-  aria-label="Payment screenshot preview"
-  @keydown.escape.window="
-    payment.proofModalOpen = false
-    document.body.classList.remove('overflow-hidden')
-  "
->
-  <div class="relative max-h-full w-full max-w-4xl">
-    <button
-      type="button"
-      class="absolute right-2 top-2 z-10 grid size-10 place-items-center rounded-full bg-brand-black text-xl font-bold text-brand-cream shadow-lg transition hover:bg-brand-gold hover:text-brand-black"
-      @click="
-        payment.proofModalOpen = false
-        document.body.classList.remove('overflow-hidden')
-      "
-      aria-label="Close payment screenshot preview"
-    >
-      ×
-    </button>
-
-    <img
-      :src="payment.proofPreviewUrl"
-      alt="Enlarged payment proof preview"
-      class="mx-auto max-h-[85vh] w-full rounded-2xl border border-brand-border bg-brand-black object-contain"
-    >
-  </div>
-</div>
-
-                <p
-                  x-show="paymentError"
-                  x-text="paymentError"
-                  class="mt-3 text-sm text-red-400"
-                  role="alert"
-                ></p>
+                <p class="text-sm font-semibold text-emerald-200">
+                  Eligible member order points
+                </p>
+                <p class="mt-1 text-xs leading-5 text-emerald-100/80">
+                  Approved member product orders earn points automatically after admin payment approval.
+                </p>
               </div>
-            </div>
-          </section>
-          
-          <section
-  x-show="!requiresShippingConfirmation()"
-  x-transition
-  class="overflow-hidden rounded-[1.5rem] border border-brand-gold/30 bg-brand-panel p-5 shadow-gold-soft sm:p-6"
->
 
-  <div
-  x-show="${isMember}"
-  class="mt-5 mb-5 rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-3"
->
-  <p class="text-sm font-semibold text-emerald-200">
-    Eligible member order points
-  </p>
-  <p class="mt-1 text-xs leading-5 text-emerald-100/80">
-    Approved member product orders earn points automatically after admin payment approval.
-  </p>
-</div>
+              <div
+                id="checkout-preview-status"
+                x-show="checkoutPreviewComplete"
+                x-transition
+                class="mt-5 rounded-xl border border-emerald-400/35 bg-emerald-400/10 px-4 py-3 text-sm font-medium leading-6 text-emerald-100"
+                role="status"
+              >
+                Details checked. You can now submit this order for admin verification.
+              </div>
 
-  <div
-    id="checkout-preview-status"
-    x-show="checkoutPreviewComplete"
-    x-transition
-    class="mt-5 rounded-xl border border-emerald-400/35 bg-emerald-400/10 px-4 py-3 text-sm font-medium leading-6 text-emerald-100"
-    role="status"
-  >
-    Details checked. You can now submit this order for admin verification.
-  </div>
+              <button
+                type="submit"
+                x-show="!checkoutPreviewComplete"
+                class="mt-5 inline-flex h-12 w-full items-center justify-center rounded-full bg-brand-gold px-7 text-sm font-semibold text-brand-black transition hover:bg-brand-gold-light disabled:cursor-not-allowed disabled:opacity-60"
+                :disabled="!checkoutPaymentsReady || isCheckingCart"
+                x-text="
+                  !checkoutPaymentsReady
+                    ? 'Ordering not open yet'
+                    : isCheckingCart
+                      ? 'Reviewing order details...'
+                      : 'Review Order Details'
+                "
+              ></button>
 
-  
+              <button
+                type="button"
+                x-show="checkoutPreviewComplete && !submittedOrderId"
+                @click="submitOrder()"
+                :disabled="!checkoutPaymentsReady || isSubmittingOrder || orderSubmissionUncertain"
+                class="mt-5 inline-flex h-12 w-full items-center justify-center rounded-full bg-brand-gold px-7 text-sm font-semibold text-brand-black transition hover:bg-brand-gold-light disabled:cursor-not-allowed disabled:opacity-50"
+                x-text="isSubmittingOrder ? 'Submitting order...' : 'Submit Order for Verification'"
+              ></button>
 
-  <button
-    type="submit"
-    x-show="!checkoutPreviewComplete"
-    class="mt-5 inline-flex h-12 w-full items-center justify-center rounded-full bg-brand-gold px-7 text-sm font-semibold text-brand-black transition hover:bg-brand-gold-light disabled:cursor-not-allowed disabled:opacity-60"
-    :disabled="!checkoutPaymentsReady || isCheckingCart"
-    x-text="
-      !checkoutPaymentsReady
-        ? 'Ordering not open yet'
-        : isCheckingCart
-          ? 'Reviewing order details...'
-          : 'Review Order Details'
-    "
-  ></button>
+              <button
+                type="button"
+                x-show="checkoutPreviewComplete && !submittedOrderId"
+                @click="checkoutPreviewComplete = false"
+                class="mt-3 inline-flex h-11 w-full items-center justify-center rounded-full border border-brand-border px-7 text-sm font-semibold text-brand-muted transition hover:border-brand-gold hover:text-brand-gold"
+              >
+                Edit Details
+              </button>
 
-  <button
-    type="button"
-    x-show="checkoutPreviewComplete && !submittedOrderId"
-    @click="submitOrder()"
-    :disabled="!checkoutPaymentsReady || isSubmittingOrder || orderSubmissionUncertain"
-    class="mt-5 inline-flex h-12 w-full items-center justify-center rounded-full bg-brand-gold px-7 text-sm font-semibold text-brand-black transition hover:bg-brand-gold-light disabled:cursor-not-allowed disabled:opacity-50"
-    x-text="isSubmittingOrder ? 'Submitting order...' : 'Submit Order for Verification'"
-  ></button>
+              <p
+                x-show="orderCheckError"
+                x-text="orderCheckError"
+                class="mt-3 text-center text-sm text-red-400"
+                role="alert"
+              ></p>
 
-  <button
-    type="button"
-    x-show="checkoutPreviewComplete && !submittedOrderId"
-    @click="checkoutPreviewComplete = false"
-    class="mt-3 inline-flex h-11 w-full items-center justify-center rounded-full border border-brand-border px-7 text-sm font-semibold text-brand-muted transition hover:border-brand-gold hover:text-brand-gold"
-  >
-    Edit Details
-  </button>
-
-  <p
-    x-show="orderCheckError"
-    x-text="orderCheckError"
-    class="mt-3 text-center text-sm text-red-400"
-    role="alert"
-  ></p>
-
-  <p class="mt-3 text-center text-xs leading-5 text-brand-muted">
-    Orders remain pending until the company verifies the payment screenshot.
-  </p>
-</section>
+              <p class="mt-3 text-center text-xs leading-5 text-brand-muted">
+                Orders remain pending until the company verifies the payment screenshot.
+              </p>
+            </section>
 
           </form>
         </div>
@@ -1758,7 +1831,7 @@ async function startCheckout() {
   </div>
 `
 
-bindFadeLinks('a[href^="/dashboard/"]')
-Alpine.start()
+  bindFadeLinks('a[href^="/dashboard/"]')
+  Alpine.start()
 }
 startCheckout()

@@ -10,6 +10,7 @@ import {
 } from './lib/page-transition.js'
 
 import logoImage from './assets/logoyourproduct.webp'
+import maribankQrImage from './assets/maribank.jpg'
 
 import rewardJourneyImage from './assets/rewards/reward-journey.webp'
 
@@ -1549,8 +1550,8 @@ selectedDashboardPackage.price,
           </span>
 
           <span class="mt-1 block text-xs leading-5 text-brand-muted">
-            GCash or Maya. Use the official company account provided by admin.
-          </span>
+  E-wallet details pending. Official e-wallet details will be added after client confirmation.
+</span>
         </label>
 
         <label
@@ -1574,46 +1575,71 @@ selectedDashboardPackage.price,
           </span>
 
           <span class="mt-1 block text-xs leading-5 text-brand-muted">
-            Bank details pending. Official bank transfer details will be added after client confirmation.
-          </span>
+  Pay securely through the official MariBank account below.
+</span>
         </label>
       </div>
     </fieldset>
 
     <div
-      x-show="membershipPaymentForm.paymentMethod === 'e-wallet'"
-      x-transition
-      class="mt-4 rounded-2xl border border-brand-gold/30 bg-brand-panel p-4"
-    >
-      <p
-        class="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-brand-gold"
-      >
-        Official GCash / Maya Account
-      </p>
+  x-show="membershipPaymentForm.paymentMethod === 'e-wallet'"
+  x-transition
+  class="mt-4 rounded-2xl border border-brand-gold/30 bg-brand-panel p-4"
+>
+  <p
+    class="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-brand-gold"
+  >
+    E-wallet Details Pending
+  </p>
 
-      <p class="mt-2 text-sm leading-6 text-brand-muted">
-        Official GCash or Maya account details will be provided by admin before payment.
-      </p>
-    </div>
+  <p class="mt-2 text-sm leading-6 text-brand-muted">
+    Official e-wallet account details will be added after client confirmation.
+  </p>
+</div>
 
     <div
-      x-show="membershipPaymentForm.paymentMethod === 'bank-transfer'"
-      x-transition
-      class="mt-4 rounded-2xl border border-brand-gold/30 bg-brand-panel p-4"
-    >
-      <p
-        class="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-brand-gold"
-      >
-        Bank Details Pending
+  x-show="membershipPaymentForm.paymentMethod === 'bank-transfer'"
+  x-transition
+  class="mt-4 overflow-hidden rounded-2xl border border-brand-gold/30 bg-brand-panel p-4 sm:p-5"
+>
+  <p
+    class="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-brand-gold"
+  >
+    Official MariBank Account
+  </p>
+
+  <div class="mt-4 grid gap-5 sm:grid-cols-[minmax(0,1fr)_11rem] sm:items-center">
+    <div>
+      <p class="text-xs uppercase tracking-[0.12em] text-brand-muted">
+        Account Name
       </p>
 
-      <p class="mt-2 text-sm leading-6 text-brand-muted">
-        Official bank name, account name, and account number will be added after client confirmation.
+      <p class="mt-1 text-sm font-semibold text-brand-cream">
+        Ian Tiangco
+      </p>
+
+      <p class="mt-4 text-xs uppercase tracking-[0.12em] text-brand-muted">
+        Account Number
+      </p>
+
+      <p class="mt-1 break-all text-base font-semibold tracking-[0.04em] text-brand-cream">
+        5294162952422063
+      </p>
+
+      <p class="mt-4 text-xs leading-5 text-brand-muted">
+        Scan the QR code or transfer directly to the account above, then upload your payment screenshot below.
       </p>
     </div>
 
-  </section>
-
+    <div class="overflow-hidden rounded-xl border border-brand-border bg-white p-2">
+      <img
+        src="${maribankQrImage}"
+        alt="Official MariBank payment QR code"
+        class="mx-auto aspect-square w-full object-contain"
+      >
+    </div>
+  </div>
+</div>
   <div class="mt-5">
 
     <label
