@@ -830,7 +830,6 @@ function renderOrdersPage() {
                 <option value="processing">Processing</option>
                 <option value="shipped">Shipped</option>
                 <option value="delivered">Delivered</option>
-                <option value="cancelled">Cancelled</option>
                 <option value="rejected">Rejected</option>
               </select>
             </label>
@@ -2508,10 +2507,14 @@ newOrderNotificationOrders: [],
       ? this.liveOrders
       : []
 
-    return sourceOrders.filter((order) => {
-      const matchesStatus =
-        this.orderStatusFilter === 'all' ||
-        order.status === this.orderStatusFilter
+      return sourceOrders.filter((order) => {
+        const matchesStatus =
+          this.orderStatusFilter === 'all' ||
+          (
+            this.orderStatusFilter === 'pending-verification'
+              ? this.isPendingOrderStatus(order.status)
+              : order.status === this.orderStatusFilter
+          )
 
         const matchesCustomerType =
         this.orderCustomerTypeFilter === 'all' ||
