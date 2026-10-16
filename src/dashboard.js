@@ -2569,6 +2569,7 @@ let signedInMembershipPackagesError = false
 let signedInMembershipCelebration = null
 let signedInReferralCommissionNotification = null
 let signedInOrderPointsNotification = null
+let signedInOrderApprovalNotification = null
 
 Alpine.data('customerPortal', () => ({
   activePage:
@@ -2593,6 +2594,10 @@ referralCommissionNotificationOpen: Boolean(
 ),
 orderPointsNotification: signedInOrderPointsNotification,
 orderPointsNotificationOpen: Boolean(signedInOrderPointsNotification),
+orderApprovalNotification: signedInOrderApprovalNotification,
+orderApprovalNotificationOpen: Boolean(
+  signedInOrderApprovalNotification,
+),
 isMember: signedInProfile.membership_status === 'active',
   hasPendingMembership,
   selectedPackage: selectedDashboardPackage,
@@ -2823,6 +2828,23 @@ previewTimer: null,
     this.closeOrderPointsNotification()
     this.openPage('orderHistory')
   },
+
+  closeOrderApprovalNotification() {
+    if (this.orderApprovalNotification?.storageKey) {
+      localStorage.setItem(
+        this.orderApprovalNotification.storageKey,
+        'seen',
+      )
+    }
+
+    this.orderApprovalNotificationOpen = false
+  },
+
+  viewOrderApprovalHistory() {
+    this.closeOrderApprovalNotification()
+    this.openPage('orderHistory')
+  },
+
 
   closeReferralCommissionNotification() {
     if (this.referralCommissionNotification?.storageKey) {
@@ -3856,6 +3878,29 @@ if (latestOrderWithPoints) {
       storageKey,
       orderId: latestOrderWithPoints.id,
       points: Number(latestOrderWithPoints.pointsAwarded || 0),
+    }
+  }
+}
+
+const latestApprovedOrderWithoutPoints = signedInOrders.find(
+  (order) =>
+    order.status === 'processing' &&
+    Boolean(order.reviewed_at) &&
+    Number(order.pointsAwarded || 0) <= 0,
+)
+
+if (latestApprovedOrderWithoutPoints) {
+  const storageKey =
+    'your-product-seen-order-approved-' +
+    latestApprovedOrderWithoutPoints.id
+
+  const orderApprovalAlreadySeen =
+    localStorage.getItem(storageKey) === 'seen'
+
+  if (!orderApprovalAlreadySeen) {
+    signedInOrderApprovalNotification = {
+      storageKey,
+      orderId: latestApprovedOrderWithoutPoints.id,
     }
   }
 }
@@ -5701,7 +5746,7 @@ Email is not changed.
 ></p>
 
 <div
-  x-show="order.admin_note"
+  x-show="order.status === 'rejected' && order.admin_note"
   class="mt-3 rounded-xl border border-red-400/25 bg-red-400/5 px-4 py-3 md:absolute md:right-5 md:top-5 md:mt-0 md:w-[240px] md:px-3 md:py-2.5"
 >
   <div class="flex items-start gap-3">
@@ -6098,8 +6143,8 @@ Email is not changed.
     ></p>
 
     <p class="mt-4 text-sm leading-6 text-brand-muted">
-      Your points have been added to your account.
-    </p>
+  Your points have been added to your account. Your order is now being prepared. Please wait for delivery updates.
+</p>
 
     <div class="mt-6 grid gap-3 sm:grid-cols-2">
       <button
@@ -6114,6 +6159,78 @@ Email is not changed.
         type="button"
         class="premium-cta inline-flex min-h-11 items-center justify-center rounded-full bg-brand-gold px-5 text-sm font-semibold text-[#17130d]"
         @click="viewOrderPointsHistory()"
+      >
+        View Order History
+      </button>
+    </div>
+  </div>
+</div>
+
+<div
+  x-show="orderApprovalNotificationOpen"
+  x-cloak
+  x-transition.opacity
+  class="fixed inset-0 z-[133] grid place-items-center bg-black/85 px-4 backdrop-blur-sm"
+  @click.self="closeOrderApprovalNotification()"
+  @keydown.escape.window="closeOrderApprovalNotification()"
+>
+  <div
+    class="w-full max-w-md rounded-[1.75rem] border border-brand-gold/40 bg-brand-panel p-6 text-center shadow-gold-soft"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="order-approval-notification-title"
+  >
+    <div
+      class="mx-auto flex size-14 items-center justify-center rounded-full border border-brand-gold/40 bg-brand-gold/10"
+      aria-hidden="true"
+    >
+      <svg
+        class="size-7 text-brand-gold"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.7"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="m5 12 4 4L19 6" />
+      </svg>
+    </div>
+
+    <p
+      class="mt-5 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
+    >
+      Payment Approved
+    </p>
+
+    <h2
+      id="order-approval-notification-title"
+      class="mt-2 font-display text-3xl text-brand-cream"
+    >
+      Your Order Is Confirmed
+    </h2>
+
+    <p class="mt-3 text-sm font-semibold leading-6 text-brand-cream">
+      Your payment has been successfully approved.
+    </p>
+
+    <p class="mt-4 text-sm leading-6 text-brand-muted">
+      Your order is now being prepared. Please wait for delivery updates.
+    </p>
+
+    <div class="mt-6 grid gap-3 sm:grid-cols-2">
+      <button
+        type="button"
+        class="inline-flex min-h-11 items-center justify-center rounded-full border border-brand-border px-5 text-sm font-semibold text-brand-cream transition hover:border-brand-gold hover:text-brand-gold"
+        @click="closeOrderApprovalNotification()"
+      >
+        Close
+      </button>
+
+      <button
+        type="button"
+        class="premium-cta inline-flex min-h-11 items-center justify-center rounded-full bg-brand-gold px-5 text-sm font-semibold text-[#17130d]"
+        @click="viewOrderApprovalHistory()"
       >
         View Order History
       </button>
