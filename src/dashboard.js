@@ -2586,6 +2586,13 @@ Alpine.data('customerPortal', () => ({
   packagePurchaseSubmitting: false,
   membershipPackages: signedInMembershipPackages,
   membershipPackagesError: signedInMembershipPackagesError,
+  get latestApprovedMembershipPackage() {
+    return (
+      this.membershipPackages.find(
+        (membershipPackage) => membershipPackage.status === 'approved',
+      ) || null
+    )
+  },
   membershipCelebration: signedInMembershipCelebration,
 membershipCelebrationOpen: Boolean(signedInMembershipCelebration),
 referralCommissionNotification: signedInReferralCommissionNotification,
@@ -5771,6 +5778,70 @@ Email is not changed.
               </article>
             </template>
           </div>
+
+          <section
+  x-show="!membershipPackagesError && latestApprovedMembershipPackage"
+  x-transition.opacity
+  class="mt-6 overflow-hidden rounded-[1.5rem] border border-emerald-300/35 bg-emerald-400/[0.07] shadow-panel"
+  aria-label="Membership payment approved"
+>
+  <div class="p-5 sm:p-6">
+    <div class="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+      <div class="max-w-2xl">
+        <div class="flex items-center gap-3">
+          <span
+            class="inline-flex size-9 shrink-0 items-center justify-center rounded-full border border-emerald-300/40 bg-emerald-400/10 text-emerald-200"
+            aria-hidden="true"
+          >
+            ✓
+          </span>
+
+          <p
+            class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-emerald-200"
+          >
+            Payment Approved
+          </p>
+        </div>
+
+        <h2
+          class="mt-4 font-display text-3xl text-brand-cream"
+        >
+          Your membership payment has been approved.
+        </h2>
+
+        <p
+          class="mt-3 text-sm leading-7 text-brand-muted"
+          x-text="
+            ['pending-allocation', 'not-ready'].includes(
+              latestApprovedMembershipPackage?.fulfillment_status
+            )
+              ? 'Your payment has been verified. The company is now preparing your assorted perfume allocation.'
+              : latestApprovedMembershipPackage?.fulfillment_status === 'ready-for-packing'
+                ? 'Your payment has been verified and your membership package is ready for packing.'
+                : latestApprovedMembershipPackage?.fulfillment_status === 'shipped'
+                  ? 'Your payment has been verified and your membership package has been shipped.'
+                  : latestApprovedMembershipPackage?.fulfillment_status === 'completed'
+                    ? 'Your payment has been verified and your membership package has been delivered.'
+                    : 'Your payment has been verified and your membership package is being prepared.'
+          "
+        ></p>
+      </div>
+
+      <div class="flex shrink-0 flex-wrap gap-2 sm:justify-end">
+        <span
+          class="inline-flex rounded-full border border-brand-gold/35 bg-brand-gold/10 px-3 py-1.5 text-xs font-semibold text-brand-gold"
+          x-text="latestApprovedMembershipPackage?.packageName"
+        ></span>
+
+        <span
+          x-show="Number(latestApprovedMembershipPackage?.pointsEarned || 0) > 0"
+          class="inline-flex rounded-full border border-brand-gold/35 bg-brand-gold/10 px-3 py-1.5 text-xs font-semibold text-brand-gold"
+          x-text="'+' + Number(latestApprovedMembershipPackage?.pointsEarned || 0).toLocaleString('en-PH') + ' Points Earned'"
+        ></span>
+      </div>
+    </div>
+  </div>
+</section>
 
           <section
   x-show="!membershipPackagesError && membershipPackages.length > 0"
