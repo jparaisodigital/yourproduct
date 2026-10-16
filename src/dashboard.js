@@ -4826,9 +4826,9 @@ if (
           Admin note
         </p>
         <p
-          class="mt-1 text-sm leading-6 text-red-100"
-          x-text="'DEBUG NOTE: ' + (order.admin_note || 'NO ADMIN NOTE IN CUSTOMER DATA')"
-        ></p>
+  class="mt-1 text-sm leading-6 text-red-100"
+  x-text="order.admin_note"
+></p>
       </div>
 
       <p
