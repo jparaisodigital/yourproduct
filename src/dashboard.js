@@ -2567,6 +2567,7 @@ let signedInOrdersError = false
 let signedInMembershipPackages = []
 let signedInMembershipPackagesError = false
 let signedInMembershipCelebration = null
+let signedInMembershipRejectionNotification = null
 let signedInReferralCommissionNotification = null
 let signedInOrderPointsNotification = null
 let signedInOrderApprovalNotification = null
@@ -2595,6 +2596,11 @@ Alpine.data('customerPortal', () => ({
   },
   membershipCelebration: signedInMembershipCelebration,
 membershipCelebrationOpen: Boolean(signedInMembershipCelebration),
+membershipRejectionNotification:
+  signedInMembershipRejectionNotification,
+membershipRejectionNotificationOpen: Boolean(
+  signedInMembershipRejectionNotification,
+),
 referralCommissionNotification: signedInReferralCommissionNotification,
 referralCommissionNotificationOpen: Boolean(
   signedInReferralCommissionNotification,
@@ -2808,6 +2814,31 @@ previewTimer: null,
   
   viewMembershipCelebrationHistory() {
     this.closeMembershipCelebration()
+    this.openPage('orderHistory')
+  
+    window.setTimeout(() => {
+      document
+        .querySelector('#membership-package-records-title')
+        ?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+        })
+    }, 150)
+  },
+
+  closeMembershipRejectionNotification() {
+    if (this.membershipRejectionNotification?.storageKey) {
+      localStorage.setItem(
+        this.membershipRejectionNotification.storageKey,
+        'seen',
+      )
+    }
+  
+    this.membershipRejectionNotificationOpen = false
+  },
+  
+  viewMembershipRejectionHistory() {
+    this.closeMembershipRejectionNotification()
     this.openPage('orderHistory')
   
     window.setTimeout(() => {
@@ -3925,13 +3956,20 @@ if (latestApprovedOrderWithoutPoints) {
       fulfillment_status,
       package_allocation,
       package_inventory_deducted,
+      admin_note,
+      reviewed_at,
       submitted_at,
       approved_at,
       membership_activated_at,
       updated_at
     `)
     .eq('customer_id', user.id)
-    .in('status', ['awaiting-payment', 'pending-review', 'approved'])
+    .in('status', [
+      'awaiting-payment',
+      'pending-review',
+      'approved',
+      'rejected',
+    ])
     .order('submitted_at', { ascending: false })
   
   signedInMembershipPackages = (membershipPackageRows ?? []).map(
@@ -3988,6 +4026,32 @@ if (latestApprovedOrderWithoutPoints) {
     leader: '40% off per bottle',
     prestige: '50% off per bottle',
   }
+
+  const latestRejectedMembership =
+  signedInMembershipPackages.find(
+    (application) => application.status === 'rejected',
+  ) || null
+
+if (latestRejectedMembership) {
+  const storageKey =
+    'your-product-seen-membership-rejection-' +
+    latestRejectedMembership.id
+
+  const rejectionAlreadySeen =
+    localStorage.getItem(storageKey) === 'seen'
+
+  if (!rejectionAlreadySeen) {
+    signedInMembershipRejectionNotification = {
+      storageKey,
+      applicationId: latestRejectedMembership.id,
+      packageName:
+        latestRejectedMembership.packageName ||
+        'Membership Package',
+      adminNote:
+        latestRejectedMembership.admin_note?.trim() || '',
+    }
+  }
+}
   
   const approvedMembershipRows = [...signedInMembershipPackages]
     .filter((application) => application.status === 'approved')
@@ -5892,6 +5956,8 @@ Email is not changed.
             <span
   class="mt-3 inline-flex rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em]"
   :class="{
+    'border-red-400/40 bg-red-400/10 text-red-200':
+      membershipPackage.status === 'rejected',
     'border-amber-300/40 bg-amber-400/10 text-amber-200':
       ['pending-review', 'approved'].includes(membershipPackage.status) &&
       !['ready-for-packing', 'shipped', 'completed'].includes(membershipPackage.fulfillment_status),
@@ -5903,7 +5969,9 @@ Email is not changed.
       membershipPackage.status === 'awaiting-payment',
   }"
   x-text="
-    membershipPackage.status === 'awaiting-payment'
+  membershipPackage.status === 'rejected'
+    ? 'Payment Declined'
+    : membershipPackage.status === 'awaiting-payment'
       ? 'Awaiting Payment'
       : membershipPackage.status === 'pending-review'
         ? 'Pending Verification'
@@ -5914,20 +5982,51 @@ Email is not changed.
             shipped: 'Shipped',
             completed: 'Delivered',
           }[membershipPackage.fulfillment_status] || 'Payment Approved'
-  "
+"
 ></span>
           </div>
 
           <p
-            class="text-xs text-brand-muted"
-            x-text="new Date(membershipPackage.submitted_at).toLocaleDateString('en-PH')"
-          ></p>
-        </div>
+  class="text-xs text-brand-muted"
+  x-text="new Date(membershipPackage.submitted_at).toLocaleDateString('en-PH')"
+></p>
+</div>
 
-        <p
-          class="mt-4 text-sm text-brand-cream"
-          x-text="membershipPackage.packageQuantity.toLocaleString('en-PH') + ' assorted bottles included'"
-        >
+<div
+  x-show="membershipPackage.status === 'rejected'"
+  class="mt-4 rounded-xl border border-red-400/30 bg-red-400/10 px-4 py-3"
+>
+  <p
+    class="text-xs font-semibold uppercase tracking-[0.12em] text-red-200"
+  >
+    Payment declined
+  </p>
+
+  <p class="mt-2 text-sm leading-6 text-red-100">
+    Your package payment was not approved.
+  </p>
+
+  <div
+    x-show="membershipPackage.admin_note"
+    class="mt-3 border-t border-red-300/20 pt-3"
+  >
+    <p
+      class="text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-red-200"
+    >
+      Admin note
+    </p>
+
+    <p
+      class="mt-1 text-sm leading-6 text-red-100"
+      x-text="membershipPackage.admin_note"
+    ></p>
+  </div>
+</div>
+
+<p
+  class="mt-4 text-sm text-brand-cream"
+  x-text="membershipPackage.packageQuantity.toLocaleString('en-PH') + ' assorted bottles included'"
+>
         <div
   x-show="Number(membershipPackage.pointsEarned || 0) > 0"
   class="mt-4 inline-flex items-center gap-2 rounded-xl border border-brand-gold/30 bg-brand-gold/10 px-4 py-3"
@@ -5992,7 +6091,10 @@ Email is not changed.
         </div>
 
         <p
-  x-show="membershipPackage.packageAllocation.length === 0"
+  x-show="
+    membershipPackage.packageAllocation.length === 0 &&
+    membershipPackage.status !== 'rejected'
+  "
   class="mt-4 rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-xs leading-5 text-amber-100"
   x-text="
     membershipPackage.status === 'awaiting-payment'
@@ -6153,6 +6255,100 @@ Email is not changed.
         @click="viewMembershipCelebrationHistory()"
       >
         View Order History
+      </button>
+    </div>
+  </div>
+</div>
+
+<div
+  x-show="membershipRejectionNotificationOpen"
+  x-cloak
+  x-transition.opacity
+  class="fixed inset-0 z-[131] grid place-items-center bg-black/85 px-4 backdrop-blur-sm"
+  @click.self="closeMembershipRejectionNotification()"
+  @keydown.escape.window="closeMembershipRejectionNotification()"
+>
+  <div
+    class="w-full max-w-md rounded-[1.75rem] border border-red-400/40 bg-brand-panel p-6 text-center shadow-panel"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="membership-rejection-notification-title"
+  >
+    <div
+      class="mx-auto flex size-14 items-center justify-center rounded-full border border-red-400/40 bg-red-400/10"
+      aria-hidden="true"
+    >
+      <svg
+        class="size-7 text-red-300"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.7"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <circle cx="12" cy="12" r="8.5" />
+        <path d="M9 9l6 6" />
+        <path d="M15 9l-6 6" />
+      </svg>
+    </div>
+
+    <p
+      class="mt-5 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-red-300"
+    >
+      Payment Declined
+    </p>
+
+    <h2
+      id="membership-rejection-notification-title"
+      class="mt-2 font-display text-3xl text-brand-cream"
+    >
+      Package Payment Declined
+    </h2>
+
+    <p
+      class="mt-3 text-sm font-semibold leading-6 text-brand-cream"
+      x-text="
+        (membershipRejectionNotification?.packageName || 'Membership Package') +
+        ' payment was not approved.'
+      "
+    ></p>
+
+    <div
+      x-show="membershipRejectionNotification?.adminNote"
+      class="mt-4 rounded-xl border border-red-400/30 bg-red-400/10 px-4 py-3 text-left"
+    >
+      <p
+        class="text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-red-200"
+      >
+        Admin note
+      </p>
+
+      <p
+        class="mt-1 text-sm leading-6 text-red-100"
+        x-text="membershipRejectionNotification?.adminNote"
+      ></p>
+    </div>
+
+    <p class="mt-4 text-sm leading-6 text-brand-muted">
+      Review your package history for the payment status and details.
+    </p>
+
+    <div class="mt-6 grid gap-3 sm:grid-cols-2">
+      <button
+        type="button"
+        class="inline-flex min-h-11 items-center justify-center rounded-full border border-brand-border px-5 text-sm font-semibold text-brand-cream transition hover:border-red-300 hover:text-red-200"
+        @click="closeMembershipRejectionNotification()"
+      >
+        Close
+      </button>
+
+      <button
+        type="button"
+        class="inline-flex min-h-11 items-center justify-center rounded-full bg-red-300 px-5 text-sm font-semibold text-[#17130d] transition hover:bg-red-200"
+        @click="viewMembershipRejectionHistory()"
+      >
+        View Package History
       </button>
     </div>
   </div>
