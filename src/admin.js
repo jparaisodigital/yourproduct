@@ -2064,6 +2064,7 @@ ${renderAdminPackageFulfillmentPanel()}
 }
 
 Alpine.data('adminDashboard', () => ({
+  theme: 'black',
   applications: [],
   applicationsLoading: true,
   applicationsError: '',
@@ -5853,7 +5854,54 @@ closeMobileMenu() {
 },
 
 async init() {
+  const savedTheme =
+    window.localStorage.getItem('your-product-theme')
+
+  this.theme =
+    savedTheme === 'ivory'
+      ? 'ivory'
+      : 'black'
+
+  this.applyTheme()
+
   await this.loadLiveOrders()
+},
+
+applyTheme() {
+  if (this.theme === 'ivory') {
+    document.documentElement.setAttribute(
+      'data-theme',
+      'ivory',
+    )
+  } else {
+    document.documentElement.removeAttribute(
+      'data-theme',
+    )
+  }
+
+  window.localStorage.setItem(
+    'your-product-theme',
+    this.theme,
+  )
+},
+
+toggleTheme() {
+  const root = document.documentElement
+
+  root.classList.add('theme-transitioning')
+
+  window.requestAnimationFrame(() => {
+    this.theme =
+      this.theme === 'black'
+        ? 'ivory'
+        : 'black'
+
+    this.applyTheme()
+
+    window.setTimeout(() => {
+      root.classList.remove('theme-transitioning')
+    }, 650)
+  })
 },
 
 async loadLiveOrders() {
@@ -6156,6 +6204,82 @@ document.querySelector('#admin-app').innerHTML = `
 
   <span>View Store</span>
 </a>
+
+<div
+  class="ml-2 flex items-center border-l border-brand-border pl-4"
+>
+  <button
+    type="button"
+    class="premium-icon group grid size-10 shrink-0 place-items-center rounded-full border border-brand-border text-brand-muted transition duration-300 hover:border-brand-gold hover:bg-brand-gold/10 hover:text-brand-gold"
+    :aria-label="
+      theme === 'black'
+        ? 'Switch to light mode'
+        : 'Switch to dark mode'
+    "
+    :title="
+      theme === 'black'
+        ? 'Light mode'
+        : 'Dark mode'
+    "
+    @click="toggleTheme()"
+  >
+    <svg
+      x-cloak
+      x-show="theme === 'black'"
+      x-transition:enter="transition duration-300 ease-out"
+      x-transition:enter-start="opacity-0 rotate-45 scale-75"
+      x-transition:enter-end="opacity-100 rotate-0 scale-100"
+      x-transition:leave="transition duration-200 ease-in"
+      x-transition:leave-start="opacity-100 rotate-0 scale-100"
+      x-transition:leave-end="opacity-0 -rotate-45 scale-75"
+      class="size-[1.1rem]"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.6"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="3.5" />
+
+      <path
+        d="M12 2.75v2M12 19.25v2M2.75 12h2M19.25 12h2M5.45 5.45l1.4 1.4M17.15 17.15l1.4 1.4M18.55 5.45l-1.4 1.4M6.85 17.15l-1.4 1.4"
+        stroke-linecap="round"
+      />
+    </svg>
+
+    <svg
+      x-cloak
+      x-show="theme === 'ivory'"
+      x-transition:enter="transition duration-300 ease-out"
+      x-transition:enter-start="opacity-0 -rotate-45 scale-75"
+      x-transition:enter-end="opacity-100 rotate-0 scale-100"
+      x-transition:leave="transition duration-200 ease-in"
+      x-transition:leave-start="opacity-100 rotate-0 scale-100"
+      x-transition:leave-end="opacity-0 rotate-45 scale-75"
+      class="size-[1.1rem]"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.6"
+      aria-hidden="true"
+    >
+      <path
+        d="M20.25 15.4A8.25 8.25 0 0 1 8.6 3.75a8.25 8.25 0 1 0 11.65 11.65Z"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+    </svg>
+
+    <span
+      class="sr-only"
+      x-text="
+        theme === 'black'
+          ? 'Switch to light mode'
+          : 'Switch to dark mode'
+      "
+    ></span>
+  </button>
+</div>
 
 <p
   x-show="logoutError"
