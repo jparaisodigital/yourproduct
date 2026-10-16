@@ -2137,8 +2137,9 @@ newMembershipNotificationApplications: [],
   inventoryMovementFilter: 'all',
 
   salesDateFilter: 'all',
-  salesStatusFilter: 'all',
-  salesCustomerTypeFilter: 'all',
+salesStatusFilter: 'all',
+salesCustomerTypeFilter: 'all',
+memberSalesTierFilter: 'all',
 
   approvedOrderStatuses: [
     'processing',
@@ -3510,6 +3511,198 @@ get filteredSalesOrders() {
     new Date(
       firstOrder.submitted_at,
     ).getTime(),
+  )
+},
+
+get completedMemberSalesOrders() {
+  const sourceOrders = Array.isArray(this.liveOrders)
+    ? this.liveOrders
+    : []
+
+  const validMemberTiers = [
+    'starter',
+    'builder',
+    'leader',
+    'prestige',
+  ]
+
+  const now = new Date()
+
+  return sourceOrders.filter((order) => {
+    if (order.status !== 'delivered') {
+      return false
+    }
+
+    if (order.customer_type !== 'member') {
+      return false
+    }
+
+    if (order.customer_membership_status !== 'active') {
+      return false
+    }
+
+    if (order.customer_account_status !== 'active') {
+      return false
+    }
+
+    if (!validMemberTiers.includes(order.customer_package_id)) {
+      return false
+    }
+
+    if (
+      this.memberSalesTierFilter !== 'all' &&
+      order.customer_package_id !== this.memberSalesTierFilter
+    ) {
+      return false
+    }
+
+    if (this.salesDateFilter === 'all') {
+      return true
+    }
+
+    const orderDate = new Date(
+      order.delivered_at ||
+      order.created_at,
+    )
+
+    if (Number.isNaN(orderDate.getTime())) {
+      return false
+    }
+
+    if (this.salesDateFilter === 'today') {
+      return (
+        orderDate.toDateString() ===
+        now.toDateString()
+      )
+    }
+
+    const dateRangeDays = {
+      '7-days': 7,
+      '30-days': 30,
+    }
+
+    const selectedDays =
+      dateRangeDays[this.salesDateFilter]
+
+    if (!selectedDays) {
+      return true
+    }
+
+    const cutoffDate = new Date(now)
+
+    cutoffDate.setDate(
+      cutoffDate.getDate() - selectedDays,
+    )
+
+    return orderDate >= cutoffDate
+  })
+},
+
+get completedMemberSalesTotal() {
+  return this.completedMemberSalesOrders.reduce(
+    (total, order) =>
+      total + this.orderProductSales(order),
+    0,
+  )
+},
+
+get completedMemberSalesOrderCount() {
+  return this.completedMemberSalesOrders.length
+},
+
+get completedMemberSalesActiveBuyerCount() {
+  const buyers = new Set(
+    this.completedMemberSalesOrders
+      .map((order) =>
+        String(
+          order.customer_details?.emailAddress || '',
+        )
+          .trim()
+          .toLowerCase(),
+      )
+      .filter(Boolean),
+  )
+
+  return buyers.size
+},
+
+get completedMemberSalesAverageOrder() {
+  if (this.completedMemberSalesOrderCount === 0) {
+    return 0
+  }
+
+  return (
+    this.completedMemberSalesTotal /
+    this.completedMemberSalesOrderCount
+  )
+},
+
+get memberSalesRanking() {
+  const members = new Map()
+
+  this.completedMemberSalesOrders.forEach((order) => {
+    const email = String(
+      order.customer_details?.emailAddress || '',
+    )
+      .trim()
+      .toLowerCase()
+
+    if (!email) {
+      return
+    }
+
+    const firstName = String(
+      order.customer_first_name || '',
+    ).trim()
+
+    const lastName = String(
+      order.customer_last_name || '',
+    ).trim()
+
+    const fallbackName = String(
+      order.customer_details?.fullName ||
+      order.customer_details?.name ||
+      email,
+    ).trim()
+
+    const memberName =
+      [firstName, lastName]
+        .filter(Boolean)
+        .join(' ') ||
+      fallbackName
+
+    const existingMember =
+      members.get(email) || {
+        email,
+        name: memberName,
+        tier: order.customer_package_id,
+        completedOrders: 0,
+        units: 0,
+        totalSales: 0,
+      }
+
+    const orderItems = Array.isArray(order.order_items)
+      ? order.order_items
+      : []
+
+    const orderUnits = orderItems.reduce(
+      (total, item) =>
+        total + Number(item.quantity || 0),
+      0,
+    )
+
+    existingMember.completedOrders += 1
+    existingMember.units += orderUnits
+    existingMember.totalSales +=
+      this.orderProductSales(order)
+
+    members.set(email, existingMember)
+  })
+
+  return [...members.values()].sort(
+    (firstMember, secondMember) =>
+      secondMember.totalSales -
+      firstMember.totalSales,
   )
 },
 
@@ -5715,44 +5908,59 @@ async loadLiveOrders() {
       ),
     ]
     
-    let customerTypeByEmail = new Map()
-    
-    if (customerEmails.length > 0) {
-      const { data: profileRows, error: profilesError } = await supabase
-        .from('profiles')
-        .select('email, customer_type')
-        .in('email', customerEmails)
-    
-      if (profilesError) {
-        console.error('Unable to load order customer types:', profilesError)
-      } else {
-        customerTypeByEmail = new Map(
-          (profileRows ?? []).map((profile) => [
-            String(profile.email || '').trim().toLowerCase(),
-            profile.customer_type,
-          ]),
-        )
-      }
-    }
+    let customerProfileByEmail = new Map()
 
-    this.liveOrders = (data ?? []).map((order) => {
-      const customerEmail = String(
-        order.customer_details?.emailAddress || '',
-      )
-        .trim()
-        .toLowerCase()
-    
-      return {
-        ...order,
-        customer_type:
-          customerTypeByEmail.get(customerEmail) || 'regular',
-        order_items: (order.order_items ?? []).map((item) => ({
-          ...item,
-          imageUrl: getOrderItemImage(item),
-        })),
-        pointsAwarded: pointsByOrderId.get(order.id) ?? 0,
-      }
-    })
+if (customerEmails.length > 0) {
+  const { data: profileRows, error: profilesError } = await supabase
+    .from('profiles')
+    .select(
+      'email, first_name, last_name, customer_type, membership_status, account_status, selected_package_id',
+    )
+    .in('email', customerEmails)
+
+  if (profilesError) {
+    console.error('Unable to load order customer profiles:', profilesError)
+  } else {
+    customerProfileByEmail = new Map(
+      (profileRows ?? []).map((profile) => [
+        String(profile.email || '').trim().toLowerCase(),
+        profile,
+      ]),
+    )
+  }
+}
+
+this.liveOrders = (data ?? []).map((order) => {
+  const customerEmail = String(
+    order.customer_details?.emailAddress || '',
+  )
+    .trim()
+    .toLowerCase()
+
+  const customerProfile =
+    customerProfileByEmail.get(customerEmail) || null
+
+  return {
+    ...order,
+    customer_type:
+      customerProfile?.customer_type || 'regular',
+    customer_membership_status:
+      customerProfile?.membership_status || null,
+    customer_account_status:
+      customerProfile?.account_status || null,
+    customer_package_id:
+      customerProfile?.selected_package_id || null,
+    customer_first_name:
+      customerProfile?.first_name || '',
+    customer_last_name:
+      customerProfile?.last_name || '',
+    order_items: (order.order_items ?? []).map((item) => ({
+      ...item,
+      imageUrl: getOrderItemImage(item),
+    })),
+    pointsAwarded: pointsByOrderId.get(order.id) ?? 0,
+  }
+})
 
     const unseenPendingOrders = this.liveOrders.filter((order) => {
       if (!this.isPendingOrderStatus(order.status)) return false
