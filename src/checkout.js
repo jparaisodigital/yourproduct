@@ -258,14 +258,21 @@ if (this.checkoutPaymentsReady && !this.payment.proofFile) {
     }
 
     const cart = Alpine.store('cart')
-    const totalCartQuantity = Number(cart?.itemCount || 0)
-    const isMemberCheckout = checkoutPricingTier !== 'regular'
+const totalCartQuantity = Number(cart?.itemCount || 0)
+const isMemberCheckout = checkoutPricingTier !== 'regular'
+const hasTesterKit = cart.detailedItems.some(
+  (item) => item.productId === 'tester-kit',
+)
 
-    if (isMemberCheckout && totalCartQuantity < 5) {
-      this.orderCheckError =
-        'Members must order at least 5 products.'
-      return
-    }
+if (
+  isMemberCheckout &&
+  !hasTesterKit &&
+  totalCartQuantity < 5
+) {
+  this.orderCheckError =
+    'Members must order at least 5 products, unless the order includes a Tester Kit.'
+  return
+}
 
     this.isCheckingCart = true
 
