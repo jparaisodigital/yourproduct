@@ -2568,6 +2568,7 @@ let signedInMembershipPackages = []
 let signedInMembershipPackagesError = false
 let signedInMembershipCelebration = null
 let signedInReferralCommissionNotification = null
+let signedInOrderPointsNotification = null
 
 Alpine.data('customerPortal', () => ({
   activePage:
@@ -2590,6 +2591,8 @@ referralCommissionNotification: signedInReferralCommissionNotification,
 referralCommissionNotificationOpen: Boolean(
   signedInReferralCommissionNotification,
 ),
+orderPointsNotification: signedInOrderPointsNotification,
+orderPointsNotificationOpen: Boolean(signedInOrderPointsNotification),
 isMember: signedInProfile.membership_status === 'active',
   hasPendingMembership,
   selectedPackage: selectedDashboardPackage,
@@ -2803,6 +2806,22 @@ previewTimer: null,
           block: 'start',
         })
     }, 150)
+  },
+
+  closeOrderPointsNotification() {
+    if (this.orderPointsNotification?.storageKey) {
+      localStorage.setItem(
+        this.orderPointsNotification.storageKey,
+        'seen',
+      )
+    }
+
+    this.orderPointsNotificationOpen = false
+  },
+
+  viewOrderPointsHistory() {
+    this.closeOrderPointsNotification()
+    this.openPage('orderHistory')
   },
 
   closeReferralCommissionNotification() {
@@ -3815,11 +3834,31 @@ if (directReferralsError) {
   }
 }
 
-  signedInOrders = (orderRows ?? []).map((order) => ({
-    ...order,
-    pointsAwarded: pointsByOrderId.get(order.id) ?? 0,
-  }))
-  signedInOrdersError = Boolean(ordersError)
+signedInOrders = (orderRows ?? []).map((order) => ({
+  ...order,
+  pointsAwarded: pointsByOrderId.get(order.id) ?? 0,
+}))
+signedInOrdersError = Boolean(ordersError)
+
+const latestOrderWithPoints = signedInOrders.find(
+  (order) => Number(order.pointsAwarded || 0) > 0,
+)
+
+if (latestOrderWithPoints) {
+  const storageKey =
+    'your-product-seen-order-points-' + latestOrderWithPoints.id
+
+  const orderPointsAlreadySeen =
+    localStorage.getItem(storageKey) === 'seen'
+
+  if (!orderPointsAlreadySeen) {
+    signedInOrderPointsNotification = {
+      storageKey,
+      orderId: latestOrderWithPoints.id,
+      points: Number(latestOrderWithPoints.pointsAwarded || 0),
+    }
+  }
+}
 
   const {
     data: membershipPackageRows,
@@ -5996,6 +6035,85 @@ Email is not changed.
         type="button"
         class="premium-cta inline-flex min-h-11 items-center justify-center rounded-full bg-brand-gold px-5 text-sm font-semibold text-[#17130d]"
         @click="viewMembershipCelebrationHistory()"
+      >
+        View Order History
+      </button>
+    </div>
+  </div>
+</div>
+
+<div
+  x-show="orderPointsNotificationOpen"
+  x-cloak
+  x-transition.opacity
+  class="fixed inset-0 z-[132] grid place-items-center bg-black/85 px-4 backdrop-blur-sm"
+  @click.self="closeOrderPointsNotification()"
+  @keydown.escape.window="closeOrderPointsNotification()"
+>
+  <div
+    class="w-full max-w-md rounded-[1.75rem] border border-brand-gold/40 bg-brand-panel p-6 text-center shadow-gold-soft"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="order-points-notification-title"
+  >
+    <div
+      class="mx-auto flex size-14 items-center justify-center rounded-full border border-brand-gold/40 bg-brand-gold/10"
+      aria-hidden="true"
+    >
+      <svg
+        class="size-7 text-brand-gold"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.7"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M12 3.75 14.45 8.7l5.47.79-3.96 3.86.94 5.45L12 16.23 7.1 18.8l.94-5.45-3.96-3.86 5.47-.79L12 3.75Z" />
+        <path d="M19.5 4.5v3" />
+        <path d="M21 6h-3" />
+      </svg>
+    </div>
+
+    <p
+      class="mt-5 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
+    >
+      Order Approved
+    </p>
+
+    <h2
+      id="order-points-notification-title"
+      class="mt-2 font-display text-3xl text-brand-cream"
+    >
+      Congratulations!
+    </h2>
+
+    <p class="mt-3 text-sm font-semibold leading-6 text-brand-cream">
+      Your payment has been approved.
+    </p>
+
+    <p
+      class="mx-auto mt-4 inline-flex rounded-full border border-brand-gold/35 bg-brand-gold/10 px-4 py-2 text-sm font-semibold text-brand-gold"
+      x-text="'+' + Number(orderPointsNotification?.points || 0).toLocaleString('en-PH') + ' points earned'"
+    ></p>
+
+    <p class="mt-4 text-sm leading-6 text-brand-muted">
+      Your points have been added to your account.
+    </p>
+
+    <div class="mt-6 grid gap-3 sm:grid-cols-2">
+      <button
+        type="button"
+        class="inline-flex min-h-11 items-center justify-center rounded-full border border-brand-border px-5 text-sm font-semibold text-brand-cream transition hover:border-brand-gold hover:text-brand-gold"
+        @click="closeOrderPointsNotification()"
+      >
+        Close
+      </button>
+
+      <button
+        type="button"
+        class="premium-cta inline-flex min-h-11 items-center justify-center rounded-full bg-brand-gold px-5 text-sm font-semibold text-[#17130d]"
+        @click="viewOrderPointsHistory()"
       >
         View Order History
       </button>
