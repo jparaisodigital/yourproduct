@@ -68,6 +68,28 @@ export function registerAdminReferralsPayoutsPage(Alpine) {
       ...record,
     })),
 
+    adminReferralAvailable: 0,
+adminReferralPending: 0,
+adminReferralPaid: 0,
+adminReferralEarningsLoading: true,
+adminReferralEarningsError: '',
+adminPayoutSubmitting: false,
+adminPayoutError: '',
+adminPayoutSuccess: '',
+minimumAdminPayoutAmount: 100,
+
+adminPayoutForm: {
+  amount: '',
+  paymentMethod: '',
+  paymentProvider: '',
+  accountName: '',
+  accountNumber: '',
+  qrCodeFile: null,
+  qrCodeFileName: '',
+  qrCodePreviewUrl: '',
+  note: '',
+},
+
     selectedPayoutId: null,
     payoutAction: '',
     selectedProofUrl: '',
@@ -84,10 +106,367 @@ export function registerAdminReferralsPayoutsPage(Alpine) {
     },
 
     async init() {
+      const isPersonalOnly =
+        this.$el?.dataset?.personalOnly === 'true'
+    
+      if (isPersonalOnly) {
+        await this.loadAdminReferralEarnings()
+        return
+      }
+    
       await Promise.all([
         this.loadReferralRecords(),
         this.loadPayoutRequests(),
+        this.loadAdminReferralEarnings(),
       ])
+    },
+
+    async loadAdminReferralEarnings() {
+      this.adminReferralEarningsLoading = true
+      this.adminReferralEarningsError = ''
+    
+      try {
+        const {
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser()
+    
+        if (userError || !user) {
+          throw userError || new Error('Admin session not found.')
+        }
+    
+        const [commissionsResult, payoutsResult] = await Promise.all([
+          supabase
+            .from('referral_commissions')
+            .select('commission_amount, status')
+            .eq('referrer_customer_id', user.id),
+    
+          supabase
+            .from('payout_requests')
+            .select('amount, status')
+            .eq('customer_id', user.id),
+        ])
+    
+        if (commissionsResult.error) {
+          throw commissionsResult.error
+        }
+    
+        if (payoutsResult.error) {
+          throw payoutsResult.error
+        }
+    
+        const commissionRows = commissionsResult.data ?? []
+        const payoutRows = payoutsResult.data ?? []
+    
+        const totalCommissionIncome = commissionRows
+          .filter((commission) => commission.status !== 'cancelled')
+          .reduce(
+            (total, commission) =>
+              total + Number(commission.commission_amount || 0),
+            0,
+          )
+    
+        this.adminReferralPending = payoutRows
+          .filter((request) =>
+            ['pending', 'approved'].includes(request.status),
+          )
+          .reduce(
+            (total, request) =>
+              total + Number(request.amount || 0),
+            0,
+          )
+    
+        this.adminReferralPaid = payoutRows
+          .filter((request) => request.status === 'paid')
+          .reduce(
+            (total, request) =>
+              total + Number(request.amount || 0),
+            0,
+          )
+    
+        this.adminReferralAvailable = Math.max(
+          totalCommissionIncome -
+            this.adminReferralPending -
+            this.adminReferralPaid,
+          0,
+        )
+
+        if (!this.adminPayoutForm.amount) {
+          this.adminPayoutForm.amount =
+            this.adminReferralAvailable >= this.minimumAdminPayoutAmount
+              ? String(this.minimumAdminPayoutAmount)
+              : ''
+        }
+
+      } catch (error) {
+        console.error(
+          'Unable to load admin referral earnings:',
+          error,
+        )
+    
+        this.adminReferralEarningsError =
+          'Unable to load your referral earnings.'
+    
+        this.adminReferralAvailable = 0
+        this.adminReferralPending = 0
+        this.adminReferralPaid = 0
+      } finally {
+        this.adminReferralEarningsLoading = false
+      }
+    },
+
+    getAdminManilaTimeParts() {
+      const parts = new Intl.DateTimeFormat('en-PH', {
+        timeZone: 'Asia/Manila',
+        weekday: 'short',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+      }).formatToParts(new Date())
+    
+      const values = Object.fromEntries(
+        parts.map((part) => [part.type, part.value]),
+      )
+    
+      return {
+        weekday: values.weekday,
+        minutes:
+          Number(values.hour || 0) * 60 +
+          Number(values.minute || 0),
+      }
+    },
+    
+    isAdminPayoutWindowOpen() {
+      const { weekday, minutes } = this.getAdminManilaTimeParts()
+    
+      return (
+        weekday === 'Sat' &&
+        minutes >= 10 * 60 &&
+        minutes <= 20 * 60
+      )
+    },
+    
+    adminPayoutWindowText() {
+      return 'Payout requests are open every Saturday, 10:00 AM to 8:00 PM. Approved payouts are released every Sunday, 1:00 PM to 10:00 PM.'
+    },
+    
+    handleAdminQrCodeUpload(event) {
+      const file = event.target.files?.[0]
+    
+      if (this.adminPayoutForm.qrCodePreviewUrl) {
+        URL.revokeObjectURL(
+          this.adminPayoutForm.qrCodePreviewUrl,
+        )
+      }
+    
+      this.adminPayoutForm.qrCodeFile = null
+      this.adminPayoutForm.qrCodeFileName = ''
+      this.adminPayoutForm.qrCodePreviewUrl = ''
+      this.adminPayoutError = ''
+    
+      if (!file) return
+    
+      const allowedTypes = [
+        'image/jpeg',
+        'image/png',
+        'image/webp',
+      ]
+    
+      if (!allowedTypes.includes(file.type)) {
+        this.adminPayoutError =
+          'Upload a JPG, PNG, or WEBP QR code.'
+        event.target.value = ''
+        return
+      }
+    
+      if (file.size > 5 * 1024 * 1024) {
+        this.adminPayoutError =
+          'The QR code image must be 5 MB or smaller.'
+        event.target.value = ''
+        return
+      }
+    
+      this.adminPayoutForm.qrCodeFile = file
+      this.adminPayoutForm.qrCodeFileName = file.name
+      this.adminPayoutForm.qrCodePreviewUrl =
+        URL.createObjectURL(file)
+    },
+    
+    resetAdminPayoutForm() {
+      if (this.adminPayoutForm.qrCodePreviewUrl) {
+        URL.revokeObjectURL(
+          this.adminPayoutForm.qrCodePreviewUrl,
+        )
+      }
+    
+      this.adminPayoutForm = {
+        amount: '',
+        paymentMethod: '',
+        paymentProvider: '',
+        accountName: '',
+        accountNumber: '',
+        qrCodeFile: null,
+        qrCodeFileName: '',
+        qrCodePreviewUrl: '',
+        note: '',
+      }
+    },
+    
+    async submitAdminPayoutRequest() {
+      if (this.adminPayoutSubmitting) return
+    
+      this.adminPayoutError = ''
+      this.adminPayoutSuccess = ''
+    
+      const requestedAmount = Number(
+        this.adminPayoutForm.amount,
+      )
+    
+      if (!this.isAdminPayoutWindowOpen()) {
+        this.adminPayoutError =
+          'Payout requests are only accepted every Saturday from 10:00 AM to 8:00 PM.'
+        return
+      }
+    
+      if (
+        !Number.isFinite(requestedAmount) ||
+        requestedAmount <= 0
+      ) {
+        this.adminPayoutError =
+          'Enter a valid payout amount.'
+        return
+      }
+    
+      if (
+        requestedAmount < this.minimumAdminPayoutAmount
+      ) {
+        this.adminPayoutError =
+          `Minimum payout request is ${this.formatMoney(
+            this.minimumAdminPayoutAmount,
+          )}.`
+        return
+      }
+    
+      if (requestedAmount > this.adminReferralAvailable) {
+        this.adminPayoutError =
+          'The requested amount is greater than your available income.'
+        return
+      }
+    
+      if (!this.adminPayoutForm.paymentMethod) {
+        this.adminPayoutError = 'Select a payout method.'
+        return
+      }
+    
+      if (!this.adminPayoutForm.paymentProvider.trim()) {
+        this.adminPayoutError =
+          'Select or enter the payout provider.'
+        return
+      }
+    
+      if (!this.adminPayoutForm.accountName.trim()) {
+        this.adminPayoutError =
+          'Enter the payout account name.'
+        return
+      }
+    
+      if (!this.adminPayoutForm.accountNumber.trim()) {
+        this.adminPayoutError =
+          'Enter the payout account number.'
+        return
+      }
+    
+      if (!this.adminPayoutForm.qrCodeFile) {
+        this.adminPayoutError =
+          'Upload the QR code for your payout account.'
+        return
+      }
+    
+      this.adminPayoutSubmitting = true
+    
+      try {
+        const {
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser()
+    
+        if (userError || !user) {
+          throw userError || new Error('Sign in required.')
+        }
+    
+        const fileExtension =
+          this.adminPayoutForm.qrCodeFileName
+            .split('.')
+            .pop()
+            ?.toLowerCase() || 'png'
+    
+        const qrCodePath =
+          `${user.id}/${Date.now()}.${fileExtension}`
+    
+        const { error: uploadError } =
+          await supabase.storage
+            .from('payout-qr-codes')
+            .upload(
+              qrCodePath,
+              this.adminPayoutForm.qrCodeFile,
+              {
+                cacheControl: '3600',
+                upsert: false,
+              },
+            )
+    
+        if (uploadError) throw uploadError
+    
+        const { error } = await supabase.rpc(
+          'customer_create_payout_request',
+          {
+            p_amount: requestedAmount,
+            p_payment_method:
+              this.adminPayoutForm.paymentMethod,
+            p_payment_provider:
+              this.adminPayoutForm.paymentProvider.trim(),
+            p_account_name:
+              this.adminPayoutForm.accountName.trim(),
+            p_account_number:
+              this.adminPayoutForm.accountNumber.trim(),
+            p_qr_code_path: qrCodePath,
+            p_qr_code_file_name:
+              this.adminPayoutForm.qrCodeFileName || null,
+            p_note:
+              this.adminPayoutForm.note.trim() || null,
+          },
+        )
+    
+        if (error) throw error
+    
+        this.adminPayoutSuccess =
+          'Payout request submitted successfully.'
+    
+        this.resetAdminPayoutForm()
+    
+        const isPersonalOnly =
+  this.$el?.dataset?.personalOnly === 'true'
+
+if (isPersonalOnly) {
+  await this.loadAdminReferralEarnings()
+} else {
+  await Promise.all([
+    this.loadAdminReferralEarnings(),
+    this.loadPayoutRequests(),
+  ])
+}
+      } catch (error) {
+        console.error(
+          'Unable to submit admin payout request:',
+          error,
+        )
+    
+        this.adminPayoutError =
+          error?.message ||
+          'Could not submit payout request. Please refresh and try again.'
+      } finally {
+        this.adminPayoutSubmitting = false
+      }
     },
 
     async loadReferralRecords() {
@@ -598,18 +977,33 @@ export function registerAdminReferralsPayoutsPage(Alpine) {
       if (this.actionForm.proofPreviewUrl) {
         URL.revokeObjectURL(this.actionForm.proofPreviewUrl)
       }
+    
+      if (this.adminPayoutForm.qrCodePreviewUrl) {
+        URL.revokeObjectURL(
+          this.adminPayoutForm.qrCodePreviewUrl,
+        )
+      }
     },
   }))
 }
 
-export function renderAdminReferralsPayoutsPage() {
+export function renderAdminReferralsPayoutsPage({
+  personalOnly = false,
+} = {}) {
+  const pageId = personalOnly
+    ? 'my-referral-payout'
+    : 'referrals-payouts'
+
   return `
     <section
       x-data="adminReferralsPayoutsPage"
-      x-show="activePage === 'referrals-payouts'"
+      data-personal-only="${personalOnly}"
+      x-show="activePage === '${pageId}'"
       x-transition.opacity
       aria-labelledby="admin-referrals-payouts-title"
     >
+
+    ${!personalOnly ? `
       <div
         class="rounded-[1.75rem] border border-brand-gold/30 bg-brand-panel p-6 shadow-gold-soft sm:p-8"
       >
@@ -685,10 +1079,322 @@ export function renderAdminReferralsPayoutsPage() {
           ></strong>
         </article>
       </div>
+` : ''}
 
       <div class="mt-6">
         ${renderAdminReferralCard()}
       </div>
+
+      <section
+  class="mt-6 rounded-[1.5rem] border border-brand-gold/30 bg-brand-panel p-5 shadow-panel sm:p-6"
+  aria-labelledby="admin-referral-earnings-title"
+>
+  <div>
+    <p
+      class="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-brand-gold"
+    >
+      Personal Referral Income
+    </p>
+
+    <h2
+      id="admin-referral-earnings-title"
+      class="mt-2 font-display text-3xl text-brand-cream"
+    >
+      Your Referral Earnings
+    </h2>
+
+    <p class="mt-2 text-sm leading-6 text-brand-muted">
+      Commission earned from memberships approved through your
+      personal admin referral link.
+    </p>
+  </div>
+
+  <div
+    x-show="adminReferralEarningsLoading"
+    class="mt-5 rounded-xl border border-brand-border bg-brand-black px-4 py-4 text-sm text-brand-muted"
+  >
+    Loading your referral earnings...
+  </div>
+
+  <div
+    x-cloak
+    x-show="adminReferralEarningsError"
+    x-text="adminReferralEarningsError"
+    class="mt-5 rounded-xl border border-red-400/30 bg-red-400/10 px-4 py-4 text-sm text-red-200"
+    role="alert"
+  ></div>
+
+  <div
+    x-cloak
+    x-show="!adminReferralEarningsLoading && !adminReferralEarningsError"
+    class="mt-5 grid gap-4 sm:grid-cols-3"
+  >
+    <article
+      class="rounded-[1.25rem] border border-brand-gold/35 bg-brand-black p-5"
+    >
+      <p class="text-xs uppercase tracking-[0.13em] text-brand-muted">
+        Available Balance
+      </p>
+
+      <strong
+        class="mt-3 block font-display text-3xl text-brand-gold"
+        x-text="formatMoney(adminReferralAvailable)"
+      ></strong>
+
+      <p class="mt-2 text-xs leading-5 text-brand-muted">
+        Available referral commission
+      </p>
+    </article>
+
+    <article
+      class="rounded-[1.25rem] border border-amber-400/30 bg-brand-black p-5"
+    >
+      <p class="text-xs uppercase tracking-[0.13em] text-brand-muted">
+        Pending Payout
+      </p>
+
+      <strong
+        class="mt-3 block font-display text-3xl text-amber-300"
+        x-text="formatMoney(adminReferralPending)"
+      ></strong>
+
+      <p class="mt-2 text-xs leading-5 text-brand-muted">
+        Pending or approved requests
+      </p>
+    </article>
+
+    <article
+      class="rounded-[1.25rem] border border-emerald-400/30 bg-brand-black p-5"
+    >
+      <p class="text-xs uppercase tracking-[0.13em] text-brand-muted">
+        Total Paid
+      </p>
+
+      <strong
+        class="mt-3 block font-display text-3xl text-emerald-300"
+        x-text="formatMoney(adminReferralPaid)"
+      ></strong>
+
+      <p class="mt-2 text-xs leading-5 text-brand-muted">
+        Completed referral payouts
+      </p>
+    </article>
+  </div>
+</section>
+
+      <!-- ===================== ADMIN PERSONAL PAYOUT ===================== -->
+      <section
+        class="mt-6 rounded-[1.5rem] border border-brand-border bg-brand-panel p-5 shadow-panel sm:p-6"
+        aria-labelledby="admin-personal-payout-title"
+      >
+        <div class="border-b border-brand-border pb-5">
+          <p
+            class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
+          >
+            Admin Personal Payout
+          </p>
+
+          <h2
+            id="admin-personal-payout-title"
+            class="mt-1 font-display text-3xl text-brand-cream"
+          >
+            Request Admin Referral Payout
+          </h2>
+
+          <p class="mt-2 max-w-2xl text-xs leading-5 text-brand-muted">
+            Request a payout from your available admin referral commission.
+            Minimum payout request is ₱100.
+          </p>
+        </div>
+
+        <p
+          class="mt-5 rounded-xl border border-brand-gold/30 bg-brand-gold/10 px-4 py-3 text-xs leading-5 text-brand-muted"
+          x-text="adminPayoutWindowText()"
+        ></p>
+
+        <form
+          class="mt-5"
+          @submit.prevent="submitAdminPayoutRequest()"
+          novalidate
+        >
+          <div class="grid gap-4 sm:grid-cols-2">
+            <label class="grid gap-2">
+              <span
+                class="text-xs font-semibold uppercase tracking-[0.12em] text-brand-muted"
+              >
+                Amount
+              </span>
+
+              <input
+                type="number"
+                min="100"
+                step="1"
+                inputmode="decimal"
+                x-model="adminPayoutForm.amount"
+                :max="adminReferralAvailable"
+                placeholder="Enter payout amount"
+                class="min-h-12 rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
+              >
+            </label>
+
+            <label class="grid gap-2">
+              <span
+                class="text-xs font-semibold uppercase tracking-[0.12em] text-brand-muted"
+              >
+                Payout Method
+              </span>
+
+              <select
+                x-model="adminPayoutForm.paymentMethod"
+                class="min-h-12 rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition focus:border-brand-gold"
+              >
+                <option value="">Select method</option>
+                <option value="gcash">GCash</option>
+                <option value="maya">Maya</option>
+                <option value="bank">Bank Transfer</option>
+              </select>
+            </label>
+
+            <label class="grid gap-2">
+              <span
+                class="text-xs font-semibold uppercase tracking-[0.12em] text-brand-muted"
+              >
+                Provider / Bank
+              </span>
+
+              <select
+                x-model="adminPayoutForm.paymentProvider"
+                class="min-h-12 rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition focus:border-brand-gold"
+              >
+                <option value="">Select provider</option>
+                <option value="GCash">GCash</option>
+                <option value="Maya">Maya</option>
+                <option value="GoTyme">GoTyme</option>
+                <option value="Maya Bank">Maya Bank</option>
+                <option value="Maribank">Maribank</option>
+                <option value="CIMB">CIMB</option>
+                <option value="UnionBank">UnionBank</option>
+                <option value="BDO">BDO</option>
+                <option value="PSBank">PSBank</option>
+                <option value="BPI">BPI</option>
+                <option value="Metrobank">Metrobank</option>
+                <option value="RCBC">RCBC</option>
+                <option value="EastWest Bank">EastWest Bank</option>
+                <option value="Security Bank">Security Bank</option>
+                <option value="China Bank">China Bank</option>
+              </select>
+            </label>
+
+            <label class="grid gap-2">
+              <span
+                class="text-xs font-semibold uppercase tracking-[0.12em] text-brand-muted"
+              >
+                Account Name
+              </span>
+
+              <input
+                type="text"
+                maxlength="100"
+                x-model.trim="adminPayoutForm.accountName"
+                placeholder="Name on payout account"
+                class="min-h-12 rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
+              >
+            </label>
+
+            <label class="grid gap-2">
+              <span
+                class="text-xs font-semibold uppercase tracking-[0.12em] text-brand-muted"
+              >
+                Account Number
+              </span>
+
+              <input
+                type="text"
+                maxlength="40"
+                inputmode="numeric"
+                x-model.trim="adminPayoutForm.accountNumber"
+                placeholder="Mobile or bank account number"
+                class="min-h-12 rounded-xl border border-brand-border bg-brand-black px-4 text-sm text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
+              >
+            </label>
+
+            <label class="grid gap-2">
+              <span
+                class="text-xs font-semibold uppercase tracking-[0.12em] text-brand-muted"
+              >
+                QR Code Screenshot
+              </span>
+
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                class="min-h-12 rounded-xl border border-brand-border bg-brand-black px-3 py-2 text-xs text-brand-muted file:mr-3 file:rounded-full file:border-0 file:bg-brand-gold file:px-3 file:py-2 file:font-semibold file:text-[#17130d]"
+                @change="handleAdminQrCodeUpload($event)"
+              >
+
+              <span
+                x-show="adminPayoutForm.qrCodeFileName"
+                x-text="'Selected: ' + adminPayoutForm.qrCodeFileName"
+                class="text-xs text-brand-gold"
+              ></span>
+            </label>
+          </div>
+
+          <label class="mt-4 grid gap-2">
+            <span
+              class="text-xs font-semibold uppercase tracking-[0.12em] text-brand-muted"
+            >
+              Note (Optional)
+            </span>
+
+            <textarea
+              rows="3"
+              maxlength="250"
+              x-model.trim="adminPayoutForm.note"
+              placeholder="Additional payout information"
+              class="w-full resize-none rounded-xl border border-brand-border bg-brand-black px-4 py-3 text-sm leading-6 text-brand-cream outline-none transition placeholder:text-brand-muted focus:border-brand-gold"
+            ></textarea>
+          </label>
+
+          <p
+            x-show="adminPayoutError"
+            x-text="adminPayoutError"
+            class="mt-4 rounded-xl border border-red-400/40 bg-red-400/10 px-4 py-3 text-xs leading-5 text-red-200"
+            role="alert"
+          ></p>
+
+          <p
+            x-show="adminPayoutSuccess"
+            x-text="adminPayoutSuccess"
+            class="mt-4 rounded-xl border border-emerald-400/40 bg-emerald-400/10 px-4 py-3 text-xs leading-5 text-emerald-200"
+            role="status"
+          ></p>
+
+          <button
+            type="submit"
+            class="mt-5 inline-flex min-h-12 w-full items-center justify-center rounded-full px-6 text-sm font-semibold transition"
+            :class="
+              isAdminPayoutWindowOpen() &&
+              adminReferralAvailable >= minimumAdminPayoutAmount &&
+              !adminPayoutSubmitting
+                ? 'bg-brand-gold text-[#17130d] hover:bg-brand-gold-light'
+                : 'cursor-not-allowed border border-brand-border bg-brand-black text-brand-muted'
+            "
+            :disabled="
+              !isAdminPayoutWindowOpen() ||
+              adminReferralAvailable < minimumAdminPayoutAmount ||
+              adminPayoutSubmitting
+            "
+            x-text="
+              adminPayoutSubmitting
+                ? 'Submitting request...'
+                : 'Submit Payout Request'
+            "
+          ></button>
+        </form>
+      </section>
+
+      ${!personalOnly ? `
 
       <!-- ===================== PAYOUT REQUESTS ===================== -->
       <section
@@ -1121,6 +1827,9 @@ export function renderAdminReferralsPayoutsPage() {
           </div>
         </div>
       </section>
+
+      ` : ''}
+      
     </section>
   `
 }

@@ -1,18 +1,74 @@
+import { supabase } from '../lib/supabase.js'
 export function registerAdminReferralCard(
     Alpine,
     {
-      referralCode = 'YOURPRODUCT',
-      referrerName = 'YOUR PRODUCT',
+      referralCode = '',
+      referrerName = '',
     } = {},
   ) {
     Alpine.data('adminReferralCard', () => ({
       referralCode,
       referrerName,
-  
-      referralLink:
-        `${window.location.origin}/register/?ref=${encodeURIComponent(
-          referralCode,
-        )}`,
+      referralLink: '',
+      isLoadingReferral: true,
+    
+      async init() {
+        try {
+          const {
+            data: { user },
+            error: userError,
+          } = await supabase.auth.getUser()
+    
+          if (userError || !user) {
+            throw userError || new Error('Admin session not found.')
+          }
+    
+          const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('username, first_name, last_name, role, account_status')
+            .eq('id', user.id)
+            .single()
+    
+            if (
+              profileError ||
+              !profile ||
+              !['admin', 'staff'].includes(profile.role) ||
+              profile.account_status !== 'active'
+            ) {
+              throw (
+                profileError ||
+                new Error('Active admin or staff profile not found.')
+              )
+            }
+    
+          this.referralCode = profile.username
+    
+          const fullName = [
+            profile.first_name,
+            profile.last_name,
+          ]
+            .filter(Boolean)
+            .join(' ')
+            .trim()
+    
+          this.referrerName = fullName || profile.username
+    
+          this.referralLink =
+            `${window.location.origin}/register/?ref=${encodeURIComponent(
+              profile.username,
+            )}`
+        } catch (error) {
+          console.error('Unable to load personal referral link:', error)
+    
+          this.referralLink = ''
+          this.showFeedback(
+            'Unable to load your referral link. Please refresh.',
+            'error',
+          )
+        } finally {
+          this.isLoadingReferral = false
+        }
+      },
   
       feedbackMessage: '',
       feedbackTone: 'success',
@@ -50,7 +106,7 @@ export function registerAdminReferralCard(
   
         if (!copySuccessful) {
           throw new Error(
-            'Unable to copy company referral link.',
+            'Unable to copy your referral link.',
           )
         }
       },
@@ -69,7 +125,7 @@ export function registerAdminReferralCard(
           }
   
           this.showFeedback(
-            'Company referral link copied successfully.',
+            'Referral link copied successfully.',
           )
         } catch {
           this.showFeedback(
@@ -95,7 +151,7 @@ export function registerAdminReferralCard(
           })
   
           this.showFeedback(
-            'Company referral link shared successfully.',
+            'Referral link shared successfully.',
           )
         } catch (error) {
           if (error?.name === 'AbortError') {
@@ -132,21 +188,20 @@ export function registerAdminReferralCard(
             <p
               class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold"
             >
-              Company Referral
+              Personal Referral
             </p>
   
             <h2
               id="admin-referral-link-title"
               class="mt-2 font-display text-3xl text-brand-cream"
             >
-              Official registration link
+              Your referral link
             </h2>
   
             <p class="mt-3 text-sm leading-6 text-brand-muted">
-              Registrations through this link are attributed to the
-              company. This tracking link does not create a member
-              commission or payout.
-            </p>
+  Share this link to invite new members. You earn a 10%
+  referral commission when a qualifying membership is approved.
+</p>
   
             <div
               class="mt-4 inline-flex items-center gap-2 rounded-full border border-brand-border bg-brand-black px-4 py-2"
@@ -173,15 +228,15 @@ export function registerAdminReferralCard(
             class="rounded-2xl border border-brand-border bg-brand-black p-4 sm:p-5"
           >
             <label
-              for="admin-company-referral-link"
-              class="text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-brand-muted"
-            >
-              Company referral link
-            </label>
+  for="admin-referral-link"
+  class="text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-brand-muted"
+>
+  Your referral link
+</label>
   
             <div class="mt-3 flex flex-col gap-3 sm:flex-row">
               <input
-                id="admin-company-referral-link"
+                id="admin-referral-link"
                 type="text"
                 :value="referralLink"
                 class="h-12 min-w-0 flex-1 rounded-xl border border-brand-border bg-brand-panel px-4 text-sm text-brand-cream outline-none focus:border-brand-gold"
@@ -203,8 +258,8 @@ export function registerAdminReferralCard(
               class="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
             >
               <p class="text-xs leading-5 text-brand-muted">
-                Tracking-only company attribution
-              </p>
+  10% commission on approved qualifying memberships
+</p>
   
               <button
                 type="button"

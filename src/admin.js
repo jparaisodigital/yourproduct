@@ -121,6 +121,10 @@ const adminNavigationItems = [
     label: 'Referrals & Payouts',
   },
   {
+    id: 'my-referral-payout',
+    label: 'My Referral & Payout',
+  },
+  {
     id: 'points-audit',
     label: 'Points & Rewards',
   },
@@ -136,15 +140,16 @@ const adminPageTitles = {
   orders: 'Orders',
   'sales-inventory': 'Sales & Inventory',
   'referrals-payouts': 'Referrals & Payouts',
+  'my-referral-payout': 'My Referral & Payout',
   'points-audit': 'Points & Rewards',
   customers: 'Customers',
 }
-
 const navigationMarkup = adminNavigationItems
 .map(
   (item) => `
       <button
         type="button"
+        x-show="currentRole === 'admin' ? '${item.id}' !== 'my-referral-payout' : !['referrals-payouts', 'points-audit'].includes('${item.id}')"
         class="flex min-h-12 w-full items-center justify-between rounded-xl px-4 text-left text-sm font-semibold transition"
         :class="
           activePage === '${item.id}'
@@ -2063,8 +2068,10 @@ ${renderAdminPackageFulfillmentPanel()}
   `
 }
 
+let currentAdminRole = 'admin'
 Alpine.data('adminDashboard', () => ({
   theme: 'black',
+  currentRole: currentAdminRole,
   applications: [],
   applicationsLoading: true,
   applicationsError: '',
@@ -4574,7 +4581,7 @@ async loadOrderPointsStatus(orderId) {
   this.orderPointsError = ''
 
   if (!orderId) return
-
+  if (this.currentRole === 'staff') return
   try {
     const { data, error } = await supabase
       .from('points_transactions')
@@ -5825,6 +5832,16 @@ openPage(pageName) {
   if (!adminPageTitles[pageName]) {
     return
   }
+  const adminOnlyPages = ['referrals-payouts', 'points-audit']
+
+if (
+  (this.currentRole === 'staff' &&
+    adminOnlyPages.includes(pageName)) ||
+  (this.currentRole === 'admin' &&
+    pageName === 'my-referral-payout')
+) {
+  return
+}
 
   this.closeApplicationDetails()
   this.closeOrderDetails()
@@ -5927,7 +5944,7 @@ async loadLiveOrders() {
     const orderIds = (data ?? []).map((order) => order.id)
     let pointsByOrderId = new Map()
 
-    if (orderIds.length > 0) {
+    if (orderIds.length > 0 && this.currentRole === 'admin') {
       const { data: pointRows, error: pointsError } = await supabase
         .from('points_transactions')
         .select('order_id, points')
@@ -6066,7 +6083,7 @@ async function startAdminDashboard() {
 
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
-    .select('role, account_status')
+    .select('role, account_status, username, first_name, last_name')
     .eq('id', user.id)
     .single()
 
@@ -6077,10 +6094,14 @@ async function startAdminDashboard() {
     return
   }
 
-  if (profile.role !== 'admin' || profile.account_status !== 'active') {
+  if (
+    !['admin', 'staff'].includes(profile.role) ||
+    profile.account_status !== 'active'
+  ) {
     window.location.replace('/dashboard/')
     return
   }
+  currentAdminRole = profile.role
 
 document.title = `Admin Dashboard | ${siteConfig.brand.name}`
 
@@ -6499,9 +6520,10 @@ ${renderAdminSalesInventoryPage()}
 
 ${renderAdminCustomersPage()}
 
-${renderAdminReferralsPayoutsPage()}
+${currentAdminRole === 'admin' ? renderAdminReferralsPayoutsPage() : ''}
+${currentAdminRole === 'staff' ? renderAdminReferralsPayoutsPage({ personalOnly: true }) : ''}
 
-${renderAdminPointsAuditPage()}
+${currentAdminRole === 'admin' ? renderAdminPointsAuditPage() : ''}
 
 ${adminNavigationItems
   .filter(
@@ -6513,6 +6535,7 @@ ${adminNavigationItems
       item.id !== 'customers' &&
       item.id !== 'products' &&
       item.id !== 'referrals-payouts' &&
+      item.id !== 'my-referral-payout' &&
       item.id !== 'points-audit',
   )
   .map(

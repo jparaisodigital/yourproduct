@@ -3584,7 +3584,7 @@ async function startDashboard() {
     return
   }
 
-  if (profile.role === 'admin') {
+  if (['admin', 'staff'].includes(profile.role)) {
     window.location.replace('/admin/')
     return
   }
