@@ -532,7 +532,7 @@ if (isPersonalOnly) {
         const { data, error } = await supabase
           .from('payout_requests')
           .select(`
-            id, customer_id, amount, payment_method,
+            id, customer_id, amount, deduction_rate, deduction_amount, net_amount, payment_method,
             account_name, account_number, note, status,
             admin_note, reference_number, proof_file_name,
             proof_url, qr_code_path, qr_code_file_name,
@@ -593,7 +593,13 @@ if (isPersonalOnly) {
                 .join(' ') || 'Member',
               memberEmail: request.customer?.email || 'No email',
               amount: Number(request.amount || 0),
-              paymentMethod: request.payment_method,
+deductionRate: Number(request.deduction_rate || 0),
+deductionAmount: Number(request.deduction_amount || 0),
+netAmount:
+  request.net_amount == null
+    ? Number(request.amount || 0)
+    : Number(request.net_amount),
+paymentMethod: request.payment_method,
               accountName: request.account_name,
               accountNumber: request.account_number,
               status: request.status || 'pending',
@@ -1237,6 +1243,47 @@ export function renderAdminReferralsPayoutsPage({
               >
             </label>
 
+            <div
+  class="sm:col-span-2 rounded-xl border border-brand-gold/25 bg-brand-black px-4 py-4"
+  x-show="Number(adminPayoutForm.amount) > 0"
+>
+  <div class="grid gap-3 sm:grid-cols-3">
+    <div>
+      <p class="text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-brand-muted">
+        Requested Amount
+      </p>
+      <p
+        class="mt-1 text-sm font-semibold text-brand-cream"
+        x-text="formatMoney(Number(adminPayoutForm.amount) || 0)"
+      ></p>
+    </div>
+
+    <div>
+      <p class="text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-brand-muted">
+        12% Deduction
+      </p>
+      <p
+        class="mt-1 text-sm font-semibold text-brand-cream"
+        x-text="'-' + formatMoney((Number(adminPayoutForm.amount) || 0) * 0.12)"
+      ></p>
+    </div>
+
+    <div>
+      <p class="text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-brand-gold">
+        Net Payout
+      </p>
+      <p
+        class="mt-1 font-display text-xl text-brand-gold"
+        x-text="formatMoney((Number(adminPayoutForm.amount) || 0) * 0.88)"
+      ></p>
+    </div>
+  </div>
+
+  <p class="mt-3 border-t border-brand-border pt-3 text-xs leading-5 text-brand-muted">
+    A 12% deduction applies to every payout request.
+  </p>
+</div>
+
             <label class="grid gap-2">
               <span
                 class="text-xs font-semibold uppercase tracking-[0.12em] text-brand-muted"
@@ -1479,14 +1526,24 @@ export function renderAdminReferralsPayoutsPage({
                 </div>
 
                 <div>
-                  <p class="text-[0.6rem] uppercase tracking-[0.12em] text-brand-muted">
-                    Amount
-                  </p>
-                  <strong
-                    class="mt-1 block font-display text-2xl text-brand-gold"
-                    x-text="formatMoney(request.amount)"
-                  ></strong>
-                </div>
+  <p class="text-[0.6rem] uppercase tracking-[0.12em] text-brand-muted">
+    Gross Request
+  </p>
+  <strong
+    class="mt-1 block font-display text-2xl text-brand-cream"
+    x-text="formatMoney(request.amount)"
+  ></strong>
+
+  <p
+    class="mt-2 text-xs text-brand-muted"
+    x-text="'12% Deduction: -' + formatMoney(request.deductionAmount)"
+  ></p>
+
+  <p
+    class="mt-1 text-sm font-semibold text-brand-gold"
+    x-text="'Net Payout: ' + formatMoney(request.netAmount)"
+  ></p>
+</div>
 
                 <div>
                   <p class="text-[0.6rem] uppercase tracking-[0.12em] text-brand-muted">
@@ -1582,6 +1639,31 @@ export function renderAdminReferralsPayoutsPage({
                   x-show="payoutAction === 'mark-paid'"
                   class="mt-4 grid gap-4 sm:grid-cols-2"
                 >
+
+                <div class="sm:col-span-2 rounded-xl border border-brand-gold/25 bg-brand-black px-4 py-4">
+  <p class="text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-brand-gold">
+    Amount to Send
+  </p>
+
+  <p
+    class="mt-1 font-display text-2xl text-brand-gold"
+    x-text="formatMoney(request.netAmount)"
+  ></p>
+
+  <div class="mt-3 flex flex-wrap gap-x-4 gap-y-1 border-t border-brand-border pt-3 text-xs text-brand-muted">
+    <span x-text="'Gross Request: ' + formatMoney(request.amount)"></span>
+
+    <span
+      x-show="request.netAmount !== request.amount"
+      x-text="'12% Deduction: -' + formatMoney(request.deductionAmount)"
+    ></span>
+  </div>
+
+  <p class="mt-2 text-xs leading-5 text-brand-muted">
+    Send the net payout amount above before marking this request as paid.
+  </p>
+</div>
+
                   <label class="grid gap-2">
                     <span class="text-xs font-semibold uppercase tracking-[0.12em] text-brand-muted">
                       Payment Reference

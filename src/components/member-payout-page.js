@@ -48,7 +48,8 @@ export function registerMemberPayoutPage(Alpine) {
           supabase
             .from('payout_requests')
             .select(`
-              id, amount, payment_method, payment_provider,
+              id, amount, deduction_rate, deduction_amount, net_amount,
+payment_method, payment_provider,
               account_name, account_number, qr_code_path,
               qr_code_file_name, note, status, reference_number,
               proof_url, requested_at, reviewed_at, paid_at
@@ -116,7 +117,13 @@ this.form.amount =
             return {
               id: request.id,
               amount: Number(request.amount || 0),
-              paymentMethod: request.payment_method,
+deductionRate: Number(request.deduction_rate || 0),
+deductionAmount: Number(request.deduction_amount || 0),
+netAmount:
+  request.net_amount == null
+    ? Number(request.amount || 0)
+    : Number(request.net_amount),
+paymentMethod: request.payment_method,
               paymentProvider: request.payment_provider || '',
               qrCodePath: request.qr_code_path || '',
               qrCodeFileName: request.qr_code_file_name || '',
@@ -564,6 +571,47 @@ export function renderMemberPayoutPage() {
   >
 </label>
 
+<div
+  class="sm:col-span-2 rounded-xl border border-brand-gold/25 bg-brand-black px-4 py-4"
+  x-show="Number(form.amount) > 0"
+>
+  <div class="grid gap-3 sm:grid-cols-3">
+    <div>
+      <p class="text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-brand-muted">
+        Requested Amount
+      </p>
+      <p
+        class="mt-1 text-sm font-semibold text-brand-cream"
+        x-text="formatMoney(Number(form.amount) || 0)"
+      ></p>
+    </div>
+
+    <div>
+      <p class="text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-brand-muted">
+        12% Deduction
+      </p>
+      <p
+        class="mt-1 text-sm font-semibold text-brand-cream"
+        x-text="'-' + formatMoney((Number(form.amount) || 0) * 0.12)"
+      ></p>
+    </div>
+
+    <div>
+      <p class="text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-brand-gold">
+        Net Payout
+      </p>
+      <p
+        class="mt-1 font-display text-xl text-brand-gold"
+        x-text="formatMoney((Number(form.amount) || 0) * 0.88)"
+      ></p>
+    </div>
+  </div>
+
+  <p class="mt-3 border-t border-brand-border pt-3 text-xs leading-5 text-brand-muted">
+    A 12% deduction applies to every payout request.
+  </p>
+</div>
+
               <label class="grid gap-2">
                 <span class="text-xs font-semibold uppercase tracking-[0.12em] text-brand-muted">
                   Payout Method
@@ -749,10 +797,31 @@ export function renderMemberPayoutPage() {
                 <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
                   <div class="min-w-0">
                     <div class="flex flex-wrap items-center gap-2">
-                      <strong
-                        class="font-display text-2xl text-brand-cream"
-                        x-text="formatMoney(request.amount)"
-                      ></strong>
+                      <div>
+  <p class="text-[0.6rem] font-semibold uppercase tracking-[0.12em] text-brand-muted">
+    Gross Request
+  </p>
+
+  <strong
+    class="mt-1 block font-display text-2xl text-brand-cream"
+    x-text="formatMoney(request.amount)"
+  ></strong>
+
+  <div
+    x-show="request.netAmount !== request.amount"
+    class="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs"
+  >
+    <span
+      class="text-brand-muted"
+      x-text="'12% Deduction: -' + formatMoney(request.deductionAmount)"
+    ></span>
+
+    <span
+      class="font-semibold text-brand-gold"
+      x-text="'Net Payout: ' + formatMoney(request.netAmount)"
+    ></span>
+  </div>
+</div>
 
                       <span
                         class="rounded-full border px-2.5 py-1 text-[0.58rem] font-semibold uppercase tracking-[0.1em]"
@@ -790,7 +859,7 @@ export function renderMemberPayoutPage() {
 
   <p
     class="mt-1 text-sm font-semibold text-brand-cream"
-    x-text="'Your payout amount of ' + formatMoney(request.amount) + ' has been released.'"
+    x-text="'Your net payout amount of ' + formatMoney(request.netAmount) + ' has been released.'"
   ></p>
 
   <div class="mt-3 border-t border-emerald-400/20 pt-3">
