@@ -2426,7 +2426,7 @@ function renderSidebar() {
   href="/business-center/?from=dashboard"
   class="mt-1 flex w-full items-center justify-between gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold text-brand-cream transition hover:bg-brand-charcoal hover:text-brand-gold"
 >
-  <span>Business Center</span>
+  <span>Your Events</span>
   <small class="rounded-full border border-brand-gold/30 px-2 py-0.5 text-[0.6rem] font-semibold uppercase tracking-[0.12em] text-brand-gold">
     Soon
   </small>

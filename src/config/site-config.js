@@ -29,8 +29,8 @@ export const siteConfig = {
       href: '/videos/',
     },
     {
-      label: 'Business Center',
-      footerLabel: 'Business Center',
+      label: 'Your Events',
+footerLabel: 'Your Events',
       href: '/business-center/',
       comingSoon: true,
     },

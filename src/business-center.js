@@ -12,7 +12,7 @@ const fromDashboard = businessCenterParams.get('from') === 'dashboard'
 const backHref = fromDashboard ? '/dashboard/' : '/'
 const backLabel = fromDashboard ? 'Back to Dashboard' : 'Back to store'
 
-document.title = `Business Center | ${siteConfig.brand.name}`
+document.title = `Your Events | ${siteConfig.brand.name}`
 
 document.querySelector('#business-center-app').innerHTML = `
   ${renderSiteLoader()}
@@ -50,11 +50,11 @@ document.querySelector('#business-center-app').innerHTML = `
     <main class="mx-auto flex min-h-[calc(100vh-190px)] w-[min(1120px,90%)] items-center justify-center py-12 sm:py-16">
       <section class="w-full max-w-5xl overflow-hidden rounded-[2rem] border border-brand-border bg-brand-panel p-7 text-center shadow-panel sm:p-10">
         <p class="text-xs font-semibold uppercase tracking-[0.22em] text-brand-gold">
-          BUSINESS CENTER
+          YOUR EVENTS
         </p>
 
         <h1 class="mt-4 font-display text-4xl text-brand-cream sm:text-6xl">
-          Business Center
+          Your Events
         </h1>
 
         <div class="mx-auto mt-7 grid h-20 w-20 place-items-center rounded-full border border-brand-gold/40 bg-brand-black text-brand-gold shadow-lg shadow-black/30">
