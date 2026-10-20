@@ -191,6 +191,14 @@ function sortAdminProducts(products) {
 }
 
 function renderAdminSidebar() {
+  const isStaff = currentAdminRole === 'staff'
+  const portalLabel = isStaff ? 'Staff Portal' : 'Admin Portal'
+  const roleLabel = isStaff ? 'Staff' : 'Administrator'
+  const workspaceLabel = isStaff ? 'Staff Workspace' : 'Admin Workspace'
+  const workspaceDescription = isStaff
+    ? 'Orders, customers, products, and inventory tools available to your staff account.'
+    : 'Orders, customers, products, and inventory are connected. Other sections are in progress.'
+
   return `
     <div class="flex h-full flex-col">
       <div
@@ -217,7 +225,7 @@ function renderAdminSidebar() {
             <span
               class="mt-1 block text-[0.6rem] uppercase tracking-[0.16em] text-brand-gold"
             >
-              Admin Portal
+              ${portalLabel}
             </span>
           </span>
         </a>
@@ -245,15 +253,15 @@ function renderAdminSidebar() {
           <p
             class="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-brand-gold"
           >
-            Administrator
+            ${roleLabel}
           </p>
 
           <p class="mt-2 text-sm font-semibold text-brand-cream">
-            Admin Workspace
+            ${workspaceLabel}
           </p>
 
-                    <p class="mt-1 text-xs text-brand-muted">
-            Orders, customers, products, and inventory are connected. Other sections are in progress.
+          <p class="mt-1 text-xs text-brand-muted">
+            ${workspaceDescription}
           </p>
 
           <button
