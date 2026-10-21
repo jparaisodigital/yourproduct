@@ -190,9 +190,8 @@ function renderPackageCard(
     ? 'border-brand-gold/45 bg-brand-panel'
     : 'border-brand-border bg-brand-panel'
 
-    const buttonClass = packageItem.isFeatured
-    ? 'bg-brand-gold text-[#17130d] hover:bg-brand-gold-light'
-    : 'border border-brand-border text-brand-cream hover:border-brand-gold hover:bg-brand-panel hover:text-brand-gold'
+    const buttonClass =
+  'border border-brand-gold bg-brand-gold text-[#17130d] hover:bg-brand-gold-light'
 
   const packageCtaHref =
     isAdminPreview

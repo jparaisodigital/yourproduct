@@ -63,17 +63,6 @@ export function renderAdminSalesInventoryPage() {
                       x-text="Number(day.sales || 0) > 0 ? formatCompactMoney(day.sales) : '₱0'"
                     ></span>
                   </div>
-
-                  <div class="pointer-events-none absolute -top-10 left-1/2 z-10 hidden -translate-x-1/2 whitespace-nowrap rounded-lg border border-brand-border bg-brand-panel px-2.5 py-1.5 text-center text-[0.65rem] font-semibold text-brand-cream shadow-panel group-hover:block">
-                    <span
-                      class="block text-brand-muted"
-                      x-text="day.label"
-                    ></span>
-                    <span
-                      class="block text-brand-gold"
-                      x-text="formatMoney(day.sales)"
-                    ></span>
-                  </div>
                 </div>
 
                 <span

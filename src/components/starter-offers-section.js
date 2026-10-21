@@ -181,7 +181,7 @@ export function renderStarterOffersSection(
               <div class="mt-auto pt-6">
   <a
     href="#packages"
-    class="inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-brand-border px-5 text-sm font-semibold text-brand-cream transition hover:border-brand-gold hover:text-brand-gold"
+    class="inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-brand-gold bg-brand-gold px-5 text-sm font-bold text-brand-black transition hover:-translate-y-0.5 hover:bg-brand-gold-light"
   >
     View Starter Package
   </a>

@@ -217,7 +217,7 @@ export function renderHero(
         src="${heroBackgroundImage}"
         alt=""
         aria-hidden="true"
-        class="pointer-events-none absolute inset-0 z-0 size-full max-w-none select-none object-cover object-[86%_center] opacity-45 sm:object-[84%_center] sm:opacity-60 lg:object-center lg:opacity-100"
+        class="pointer-events-none absolute inset-0 z-0 size-full max-w-none select-none object-cover object-[60%_center] opacity-45 sm:object-[84%_center] sm:opacity-60 lg:object-center lg:opacity-100"
         fetchpriority="high"
       >
 

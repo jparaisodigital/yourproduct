@@ -1,4 +1,5 @@
 import './style.css'
+import logoImage from './assets/logoyourproduct.webp'
 
 import { bindFadeLinks } from './lib/page-transition.js'
 
@@ -21,24 +22,61 @@ const sections = faqCategories
 document.querySelector('#faq-app').innerHTML = `
   <div class="min-h-screen bg-brand-black text-brand-cream">
     <header class="border-b border-brand-border bg-brand-panel">
-      <div class="mx-auto flex w-[min(960px,90%)] items-center justify-between gap-4 py-5">
-        <a
-          href="/"
-          data-fade-link
-          class="font-display text-2xl font-semibold text-brand-gold"
-        >
-          YOUR PRODUCT
-        </a>
+  <div class="mx-auto flex w-[min(960px,90%)] items-center justify-between gap-4 py-4">
+    <a
+      href="/"
+      data-fade-link
+      class="flex min-w-0 items-center gap-3"
+      aria-label="Return to YOUR PRODUCT"
+    >
+      <img
+        src="${logoImage}"
+        alt="YOUR PRODUCT logo"
+        class="size-12 shrink-0 object-contain sm:size-14"
+      >
 
-        <a
-          href="/"
-          data-fade-link
-          class="text-sm text-brand-muted hover:text-brand-gold"
-        >
-          Back to store
-        </a>
-      </div>
-    </header>
+      <span class="min-w-0">
+        <span class="block truncate text-sm font-semibold uppercase tracking-[0.18em] text-brand-cream sm:text-base">
+          YOUR PRODUCT
+        </span>
+      </span>
+    </a>
+
+    <a
+      href="/"
+      data-fade-link
+      class="premium-outline inline-flex h-10 shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-full border border-brand-border px-3.5 text-xs font-semibold text-brand-cream transition hover:border-brand-gold hover:bg-brand-gold/5 hover:text-brand-gold sm:px-5 sm:text-sm"
+    >
+      <svg
+        class="size-4 shrink-0"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.8"
+        aria-hidden="true"
+      >
+        <path d="M4 10h16" stroke-linecap="round" />
+        <path
+          d="M5 10l1.2-5h11.6L19 10"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+        <path
+          d="M6 10v9h12v-9"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+        <path
+          d="M9 19v-5h6v5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
+
+      <span>Back to store</span>
+    </a>
+  </div>
+</header>
 
     <main class="mx-auto w-[min(960px,90%)] py-14 sm:py-20">
       <p class="text-xs font-semibold uppercase tracking-[0.2em] text-brand-gold">

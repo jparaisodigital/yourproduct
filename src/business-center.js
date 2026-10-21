@@ -6,6 +6,7 @@ import {
   dismissSiteLoader,
 } from './components/site-loader.js'
 import { bindFadeLinks } from './lib/page-transition.js'
+import { renderFooter } from './components/footer.js'
 
 const businessCenterParams = new URLSearchParams(window.location.search)
 const fromDashboard = businessCenterParams.get('from') === 'dashboard'
@@ -38,12 +39,38 @@ document.querySelector('#business-center-app').innerHTML = `
         </a>
 
         <a
-          href="${backHref}"
-          data-fade-link
-          class="premium-outline inline-flex h-10 items-center justify-center rounded-full border border-brand-border px-5 text-sm font-semibold text-brand-cream transition hover:border-brand-gold hover:text-brand-gold"
-        >
-          ${backLabel}
-        </a>
+  href="${backHref}"
+  data-fade-link
+  class="premium-outline inline-flex h-10 shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-full border border-brand-border px-3.5 text-xs font-semibold text-brand-cream transition hover:border-brand-gold hover:bg-brand-gold/5 hover:text-brand-gold sm:px-5 sm:text-sm"
+>
+  <svg
+    class="size-4 shrink-0"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.8"
+    aria-hidden="true"
+  >
+    <path d="M4 10h16" stroke-linecap="round" />
+    <path
+      d="M5 10l1.2-5h11.6L19 10"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <path
+      d="M6 10v9h12v-9"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <path
+      d="M9 19v-5h6v5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  </svg>
+
+  <span>${backLabel}</span>
+</a>
       </div>
     </header>
 
@@ -89,12 +116,7 @@ document.querySelector('#business-center-app').innerHTML = `
       </section>
     </main>
 
-    <footer class="border-t border-brand-border bg-brand-panel">
-      <div class="mx-auto flex w-[min(1120px,90%)] flex-col gap-3 py-6 text-xs text-brand-muted sm:flex-row sm:items-center sm:justify-between">
-        <p>© ${new Date().getFullYear()} ${siteConfig.brand.name}. All rights reserved.</p>
-        <p>Business tools and member resources will be added soon.</p>
-      </div>
-    </footer>
+    ${renderFooter(siteConfig)}
   </div>
 `
 
