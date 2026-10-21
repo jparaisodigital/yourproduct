@@ -1,5 +1,7 @@
 import './style.css'
 import logoImage from './assets/logoyourproduct.webp'
+import { renderFooter } from './components/footer.js'
+import { siteConfig } from './config/site-config.js'
 
 import { bindFadeLinks } from './lib/page-transition.js'
 
@@ -131,16 +133,7 @@ document.querySelector('#faq-app').innerHTML = `
         </section>
       `).join('')}
     </main>
-
-    <footer class="border-t border-brand-border py-8 text-center text-xs text-brand-muted">
-      <a
-        href="/"
-        data-fade-link
-        class="hover:text-brand-gold"
-      >
-        YOUR PRODUCT · Back to store
-      </a>
-    </footer>
+    ${renderFooter(siteConfig)}
   </div>
 `
 
