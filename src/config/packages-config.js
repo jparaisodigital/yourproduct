@@ -51,11 +51,16 @@ export const packages = [
     ],
 
     inclusions: [
-      'Option A: 4 Assorted Bottles (60ml each)',
-      'Option B: 1 Starter Tester Kit + 2 Assorted Bottles',
+      'Option A: 4 Assorted Bottles with box (60ml each)',
+      'Option B: 1 Starter Tester Kit + 2 Assorted Bottles with box',
       'Each perfume comes with its own box',
       '30% reseller bottle pricing',
-      'Earn 20 points for incentives',
+      '20 points for member incentives',
+      'Access for Business Programs',
+      'Earn 10% Income from Your Supplier',
+      'Your Product University',
+      'Your Events',
+      'Your Business Centre',
     ],
 
     isFeatured: false,
@@ -88,9 +93,15 @@ export const packages = [
 
     inclusions: [
       '1 Tester Kit',
-      '25 Assorted Bottles (85ml)',
+      '25 Assorted Bottles (60ml)',
+      '35% Reseller Bottle Pricing',
+      '125 points for member incentives',
       'Each perfume comes with its own box',
-      'Business Programs',
+      'Earn 10% Income from Your Supplier',
+      'Access for Business Programs',
+      'Your Product University',
+      'Your Events',
+      'Your Business Centre',
     ],
 
     isFeatured: false,
@@ -128,10 +139,19 @@ export const packages = [
 
     inclusions: [
       '1 Tester Kit',
-      '55 Assorted Bottles (85ml)',
+      '55 Assorted Bottles (60ml)',
+      '40% Reseller Bottle Pricing',
       'Each perfume comes with its own box',
-      '1 Tarpaulin',
+      'Earn 10% Income from Your Supplier',
+      '250 points for member incentives',
+      'Unlock Your Product Own Business',
+      'Own Bottle Name',
+      'Own Perfume Business',
+      '1 Business Name Tarpaulin from you',
       'Business Programs',
+      'Your Product University',
+      'Your Events',
+      'Your Business Centre',
     ],
 
     isFeatured: false,
@@ -148,7 +168,7 @@ export const packages = [
     discountLabel: '50% off per bottle',
 
     description:
-      'Maximize today. Multiply tomorrow.',
+      'Lead your way to greater success.',
 
     productQuantity: 240,
 
@@ -173,12 +193,23 @@ export const packages = [
     ],
 
     inclusions: [
-      '2 Tester Kits',
-      '240 Assorted Bottles (85ml)',
+      '2 Tester Kit',
+      '240 Assorted Bottles (60ml)',
+      '50% Reseller Bottle Pricing',
       'Each perfume comes with its own box',
-      '1 Tarpaulin',
-      '1 Mini Stall',
+      'Earn 10% Income from Your Supplier',
+      '1,200 points for member incentives',
+      'Unlock Your Product Own Business',
+      '1 Business Name Tarpaulin from you',
+      'Own Bottle Name',
+      'Own Perfume Business',
+      '1 Official Business Tarpaulin',
+      '1 Stall Brand New',
+      '1 Rolling Tarpaulin',
       'Business Programs',
+      'Your Product University',
+      'Your Events',
+      'Your Business Centre',
     ],
 
     isFeatured: true,

@@ -1,4 +1,4 @@
-import sixWaysOneImage from '../assets/6ways/1.jpg'
+import sixWaysOneImage from '../assets/6ways/1.webp'
 import sixWaysTwoImage from '../assets/6ways/2.jpg'
 import sixWaysThreeImage from '../assets/6ways/3.jpg'
 

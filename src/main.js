@@ -160,33 +160,15 @@ async function startStorefront() {
 
   if (
     signedInProfile?.customer_type === 'member' &&
-    signedInProfile?.membership_status === 'active'
+    signedInProfile?.membership_status === 'active' &&
+    [
+      'starter',
+      'builder',
+      'leader',
+      'prestige',
+    ].includes(signedInProfile?.selected_package_id)
   ) {
-    const { data: approvedApplication, error: tierError } =
-      await supabase
-        .from('membership_applications')
-        .select('package_id')
-        .eq('customer_id', signedInUser.id)
-        .eq('status', 'approved')
-        .not('membership_activated_at', 'is', null)
-        .order('membership_activated_at', { ascending: false })
-        .limit(1)
-        .maybeSingle()
-
-    if (tierError) {
-      console.error('Unable to load storefront pricing tier:', tierError)
-    }
-
-    if (
-      [
-        'starter',
-        'builder',
-        'leader',
-        'prestige',
-      ].includes(approvedApplication?.package_id)
-    ) {
-      storefrontPricingType = approvedApplication.package_id
-    }
+    storefrontPricingType = signedInProfile.selected_package_id
   }
 
   const tierPriceByType = {
@@ -359,7 +341,7 @@ async function startStorefront() {
   packageConfirmationModal.className =
     'fixed inset-0 z-[80] hidden items-center justify-center bg-black/75 px-4 py-6 backdrop-blur-sm'
   packageConfirmationModal.innerHTML = `
-    <div class="w-full max-w-lg rounded-[1.5rem] border border-brand-gold/30 bg-brand-panel p-6 shadow-gold-soft">
+    <div class="flex max-h-[calc(100vh-3rem)] w-full max-w-lg flex-col overflow-hidden rounded-[1.5rem] border border-brand-gold/30 bg-brand-panel p-6 shadow-gold-soft">
       <p class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-gold">
         Confirm Membership Package
       </p>
@@ -379,10 +361,12 @@ async function startStorefront() {
   data-package-confirm-description
 ></p>
 
-<ul
-  class="mt-4 space-y-2 text-sm leading-6 text-brand-muted"
-  data-package-confirm-inclusions
-></ul>
+      <div class="mt-4 min-h-0 overflow-y-auto rounded-xl border border-brand-gold/20 bg-black/20 px-4 py-3">
+        <ul
+          class="space-y-2 text-sm leading-6 text-brand-muted"
+          data-package-confirm-inclusions
+        ></ul>
+      </div>
 
 <div
   class="mt-4 rounded-xl border border-brand-gold/30 bg-brand-gold/10 px-4 py-3"
@@ -402,9 +386,6 @@ async function startStorefront() {
   </p>
 </div>
 
-      <p class="mt-5 rounded-xl border border-brand-border bg-brand-black px-4 py-3 text-xs leading-5 text-brand-muted">
-        Your account stays free until payment proof is submitted and approved by admin.
-      </p>
 
       <div class="mt-6 grid gap-3 sm:grid-cols-2">
         <button

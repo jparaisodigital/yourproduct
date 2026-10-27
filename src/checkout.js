@@ -1461,58 +1461,167 @@ async function startCheckout() {
                   </legend>
 
                   <div class="mt-3 grid gap-3 sm:grid-cols-2">
-                    <label
-                      class="cursor-pointer rounded-2xl border p-4 transition"
-                      :class="
-                        payment.method === 'e-wallet'
-                          ? 'border-brand-gold bg-brand-gold/10'
-                          : 'border-brand-border bg-brand-black hover:border-brand-gold/60'
-                      "
-                    >
-                      <input
-                        type="radio"
-                        name="payment-method"
-                        value="e-wallet"
-                        x-model="payment.method"
-                        class="sr-only"
-                        required
-                      >
+  <label
+    class="group flex cursor-pointer items-center gap-4 rounded-2xl border p-4 transition duration-200"
+    :class="
+      payment.method === 'e-wallet'
+        ? 'border-brand-gold bg-brand-gold/10 shadow-[0_0_0_1px_rgba(212,181,114,0.12)]'
+        : 'border-brand-border bg-brand-black hover:border-brand-gold/60 hover:bg-brand-gold/[0.03]'
+    "
+  >
+    <input
+      type="radio"
+      name="payment-method"
+      value="e-wallet"
+      x-model="payment.method"
+      class="sr-only"
+      required
+    >
 
-                      <span class="block text-sm font-semibold text-brand-cream">
-                        E-wallet
-                      </span>
+    <span
+      class="grid size-12 shrink-0 place-items-center rounded-xl border transition"
+      :class="
+        payment.method === 'e-wallet'
+          ? 'border-brand-gold/40 bg-brand-gold/15 text-brand-gold'
+          : 'border-brand-border bg-brand-panel text-brand-muted group-hover:text-brand-gold'
+      "
+    >
+      <svg
+        class="size-6"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.8"
+        aria-hidden="true"
+      >
+        <path d="M4 7.5h13.5A2.5 2.5 0 0 1 20 10v7a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 17V7.5Z" stroke-linejoin="round" />
+        <path d="M4 8V6.5A2.5 2.5 0 0 1 6.5 4H17" stroke-linecap="round" />
+        <path d="M15 12h5v4h-5a2 2 0 1 1 0-4Z" stroke-linejoin="round" />
+      </svg>
+    </span>
 
-                      <span class="mt-1 block text-xs leading-5 text-brand-muted">
-                        E-wallet details pending. Official e-wallet details will be added after client confirmation.
-                      </span>
-                    </label>
+    <span class="min-w-0 flex-1">
+      <span class="block text-base font-semibold text-brand-cream">
+        GCash
+      </span>
+      <span class="mt-1 block text-xs leading-5 text-brand-muted">
+        Pay using GCash.
+      </span>
+    </span>
 
-                    <label
-                      class="cursor-pointer rounded-2xl border p-4 transition"
-                      :class="
-                        payment.method === 'bank-transfer'
-                          ? 'border-brand-gold bg-brand-gold/10'
-                          : 'border-brand-border bg-brand-black hover:border-brand-gold/60'
-                      "
-                    >
-                      <input
-                        type="radio"
-                        name="payment-method"
-                        value="bank-transfer"
-                        x-model="payment.method"
-                        class="sr-only"
-                        required
-                      >
+    <span
+      class="grid size-9 shrink-0 place-items-center rounded-full border transition"
+      :class="
+        payment.method === 'e-wallet'
+          ? 'border-brand-gold bg-brand-gold text-brand-black'
+          : 'border-brand-border text-transparent group-hover:border-brand-gold/60'
+      "
+      aria-hidden="true"
+    >
+      <svg
+        class="size-4"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.2"
+      >
+        <path d="m6 12 4 4 8-9" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    </span>
 
-                      <span class="block text-sm font-semibold text-brand-cream">
-                        Bank Transfer
-                      </span>
+    <svg
+      class="size-4 shrink-0 text-brand-muted transition group-hover:translate-x-0.5 group-hover:text-brand-gold"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.8"
+      aria-hidden="true"
+    >
+      <path d="m9 5 7 7-7 7" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+  </label>
 
-                      <span class="mt-1 block text-xs leading-5 text-brand-muted">
-                        Pay securely through the official MariBank account below.
-                      </span>
-                    </label>
-                  </div>
+  <label
+    class="group flex cursor-pointer items-center gap-4 rounded-2xl border p-4 transition duration-200"
+    :class="
+      payment.method === 'bank-transfer'
+        ? 'border-brand-gold bg-brand-gold/10 shadow-[0_0_0_1px_rgba(212,181,114,0.12)]'
+        : 'border-brand-border bg-brand-black hover:border-brand-gold/60 hover:bg-brand-gold/[0.03]'
+    "
+  >
+    <input
+      type="radio"
+      name="payment-method"
+      value="bank-transfer"
+      x-model="payment.method"
+      class="sr-only"
+      required
+    >
+
+    <span
+      class="grid size-12 shrink-0 place-items-center rounded-xl border transition"
+      :class="
+        payment.method === 'bank-transfer'
+          ? 'border-brand-gold/40 bg-brand-gold/15 text-brand-gold'
+          : 'border-brand-border bg-brand-panel text-brand-muted group-hover:text-brand-gold'
+      "
+    >
+      <svg
+        class="size-6"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.8"
+        aria-hidden="true"
+      >
+        <path d="M3 9h18" stroke-linecap="round" />
+        <path d="M5 9V6l7-3 7 3v3" stroke-linecap="round" stroke-linejoin="round" />
+        <path d="M6 9v8M10 9v8M14 9v8M18 9v8" stroke-linecap="round" />
+        <path d="M4 17h16M3 21h18" stroke-linecap="round" />
+      </svg>
+    </span>
+
+    <span class="min-w-0 flex-1">
+      <span class="block text-base font-semibold text-brand-cream">
+        MariBank
+      </span>
+      <span class="mt-1 block text-xs leading-5 text-brand-muted">
+        Pay through MariBank transfer.
+      </span>
+    </span>
+
+    <span
+      class="grid size-9 shrink-0 place-items-center rounded-full border transition"
+      :class="
+        payment.method === 'bank-transfer'
+          ? 'border-brand-gold bg-brand-gold text-brand-black'
+          : 'border-brand-border text-transparent group-hover:border-brand-gold/60'
+      "
+      aria-hidden="true"
+    >
+      <svg
+        class="size-4"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.2"
+      >
+        <path d="m6 12 4 4 8-9" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    </span>
+
+    <svg
+      class="size-4 shrink-0 text-brand-muted transition group-hover:translate-x-0.5 group-hover:text-brand-gold"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.8"
+      aria-hidden="true"
+    >
+      <path d="m9 5 7 7-7 7" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+  </label>
+</div>
                 </fieldset>
 
                 <div
@@ -1640,52 +1749,79 @@ async function startCheckout() {
                     </button>
 
                     <div
-                      x-show="!payment.proofPreviewUrl"
-                      x-transition
-                      class="mx-auto grid size-12 place-items-center rounded-full border border-brand-border text-brand-gold"
-                    >
-                      <svg
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        class="size-7"
-                        aria-hidden="true"
-                      >
-                        <path
-                          d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4"
-                          stroke="currentColor"
-                          stroke-width="1.7"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                        />
-                      </svg>
-                    </div>
+  x-show="!payment.proofPreviewUrl"
+  x-transition
+  class="mx-auto grid size-14 place-items-center rounded-full border border-brand-gold/30 bg-brand-gold/5 text-brand-gold"
+>
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    class="size-7"
+    aria-hidden="true"
+  >
+    <path
+      d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4"
+      stroke="currentColor"
+      stroke-width="1.7"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  </svg>
+</div>
 
-                    <span
-                      class="mt-3 block text-sm font-semibold text-brand-cream"
-                      x-text="payment.proofPreviewUrl ? 'Payment screenshot selected' : 'Select payment screenshot'"
-                    ></span>
+<div x-show="!payment.proofPreviewUrl" x-transition>
+  <span class="mt-4 block font-display text-2xl text-brand-cream">
+    Upload screenshot here
+  </span>
 
-                    <span
-                      class="mt-1 block text-xs leading-5 text-brand-muted"
-                    >
-                      JPG, PNG, or WebP — maximum 5 MB
-                    </span>
+  <span class="mt-2 block text-sm leading-6 text-brand-muted">
+    Upload a clear payment receipt or screenshot.
+  </span>
 
-                    <p
-                      x-show="payment.proofFileName"
-                      x-transition
-                      class="mx-auto mt-3 max-w-full break-all text-xs font-semibold text-brand-cream"
-                      x-text="payment.proofFileName"
-                    ></p>
+  <span class="mt-1 block text-xs leading-5 text-brand-muted">
+    JPG, PNG, or WebP (max 5 MB)
+  </span>
+</div>
 
-                    <input
-                      id="payment-proof"
-                      type="file"
-                      accept="image/jpeg,image/png,image/webp"
-                      class="mx-auto mt-4 block w-fit max-w-full cursor-pointer rounded-lg border border-brand-border bg-brand-panel px-3 py-2 text-center text-sm text-brand-cream file:mr-4 file:rounded-full file:border-0 file:bg-brand-gold file:px-4 file:py-2 file:text-sm file:font-semibold file:text-[#17130d]"
-                      @change="handleProofFile($event)"
-                      required
-                    >
+<p
+  x-show="payment.proofFileName"
+  x-transition
+  class="mx-auto mt-3 max-w-full break-all text-xs font-semibold text-brand-cream"
+  x-text="payment.proofFileName"
+></p>
+
+<label
+  for="payment-proof"
+  x-show="!payment.proofPreviewUrl"
+  x-transition
+  class="mx-auto mt-5 inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-full border border-brand-gold bg-brand-gold px-6 text-sm font-bold text-brand-black transition hover:-translate-y-0.5 hover:bg-brand-gold-light"
+>
+  <svg
+    class="size-5 shrink-0"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.8"
+    aria-hidden="true"
+  >
+    <path
+      d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  </svg>
+
+  <span>Choose file</span>
+</label>
+
+<input
+  id="payment-proof"
+  type="file"
+  accept="image/jpeg,image/png,image/webp"
+  class="sr-only"
+  @change="handleProofFile($event)"
+  required
+>
 
                     <button
                       type="button"
@@ -1759,18 +1895,6 @@ async function startCheckout() {
             >
 
               <div
-                x-show="${isMember}"
-                class="mt-5 mb-5 rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-3"
-              >
-                <p class="text-sm font-semibold text-emerald-200">
-                  Eligible member order points
-                </p>
-                <p class="mt-1 text-xs leading-5 text-emerald-100/80">
-                  Approved member product orders earn points automatically after admin payment approval.
-                </p>
-              </div>
-
-              <div
                 id="checkout-preview-status"
                 x-show="checkoutPreviewComplete"
                 x-transition
@@ -1787,8 +1911,8 @@ async function startCheckout() {
                 :disabled="!checkoutPaymentsReady || isCheckingCart"
                 x-text="
                   !checkoutPaymentsReady
-                    ? 'Ordering not open yet'
-                    : isCheckingCart
+                    ? 'Ordering not open yet'y
+                    : isCheckingCartimage.png
                       ? 'Reviewing order details...'
                       : 'Review Order Details'
                 "
