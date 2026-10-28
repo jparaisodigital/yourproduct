@@ -195,43 +195,99 @@ Alpine.data('checkoutPage', () => ({
     .filter(Boolean)
     .join(' ')
   },
-  handleProofFile(event) {
+  async handleProofFile(event) {
     const file = event.target.files?.[0]
     this.paymentError = ''
     this.checkoutPreviewComplete = false
+
     if (this.payment.proofPreviewUrl) {
-      URL.revokeObjectURL(
-        this.payment.proofPreviewUrl,
-      )
+      URL.revokeObjectURL(this.payment.proofPreviewUrl)
       this.payment.proofPreviewUrl = ''
     }
+
     this.payment.proofFile = null
     this.payment.proofFileName = ''
+
     if (!file) {
       return
     }
+
     const allowedTypes = [
       'image/jpeg',
       'image/png',
       'image/webp',
     ]
     const maximumFileSize = 5 * 1024 * 1024
+
     if (!allowedTypes.includes(file.type)) {
       this.paymentError =
-      'Please select a JPG, PNG, or WEBP image.'
+        'Please select a JPG, PNG, or WEBP image.'
       event.target.value = ''
       return
     }
+
     if (file.size > maximumFileSize) {
       this.paymentError =
-      'The selected image must not exceed 5 MB.'
+        'The selected image must not exceed 5 MB.'
       event.target.value = ''
       return
     }
-    this.payment.proofFile = file
-    this.payment.proofFileName = file.name
-    this.payment.proofPreviewUrl =
-    URL.createObjectURL(file)
+
+    try {
+      const image = await createImageBitmap(file)
+      const maximumDimension = 1200
+      const scale = Math.min(
+        1,
+        maximumDimension / Math.max(image.width, image.height),
+      )
+
+      const width = Math.max(1, Math.round(image.width * scale))
+      const height = Math.max(1, Math.round(image.height * scale))
+
+      const canvas = document.createElement('canvas')
+      canvas.width = width
+      canvas.height = height
+
+      const context = canvas.getContext('2d')
+      if (!context) {
+        throw new Error('Unable to prepare payment proof image.')
+      }
+
+      context.drawImage(image, 0, 0, width, height)
+      image.close?.()
+
+      const compressedBlob = await new Promise((resolve, reject) => {
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              resolve(blob)
+              return
+            }
+
+            reject(new Error('Unable to compress payment proof image.'))
+          },
+          'image/webp',
+          0.82,
+        )
+      })
+
+      const originalName = file.name.replace(/\.[^.]+$/, '')
+      const compressedFile = new File(
+        [compressedBlob],
+        `${originalName}.webp`,
+        { type: 'image/webp' },
+      )
+
+      this.payment.proofFile = compressedFile
+      this.payment.proofFileName = compressedFile.name
+      this.payment.proofPreviewUrl =
+        URL.createObjectURL(compressedFile)
+    } catch (error) {
+      console.error('Unable to prepare payment proof:', error)
+      this.paymentError =
+        'Unable to prepare this image. Please try another screenshot.'
+      event.target.value = ''
+    }
   },
   async completeCheckoutPreview() {
     if (this.isCheckingCart) return
@@ -1895,14 +1951,6 @@ async function startCheckout() {
             >
 
               <div
-                id="checkout-preview-status"
-                x-show="checkoutPreviewComplete"
-                x-transition
-                class="mt-5 rounded-xl border border-emerald-400/35 bg-emerald-400/10 px-4 py-3 text-sm font-medium leading-6 text-emerald-100"
-                role="status"
-              >
-                Details checked. You can now submit this order for admin verification.
-              </div>
 
               <button
                 type="submit"
@@ -1911,8 +1959,8 @@ async function startCheckout() {
                 :disabled="!checkoutPaymentsReady || isCheckingCart"
                 x-text="
                   !checkoutPaymentsReady
-                    ? 'Ordering not open yet'y
-                    : isCheckingCartimage.png
+                    ? 'Ordering not open yet'
+                    : isCheckingCart
                       ? 'Reviewing order details...'
                       : 'Review Order Details'
                 "
@@ -1924,7 +1972,7 @@ async function startCheckout() {
                 @click="submitOrder()"
                 :disabled="!checkoutPaymentsReady || isSubmittingOrder || orderSubmissionUncertain"
                 class="mt-5 inline-flex h-12 w-full items-center justify-center rounded-full bg-brand-gold px-7 text-sm font-semibold text-brand-black transition hover:bg-brand-gold-light disabled:cursor-not-allowed disabled:opacity-50"
-                x-text="isSubmittingOrder ? 'Submitting order...' : 'Submit Order for Verification'"
+                x-text="isSubmittingOrder ? 'Submitting order...' : 'Submit Order'"
               ></button>
 
               <button
