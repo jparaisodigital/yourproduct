@@ -416,3 +416,5 @@ enabled = true
 
 [functions.username-login]
 verify_jwt = false
+[functions.cleanup-payment-proofs]
+verify_jwt = false
