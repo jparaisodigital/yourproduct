@@ -47,6 +47,11 @@ export function renderProductCard(product, options = {}) {
 
   const tierLabel = options.tierLabel || ''
   const tierPrice = Number(options.tierPrice || 0)
+  const fixedDisplayPrice =
+    product.fixedPrice && tierPrice > 0
+      ? Number(product.memberPrice || product.regularPrice || 0)
+      : Number(product.regularPrice || 0)
+
   const hasTierPrice =
     tierPrice > 0 &&
     !product.fixedPrice
@@ -152,12 +157,12 @@ export function renderProductCard(product, options = {}) {
                   x-transition.opacity
                   class="${mobilePriceInfoPopupClass} border border-brand-gold/45 bg-brand-black px-3 py-3 text-[0.68rem] leading-5 text-brand-cream shadow-panel"
                 >
-                  Fixed price product. Member pricing does not apply.
+                  Retail price ${pesoFormatter.format(product.regularPrice)}. Active members pay ${pesoFormatter.format(product.memberPrice)}.
                 </div>
               </div>
 
               <p class="shrink-0 text-right font-display text-2xl leading-none text-brand-gold">
-                ${pesoFormatter.format(product.regularPrice)}
+                ${pesoFormatter.format(fixedDisplayPrice)}
               </p>
             </div>
           </div>
@@ -181,14 +186,14 @@ export function renderProductCard(product, options = {}) {
               <p
                 class="shrink-0 text-right font-display text-3xl leading-none text-brand-gold"
               >
-                ${pesoFormatter.format(product.regularPrice)}
+                ${pesoFormatter.format(fixedDisplayPrice)}
               </p>
             </div>
 
             <p
               class="mt-2 text-xs leading-5 text-brand-muted"
             >
-              Fixed price product. Reseller tier pricing does not apply.
+              Retail ${pesoFormatter.format(product.regularPrice)}. Active members pay ${pesoFormatter.format(product.memberPrice)} regardless of package tier.
             </p>
           </div>
         `

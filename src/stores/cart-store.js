@@ -207,9 +207,14 @@ export function registerCartStore(
       const regularPrice = Number(
         product?.regularPrice || 0,
       )
+      const memberPrice = Number(
+        product?.memberPrice || regularPrice,
+      )
 
       if (product?.fixedPrice) {
-        return regularPrice
+        return this.pricingType === 'regular'
+          ? regularPrice
+          : memberPrice
       }
 
       if (this.pricingType in tierPrices) {

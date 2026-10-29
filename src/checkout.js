@@ -315,21 +315,6 @@ Alpine.data('checkoutPage', () => ({
     }
 
     const cart = Alpine.store('cart')
-    const totalCartQuantity = Number(cart?.itemCount || 0)
-    const isMemberCheckout = checkoutPricingTier !== 'regular'
-    const hasTesterKit = cart.detailedItems.some(
-      (item) => item.productId === 'tester-kit',
-    )
-
-    if (
-      isMemberCheckout &&
-      !hasTesterKit &&
-      totalCartQuantity < 5
-    ) {
-      this.orderCheckError =
-        'Members must order at least 5 products, unless the order includes a Tester Kit.'
-      return
-    }
 
     this.isCheckingCart = true
 
@@ -590,9 +575,7 @@ async function startCheckout() {
     const liveProduct = liveProductById.get(product.id)
     const regularPrice = Number(liveProduct?.regular_price ?? 0)
     const memberPrice = Number(liveProduct?.member_price ?? 0)
-    const effectiveMemberPrice = product.fixedPrice
-      ? regularPrice
-      : memberPrice
+    const effectiveMemberPrice = memberPrice
 
     return {
       ...product,

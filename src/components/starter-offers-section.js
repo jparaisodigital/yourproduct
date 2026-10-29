@@ -79,7 +79,7 @@ export function renderStarterOffersSection(
                 </h3>
 
                 <p class="font-display text-3xl leading-none text-brand-gold">
-                  ${pesoFormatter.format(700)}
+                  <span x-text="$store.cart.pricingType === 'regular' ? '&#8369;700' : '&#8369;599'"></span>
                 </p>
               </div>
 

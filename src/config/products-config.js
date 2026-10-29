@@ -265,7 +265,7 @@ const testerKitProduct = {
   bestFor: 'Product sampling and scent discovery.',
 
   regularPrice: 700,
-  memberPrice: 700,
+  memberPrice: 599,
   fixedPrice: true,
 
   costPrice: null,
