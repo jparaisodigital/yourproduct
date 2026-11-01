@@ -172,10 +172,10 @@ async function startStorefront() {
   }
 
   const tierPriceByType = {
-    starter: 245,
-    builder: 227,
-    leader: 210,
-    prestige: 175,
+    starter: 252,
+    builder: 234,
+    leader: 216,
+    prestige: 180,
   }
 
   const tierLabelByType = {

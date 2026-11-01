@@ -151,7 +151,7 @@ export function renderMembershipModal() {
               </p>
 
               <p class="mt-1.5 text-2xl font-bold text-brand-cream">
-                ₱349
+                ₱359
               </p>
 
               <p class="mt-1 text-xs text-brand-muted">
@@ -165,7 +165,7 @@ export function renderMembershipModal() {
               </p>
 
               <p class="mt-2 text-2xl font-bold text-brand-gold">
-                ₱175
+                ₱180
               </p>
 
               <p class="mt-1 text-xs text-brand-muted">
@@ -180,7 +180,7 @@ export function renderMembershipModal() {
             </p>
 
             <p class="mt-1 text-xs leading-5 text-brand-muted sm:text-sm">
-  Enjoy member pricing from ₱175 per bottle.
+  Enjoy member pricing from ₱180 per bottle.
 </p>
           </div>
 

@@ -228,7 +228,7 @@ export function renderProductCard(product, options = {}) {
             <p
               class="mt-1 text-xs leading-5 text-brand-muted"
             >
-              From PHP 245 to PHP 175 per bottle, depending on approved package.
+              From PHP 252 to PHP 180 per bottle, depending on approved package.
             </p>
           </div>
         `

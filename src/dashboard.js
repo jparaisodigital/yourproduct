@@ -350,7 +350,7 @@ const membershipUpgradeMarkup =
               inclusions: [
   'Choose 1 starter option below',
   'Each perfume comes with its own box',
-  '30% reseller pricing: ₱245 per perfume',
+  '30% reseller pricing: ₱252 per perfume',
   '20 package points for incentives',
 ],
             },
@@ -365,7 +365,7 @@ const membershipUpgradeMarkup =
   '25 assorted bottles, 85ml',
   'Each perfume comes with its own box',
   '1 tester kit',
-  '35% reseller pricing: ₱227 per perfume',
+  '35% reseller pricing: ₱234 per perfume',
   '125 package points for incentives',
 ],
             },
@@ -381,7 +381,7 @@ const membershipUpgradeMarkup =
   'Each perfume comes with its own box',
   '1 tester kit',
   '1 tarpaulin',
-  '40% reseller pricing: ₱209 per perfume',
+  '40% reseller pricing: ₱216 per perfume',
   '250 package points for incentives',
 ],
             },
@@ -398,7 +398,7 @@ const membershipUpgradeMarkup =
   '2 tester kits',
   '1 tarpaulin',
   '1 mini stall',
-  '50% reseller pricing: ₱175 per perfume',
+  '50% reseller pricing: ₱180 per perfume',
   '1,200 package points for incentives',
 ],
 },
@@ -3773,10 +3773,10 @@ if (
 }
 
 const tierPriceByType = {
-  starter: 245,
-  builder: 227,
-  leader: 210,
-  prestige: 175,
+  starter: 252,
+  builder: 234,
+  leader: 216,
+  prestige: 180,
 }
 
 const tierLabelByType = {
@@ -5357,6 +5357,7 @@ Email is not changed.
               </p>
 
               <p
+                x-show="!latestApprovedMembershipPackage"
                 class="hidden text-xs text-brand-muted sm:block"
               >
                 Approved package tier required for reseller pricing

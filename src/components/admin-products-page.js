@@ -78,7 +78,7 @@ export function renderAdminProductsPage() {
                       x-text="formatMoney(product.regular_price)"
                     ></span>
                     · Reseller tiers:
-                    <span class="text-brand-cream">₱245–₱175</span>
+                    <span class="text-brand-cream">₱252–₱180</span>
                   </span>
                 </template>
               </p>

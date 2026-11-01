@@ -36,13 +36,13 @@ export const faqItems = [
     id: 'question-5',
     category: 'pricing',
     question: 'How much is a regular perfume bottle?',
-    answer: 'The regular customer price is ₱349 per bottle.',
+    answer: 'The regular customer price is ₱359 per bottle.',
   },
   {
     id: 'question-6',
     category: 'pricing',
     question: 'How much is the member or reseller price per bottle?',
-    answer: 'Approved members receive tier pricing based on their membership package: Starter ₱245, Builder ₱227, Leader ₱210, and Prestige ₱175 per bottle.',
+    answer: 'Approved members receive tier pricing based on their membership package: Starter ₱252, Builder ₱234, Leader ₱216, and Prestige ₱180 per bottle.',
   },
   {
     id: 'question-7',

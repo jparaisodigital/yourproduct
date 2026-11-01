@@ -228,7 +228,7 @@ function createProduct({
       ? `For customers who enjoy ${perfumeDetails.inspiredBy}.`
       : '',
 
-    regularPrice: 349,
+    regularPrice: 359,
     memberPrice: 199,
 
     // Product cost is not available yet.
