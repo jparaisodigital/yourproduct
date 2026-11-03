@@ -1,3 +1,5 @@
+import memberTesterKitImage from '../assets/products/kit.webp'
+
 const pesoFormatter = new Intl.NumberFormat(
   'en-PH',
   {
@@ -310,6 +312,7 @@ export function renderProductCard(product, options = {}) {
 >
         <img
           src="${product.image}"
+          ${product.id === 'tester-kit' ? `x-bind:src="$store.cart.pricingType === 'regular' ? '${product.image}' : '${memberTesterKitImage}'"` : ''}
           alt="${product.name}"
           class="relative z-10 size-full opacity-100 object-contain object-center p-2 sm:p-3"
           loading="${imageLoadingAttribute}"

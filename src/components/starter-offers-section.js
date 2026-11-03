@@ -1,4 +1,5 @@
 import testerKitImage from '../assets/products/tester-kit.webp'
+import memberTesterKitImage from '../assets/products/kit.webp'
 import starterPackageImage from '../assets/products/starter1.webp'
 
 const pesoFormatter = new Intl.NumberFormat('en-PH', {
@@ -57,10 +58,11 @@ export function renderStarterOffersSection(
   type="button"
   class="block w-full cursor-zoom-in"
   aria-label="Zoom Premium Tester Kit image"
-  @click="zoomImage = '${testerKitImage}'; zoomAlt = 'Premium Tester Kit'"
+  @click="zoomImage = $store.cart.pricingType === 'regular' ? '${testerKitImage}' : '${memberTesterKitImage}'; zoomAlt = 'Premium Tester Kit'"
 >
   <img
     src="${testerKitImage}"
+    x-bind:src="$store.cart.pricingType === 'regular' ? '${testerKitImage}' : '${memberTesterKitImage}'"
     alt="Premium Tester Kit"
     class="aspect-[4/3] w-full rounded-[1.1rem] object-contain transition duration-300 group-hover:scale-[1.02]"
     loading="lazy"
