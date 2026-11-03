@@ -94,8 +94,6 @@ Alpine.data('checkoutPage', () => ({
   },
   paymentError: '',
   orderCheckError: '',
-  isCheckingCart: false,
-  checkoutPreviewComplete: false,
   checkoutPaymentsReady,
   isSubmittingOrder: false,
   submittedOrderId: '',
@@ -152,7 +150,6 @@ Alpine.data('checkoutPage', () => ({
   },
   metroManilaCities,
   handleDeliveryRegionChange() {
-    this.checkoutPreviewComplete = false
     this.paymentError = ''
     this.orderCheckError = ''
 
@@ -198,7 +195,6 @@ Alpine.data('checkoutPage', () => ({
   async handleProofFile(event) {
     const file = event.target.files?.[0]
     this.paymentError = ''
-    this.checkoutPreviewComplete = false
 
     if (this.payment.proofPreviewUrl) {
       URL.revokeObjectURL(this.payment.proofPreviewUrl)
@@ -289,89 +285,9 @@ Alpine.data('checkoutPage', () => ({
       event.target.value = ''
     }
   },
-  async completeCheckoutPreview() {
-    if (this.isCheckingCart) return
-    this.orderCheckError = ''
-
-    if (this.requiresShippingConfirmation()) {
-      this.orderCheckError =
-        'Shipping outside Metro Manila requires confirmation. Please message us before payment.'
-      return
-    }
-
-    if (this.checkoutPaymentsReady && !this.payment.proofFile) {
-      this.paymentError =
-      'Please select your proof of payment.'
-      document.querySelector('#payment-proof')?.focus()
-      return
-    }
-    if (this.delivery.sameAsCustomer) {
-      this.delivery.recipientFirstName =
-      this.customer.firstName
-      this.delivery.recipientLastName =
-      this.customer.lastName
-      this.delivery.recipientMobile =
-      this.customer.mobileNumber
-    }
-
-    const cart = Alpine.store('cart')
-
-    this.isCheckingCart = true
-
-    try {
-      const { data: quote, error } = await supabase.rpc(
-        'quote_order_cart',
-        {
-          cart_items: cart.detailedItems.map((item) => ({
-            productId: item.productId,
-            quantity: item.quantity,
-            image: item.product.image,
-          })),
-        },
-      )
-      if (error) {
-        if (error.message?.includes('A product is unavailable.')) {
-          this.orderCheckError =
-            'Products are not available for checkout yet.'
-        } else {
-          console.error('Unable to check cart:', error)
-          this.orderCheckError =
-            'Unable to check the cart. Please try again.'
-        }
-        return
-      }
-      if (
-        !quote ||
-        quote.pricingType !== cart.pricingType ||
-        Number(quote.subtotal) !== cart.subtotal
-      ) {
-        this.orderCheckError =
-          'Cart pricing has changed. Please refresh and review your cart.'
-        return
-      }
-    } catch (error) {
-      console.error('Unable to check cart:', error)
-      this.orderCheckError =
-        'Unable to check the cart. Please try again.'
-      return
-    } finally {
-      this.isCheckingCart = false
-    }
-    this.paymentError = ''
-    this.checkoutPreviewComplete = true
-    requestAnimationFrame(() => {
-      document
-      .querySelector('#checkout-preview-status')
-      ?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'center',
-      })
-    })
-  },
   async submitOrder() {
     if (
       !this.checkoutPaymentsReady ||
-      !this.checkoutPreviewComplete ||
       this.isSubmittingOrder ||
       this.submittedOrderId ||
       this.orderSubmissionUncertain
@@ -381,6 +297,19 @@ Alpine.data('checkoutPage', () => ({
     const proofFile = this.payment.proofFile
     this.orderCheckError = ''
     this.paymentError = ''
+
+    if (this.requiresShippingConfirmation()) {
+      this.orderCheckError =
+        'Shipping outside Metro Manila requires confirmation. Please message us before payment.'
+      return
+    }
+
+    if (this.delivery.sameAsCustomer) {
+      this.delivery.recipientFirstName = this.customer.firstName
+      this.delivery.recipientLastName = this.customer.lastName
+      this.delivery.recipientMobile = this.customer.mobileNumber
+    }
+
     if (!proofFile || cart.items.length === 0) {
       this.orderCheckError = 'Please review your cart and payment proof.'
       return
@@ -411,7 +340,6 @@ Alpine.data('checkoutPage', () => ({
         Number(quote.subtotal) !== cart.subtotal
       ) {
         if (quoteError) console.error('Unable to confirm order:', quoteError)
-        this.checkoutPreviewComplete = false
         this.orderCheckError =
           'Product availability or price changed. Refresh and review your cart.'
         return
@@ -878,7 +806,6 @@ async function startCheckout() {
                 aria-label="Decrease quantity"
                 @click="
                   $store.cart.decrease(item.productId)
-                  checkoutPreviewComplete = false
                 "
               >
                 −
@@ -896,7 +823,6 @@ async function startCheckout() {
                 :disabled="item.quantity >= item.product.stockQuantity"
                 @click="
                   $store.cart.increase(item.productId)
-                  checkoutPreviewComplete = false
                 "
               >
                 +
@@ -908,7 +834,6 @@ async function startCheckout() {
               class="text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-brand-muted transition hover:text-red-400"
               @click="
                 $store.cart.remove(item.productId)
-                checkoutPreviewComplete = false
               "
             >
               Remove
@@ -957,7 +882,7 @@ async function startCheckout() {
 
           <form
             class="min-w-0 space-y-6"
-            @submit.prevent="completeCheckoutPreview()"
+            @submit.prevent="submitOrder()"
           >
             <section
               class="overflow-hidden rounded-[1.5rem] border border-brand-border bg-brand-panel shadow-panel"
@@ -1874,7 +1799,6 @@ async function startCheckout() {
                         payment.proofPreviewUrl = ''
                         payment.proofModalOpen = false
                         paymentError = ''
-                        checkoutPreviewComplete = false
                         document.body.classList.remove('overflow-hidden')
                         const proofInput = document.querySelector('#payment-proof')
                         if (proofInput) proofInput.value = ''
@@ -1933,39 +1857,19 @@ async function startCheckout() {
               class="overflow-hidden rounded-[1.5rem] border border-brand-gold/30 bg-brand-panel p-5 shadow-gold-soft sm:p-6"
             >
 
-              <div
-
-              <button
+                            <button
                 type="submit"
-                x-show="!checkoutPreviewComplete"
-                class="mt-5 inline-flex h-12 w-full items-center justify-center rounded-full bg-brand-gold px-7 text-sm font-semibold text-brand-black transition hover:bg-brand-gold-light disabled:cursor-not-allowed disabled:opacity-60"
-                :disabled="!checkoutPaymentsReady || isCheckingCart"
+                x-show="!submittedOrderId"
+                :disabled="!checkoutPaymentsReady || isSubmittingOrder || orderSubmissionUncertain"
+                class="mt-5 inline-flex h-12 w-full items-center justify-center rounded-full bg-brand-gold px-7 text-sm font-semibold text-brand-black transition hover:bg-brand-gold-light disabled:cursor-not-allowed disabled:opacity-50"
                 x-text="
                   !checkoutPaymentsReady
                     ? 'Ordering not open yet'
-                    : isCheckingCart
-                      ? 'Reviewing order details...'
-                      : 'Review Order Details'
+                    : isSubmittingOrder
+                      ? 'Submitting order...'
+                      : 'Submit Order'
                 "
               ></button>
-
-              <button
-                type="button"
-                x-show="checkoutPreviewComplete && !submittedOrderId"
-                @click="submitOrder()"
-                :disabled="!checkoutPaymentsReady || isSubmittingOrder || orderSubmissionUncertain"
-                class="mt-5 inline-flex h-12 w-full items-center justify-center rounded-full bg-brand-gold px-7 text-sm font-semibold text-brand-black transition hover:bg-brand-gold-light disabled:cursor-not-allowed disabled:opacity-50"
-                x-text="isSubmittingOrder ? 'Submitting order...' : 'Submit Order'"
-              ></button>
-
-              <button
-                type="button"
-                x-show="checkoutPreviewComplete && !submittedOrderId"
-                @click="checkoutPreviewComplete = false"
-                class="mt-3 inline-flex h-11 w-full items-center justify-center rounded-full border border-brand-border px-7 text-sm font-semibold text-brand-muted transition hover:border-brand-gold hover:text-brand-gold"
-              >
-                Edit Details
-              </button>
 
               <p
                 x-show="orderCheckError"
